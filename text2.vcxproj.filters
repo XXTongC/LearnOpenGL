@@ -19,6 +19,12 @@
     <Filter Include="资源文件\textures">
       <UniqueIdentifier>{9b5a1236-5787-4bf4-8b8c-af569dcd3464}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\OldTestCode">
+      <UniqueIdentifier>{d7abe347-eb27-4ac1-b2ff-68f53093748a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\OldTestCode">
+      <UniqueIdentifier>{42132605-9631-4b6b-97e8-82a7b2f5055f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -35,6 +41,9 @@
     </ClCompile>
     <ClCompile Include="shader.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="OldTestCode.cpp">
+      <Filter>源文件\OldTestCode</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +64,9 @@
     </ClInclude>
     <ClInclude Include="stb_image.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="OldTestCode.h">
+      <Filter>头文件\OldTestCode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
