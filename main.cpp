@@ -4,9 +4,7 @@
 #include "Application.h"
 #include "shader.h"
 #include "OldTestCode.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
+#include "texture.h"
 
 /*
  * to make main.cpp clear
@@ -19,7 +17,6 @@
 //vao、vbo等设置
 
 void prepareUVGLTranglesTest2();
-void prepareTextureTest2();
 //shader的创建
 void prepareShader();
 //绘制命令
@@ -32,8 +29,9 @@ void prepareTexture();
 
 
 //声明全局变量vao以及shaderProram
-GLuint vao,Texture;
-GLShaderwork::Shader* shader = nullptr;
+GLuint vao;
+GLframework::Shader* shader = nullptr;
+GLframework::Texture* texture = nullptr;
 
 int main()
 {
@@ -43,7 +41,7 @@ int main()
 	GL_APP->setMouseCallback(OnMouseCallback);
 	prepareShader();
 	prepareUVGLTranglesTest2();
-	prepareTextureTest2();
+	prepareTexture();
 	GL_CALL(glViewport(0, 0, 640, 480));
 	GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
 	while (GL_APP->update())
@@ -52,16 +50,19 @@ int main()
 	}
 
 	GL_APP->destory();
+	delete texture;
 	return 0;
 }
 
 void prepareShader()
 {
-	shader = new GLShaderwork::Shader("vertexAuto.glsl", "fragmentAuto.glsl");
+	shader = new GLframework::Shader("vertexAuto.glsl", "fragmentAuto.glsl");
 }
 
-
-
+void prepareTexture()
+{
+	texture = new GLframework::Texture("Texture/panda.jpg", 0);
+}
 
 void render()
 {
@@ -99,43 +100,6 @@ void render()
 	//这提示了一个在OpenGL中健康的代码习惯：有开有关
 	GL_CALL(glBindVertexArray(0));
 	shader->end();
-}
-
-void prepareTexture()
-{
-	//1 读取stbImage 
-	int width, height, channels;
-
-	//反转Y轴，原因是图片的存储是从左上角开始，而OpenGL的图片读取是从左下角开始
-	stbi_set_flip_vertically_on_load(true);
-	unsigned char* data = stbi_load("Texture/panda.jpg", &width, &height, &channels, STBI_rgb_alpha);
-	
-	if (data == nullptr) std::cout << "nullptr" << std::endl;
-	//2 生成纹理并且激活单元绑定
-	GL_CALL(glGenTextures(1, &Texture));
-	//激活纹理单元
-	GL_CALL(glActiveTexture(GL_TEXTURE0));
-	//绑定纹理对象
-	GL_CALL(glBindTexture(GL_TEXTURE_2D, Texture));
-	//3 传输纹理数据，此时才会开辟显存
-	GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
-	
-	//释放数据，此时data数据是存储在RAM上的，但是现在我们已经将其拷贝到了GPURAM上，后续操作都是针对存在GPURAM的数据，所以可以掉这段无用数据，或者使用智能指针避免这个操作
-	stbi_image_free(data);
-
-	//4 设置纹理过滤方式
-	//如果渲染像素大于原图，则用插值算法，成图较模糊，锯齿感弱
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-	//如果渲染像素小于原图，则就近原则，成图较清晰，锯齿感强
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-	//5 设置纹理包裹方式，设置x, y方向的超原图范围属性, S对应x(u), T对应y(v)
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT));
-
-	/*
-	 *	小心这里不能解绑Texture，因为我们激活了一个纹理单元，如果我们解绑纹理单元就会失去链接使得shader后续无法采样
-	 *	GL_CALL(glBindTexture(GL_TEXTURE_2D,0));
-·····*/
 }
 
 void prepareUVGLTranglesTest2()
@@ -176,34 +140,4 @@ void prepareUVGLTranglesTest2()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index), index, GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
-}
-
-void prepareTextureTest2()
-{
-	//声明图片长宽，颜色通道
-	int width, height, channels;
-	//反转y轴
-	stbi_set_flip_vertically_on_load(true);
-	//读取图片数据
-	unsigned char* data = stbi_load("Texture/panda.jpg", &width, &height, &channels, STBI_rgb_alpha);
-
-	//生成纹理
-	glGenTextures(1, &Texture);
-	//激活纹理单元
-	glActiveTexture(GL_TEXTURE0);
-	//绑定纹理对象
-	glBindTexture(GL_TEXTURE_2D, Texture);
-	//开辟显存并传输纹理数据
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,data);
-
-	//释放RAM上的data
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-	//如果渲染像素小于原图，则就近原则，成图较清晰，锯齿感强
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-	//5 设置纹理包裹方式，设置x, y方向的超原图范围属性, S对应x(u), T对应y(v)
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
-
-	
-
 }

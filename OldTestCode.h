@@ -5,8 +5,8 @@
 #include "core.h"
 #include "shader.h"
 extern GLuint vao;
-extern GLShaderwork::Shader* shader;
-extern GLuint Texture;
+extern GLframework::Shader* shader;
+
 
 //部分回调函数
 void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods);
