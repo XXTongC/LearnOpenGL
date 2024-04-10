@@ -17,7 +17,9 @@
 
 
 //vao、vbo等设置
-void prepareUVGLTrangles();
+
+void prepareUVGLTranglesTest2();
+void prepareTextureTest2();
 //shader的创建
 void prepareShader();
 //绘制命令
@@ -26,8 +28,7 @@ void render();
 void prepareTexture();
 
 //TextureTest 1 纹理平铺
-void prepareUVGLTranglesTest2();
-void prepareTextureTest2();
+
 
 
 //声明全局变量vao以及shaderProram
@@ -83,7 +84,7 @@ void prepareUVGLTrangles()
 	GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
 	GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
 	GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
-	
+
 	//激活vao插槽，并绑定装载数据
 	GL_CALL(glEnableVertexAttribArray(positionLocation));
 	GL_CALL(glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0));
@@ -101,6 +102,9 @@ void prepareUVGLTrangles()
 	//解绑vao
 	GL_CALL(glBindVertexArray(0));
 }
+
+
+
 
 void render()
 {
@@ -180,7 +184,7 @@ void prepareTexture()
 void prepareUVGLTranglesTest2()
 {
 	float vertex[]
-	{
+{
 		-1.0f,-1.0f,0.0f,0.0f,0.0f,
 		-1.0f,1.0f,0.0f,0.0f,1.0f,
 		1.0f,1.0f,0.0f,1.0f,1.0f,
@@ -245,5 +249,4 @@ void prepareTextureTest2()
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 
-	
 }
