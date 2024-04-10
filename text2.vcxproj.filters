@@ -25,6 +25,18 @@
     <Filter Include="源文件\OldTestCode">
       <UniqueIdentifier>{42132605-9631-4b6b-97e8-82a7b2f5055f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\GLframework">
+      <UniqueIdentifier>{a5902198-03e7-4574-b898-c90887d8ad28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\GLframework">
+      <UniqueIdentifier>{98157fdf-3762-4722-8320-cf49012d5584}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Application">
+      <UniqueIdentifier>{91ec29b3-af2b-411d-892e-a94dcb4714fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Application">
+      <UniqueIdentifier>{58d860ac-20a9-48ce-b871-46a830d95949}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -36,24 +48,21 @@
     <ClCompile Include="GL_ERROR_FIND.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Application.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="shader.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="OldTestCode.cpp">
       <Filter>源文件\OldTestCode</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>源文件\GLframework</Filter>
+    </ClCompile>
+    <ClCompile Include="Application.cpp">
+      <Filter>源文件\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="texture.cpp">
+      <Filter>源文件\GLframework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GL_ERROR_FIND.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Application.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="core.h">
@@ -67,6 +76,15 @@
     </ClInclude>
     <ClInclude Include="OldTestCode.h">
       <Filter>头文件\OldTestCode</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>头文件\GLframework</Filter>
+    </ClInclude>
+    <ClInclude Include="Application.h">
+      <Filter>头文件\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.h">
+      <Filter>头文件\GLframework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

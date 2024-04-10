@@ -1,7 +1,7 @@
 #pragma once
 #include "core.h"
 #include <string>
-namespace GLShaderwork
+namespace GLframework
 {
 	class Shader
 	{

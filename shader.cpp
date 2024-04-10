@@ -4,7 +4,7 @@
 #include <sstream>
 #include <iostream>
 
-void GLShaderwork::Shader::setVector3(const std::string& name, const float* values)
+void GLframework::Shader::setVector3(const std::string& name, const float* values)
 {
 	GLuint location = GL_CALL(glGetUniformLocation(mProgram, name.c_str()));
 	//第二个参数表示有几个vec3
@@ -12,21 +12,21 @@ void GLShaderwork::Shader::setVector3(const std::string& name, const float* valu
 }
 
 
-void GLShaderwork::Shader::setVector3(const std::string& name, float x, float y, float z)
+void GLframework::Shader::setVector3(const std::string& name, float x, float y, float z)
 {
 	GLuint location = GL_CALL(glGetUniformLocation(mProgram, name.c_str()));
 	GL_CALL(glUniform3f(location,x, y, z));
 }
 
 
-void GLShaderwork::Shader::setInt(const std::string& name, int value)
+void GLframework::Shader::setInt(const std::string& name, int value)
 {
 	GLuint location = GL_CALL(glGetUniformLocation(mProgram, name.c_str()));
 	GL_CALL(glUniform1i(location, value));
 }
 
 
-void GLShaderwork::Shader::setFloat(const std::string& name, float value)
+void GLframework::Shader::setFloat(const std::string& name, float value)
 {
 	GLuint location = GL_CALL(glGetUniformLocation(mProgram, name.c_str()));
 	GL_CALL(glUniform1f(location, value));
@@ -34,12 +34,12 @@ void GLShaderwork::Shader::setFloat(const std::string& name, float value)
 }
 
 
-GLuint GLShaderwork::Shader::getProgram() const
+GLuint GLframework::Shader::getProgram() const
 {
 	return mProgram;
 }
 
-GLShaderwork::Shader::Shader(const char* vertexPath, const char* fragmentPath)
+GLframework::Shader::Shader(const char* vertexPath, const char* fragmentPath)
 {
 	//声明装入shader代码字符串的两个string
 	std::string vertexCode;
@@ -117,24 +117,24 @@ GLShaderwork::Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	GL_CALL(glEnable(GL_BLEND));
 }
 
-GLShaderwork::Shader::~Shader()
+GLframework::Shader::~Shader()
 {
 	
 }
 
 
-void GLShaderwork::Shader::begin()
+void GLframework::Shader::begin()
 {
 	GL_CALL(glUseProgram(mProgram));
 }
 
-void GLShaderwork::Shader::end()
+void GLframework::Shader::end()
 {
 	GL_CALL(glUseProgram(0));
 }
 
 
-void GLShaderwork::Shader::checkShaderErrors(GLuint target, const std::string& type)
+void GLframework::Shader::checkShaderErrors(GLuint target, const std::string& type)
 {
 	int success{ 0 };
 	char infoLog[1024];
