@@ -66,6 +66,15 @@ void prepareUVGLTrangles()
 		-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,0.0f,0.0f,
 		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,0.5f,0.0f,
 		0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,0.25f,1.0f,
+		0.5f, 0.5f, 0.0f,
+=========
+void prepareUVGLTrangles()
+{
+	float vertex[]{
+		-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,0.0f,0.0f,
+		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,0.5f,0.0f,
+		0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,0.25f,1.0f,
+>>>>>>>>> Temporary merge branch 2
 	};
 	int indexes[]
 	{
@@ -240,8 +249,6 @@ void prepareTextureTest2()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,data);
 
 	//释放RAM上的data
-	stbi_image_free(data);
-
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 	//如果渲染像素小于原图，则就近原则，成图较清晰，锯齿感强
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
@@ -249,4 +256,6 @@ void prepareTextureTest2()
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 
+	
+>>>>>>>>> Temporary merge branch 2
 }
