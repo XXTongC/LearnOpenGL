@@ -113,5 +113,14 @@
     <Image Include="Texture\panda.jpg">
       <Filter>资源文件\textures</Filter>
     </Image>
+    <Image Include="Texture\grass.jpg">
+      <Filter>资源文件\textures</Filter>
+    </Image>
+    <Image Include="Texture\land.jpg">
+      <Filter>资源文件\textures</Filter>
+    </Image>
+    <Image Include="Texture\noise.jpg">
+      <Filter>资源文件\textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>
