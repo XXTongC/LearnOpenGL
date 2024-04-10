@@ -83,7 +83,7 @@ void prepareUVGLTrangles()
 	GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
 	GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
 	GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
-	
+
 	//激活vao插槽，并绑定装载数据
 	GL_CALL(glEnableVertexAttribArray(positionLocation));
 	GL_CALL(glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0));
@@ -100,6 +100,70 @@ void prepareUVGLTrangles()
 
 	//解绑vao
 	GL_CALL(glBindVertexArray(0));
+}
+
+void prepareShader()
+{
+	shader = new GLShaderwork::Shader("vertexAuto.glsl", "fragmentAuto.glsl");
+}
+
+void prepareVAOForGLTrangles()
+{
+	float vertex[]{
+		-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+		0.5f, 0.5f, 0.0f, 1.0f, 0.5f, 0.25f,
+		0.8f, 0.8f, 0.0f, 0.5f, 0.2f, 1.0f,
+		0.8f, 0.0f, 0.0f, 0.5f, 0.2f, 1.0f,
+	};
+
+	//创建VBO
+	GLuint vbo{0};
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
+
+	//创建VAO
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), static_cast<void*>(nullptr));
+
+	glBindVertexArray(0);
+}
+
+void prepareEBOForGLTrangles()
+{
+	float vertex[]
+	{
+		-0.5f, -0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f,
+		0.0f, 0.5f, 0.0f,
+		0.5f, 0.5f, 0.0f,
+	};
+	int indexes[]
+	{
+		0, 1, 2,
+		0, 1, 3,
+		1, 2, 3,
+	};
+
+	GLuint vbo{0};
+
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void*>(nullptr));
+
+	GLuint ebo{0};
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexes), indexes, GL_STATIC_DRAW);
 }
 
 void render()
@@ -180,7 +244,7 @@ void prepareTexture()
 void prepareUVGLTranglesTest2()
 {
 	float vertex[]
-	{
+{
 		-1.0f,-1.0f,0.0f,0.0f,0.0f,
 		-1.0f,1.0f,0.0f,0.0f,1.0f,
 		1.0f,1.0f,0.0f,1.0f,1.0f,
@@ -245,5 +309,10 @@ void prepareTextureTest2()
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 
-	
+	//反转Y轴，原因是图片的存储是从左上角开始，而OpenGL的图片读取是从左下角开始
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load("Texture\panda.jpg",)
+	//2 生成纹理并且激活单元绑定
+
+	//3 传输纹理数据
 }
