@@ -31,7 +31,9 @@ void prepareTexture();
 //声明全局变量vao以及shaderProram
 GLuint vao;
 GLframework::Shader* shader = nullptr;
-GLframework::Texture* texture = nullptr;
+GLframework::Texture* textureGrass = nullptr;
+GLframework::Texture* textureLand = nullptr;
+GLframework::Texture* textureNoise = nullptr;
 
 int main()
 {
@@ -50,7 +52,9 @@ int main()
 	}
 
 	GL_APP->destory();
-	delete texture;
+	delete textureGrass;
+	delete textureLand;
+
 	return 0;
 }
 
@@ -61,7 +65,10 @@ void prepareShader()
 
 void prepareTexture()
 {
-	texture = new GLframework::Texture("Texture/panda.jpg", 0);
+	textureGrass = new GLframework::Texture("Texture/grass.jpg", 0);
+	textureLand = new GLframework::Texture("Texture/land.jpg", 1);
+	textureLand = new GLframework::Texture("Texture/noise.jpg", 2);
+
 }
 
 void render()
@@ -79,7 +86,10 @@ void render()
 	
 	shader->begin();
 	//设置shader的采样器为0号采样器
-	shader->setInt("sampler", 0);
+	shader->setInt("samplerGrass", 0);
+	shader->setInt("samplerLand", 1);
+	shader->setInt("samplerNoise", 2);
+
 	shader->setFloat("time", glfwGetTime());
 	shader->setFloat("speed", 0.5);
 	//2 绑定当前vao
@@ -106,10 +116,10 @@ void prepareUVGLTranglesTest2()
 {
 	float vertex[]
 {
-		-1.0f,-1.0f,0.0f,0.0f,0.0f,
-		-1.0f,1.0f,0.0f,0.0f,1.0f,
-		1.0f,1.0f,0.0f,1.0f,1.0f,
-		1.0f,-1.0f,0.0f,1.0f,0.0f,
+		-1.0f,-1.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,
+		-1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,
+		1.0f,1.0f,0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,
+		1.0f,-1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,
 	};
 	int index[]
 	{
@@ -117,7 +127,7 @@ void prepareUVGLTranglesTest2()
 		0,2,3,
 	};
 
-	GLuint vbo{ 0 }, uv{ 0 };
+	GLuint vbo{ 0 }, ebo{ 0 };
 	//先将vao绑定
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -126,17 +136,22 @@ void prepareUVGLTranglesTest2()
 	GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
 	GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
 
+	GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
+
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(positionLocation);
-	glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(colorLocation);
+	glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(uvLocation);
-	glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-	glGenBuffers(1, &uv);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uv);
+
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index), index, GL_STATIC_DRAW);
 
 	glBindVertexArray(0);

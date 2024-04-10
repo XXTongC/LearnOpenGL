@@ -8,9 +8,10 @@ in vec2 aUV;//2
 out vec3 color;
 out vec3 position;
 out vec2 uv;
+
 void main()
 {
 	gl_Position = vec4(aPos.x,aPos.y,aPos.z, 1.0);
 	color = aColor;
-	uv = vec2(aUV.x + time * speed,aUV.y);
+	uv = aUV;
 }

@@ -157,6 +157,9 @@
     <ResourceCompile Include="text2.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Texture\grass.jpg" />
+    <Image Include="Texture\land.jpg" />
+    <Image Include="Texture\noise.jpg" />
     <Image Include="Texture\panda.jpg" />
     <Image Include="Texture\下载.jpg" />
   </ItemGroup>
