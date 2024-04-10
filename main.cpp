@@ -60,58 +60,6 @@ void prepareShader()
 	shader = new GLShaderwork::Shader("vertexAuto.glsl", "fragmentAuto.glsl");
 }
 
-void prepareUVGLTrangles()
-{
-	float vertex[]{
-		-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,0.0f,0.0f,
-		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,0.5f,0.0f,
-		0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,0.25f,1.0f,
-		0.5f, 0.5f, 0.0f,
-=========
-void prepareUVGLTrangles()
-{
-	float vertex[]{
-		-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,0.0f,0.0f,
-		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,0.5f,0.0f,
-		0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,0.25f,1.0f,
->>>>>>>>> Temporary merge branch 2
-	};
-	int indexes[]
-	{
-		0, 1, 2,
-	};
-	//先绑定好vao
-	GL_CALL(glGenVertexArrays(1, &vao));
-	GL_CALL(glBindVertexArray(vao));
-	//装配vbo
-	GLuint vbo{ 0 };
-	GL_CALL(glGenBuffers(1, &vbo));
-	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-	GL_CALL(glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW));
-
-	//动态获取相关location
-	GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
-	GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
-	GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
-
-	//激活vao插槽，并绑定装载数据
-	GL_CALL(glEnableVertexAttribArray(positionLocation));
-	GL_CALL(glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0));
-	GL_CALL((glEnableVertexAttribArray(colorLocation)));
-	GL_CALL(glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float))));
-	GL_CALL(glEnableVertexAttribArray(uvLocation));
-	GL_CALL(glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float))));
-
-	//设置ebo, 在当前以绑定vao的情况下绑定ebo时ebo会自动绑定至改vao
-	GLuint ebo{ 0 };
-	GL_CALL(glGenBuffers(1, &ebo));
-	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
-	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexes), indexes, GL_STATIC_DRAW));
-
-	//解绑vao
-	GL_CALL(glBindVertexArray(0));
-}
-
 
 
 
@@ -257,5 +205,5 @@ void prepareTextureTest2()
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 
 	
->>>>>>>>> Temporary merge branch 2
+
 }
