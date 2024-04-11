@@ -135,7 +135,6 @@ void prepareUVGLTranglesTest2()
 	//开始绑定vbo并注入数据等操作
 	GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
 	GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
-
 	GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
 
 	glGenBuffers(1, &vbo);
