@@ -8,6 +8,7 @@ in vec2 uv;//2
 out vec4 FragColor;
 void main()
 {
+	
 	vec4 grassColor = texture(samplerGrass,uv);
 	vec4 landColor = texture(samplerLand,uv);
 	vec4 noiseColor = texture(samplerNoise,uv);
@@ -16,7 +17,7 @@ void main()
 	vec4 finalColor = grassColor * (1 - weight) + landColor * weight;
 	*/
 	//自动mix, weight对应第二个参数
-	float weight = noiseColor.r * sin(time/10);
+	float weight = noiseColor.r * abs(sin(time/3));
 	vec4 finalColor = mix(grassColor,landColor,weight);
 	
 	FragColor = vec4(finalColor.rgb,1.0f);
