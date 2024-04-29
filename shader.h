@@ -13,9 +13,10 @@ namespace GLframework
 		void setInt(const std::string& name, int value);
 		void setVector3(const std::string& name, float x, float y, float z);
 		void setVector3(const std::string& name, const float* values);
+		void setMat4(const std::string& name, const glm::mat4 values);
 
-		void begin();	//开始使用当前shader
-		void end();		//解除当前shader
+		void begin();	//锟斤拷始使锟矫碉拷前shader
+		void end();		//锟斤拷锟斤拷锟角皊hader
 	private:
 		GLuint mProgram{ 0 };
 		void checkShaderErrors(GLuint target, const std::string& type);

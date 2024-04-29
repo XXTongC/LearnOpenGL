@@ -2,6 +2,7 @@
 uniform float time;
 uniform float speed;
 uniform vec3 uColor;
+uniform mat4 transform;
 in vec3 aPos; //0
 in vec3 aColor;//1
 in vec2 aUV;//2
@@ -11,7 +12,9 @@ out vec2 uv;
 
 void main()
 {
-	gl_Position = vec4(aPos.x,aPos.y,aPos.z, 1.0);
+
+	gl_Position = transform * vec4(aPos, 1.0f);
 	color = aColor;
 	uv = aUV;
+
 }

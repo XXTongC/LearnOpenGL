@@ -14,7 +14,11 @@ void GL_APPLICATION::Application::framebufferSizecallback(GLFWwindow* window, in
 	std::cout << "Resize" << std::endl;
 	Application* self = static_cast<Application*>(glfwGetWindowUserPointer(window));
 	if(self->mResizeCallback!=nullptr)
+	{
 		self->mResizeCallback(width, height);
+		self->mWidth = width;
+		self->mHeight = height;
+	}
 	
 	/*if(Application::getInstance()->mResizeCallback!=nullptr)
 		Application::getInstance()->mResizeCallback(width, height);*/
