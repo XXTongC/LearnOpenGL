@@ -38,7 +38,7 @@ void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods
 	std::cout << "Action: " << action << std::endl;
 	std::cout << "Mods: " << mods << std::endl;
 }
-
+/*
 void prepareVBO()
 {
 	float position[]
@@ -388,3 +388,52 @@ void prepareUVGLTranglesTest1()
 	glBindVertexArray(0);
 }
 
+
+void doRotateTransform()
+{
+	//第二个参数需要传入的应该是弧度制
+	transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3{ 0.0f,0.0f,1.0f });
+}
+
+void doTranslationTransform()
+{
+	transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, 0.3f, 0.0f));
+}
+
+void doScaleTransform()
+{
+	transform = glm::scale(glm::mat4(1.0f), glm::vec3{ 0.5f,0.5f,1.0f });
+}
+
+void doTransform()
+{
+	auto transformRotate = glm::rotate(glm::mat4(1.0f), glm::radians(static_cast<float>(glfwGetTime()) * 10), glm::vec3{ 0.0f,0.0f,1.0f });
+	auto transformTranslate = glm::translate(glm::mat4(1.0f), glm::vec3{ 0.5f,0.5f,0.0f });
+	auto transformScale = glm::scale(glm::mat4(1.0f), glm::vec3{ 0.5f,0.5f,1.0f });
+	transform = transformRotate * transformScale * transformTranslate;
+}
+
+void doRotate()
+{
+	//每帧重新构建旋转矩阵
+	angle += 0.01f;
+	transform = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3{ 0.0f,0.0f,1.0f });
+}
+
+void preTransform()
+{
+	transform = glm::rotate(glm::mat4(1.0f), glm::radians(1.0f), glm::vec3{ 0.0f,0.0f,1.0f });
+
+}
+
+void doTestTransform()
+{
+	//目标一：旋转的三角形S
+	//transform = glm::rotate(transform, glm::radians(0.1f),glm::vec3{0.0f,0.0f,1.0f});
+
+	//目标二：先平移后旋转
+	//transform = glm::translate(transform, glm::vec3{ 0.0001f,0.0f,0.0f });
+
+	//目标三：先旋转后平移
+}
+*/
