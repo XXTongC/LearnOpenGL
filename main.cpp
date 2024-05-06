@@ -25,15 +25,8 @@ void prepareShader();
 void render();
 //纹理创建
 void prepareTexture();
-//TextureTest 1 纹理平铺
-//矩阵旋转平移等操作
-void doRotateTransform(); //旋转变换
-void doTranslationTransform(); //平移变换
-void doScaleTransform();
-void doTransform();
-void doRotate();
-void doTestTransform();
-
+//准备摄像头坐标
+void prepareCamera();
 
 //声明全局变量vao以及shaderProram
 GLuint vao;
@@ -44,6 +37,9 @@ GLframework::Texture* textureLand = nullptr;
 GLframework::Texture* textureNoise = nullptr;
 
 glm::mat4 transform(1.0f);
+glm::mat4 viewMatrix(1.0f);
+
+
 
 int main()
 {
@@ -62,11 +58,13 @@ int main()
 	prepareShader();
 	prepareUVGLTranglesTest2();
 	prepareTexture();
+	prepareCamera();
 	GL_CALL(glViewport(0, 0, width, height));
 	GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
 	int nrAttributes;
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
 	std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << std::endl;
+	
 	while (GL_APP->update())
 	{
 		render();
@@ -121,15 +119,10 @@ void render()
 	shader->setInt("samplerGrass", 0);
 	shader->setInt("samplerLand", 1);
 	shader->setInt("samplerNoise", 2);
-	
-	// 译注：下面就是矩阵初始化的一个例子，如果使用的是0.9.9及以上版本
-	// 下面这行代码就需要改为:
-	
-	// 之后将不再进行提示
-	//trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-	doTestTransform();
-	//trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
 	shader->setMat4("transform", transform);
+	shader->setMat4("viewMatrix", viewMatrix);
+	//doTestTransform();
+
 	shader->setFloat("time", glfwGetTime());
 	shader->setFloat("speed", 0.5);
 	//2 绑定当前vao
@@ -143,7 +136,7 @@ void render()
 	//GL_TRIANGLE_FAN 绘制以V0为起点的扇形
 	//GL_CALL(glDrawArrays(GL_SMOOTH_LINE_WIDTH_GRANULARITY, 0, 1));
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	GL_CALL(glDrawElements(GL_TRIANGLES,6 , GL_UNSIGNED_INT,static_cast<void*>(0)));
+	GL_CALL(glDrawElements(GL_TRIANGLES,3 , GL_UNSIGNED_INT,static_cast<void*>(0)));
 	
 	
 	//但如果加上下面这条指令，那么我们上面所说的错误就可以避免
@@ -157,14 +150,12 @@ void prepareUVGLTranglesTest2()
 	float vertex[]
 {
 		-0.5f,-0.5f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,
-		-0.5f,0.5f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,
-		0.5f,0.5f,0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,
-		0.5f,-0.5f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,
+		0.5f,-0.5f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,
+		0.0f,0.5f,0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,
 	};
 	int index[]
 	{
 		0,1,2,
-		0,2,3,
 	};
 
 	GLuint vbo{ 0 }, ebo{ 0 };
@@ -196,41 +187,12 @@ void prepareUVGLTranglesTest2()
 	glBindVertexArray(0);
 }
 
-void doRotateTransform()
+void prepareCamera()
 {
-	//第二个参数需要传入的应该是弧度制
-	transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3{0.0f,0.0f,1.0f});
-}
-
-void doTranslationTransform()
-{
-	transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, 0.3f, 0.0f));
-}
-
-void doScaleTransform()
-{
-	transform = glm::scale(glm::mat4(1.0f), glm::vec3{0.5f,0.5f,1.0f});
-}
-
-void doTransform()
-{
-	auto transformRotate = glm::rotate(glm::mat4(1.0f), glm::radians(static_cast<float>(glfwGetTime()) * 10), glm::vec3{ 0.0f,0.0f,1.0f });
-	auto transformTranslate = glm::translate(glm::mat4(1.0f), glm::vec3{0.5f,0.5f,0.0f});
-	auto transformScale = glm::scale(glm::mat4(1.0f), glm::vec3{0.5f,0.5f,1.0f});
-	transform = transformRotate * transformScale * transformTranslate;
-}
-
-void doRotate()
-{
-	//每帧重新构建旋转矩阵
-	angle += 0.01f;
-	transform = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3{ 0.0f,0.0f,1.0f });
-}
-
-void doTestTransform()
-{
-	//目标一：旋转的三角形
-	transform = glm::rotate(transform, glm::radians(0.1f),glm::vec3{0.0f,0.0f,1.0f});
-
-
+	//lookAt(): 生成一个viewMatrix
+	//eye: 当前摄像机所处位置
+	//center: 当前摄像机看向的那个点
+	//up: 穹顶向量
+	viewMatrix = glm::lookAt(glm::vec3{ 0.0f, 0.0f, 0.5f }, glm::vec3{ 0.0f,0.0f,0.0f }, glm::vec3{ 0.0f,1.0f,0.0f });
+	
 }

@@ -14,6 +14,7 @@ void processInput(GLFWwindow* window);
 void OnResize(int width, int height);
 void OnKeyboardCallback(int key, int action, int mods);
 void OnMouseCallback(int button, int action, int mods);
+/*
 //以下皆为vao与vbo的创建与绑定
 void prepareVBO();
 void prepareSingleBuffer();
@@ -28,3 +29,12 @@ void prepareColorGLTrangles();
 void prepareUVGLTranglesTest1();
 void prepareTextureTest1();
 
+//矩阵旋转平移等操作
+void doRotateTransform(); //旋转变换
+void doTranslationTransform(); //平移变换
+void doScaleTransform();
+void doTransform();
+void doRotate();
+void doTestTransform();
+void preTransform();
+*/
