@@ -4,8 +4,8 @@
 
 class GLFWwindow;
 
-using KeyboardCallback = void(*)(int key, int action, int mods);
-using ResizeCallback = void(*)(int width, int height);
+using KeyboardCallback = void(*) (int key, int action, int mods);
+using ResizeCallback = void(*) (int width, int height);
 using MouseCallback = void(*) (int button, int action, int mods);
 
 namespace GL_APPLICATION

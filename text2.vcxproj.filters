@@ -37,6 +37,12 @@
     <Filter Include="头文件\Application">
       <UniqueIdentifier>{58d860ac-20a9-48ce-b871-46a830d95949}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Application\camera">
+      <UniqueIdentifier>{dcb371ff-b6b1-408b-a22b-a6914a3bfc16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Application\camera">
+      <UniqueIdentifier>{40a69472-ad5f-4611-8349-308ec3bf9000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -59,6 +65,15 @@
     </ClCompile>
     <ClCompile Include="texture.cpp">
       <Filter>源文件\GLframework</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>源文件\Application\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="orthographiccamera.cpp">
+      <Filter>源文件\Application\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="perspectivecamera.cpp">
+      <Filter>源文件\Application\camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -85,6 +100,15 @@
     </ClInclude>
     <ClInclude Include="texture.h">
       <Filter>头文件\GLframework</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>头文件\Application\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="orthographiccamera.h">
+      <Filter>头文件\Application\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="perspectivecamera.h">
+      <Filter>头文件\Application\camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
