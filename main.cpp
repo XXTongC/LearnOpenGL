@@ -27,7 +27,10 @@ void render();
 void prepareTexture();
 //准备摄像头坐标
 void prepareCamera();
-
+//准备正交投影矩阵
+void prepareOrtho();
+//准备透视投影矩阵
+void preparePerspective();
 //声明全局变量vao以及shaderProram
 GLuint vao;
 float angle = 0.0f;
@@ -38,7 +41,8 @@ GLframework::Texture* textureNoise = nullptr;
 
 glm::mat4 transform(1.0f);
 glm::mat4 viewMatrix(1.0f);
-
+glm::mat4 ortherMartix(1.0f);
+glm::mat4 perspectiveMatrix(1.0f);
 
 
 int main()
@@ -59,6 +63,7 @@ int main()
 	prepareUVGLTranglesTest2();
 	prepareTexture();
 	prepareCamera();
+	preparePerspective();
 	GL_CALL(glViewport(0, 0, width, height));
 	GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
 	int nrAttributes;
@@ -121,6 +126,7 @@ void render()
 	shader->setInt("samplerNoise", 2);
 	shader->setMat4("transform", transform);
 	shader->setMat4("viewMatrix", viewMatrix);
+	shader->setMat4("projectionMatrix", perspectiveMatrix);
 	//doTestTransform();
 
 	shader->setFloat("time", glfwGetTime());
@@ -147,11 +153,17 @@ void render()
 
 void prepareUVGLTranglesTest2()
 {
-	float vertex[]
-{
+	/*float vertex[]
+	{
 		-0.5f,-0.5f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,
 		0.5f,-0.5f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,
 		0.0f,0.5f,0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,
+	};*/
+	float vertex[]
+	{
+		-1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,
+		1.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,
+		0.0f,1.0f,0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,
 	};
 	int index[]
 	{
@@ -193,6 +205,19 @@ void prepareCamera()
 	//eye: 当前摄像机所处位置
 	//center: 当前摄像机看向的那个点
 	//up: 穹顶向量
-	viewMatrix = glm::lookAt(glm::vec3{ 0.0f, 0.0f, 0.5f }, glm::vec3{ 0.0f,0.0f,0.0f }, glm::vec3{ 0.0f,1.0f,0.0f });
+	viewMatrix = glm::lookAt(glm::vec3{ 3.0f, 0.0f, 1.0f }, glm::vec3{ 0.0f,0.0f,0.0f }, glm::vec3{ 0.0f,1.0f,0.0f });
 	
+}
+void prepareOrtho()
+{
+	ortherMartix = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, 2.0f, -2.0f);
+
+}
+void preparePerspective()
+{
+	//fovy: y轴方向的视张角
+	//aspect: 净平面的横纵百分比
+	//near: 近平面距离
+	//far: 远平面距离
+	perspectiveMatrix = glm::perspective(glm::radians(30.0f), static_cast<float>(GL_APP->getWidth()) / static_cast<float>(GL_APP->getHeight()), 0.1f, 1000.0f);
 }

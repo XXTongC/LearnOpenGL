@@ -131,15 +131,21 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Users\asus\Downloads\glad\src\glad.c" />
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="OldTestCode.cpp" />
+    <ClCompile Include="orthographiccamera.cpp" />
+    <ClCompile Include="perspectivecamera.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GL_ERROR_FIND.cpp" />
     <ClCompile Include="texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.h" />
     <ClInclude Include="core.h" />
     <ClInclude Include="OldTestCode.h" />
+    <ClInclude Include="orthographiccamera.h" />
+    <ClInclude Include="perspectivecamera.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="GL_ERROR_FIND.h" />
