@@ -8,6 +8,17 @@
 //初始化静态函数的实现
 GL_APPLICATION::Application* GL_APPLICATION::Application::mInstance = nullptr;
 
+void GL_APPLICATION::Application::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	std::cout << "Scroll" << std::endl;
+	Application* self = static_cast<Application*>(glfwGetWindowUserPointer(window));
+	if(self->mScrollCallback!=nullptr)
+	{
+		self->mScrollCallback(yoffset);
+	}
+}
+
+
 //窗口大小静态函数实现
 void GL_APPLICATION::Application::framebufferSizecallback(GLFWwindow* window, int width, int height)
 {
@@ -41,6 +52,15 @@ void GL_APPLICATION::Application::mouseCallback(GLFWwindow* window, int button, 
 		self->mMouseCallback(button, action, mods);
 }
 
+//位置响应静态函数实现
+void GL_APPLICATION::Application::cursorCallback(GLFWwindow* window, double xpos, double ypos)
+{
+	//std::cout << "cursorCallback" << std::endl;
+	Application* self = static_cast<Application*>(glfwGetWindowUserPointer(window));
+	if (self->mCursorCallback != nullptr)
+		self->mCursorCallback(xpos, ypos);
+}
+
 
 GL_APPLICATION::Application* GL_APPLICATION::Application::getInstance()
 {
@@ -54,6 +74,10 @@ void GL_APPLICATION::Application::test()
 	std::cout << "APP TEST" << std::endl;
 }
 
+void GL_APPLICATION::Application::getCursorPosition(double* x, double* y)
+{
+	glfwGetCursorPos(mWindow, x, y);
+}
 
 GL_APPLICATION::Application::Application()
 {
@@ -95,8 +119,8 @@ bool GL_APPLICATION::Application::init(const int& width, const int& height)
 	//键盘响应
 	glfwSetKeyCallback(mWindow, keyCallback);
 	glfwSetMouseButtonCallback(mWindow, mouseCallback);
-
-
+	glfwSetCursorPosCallback(mWindow, cursorCallback);
+	glfwSetScrollCallback(mWindow, scrollCallback);
 	return true;
 }
 bool GL_APPLICATION::Application::update()

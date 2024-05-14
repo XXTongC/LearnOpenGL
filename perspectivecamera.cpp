@@ -5,6 +5,19 @@ PerspectiveCamera::~PerspectiveCamera()
 	
 }
 
+void PerspectiveCamera::setFovy(float value)
+{
+	mFovy = value;
+}
+
+
+void PerspectiveCamera::scale(float deltaScale)
+{
+	auto front = glm::cross(mUp, mRight);
+	mPosition += front * deltaScale;
+}
+
+
 glm::mat4 PerspectiveCamera::getProjectionMatrix() const
 {
 	//注意mFovy是角度，需要转换为弧度制
