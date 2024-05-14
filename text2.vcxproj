@@ -132,6 +132,8 @@
     <ClCompile Include="..\..\..\..\Users\asus\Downloads\glad\src\glad.c" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="cameracontrol.cpp" />
+    <ClCompile Include="gamecameracontrol.cpp" />
     <ClCompile Include="OldTestCode.cpp" />
     <ClCompile Include="orthographiccamera.cpp" />
     <ClCompile Include="perspectivecamera.cpp" />
@@ -139,10 +141,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GL_ERROR_FIND.cpp" />
     <ClCompile Include="texture.cpp" />
+    <ClCompile Include="trackBallCameraControl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
+    <ClInclude Include="cameracontrol.h" />
     <ClInclude Include="core.h" />
+    <ClInclude Include="gamecameracontrol.h" />
     <ClInclude Include="OldTestCode.h" />
     <ClInclude Include="orthographiccamera.h" />
     <ClInclude Include="perspectivecamera.h" />
@@ -152,6 +157,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="texture.h" />
+    <ClInclude Include="trackBallCameraControl.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl" />

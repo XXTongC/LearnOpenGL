@@ -8,12 +8,6 @@ extern GLuint vao;
 extern GLframework::Shader* shader;
 
 
-//部分回调函数
-void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods);
-void processInput(GLFWwindow* window);
-void OnResize(int width, int height);
-void OnKeyboardCallback(int key, int action, int mods);
-void OnMouseCallback(int button, int action, int mods);
 /*
 //以下皆为vao与vbo的创建与绑定
 void prepareVBO();

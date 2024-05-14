@@ -1,14 +1,21 @@
 #include "camera.h"
 
-
 Camera::~Camera()
 {
 	
 }
 
+void Camera::scale(float deltaScale)
+{
+	
+}
+
+
 glm::mat4 Camera::getViewMatrix() const
 {
-	return glm::lookAt(mPosition, front, center);
+	glm::vec3 front = glm::cross(mUp, mRight);
+	glm::vec3 center = mPosition + front;
+	return glm::lookAt(mPosition, center, mUp);
 }
 
 glm::mat4 Camera::getProjectionMatrix() const

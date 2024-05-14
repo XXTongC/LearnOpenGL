@@ -45,5 +45,5 @@ void GLframework::Texture::Bind()
 {
 	//先切换纹理单元，让后绑定纹理单元
 	GL_CALL(glActiveTexture(GL_TEXTURE0 + mUnit));
-	GL_CALL(glBindTexture(GL_TEXTURE_2D, mUnit));
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, mTexture));
 }

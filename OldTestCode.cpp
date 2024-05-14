@@ -2,42 +2,8 @@
 
 #include "stb_image.h"
 
-void OnResize(int width, int height)
-{
-	GL_CALL(glViewport(0, 0, width, height));
-	std::cout << "OnResize" << std::endl;
-}
 
-void OnKeyboardCallback(int key, int action, int mods)
-{
-	GL_CALL();
-	std::cout << "OnKeyboardCallback Pressed: " << key << " " << action << " " << mods << std::endl;
-}
 
-void OnMouseCallback(int button, int action, int mods)
-{
-	GL_CALL();
-	std::cout << "OnMouseCallback : " << button << " " << action << " " << mods << std::endl;
-}
-
-void processInput(GLFWwindow* window)
-{
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
-}
-
-void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (action == GLFW_PRESS)
-		std::cout << "press the bottom" << std::endl;
-	else if (action == GLFW_RELEASE)
-		std::cout << "release the bottom" << std::endl;
-	if (mods == GLFW_MOD_CONTROL)
-		std::cout << "press the ctrl and key" << std::endl;
-	std::cout << "Pressed: " << key << std::endl;
-	std::cout << "Action: " << action << std::endl;
-	std::cout << "Mods: " << mods << std::endl;
-}
 /*
 void prepareVBO()
 {
