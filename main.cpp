@@ -1,5 +1,6 @@
 #include "core.h"
 #include <iostream>
+#include <typeinfo>
 #include "GL_ERROR_FIND.h"
 #include "Application.h"
 #include "shader.h"
@@ -9,7 +10,7 @@
 #include "orthographiccamera.h"
 #include "trackBallCameraControl.h"
 #include "gamecameracontrol.h"
-
+#include "geometry.h"
 
 /*
  * to make main.cpp clear
@@ -32,6 +33,7 @@ bool setAndInitWindow(int weith = 800,int height = 600);
 //vao、vbo等设置
 
 void prepareUVGLTranglesTest2();
+void prepareVao();
 //shader的创建
 void prepareShader();
 //绘制命令
@@ -44,14 +46,15 @@ void prepareCamera();
 void prepareOrtho();
 
 //声明全局变量vao以及shaderProram
-GLuint vao;
+//GLuint vao;
 float angle = 0.0f;
 GLframework::Shader* shader = nullptr;
 GLframework::Texture* textureGrass = nullptr;
 GLframework::Texture* textureLand = nullptr;
 GLframework::Texture* textureNoise = nullptr;
 GLframework::Texture* texturePanda = nullptr;
-PerspectiveCamera* camera = nullptr;
+Geometry* geomety = nullptr;
+Camera* camera = nullptr;
 CameraControl* cameracontrol = nullptr;
 glm::mat4 transformGrass(1.0f);
 glm::mat4 transformPanda(1.0f);
@@ -71,7 +74,7 @@ int main()
 	if (!setAndInitWindow(width,height)) return -1;
 	
 	prepareShader();
-	prepareUVGLTranglesTest2();
+	prepareVao();
 	prepareTexture();
 	prepareCamera();
 
@@ -104,6 +107,10 @@ bool setAndInitWindow(int weith, int height)
 	GL_APP->setMouseCallback(OnMouseCallback);
 	GL_APP->setCursorCallback(OnCursor);
 	GL_APP->setScrollCallback(OnScroll);
+	//深度检测设置
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	//glClearDepth(0.0);
 	return true;
 }
 
@@ -118,7 +125,7 @@ void prepareTexture()
 	textureGrass = new GLframework::Texture("Texture/grass.jpg", 0);
 	textureLand = new GLframework::Texture("Texture/land.jpg", 1);
 	textureNoise = new GLframework::Texture("Texture/noise.jpg", 2);
-	texturePanda = new GLframework::Texture("Texture/panda.jpg", 0);
+	//texturePanda = new GLframework::Texture("Texture/panda.jpg", 0);
 }
 
 void render()
@@ -149,7 +156,7 @@ void render()
 	shader->setFloat("speed", 0.5);
 	//2 绑定当前vao
 	textureGrass->Bind();
-	GL_CALL(glBindVertexArray(vao));
+	GL_CALL(glBindVertexArray(geomety->getVao()));
 	//发出绘制指令
 	//GL_CALL(glDrawArrays(GL_TRIANGLES, 0, 3));
 	//GL_TRIANGLE_STRIP 如果末尾点序号n为偶数，则链接规则为[n-2,n-1,n]
@@ -160,12 +167,12 @@ void render()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	
-	GL_CALL(glDrawElements(GL_TRIANGLES,3 , GL_UNSIGNED_INT,static_cast<void*>(0)));
+	GL_CALL(glDrawElements(GL_TRIANGLES,geomety->getIndicesCount() , GL_UNSIGNED_INT,static_cast<void*>(0)));
 
-	transformPanda = glm::translate(glm::mat4(1.0f), glm::vec3{ 0.8f,0.0f,-1.0f });
-	shader->setMat4("transform", transformPanda);
-	texturePanda->Bind();
-	GL_CALL(glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, static_cast<void*>(0)));
+	//transformPanda = glm::translate(glm::mat4(1.0f), glm::vec3{ 0.8f,0.0f,-1.0f });
+	//shader->setMat4("transform", transformPanda);
+	//texturePanda->Bind();
+	//GL_CALL(glDrawElements(GL_TRIANGLES, geomety->getIndicesCount(), GL_UNSIGNED_INT, static_cast<void*>(0)));
 
 	//但如果加上下面这条指令，那么我们上面所说的错误就可以避免
 	//这提示了一个在OpenGL中健康的代码习惯：有开有关
@@ -173,56 +180,15 @@ void render()
 	shader->end();
 }
 
-void prepareUVGLTranglesTest2()
+void prepareVao()
 {
-	/*float vertex[]
-	{
-		-0.5f,-0.5f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,
-		0.5f,-0.5f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,
-		0.0f,0.5f,0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,
-	};*/
-	float vertex[]
-	{
-		-1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,
-		1.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,
-		0.0f,1.0f,0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,
-	};
-	int index[]
-	{
-		0,1,2,
-	};
+	geomety = Geometry::createSphere(2.0f, shader,360,180);
 
-	GLuint vbo{ 0 }, ebo{ 0 };
-	//先将vao绑定
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	//开始绑定vbo并注入数据等操作
-	
-	GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
-	GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
-	GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
-
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(positionLocation);
-	glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(colorLocation);
-	glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(uvLocation);
-	glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-
-	glGenBuffers(1, &ebo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index), index, GL_STATIC_DRAW);
-
-	glBindVertexArray(0);
 }
 
 void prepareCamera()
 {
+
 	camera = new PerspectiveCamera(
 		60.0f,
 		static_cast<float>(GL_APP->getWidth()) / static_cast<float>(GL_APP->getHeight()),
@@ -232,7 +198,7 @@ void prepareCamera()
 	
 	//float size = 6.0f;
 	//camera = new OrthographicCamera(-size,size,size,-size,size,-size);
-	cameracontrol = new GameCameraControl();
+	cameracontrol = new TrackBallCameraControl();
 	cameracontrol->setCamera(camera);
 }
 void prepareOrtho()
@@ -266,23 +232,27 @@ void OnMouseCallback(int button, int action, int mods)
 	GL_APP->getCursorPosition(&x, &y);
 	std::cout << "OnMouseCallback : " << button << " " << action << " " << mods << std::endl;
 	cameracontrol->onMouse(button, action,x, y);
-	if(button==GLFW_MOUSE_BUTTON_MIDDLE&&action==GLFW_PRESS)
+	if(CameraControl* control=dynamic_cast<GameCameraControl*>(cameracontrol))
 	{
-		auto icamera = dynamic_cast<PerspectiveCamera*>(camera);
-		if(icamera!=nullptr)
+		if(PerspectiveCamera* icamera = dynamic_cast<PerspectiveCamera*>(camera))
 		{
-				icamera->setFovy(camera->mFovy / 2.0f);
+			if(button==GLFW_MOUSE_BUTTON_MIDDLE&&action==GLFW_PRESS)
+			{
+				if(icamera!=nullptr)
+				{
+					icamera->setFovy(icamera->mFovy / 2.0f);
+				}
+			}
+			else if(button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_RELEASE)
+			{
+				if (icamera != nullptr)
+				{
+					icamera->setFovy(icamera->mFovy * 2.0f);
+				}
+			}
 		}
 	}
-	else if(button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_RELEASE)
-	{
-		auto icamera = dynamic_cast<PerspectiveCamera*>(camera);
-		if (icamera != nullptr)
-		{
-			icamera->setFovy(camera->mFovy * 2.0f);
-		}
-	}
-
+	
 }
 
 void processInput(GLFWwindow* window)

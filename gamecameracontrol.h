@@ -17,5 +17,5 @@ private:
 	void yaw(float angle);
 private:
 	float mPicth{ 0.0f };
-	float mMoveSpeed{ 0.001f };
+	float mMoveSpeed{ 0.01f };
 };

@@ -3,12 +3,11 @@ uniform float time;
 uniform sampler2D samplerGrass;
 uniform sampler2D samplerLand;
 uniform sampler2D samplerNoise;
-in vec3 color;
+in vec4 color;
 in vec2 uv;//2
 out vec4 FragColor;
 void main()
 {
-	
 	vec4 grassColor = texture(samplerGrass,uv);
 	vec4 landColor = texture(samplerLand,uv);
 	vec4 noiseColor = texture(samplerNoise,uv);

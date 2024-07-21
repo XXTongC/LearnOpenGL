@@ -84,6 +84,9 @@
     <ClCompile Include="gamecameracontrol.cpp">
       <Filter>源文件\Application\camera</Filter>
     </ClCompile>
+    <ClCompile Include="geometry.cpp">
+      <Filter>源文件\GLframework</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GL_ERROR_FIND.h">
@@ -127,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="gamecameracontrol.h">
       <Filter>头文件\Application\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry.h">
+      <Filter>头文件\GLframework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

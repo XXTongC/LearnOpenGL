@@ -6,9 +6,9 @@ uniform mat4 transform;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 in vec3 aPos; //0
-in vec3 aColor;//1
+in vec4 aColor;//1
 in vec2 aUV;//2
-out vec3 color;
+out vec4 color;
 out vec2 uv;
 
 
