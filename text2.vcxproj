@@ -134,6 +134,7 @@
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="cameracontrol.cpp" />
     <ClCompile Include="gamecameracontrol.cpp" />
+    <ClCompile Include="geometry.cpp" />
     <ClCompile Include="OldTestCode.cpp" />
     <ClCompile Include="orthographiccamera.cpp" />
     <ClCompile Include="perspectivecamera.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="cameracontrol.h" />
     <ClInclude Include="core.h" />
     <ClInclude Include="gamecameracontrol.h" />
+    <ClInclude Include="geometry.h" />
     <ClInclude Include="OldTestCode.h" />
     <ClInclude Include="orthographiccamera.h" />
     <ClInclude Include="perspectivecamera.h" />

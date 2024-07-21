@@ -2,8 +2,50 @@
 
 #include "stb_image.h"
 
+/*
+void prepareUVGLTranglesTest2()
+{
+	
+float vertex[]
+{
+	-1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,
+	1.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,
+	0.0f,1.0f,0.0f,0.0f,0.0f,1.0f,1.0f,1.0f,
+};
+int index[]
+{
+	0,1,2,
+};
 
+GLuint vbo{ 0 }, ebo{ 0 };
+//先将vao绑定
+glGenVertexArrays(1, &vao);
+glBindVertexArray(vao);
 
+//开始绑定vbo并注入数据等操作
+
+GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
+GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
+GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
+
+glGenBuffers(1, &vbo);
+glBindBuffer(GL_ARRAY_BUFFER, vbo);
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
+
+glEnableVertexAttribArray(positionLocation);
+glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+glEnableVertexAttribArray(colorLocation);
+glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+glEnableVertexAttribArray(uvLocation);
+glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+glGenBuffers(1, &ebo);
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index), index, GL_STATIC_DRAW);
+
+glBindVertexArray(0);
+}
+*/
 /*
 void prepareVBO()
 {
