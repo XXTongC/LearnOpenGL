@@ -1,7 +1,12 @@
 #pragma once
 #define GL_APP GL_APPLICATION::Application::getInstance()
 #include <cstdint>
+#include "texture.h"
 
+
+extern GLframework::Texture* textureGrass;
+extern GLframework::Texture* textureLand;
+extern GLframework::Texture* textureNoise;
 class GLFWwindow;
 
 using KeyboardCallback = void(*) (int key, int action, int mods);

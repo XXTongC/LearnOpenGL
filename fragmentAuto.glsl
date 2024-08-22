@@ -5,6 +5,7 @@ uniform sampler2D samplerLand;
 uniform sampler2D samplerNoise;
 in vec4 color;
 in vec2 uv;//2
+in vec3 normal;
 out vec4 FragColor;
 void main()
 {
@@ -18,6 +19,6 @@ void main()
 	//自动mix, weight对应第二个参数
 	float weight = noiseColor.r * abs(sin(time/3));
 	vec4 finalColor = mix(grassColor,landColor,weight);
-	
+	finalColor = finalColor * clamp(vec4(normal ,1.0f ),0.0,1.0);
 	FragColor = vec4(finalColor.rgb,1.0f);
 }

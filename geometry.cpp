@@ -6,7 +6,6 @@ Geometry::~Geometry()
 		glDeleteVertexArrays(1, &mVao);
 	if(mPosVbo!=0)
 		glDeleteBuffers(1, &mPosVbo);
-
 	if(mUvVbo!=0)
 		glDeleteBuffers(1, &mUvVbo);
 	if(mColorVbo!=0)
@@ -15,12 +14,100 @@ Geometry::~Geometry()
 		glDeleteBuffers(1, &mNormalVbo);
 	if (mEbo != 0)
 		glDeleteBuffers(1, &mEbo);
-
 }
 
 void Geometry::setShader(GLframework::Shader* shader)
 {
     mShader = shader;
+}
+
+//need checck
+Geometry* Geometry::createPlane(GLframework::Shader* shader,float width, float height)
+{
+    Geometry* geometry = new Geometry(shader);
+    geometry->mIndicesCount = 6;
+
+    float halfW = width / 2.0f;
+    float halfH = height / 2.0f;
+
+    float positions[] = {
+        -halfW,-halfH,0.0f,
+        halfW,-halfH,0.0f,
+        halfW,halfH,0.0f,
+        -halfW,halfH,0.0f,
+    };
+
+    float uvs[] = {
+        0.0f,0.0f,
+        1.0f,0.0f,
+        1.0f,1.0f,
+        0.0f,1.0f,
+    };
+
+    float colors[] = {
+       
+        0.0f, 1.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 0.0f, 1.0f, 
+        0.0f, 1.0f, 0.0f, 1.0f, 
+    	0.0f, 0.0f, 1.0f, 1.0f,
+    	0.0f, 0.0f, 1.0f, 1.0f, 
+    };
+
+    float normals[] = {
+        0.0f,0.0f,1.0f,
+        0.0f,0.0f,1.0f,
+        0.0f,0.0f,1.0f,
+        0.0f,0.0f,1.0f,
+    };
+
+    GLuint ebos[] = {
+        0,1,2,
+        2,3,0,
+    };
+
+    GLuint& ebo = geometry->mEbo,& vao =geometry->mVao,& colorVbo = geometry->mColorVbo,& uvVbo = geometry->mUvVbo,& posVbo = geometry->mPosVbo,& normalVbo = geometry->mNormalVbo;
+
+	GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
+    GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
+    GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
+    GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    glGenBuffers(1, &posVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, posVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(positionLocation);
+    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glGenBuffers(1, &uvVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(uvs), uvs, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(uvLocation);
+    glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+    glGenBuffers(1, &colorVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(colorLocation);
+    glVertexAttribPointer(colorLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+    glGenBuffers(1, &normalVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, normalVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(normalLocation);
+    glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ebos), ebos, GL_STATIC_DRAW);
+
+    glBindVertexArray(0);
+
+    return geometry;
+
 }
 
 
@@ -141,6 +228,41 @@ Geometry* Geometry::createBox(GLframework::Shader* shader,float length, float wi
         1.0f, 0.0f, 1.0f, 1.0f, // 22
         1.0f, 0.0f, 1.0f, 1.0f  // 23
     };
+    //法线数据
+    float normals[] = {
+        // 前面
+        0.0f,0.0f,1.0f,
+        0.0f,0.0f,1.0f,
+        0.0f,0.0f,1.0f,
+        0.0f,0.0f,1.0f,
+        // 背面
+        0.0f,0.0f,-1.0f,
+        0.0f,0.0f,-1.0f,
+        0.0f,0.0f,-1.0f,
+        0.0f,0.0f,-1.0f,
+        // 顶面
+        0.0f,1.0f,0.0f,
+        0.0f,1.0f,0.0f,
+        0.0f,1.0f,0.0f,
+        0.0f,1.0f,0.0f,
+        // 底面
+        0.0f,-1.0f,0.0f,
+        0.0f,-1.0f,0.0f,
+        0.0f,-1.0f,0.0f,
+        0.0f,-1.0f,0.0f,
+        // 右面
+        1.0f,0.0f,0.0f,
+        1.0f,0.0f,0.0f,
+        1.0f,0.0f,0.0f,
+        1.0f,0.0f,0.0f,
+        // 左面
+        -1.0f,0.0f,0.0f,
+        -1.0f,0.0f,0.0f,
+        -1.0f,0.0f,0.0f,
+        -1.0f,0.0f,0.0f,
+
+    };
+
     GLuint ebos[]
 	{
     	// Front face
@@ -156,10 +278,11 @@ Geometry* Geometry::createBox(GLframework::Shader* shader,float length, float wi
 		// Right face
 		20, 21, 22, 22, 23, 20
     };
-    GLuint& vao = geometry->mVao,posVbo = geometry->mPosVbo,uvVbo = geometry->mUvVbo,colorVob = geometry->mColorVbo,ebo = geometry->mEbo;
+    GLuint& vao = geometry->mVao,&posVbo = geometry->mPosVbo,&uvVbo = geometry->mUvVbo,&colorVob = geometry->mColorVbo,&ebo = geometry->mEbo,&normalvbo = geometry->mNormalVbo;
     GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
     GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
     GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
+    GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
 
 	glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -182,6 +305,12 @@ Geometry* Geometry::createBox(GLframework::Shader* shader,float length, float wi
     glEnableVertexAttribArray(colorLocation);
     glVertexAttribPointer(colorLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 
+    glGenBuffers(1, &normalvbo);
+    glBindBuffer(GL_ARRAY_BUFFER, normalvbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(normalLocation);
+    glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ebos), ebos, GL_STATIC_DRAW);
@@ -191,12 +320,13 @@ Geometry* Geometry::createBox(GLframework::Shader* shader,float length, float wi
 	return geometry;
 }
 
-Geometry* Geometry::createSphere(float radius, GLframework::Shader* shader, int mLatitude, int mLong)
+Geometry* Geometry::createSphere(GLframework::Shader* shader,float radius, int mLatitude, int mLong)
 {
 	Geometry* geometry = new Geometry(shader);
     std::vector<float>vertices;
     std::vector<float>uvs;
     std::vector<float>colors;
+    std::vector<float> normals;
     std::vector<int>ebos;
     //生成position,uvs，colors
     for(int i = 0;i<=mLatitude;i++)
@@ -224,6 +354,11 @@ Geometry* Geometry::createSphere(float radius, GLframework::Shader* shader, int 
             colors.push_back((y+1)/2);
             colors.push_back((z+1)/2);
             colors.push_back(1.0f);
+
+            normals.push_back(x);
+            normals.push_back(y);
+            normals.push_back(z);
+
 	    }
     }
     //生成ebo
@@ -247,10 +382,11 @@ Geometry* Geometry::createSphere(float radius, GLframework::Shader* shader, int 
 	    }
     }
 
-    GLuint& vao = geometry->mVao, posVbo = geometry->mPosVbo, uvVbo = geometry->mUvVbo, colorVob = geometry->mColorVbo, ebo = geometry->mEbo;
+    GLuint& vao = geometry->mVao, &posVbo = geometry->mPosVbo, &uvVbo = geometry->mUvVbo, &colorVob = geometry->mColorVbo, &ebo = geometry->mEbo,&normalVbo = geometry->mNormalVbo;
     GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
     GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
     GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
+    GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
 
 	glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -272,6 +408,12 @@ Geometry* Geometry::createSphere(float radius, GLframework::Shader* shader, int 
     glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(colorLocation);
     glVertexAttribPointer(colorLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+    glGenBuffers(1, &normalVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, normalVbo);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(normalLocation);
+    glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);

@@ -10,7 +10,6 @@ void Camera::scale(float deltaScale)
 	
 }
 
-
 glm::mat4 Camera::getViewMatrix() const
 {
 	glm::vec3 front = glm::cross(mUp, mRight);

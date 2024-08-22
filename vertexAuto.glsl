@@ -8,11 +8,10 @@ uniform mat4 projectionMatrix;
 in vec3 aPos; //0
 in vec4 aColor;//1
 in vec2 aUV;//2
+in vec3 aNormal;//3
 out vec4 color;
 out vec2 uv;
-
-
-
+out vec3 normal;
 
 void main()
 {	
@@ -21,4 +20,5 @@ void main()
 	gl_Position = position;
 	color = aColor;
 	uv = aUV;
+	normal = normalize(aNormal);
 }

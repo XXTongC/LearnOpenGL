@@ -31,7 +31,6 @@ void OnCursor(double xpos, double ypos);
 
 bool setAndInitWindow(int weith = 800,int height = 600);
 //vao、vbo等设置
-
 void prepareUVGLTranglesTest2();
 void prepareVao();
 //shader的创建
@@ -44,6 +43,8 @@ void prepareTexture();
 void prepareCamera();
 //准备正交投影矩阵
 void prepareOrtho();
+//状态设置初始化
+void prepareState();
 
 //声明全局变量vao以及shaderProram
 //GLuint vao;
@@ -72,14 +73,18 @@ int main()
 	//std::cin >> width >> height;
 	//初始化GLFW窗口
 	if (!setAndInitWindow(width,height)) return -1;
-	
+
+	//设置opengl 视口并且清理颜色
+	GL_CALL(glViewport(0, 0, width, height));
+	GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+
 	prepareShader();
 	prepareVao();
 	prepareTexture();
 	prepareCamera();
+	prepareState();
 
-	GL_CALL(glViewport(0, 0, width, height));
-	GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+	//测试获取该显卡驱动提供的Arrribbutes数量
 	int nrAttributes;
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
 	std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << std::endl;
@@ -92,10 +97,6 @@ int main()
 
 	GL_APP->destory();
 
-	delete textureGrass;
-	delete textureLand;
-	delete textureNoise;
-
 	return 0;
 }
 
@@ -107,9 +108,7 @@ bool setAndInitWindow(int weith, int height)
 	GL_APP->setMouseCallback(OnMouseCallback);
 	GL_APP->setCursorCallback(OnCursor);
 	GL_APP->setScrollCallback(OnScroll);
-	//深度检测设置
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	
 	//glClearDepth(0.0);
 	return true;
 }
@@ -126,6 +125,13 @@ void prepareTexture()
 	textureLand = new GLframework::Texture("Texture/land.jpg", 1);
 	textureNoise = new GLframework::Texture("Texture/noise.jpg", 2);
 	//texturePanda = new GLframework::Texture("Texture/panda.jpg", 0);
+}
+
+void prepareState()
+{
+	//深度检测设置
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 }
 
 void render()
@@ -182,8 +188,7 @@ void render()
 
 void prepareVao()
 {
-	geomety = Geometry::createSphere(2.0f, shader,360,180);
-
+	geomety = Geometry::createPlane(shader,1,1);
 }
 
 void prepareCamera()
