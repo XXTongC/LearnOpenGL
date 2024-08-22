@@ -43,15 +43,18 @@
     <Filter Include="源文件\Application\camera">
       <UniqueIdentifier>{40a69472-ad5f-4611-8349-308ec3bf9000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\wrapper">
+      <UniqueIdentifier>{826338fd-4bb9-427d-bb2f-bed3bb607daa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\wrapper">
+      <UniqueIdentifier>{2796c719-4fb1-4dca-a746-0af6f8b8a331}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Users\asus\Downloads\glad\src\glad.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="GL_ERROR_FIND.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="OldTestCode.cpp">
@@ -87,14 +90,11 @@
     <ClCompile Include="geometry.cpp">
       <Filter>源文件\GLframework</Filter>
     </ClCompile>
+    <ClCompile Include="GL_ERROR_FIND.cpp">
+      <Filter>源文件\wrapper</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GL_ERROR_FIND.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="core.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -133,6 +133,12 @@
     </ClInclude>
     <ClInclude Include="geometry.h">
       <Filter>头文件\GLframework</Filter>
+    </ClInclude>
+    <ClInclude Include="GL_ERROR_FIND.h">
+      <Filter>头文件\wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="core.h">
+      <Filter>头文件\wrapper</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
