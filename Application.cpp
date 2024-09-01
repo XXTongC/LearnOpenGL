@@ -22,7 +22,7 @@ void GL_APPLICATION::Application::scrollCallback(GLFWwindow* window, double xoff
 //窗口大小静态函数实现
 void GL_APPLICATION::Application::framebufferSizecallback(GLFWwindow* window, int width, int height)
 {
-	std::cout << "Resize" << std::endl;
+	//std::cout << "Resize as" << width <<":" << height << std::endl;
 	Application* self = static_cast<Application*>(glfwGetWindowUserPointer(window));
 	if(self->mResizeCallback!=nullptr)
 	{

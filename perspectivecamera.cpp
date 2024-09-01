@@ -10,6 +10,10 @@ void PerspectiveCamera::setFovy(float value)
 	mFovy = value;
 }
 
+void PerspectiveCamera::setAspect(float value)
+{
+	//mAspect = value;
+}
 
 void PerspectiveCamera::scale(float deltaScale)
 {

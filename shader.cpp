@@ -4,14 +4,24 @@
 #include <sstream>
 #include <iostream>
 
-
+void GLframework::Shader::setVector3(const std::string& name, glm::vec3 vec)
+{
+	GLuint location = GL_CALL(glGetUniformLocation(mProgram, name.c_str()));
+	GL_CALL(glUniform3f(location, vec.x,vec.y,vec.z));
+}
 
 void GLframework::Shader::setMat4(const std::string& name, const glm::mat4 values)
 {
 	GLint location = GL_CALL(glGetUniformLocation(mProgram, name.c_str()));
 	GL_CALL(glUniformMatrix4fv(location, 1,GL_FALSE, glm::value_ptr(values)));
-	
 }
+
+void GLframework::Shader::setMat3(const std::string& name, const glm::mat3 values)
+{
+	GLint location = GL_CALL(glGetUniformLocation(mProgram, name.c_str()));
+	GL_CALL(glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(values)));
+}
+
 
 void GLframework::Shader::setVector3(const std::string& name, const float* values)
 {

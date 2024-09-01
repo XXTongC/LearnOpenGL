@@ -135,9 +135,12 @@
     <ClCompile Include="cameracontrol.cpp" />
     <ClCompile Include="gamecameracontrol.cpp" />
     <ClCompile Include="geometry.cpp" />
+    <ClCompile Include="material.cpp" />
+    <ClCompile Include="object.cpp" />
     <ClCompile Include="OldTestCode.cpp" />
     <ClCompile Include="orthographiccamera.cpp" />
     <ClCompile Include="perspectivecamera.cpp" />
+    <ClCompile Include="phongMaterial.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GL_ERROR_FIND.cpp" />
@@ -150,9 +153,12 @@
     <ClInclude Include="core.h" />
     <ClInclude Include="gamecameracontrol.h" />
     <ClInclude Include="geometry.h" />
+    <ClInclude Include="material.h" />
+    <ClInclude Include="object.h" />
     <ClInclude Include="OldTestCode.h" />
     <ClInclude Include="orthographiccamera.h" />
     <ClInclude Include="perspectivecamera.h" />
+    <ClInclude Include="phongMaterial.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="GL_ERROR_FIND.h" />
