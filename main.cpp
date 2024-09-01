@@ -1,5 +1,6 @@
 #include "core.h"
 #include <iostream>
+#include <windows.h>
 #include <typeinfo>
 #include "GL_ERROR_FIND.h"
 #include "Application.h"
@@ -27,6 +28,7 @@ void OnResize(int width, int height);
 void OnKeyboardCallback(int key, int action, int mods);
 void OnMouseCallback(int button, int action, int mods);
 void OnCursor(double xpos, double ypos);
+//void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 #pragma endregion
 
 bool setAndInitWindow(int weith = 800,int height = 600);
@@ -46,6 +48,10 @@ void prepareOrtho();
 //状态设置初始化
 void prepareState();
 
+//test
+void doTransform();
+
+
 //声明全局变量vao以及shaderProram
 //GLuint vao;
 float angle = 0.0f;
@@ -54,13 +60,17 @@ GLframework::Texture* textureGrass = nullptr;
 GLframework::Texture* textureLand = nullptr;
 GLframework::Texture* textureNoise = nullptr;
 GLframework::Texture* texturePanda = nullptr;
-Geometry* geomety = nullptr;
+GLframework::Geometry* geomety = nullptr;
 Camera* camera = nullptr;
 CameraControl* cameracontrol = nullptr;
 glm::mat4 transformGrass(1.0f);
 glm::mat4 transformPanda(1.0f);
-glm::mat4 ortherMartix(1.0f);
-
+//glm::mat4 ortherMartix(1.0f);
+//设置光照
+glm::vec3 lightDirection = glm::vec3(-1.0f, -1.0f, -1.0f);
+glm::vec3 lightColor = glm::vec3(0.9f, 0.8f, 0.75f);
+glm::vec3 ambientColor = glm::vec3(0.1f, 0.2f, 0.15f);
+float specularIntensity = 0.5f;
 int main()
 {
 	//向量
@@ -146,20 +156,27 @@ void render()
 	GL_CALL(glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT));
 
 	//1 绑定当前program
-	
+	dynamic_cast<PerspectiveCamera*>(camera)->setAspect(GL_APP->getWidth() / (float)GL_APP->getHeight());
 	shader->begin();
 	//设置shader的采样器为0号采样器
 	shader->setInt("samplerGrass", 0);
 	shader->setInt("samplerLand", 1);
 	shader->setInt("samplerNoise", 2);
-	shader->setMat4("transform", transformGrass);
+	shader->setMat4("modelMatrix", transformGrass);
 	shader->setMat4("viewMatrix", camera->getViewMatrix());
 	shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-
+	shader->setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(transformGrass))));
+	//光源参数更新
+	shader->setVector3("lightDirection", lightDirection);
+	shader->setVector3("lightColor", lightColor);;
+	shader->setVector3("cameraPosition", camera->mPosition);
+	shader->setVector3("ambientColor", ambientColor);
+	shader->setFloat("specularIntensity", specularIntensity);
 	//std::cout << glm::to_string(camera->getViewMatrix()) << std::endl;
 	//std::cout << glm::to_string(camera->getProjectionMatrix()) << std::endl;
 	shader->setFloat("time", glfwGetTime());
 	shader->setFloat("speed", 0.5);
+	doTransform();
 	//2 绑定当前vao
 	textureGrass->Bind();
 	GL_CALL(glBindVertexArray(geomety->getVao()));
@@ -188,12 +205,12 @@ void render()
 
 void prepareVao()
 {
-	geomety = Geometry::createPlane(shader,1,1);
-}
+	geomety = GLframework::Geometry::createSphere(shader,3);
+}  
 
-void prepareCamera()
+void prepareCamera() 
 {
-
+	
 	camera = new PerspectiveCamera(
 		60.0f,
 		static_cast<float>(GL_APP->getWidth()) / static_cast<float>(GL_APP->getHeight()),
@@ -201,15 +218,18 @@ void prepareCamera()
 		1000.0f
 	);
 	
-	//float size = 6.0f;
+	
+	//std::cout << "APP SIZE : " << GL_APP->getWidth() << ":" << GL_APP->getHeight() << std::endl;
+	//float size = 10.0f;
 	//camera = new OrthographicCamera(-size,size,size,-size,size,-size);
+	
 	cameracontrol = new TrackBallCameraControl();
 	cameracontrol->setCamera(camera);
 }
-void prepareOrtho()
-{
-	ortherMartix = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, 2.0f, -2.0f);
-}
+//void prepareOrtho()
+//{
+//	ortherMartix = glm::ortho(-2.0f, 2.0f, 2.0f, -2.0f, 2.0f, -2.0f);
+//}
 
 #pragma region 回调函数定义
 //鼠标滚轮（放缩）回调函数
@@ -239,6 +259,7 @@ void OnMouseCallback(int button, int action, int mods)
 	cameracontrol->onMouse(button, action,x, y);
 	if(CameraControl* control=dynamic_cast<GameCameraControl*>(cameracontrol))
 	{
+		std::cout << "call1\n";
 		if(PerspectiveCamera* icamera = dynamic_cast<PerspectiveCamera*>(camera))
 		{
 			if(button==GLFW_MOUSE_BUTTON_MIDDLE&&action==GLFW_PRESS)
@@ -259,6 +280,8 @@ void OnMouseCallback(int button, int action, int mods)
 	}
 	
 }
+
+
 
 void processInput(GLFWwindow* window)
 {
@@ -285,3 +308,9 @@ void OnCursor(double xpos, double ypos)
 	cameracontrol->onCursor(xpos, ypos);
 }
 #pragma endregion
+
+
+void doTransform()
+{
+	transformGrass = glm::rotate(transformGrass, 0.003f, glm::vec3(0.0f, 1.0f, 1.0f));
+}

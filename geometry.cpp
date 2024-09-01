@@ -1,5 +1,7 @@
 #include "geometry.h"
 
+using namespace GLframework;
+
 Geometry::~Geometry()
 {
 	if(mVao!=0)
@@ -124,34 +126,36 @@ Geometry* Geometry::createBox(GLframework::Shader* shader,float length, float wi
        -length / 2,  width / 2,  height / 2,  // 顶部左
 
        // 背面 (z = -height/2)
-       -length / 2, -width / 2, -height / 2,  // 底部左
-        length / 2, -width / 2, -height / 2,  // 底部右
-        length / 2,  width / 2, -height / 2,  // 顶部右
-       -length / 2,  width / 2, -height / 2,  // 顶部左
-
-       // 左面 (x = -length/2)
-       -length / 2, -width / 2, -height / 2,  // 底部后
-       -length / 2, -width / 2,  height / 2,  // 底部前
-       -length / 2,  width / 2,  height / 2,  // 顶部前
-       -length / 2,  width / 2, -height / 2,  // 顶部后
-
-       // 右面 (x = length/2)
-        length / 2, -width / 2, -height / 2,  // 底部后
-        length / 2, -width / 2,  height / 2,  // 底部前
-        length / 2,  width / 2,  height / 2,  // 顶部前
-        length / 2,  width / 2, -height / 2,  // 顶部后
+		-length / 2, -width / 2, -height / 2,  // 底部左
+		-length / 2,  width / 2, -height / 2,  // 底部右
+		length / 2,   width / 2, -height / 2,  // 顶部右
+		length / 2,  -width / 2, -height / 2,  // 顶部左
 
         // 顶面 (y = width/2)
-        -length / 2,  width / 2, -height / 2,  // 后左
-         length / 2,  width / 2, -height / 2,  // 后右
-         length / 2,  width / 2,  height / 2,  // 前右
-        -length / 2,  width / 2,  height / 2,  // 前左
+        -length / 2,  width / 2,  height / 2,  // 后左
+         length / 2,  width / 2,  height / 2,  // 后右
+         length / 2,  width / 2, -height / 2,  // 前右
+        -length / 2,  width / 2, -height / 2,  // 前左
 
         // 底面 (y = -width/2)
         -length / 2, -width / 2, -height / 2,  // 后左
          length / 2, -width / 2, -height / 2,  // 后右
          length / 2, -width / 2,  height / 2,  // 前右
-        -length / 2, -width / 2,  height / 2   // 前左
+        -length / 2, -width / 2,  height / 2,  // 前左
+
+		// 右面 (x = length/2)
+        length / 2, -width / 2,  height / 2,  // 底部后
+        length / 2, -width / 2, -height / 2,  // 底部前
+        length / 2,  width / 2, -height / 2,  // 顶部前
+        length / 2,  width / 2,  height / 2,  // 顶部后
+
+		// 左面 (x = -length/2)
+		-length / 2, -width / 2, -height / 2,  // 底部后
+		-length / 2, -width / 2,  height / 2,  // 底部前
+		-length / 2,  width / 2,  height / 2,  // 顶部前
+		-length / 2,  width / 2, -height / 2,  // 顶部后
+
+
 	};
     float uvs[]
     {
@@ -168,10 +172,10 @@ Geometry* Geometry::createBox(GLframework::Shader* shader,float length, float wi
         0.0f, 1.0f, // 7
 
         // Top face
-        0.0f, 1.0f, // 8
-        1.0f, 1.0f, // 9
-        1.0f, 0.0f, // 10
-        0.0f, 0.0f, // 11
+        0.0f, 0.0f, // 8
+        1.0f, 0.0f, // 9
+        1.0f, 1.0f, // 10
+        0.0f, 1.0f, // 11
 
         // Bottom face
         0.0f, 0.0f, // 12
@@ -314,6 +318,8 @@ Geometry* Geometry::createBox(GLframework::Shader* shader,float length, float wi
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ebos), ebos, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometry->mEbo);
 
     glBindVertexArray(0);
     

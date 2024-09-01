@@ -49,6 +49,12 @@
     <Filter Include="头文件\wrapper">
       <UniqueIdentifier>{2796c719-4fb1-4dca-a746-0af6f8b8a331}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\GLframework\material">
+      <UniqueIdentifier>{d7ad4f6c-925a-46fa-9e0e-1aa225703a84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\GLframework\material">
+      <UniqueIdentifier>{f3764497-53fa-4cf1-a55b-8b3c1c6cfbfa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -92,6 +98,15 @@
     </ClCompile>
     <ClCompile Include="GL_ERROR_FIND.cpp">
       <Filter>源文件\wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="object.cpp">
+      <Filter>源文件\GLframework</Filter>
+    </ClCompile>
+    <ClCompile Include="material.cpp">
+      <Filter>源文件\GLframework\material</Filter>
+    </ClCompile>
+    <ClCompile Include="phongMaterial.cpp">
+      <Filter>源文件\GLframework\material</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -139,6 +154,15 @@
     </ClInclude>
     <ClInclude Include="core.h">
       <Filter>头文件\wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="object.h">
+      <Filter>头文件\GLframework</Filter>
+    </ClInclude>
+    <ClInclude Include="material.h">
+      <Filter>头文件\GLframework\material</Filter>
+    </ClInclude>
+    <ClInclude Include="phongMaterial.h">
+      <Filter>头文件\GLframework\material</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
