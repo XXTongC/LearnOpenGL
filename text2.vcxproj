@@ -136,6 +136,7 @@
     <ClCompile Include="gamecameracontrol.cpp" />
     <ClCompile Include="geometry.cpp" />
     <ClCompile Include="material.cpp" />
+    <ClCompile Include="mesh.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="OldTestCode.cpp" />
     <ClCompile Include="orthographiccamera.cpp" />
@@ -154,6 +155,7 @@
     <ClInclude Include="gamecameracontrol.h" />
     <ClInclude Include="geometry.h" />
     <ClInclude Include="material.h" />
+    <ClInclude Include="mesh.h" />
     <ClInclude Include="object.h" />
     <ClInclude Include="OldTestCode.h" />
     <ClInclude Include="orthographiccamera.h" />
