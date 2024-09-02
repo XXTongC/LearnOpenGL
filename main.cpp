@@ -1,6 +1,7 @@
 #include "core.h"
 #include <iostream>
 #include <windows.h>
+#include <memory>
 #include <typeinfo>
 #include "GL_ERROR_FIND.h"
 #include "Application.h"
@@ -12,6 +13,10 @@
 #include "trackBallCameraControl.h"
 #include "gamecameracontrol.h"
 #include "geometry.h"
+#include "mesh.h"
+#include "phongMaterial.h"
+#include "material.h"
+
 
 /*
  * to make main.cpp clear
@@ -32,44 +37,29 @@ void OnCursor(double xpos, double ypos);
 #pragma endregion
 
 bool setAndInitWindow(int weith = 800,int height = 600);
-//vao、vbo等设置
-void prepareUVGLTranglesTest2();
-void prepareVao();
-//shader的创建
-void prepareShader();
+
 //绘制命令
 void render();
-//纹理创建
-void prepareTexture();
+
 //准备摄像头坐标
 void prepareCamera();
-//准备正交投影矩阵
-void prepareOrtho();
+
 //状态设置初始化
 void prepareState();
 
-//test
-void doTransform();
-
+void prepare();
 
 //声明全局变量vao以及shaderProram
 //GLuint vao;
 float angle = 0.0f;
 GLframework::Shader* shader = nullptr;
-GLframework::Texture* textureGrass = nullptr;
-GLframework::Texture* textureLand = nullptr;
-GLframework::Texture* textureNoise = nullptr;
-GLframework::Texture* texturePanda = nullptr;
+
 GLframework::Geometry* geomety = nullptr;
 Camera* camera = nullptr;
 CameraControl* cameracontrol = nullptr;
-glm::mat4 transformGrass(1.0f);
-glm::mat4 transformPanda(1.0f);
-//glm::mat4 ortherMartix(1.0f);
-//设置光照
-glm::vec3 lightDirection = glm::vec3(-1.0f, -1.0f, -1.0f);
-glm::vec3 lightColor = glm::vec3(0.9f, 0.8f, 0.75f);
-glm::vec3 ambientColor = glm::vec3(0.1f, 0.2f, 0.15f);
+
+
+
 float specularIntensity = 0.5f;
 int main()
 {
@@ -77,7 +67,7 @@ int main()
 	glm::vec2 v0{ 0 };
 	glm::mat2x3 nm{ 1.0 };
 	std::cout << glm::to_string(nm)<<std::endl;
-
+	
 	std::cout << "Please set the window as x * y" << std::endl;
 	int width = 800, height = 600;
 	//std::cin >> width >> height;
@@ -88,9 +78,7 @@ int main()
 	GL_CALL(glViewport(0, 0, width, height));
 	GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
 
-	prepareShader();
-	prepareVao();
-	prepareTexture();
+
 	prepareCamera();
 	prepareState();
 
@@ -110,6 +98,20 @@ int main()
 	return 0;
 }
 
+void perpare()
+{
+	//1. 创建geogetry
+	std::shared_ptr<GLframework::Geometry> geometry{ GLframework::Geometry::createSphere(shader, 3.0f) };
+
+	//2. 创建material并且配置参数
+	auto matertial{ std::make_shared<GLframework::PhongMaterial>() };
+	matertial->mShiness = 32.0f;
+	matertial->mDiffuse = new GLframework::Texture("panda.jpg",0);
+	//3. 生成mesh
+	auto mesh{ std::make_shared<GLframework::Mesh>(geometry.get(),matertial.get()) };
+
+}
+
 bool setAndInitWindow(int weith, int height)
 {
 	if (!GL_APP->init(weith,height)) return false;
@@ -124,18 +126,8 @@ bool setAndInitWindow(int weith, int height)
 }
 
 
-void prepareShader()
-{
-	shader = new GLframework::Shader("vertexAuto.glsl", "fragmentAuto.glsl");
-}
 
-void prepareTexture()
-{
-	textureGrass = new GLframework::Texture("Texture/grass.jpg", 0);
-	textureLand = new GLframework::Texture("Texture/land.jpg", 1);
-	textureNoise = new GLframework::Texture("Texture/noise.jpg", 2);
-	//texturePanda = new GLframework::Texture("Texture/panda.jpg", 0);
-}
+
 
 void prepareState()
 {
@@ -146,67 +138,12 @@ void prepareState()
 
 void render()
 {
-	/*
-	* glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	* 这里一定不能加上这句命令，会报错，以下解释：
-	* 在第一帧的时候我们将绑定于GL状态机的ebo解绑，但是状态机仍然能通过vao获取ebo信息
-	* 所以第一帧可以正常绘制图片
-	* 但到了第二帧，我们将vao中的ebo也解绑了，使得第二帧无法获取到有效的ebo而报错
-	*/
+
 	GL_CALL(glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT));
 
-	//1 绑定当前program
-	dynamic_cast<PerspectiveCamera*>(camera)->setAspect(GL_APP->getWidth() / (float)GL_APP->getHeight());
-	shader->begin();
-	//设置shader的采样器为0号采样器
-	shader->setInt("samplerGrass", 0);
-	shader->setInt("samplerLand", 1);
-	shader->setInt("samplerNoise", 2);
-	shader->setMat4("modelMatrix", transformGrass);
-	shader->setMat4("viewMatrix", camera->getViewMatrix());
-	shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-	shader->setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(transformGrass))));
-	//光源参数更新
-	shader->setVector3("lightDirection", lightDirection);
-	shader->setVector3("lightColor", lightColor);;
-	shader->setVector3("cameraPosition", camera->mPosition);
-	shader->setVector3("ambientColor", ambientColor);
-	shader->setFloat("specularIntensity", specularIntensity);
-	//std::cout << glm::to_string(camera->getViewMatrix()) << std::endl;
-	//std::cout << glm::to_string(camera->getProjectionMatrix()) << std::endl;
-	shader->setFloat("time", glfwGetTime());
-	shader->setFloat("speed", 0.5);
-	doTransform();
-	//2 绑定当前vao
-	textureGrass->Bind();
-	GL_CALL(glBindVertexArray(geomety->getVao()));
-	//发出绘制指令
-	//GL_CALL(glDrawArrays(GL_TRIANGLES, 0, 3));
-	//GL_TRIANGLE_STRIP 如果末尾点序号n为偶数，则链接规则为[n-2,n-1,n]
-	//奇数为[n-1,n-2,n]
-	//保证了顺时针或逆时针的链接顺序相同
-	//GL_TRIANGLE_FAN 绘制以V0为起点的扇形
-	//GL_CALL(glDrawArrays(GL_SMOOTH_LINE_WIDTH_GRANULARITY, 0, 1));
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	
-	GL_CALL(glDrawElements(GL_TRIANGLES,geomety->getIndicesCount() , GL_UNSIGNED_INT,static_cast<void*>(0)));
-
-	//transformPanda = glm::translate(glm::mat4(1.0f), glm::vec3{ 0.8f,0.0f,-1.0f });
-	//shader->setMat4("transform", transformPanda);
-	//texturePanda->Bind();
-	//GL_CALL(glDrawElements(GL_TRIANGLES, geomety->getIndicesCount(), GL_UNSIGNED_INT, static_cast<void*>(0)));
-
-	//但如果加上下面这条指令，那么我们上面所说的错误就可以避免
-	//这提示了一个在OpenGL中健康的代码习惯：有开有关
-	GL_CALL(glBindVertexArray(0));
-	shader->end();
 }
 
-void prepareVao()
-{
-	geomety = GLframework::Geometry::createSphere(shader,3);
-}  
 
 void prepareCamera() 
 {
@@ -246,9 +183,9 @@ void OnResize(int width, int height)
 
 void OnKeyboardCallback(int key, int action, int mods)
 {
-	GL_CALL();
+	GL_CALL(cameracontrol->onKey(key, action, mods));
 	std::cout << "OnKeyboardCallback Pressed: " << key << " " << action << " " << mods << std::endl;
-	cameracontrol->onKey(key, action, mods);
+	
 }
 
 void OnMouseCallback(int button, int action, int mods)
@@ -310,7 +247,3 @@ void OnCursor(double xpos, double ypos)
 #pragma endregion
 
 
-void doTransform()
-{
-	transformGrass = glm::rotate(transformGrass, 0.003f, glm::vec3(0.0f, 1.0f, 1.0f));
-}

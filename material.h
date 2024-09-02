@@ -8,11 +8,11 @@ namespace GLframework
 		PhongMaterial
 	};
 
-	class Materal
+	class Material
 	{
 	public:
-		Materal();
-		~Materal();
+		Material();
+		~Material();
 
 	public:
 		MaterialType mType;

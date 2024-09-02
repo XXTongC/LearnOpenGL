@@ -2,12 +2,12 @@
 
 using namespace GLframework;
 
-Materal::Materal()
+Material::Material()
 {
 	
 }
 
-Materal::~Materal()
+Material::~Material()
 {
 	
 }

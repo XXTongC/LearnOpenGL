@@ -5,7 +5,7 @@
 
 namespace GLframework
 {
-	class PhongMaterial: public Materal
+	class PhongMaterial: public Material
 	{
 	public:
 		PhongMaterial();

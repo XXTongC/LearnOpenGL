@@ -108,6 +108,9 @@
     <ClCompile Include="phongMaterial.cpp">
       <Filter>源文件\GLframework\material</Filter>
     </ClCompile>
+    <ClCompile Include="mesh.cpp">
+      <Filter>源文件\GLframework\material</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -162,6 +165,9 @@
       <Filter>头文件\GLframework\material</Filter>
     </ClInclude>
     <ClInclude Include="phongMaterial.h">
+      <Filter>头文件\GLframework\material</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
       <Filter>头文件\GLframework\material</Filter>
     </ClInclude>
   </ItemGroup>
