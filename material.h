@@ -11,10 +11,12 @@ namespace GLframework
 	class Material
 	{
 	public:
-		Material();
-		~Material();
+		Material(){}
+		~Material(){}
+		MaterialType getMaterialType() const;
+		void setMaterialType(MaterialType type);
 
-	public:
+	private:
 		MaterialType mType;
 	};
 

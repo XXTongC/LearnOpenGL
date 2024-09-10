@@ -2,14 +2,15 @@
 
 using namespace GLframework;
 
-Material::Material()
+MaterialType Material::getMaterialType() const
 {
-	
+	return mType;
 }
 
-Material::~Material()
+
+void Material::setMaterialType(MaterialType type)
 {
-	
+	mType = type;
 }
 
 

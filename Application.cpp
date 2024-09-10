@@ -134,9 +134,6 @@ bool GL_APPLICATION::Application::update()
 }
 void GL_APPLICATION::Application::destory()
 {
-	delete textureGrass;
-	delete textureLand;
-	delete textureNoise;
 	glfwTerminate();
 }
 

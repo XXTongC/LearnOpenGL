@@ -2,14 +2,24 @@
 
 using namespace GLframework;
 
-void Mesh::setGeometry(Geometry* geometry)
+
+
+void Mesh::setGeometry(std::shared_ptr<Geometry> geometry)
 {
-	mGeometry = geometry;
+	mGeometry = std::move(geometry);
 }
 
-void Mesh::setMaterial(Material* material)
+void Mesh::setMaterial(std::shared_ptr<Material> material)
 {
-	mMaterial = material;
+	mMaterial = std::move(material);
 }
 
+std::shared_ptr<Geometry> Mesh::getGeometry() const
+{
+	return mGeometry;
+}
 
+std::shared_ptr<Material> Mesh::getMaterial() const
+{
+	return mMaterial;
+}

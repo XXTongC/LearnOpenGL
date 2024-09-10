@@ -11,6 +11,7 @@ uniform vec3 ambientColor;
 uniform vec3 cameraPosition;
 //光照强度控制参数
 uniform float specularIntensity;
+uniform float shiness;
 
 in vec4 color;
 in vec2 uv;//2
@@ -51,7 +52,7 @@ void main()
 
 
 	//控制光斑大小
-	specular = pow(specular,16);
+	specular = pow(specular,shiness);
 	//这里没有乘以材质的颜色的原因是反射光一般是以入射光本身为主，更符合现实中的物理现象
 	vec3 specularColor = lightColor * specular * flag * specularIntensity;
 
