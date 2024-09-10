@@ -3,7 +3,7 @@ using namespace GLframework;
 
 PhongMaterial::PhongMaterial()
 {
-	mType = MaterialType::PhongMaterial;
+	setMaterialType(MaterialType::PhongMaterial);
 }
 
 PhongMaterial::~PhongMaterial()

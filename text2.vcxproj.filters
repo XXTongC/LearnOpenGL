@@ -55,6 +55,18 @@
     <Filter Include="源文件\GLframework\material">
       <UniqueIdentifier>{f3764497-53fa-4cf1-a55b-8b3c1c6cfbfa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\GLframework\light">
+      <UniqueIdentifier>{9efb6cb7-8c15-4aad-b11c-83811b79e8e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\GLframework\light">
+      <UniqueIdentifier>{23b62a03-1d1b-4b2e-aed5-6c5f784e141e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\GLframework\renderer">
+      <UniqueIdentifier>{c833c7b0-be64-4f66-bf92-794d1288b687}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\GLframework\renderer">
+      <UniqueIdentifier>{82ce33e3-36be-4801-965d-5dc896c26b85}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -110,6 +122,18 @@
     </ClCompile>
     <ClCompile Include="mesh.cpp">
       <Filter>源文件\GLframework\material</Filter>
+    </ClCompile>
+    <ClCompile Include="light.cpp">
+      <Filter>源文件\GLframework\light</Filter>
+    </ClCompile>
+    <ClCompile Include="directionalLight.cpp">
+      <Filter>源文件\GLframework\light</Filter>
+    </ClCompile>
+    <ClCompile Include="ambientLight.cpp">
+      <Filter>源文件\GLframework\light</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer.cpp">
+      <Filter>源文件\GLframework\renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +194,18 @@
     <ClInclude Include="mesh.h">
       <Filter>头文件\GLframework\material</Filter>
     </ClInclude>
+    <ClInclude Include="light.h">
+      <Filter>头文件\GLframework\light</Filter>
+    </ClInclude>
+    <ClInclude Include="directionalLight.h">
+      <Filter>头文件\GLframework\light</Filter>
+    </ClInclude>
+    <ClInclude Include="ambientLight.h">
+      <Filter>头文件\GLframework\light</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer.h">
+      <Filter>头文件\GLframework\renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl">
@@ -181,7 +217,10 @@
     <None Include="fragmentAuto.glsl">
       <Filter>资源文件\shaders</Filter>
     </None>
-    <None Include="vertexAuto.glsl">
+    <None Include="phong.vert">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="phong.frag">
       <Filter>资源文件\shaders</Filter>
     </None>
   </ItemGroup>
@@ -204,6 +243,9 @@
       <Filter>资源文件\textures</Filter>
     </Image>
     <Image Include="Texture\noise.jpg">
+      <Filter>资源文件\textures</Filter>
+    </Image>
+    <Image Include="Texture\wall.jpg">
       <Filter>资源文件\textures</Filter>
     </Image>
   </ItemGroup>

@@ -6,7 +6,7 @@ namespace GLframework
 	class Object
 	{
 	public:
-		Object(){}
+		
 		Object(glm::vec3 position = glm::vec3{0.0f}, float anglex= 0.0f, float angley = 0.0f, float anglez = 0.0f, glm::vec3 scale =glm::vec3{1.0f})
 			:mPosition(position),mAngleX(anglex),mAngleY(angley),mAngleZ(anglez),mScale(scale)
 		{}

@@ -9,14 +9,16 @@ namespace GLframework
 	{
 	public:
 		PhongMaterial();
-		PhongMaterial(Texture* diffuse,float shiness)
-			:mDiffuse(diffuse), mShiness(shiness)
+		PhongMaterial(std::shared_ptr<Texture> diffuse,float shiness)
+			:mDiffuse(std::move(diffuse)), mShiness(shiness)
 		{ 
-			mType = MaterialType::PhongMaterial;
+			setMaterialType(MaterialType::PhongMaterial);
 		}
 		~PhongMaterial();
+		
+
 	public:
-		Texture* mDiffuse{ nullptr };
+		std::shared_ptr<Texture> mDiffuse{ nullptr };
 		float mShiness{ 1.0f };
 	};
 }

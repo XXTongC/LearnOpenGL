@@ -18,15 +18,15 @@ Geometry::~Geometry()
 		glDeleteBuffers(1, &mEbo);
 }
 
-void Geometry::setShader(GLframework::Shader* shader)
+void Geometry::setShader(std::shared_ptr<GLframework::Shader>shader)
 {
     mShader = shader;
 }
 
 //need checck
-Geometry* Geometry::createPlane(GLframework::Shader* shader,float width, float height)
+std::shared_ptr<Geometry> Geometry::createPlane(std::shared_ptr<GLframework::Shader> shader,float width, float height)
 {
-    Geometry* geometry = new Geometry(shader);
+	auto geometry = std::make_shared<GLframework::Geometry>(shader);
     geometry->mIndicesCount = 6;
 
     float halfW = width / 2.0f;
@@ -113,9 +113,9 @@ Geometry* Geometry::createPlane(GLframework::Shader* shader,float width, float h
 }
 
 
-Geometry* Geometry::createBox(GLframework::Shader* shader,float length, float width, float height)
+std::shared_ptr<Geometry> Geometry::createBox(std::shared_ptr<GLframework::Shader> shader,float length, float width, float height)
 {
-	Geometry* geometry = new Geometry(shader);
+    auto geometry = std::make_shared<GLframework::Geometry>(shader);
     geometry->mIndicesCount = 36;
 	float position[]
 	{
@@ -326,9 +326,9 @@ Geometry* Geometry::createBox(GLframework::Shader* shader,float length, float wi
 	return geometry;
 }
 
-Geometry* Geometry::createSphere(GLframework::Shader* shader,float radius, int mLatitude, int mLong)
+std::shared_ptr<Geometry> Geometry::createSphere(std::shared_ptr< GLframework::Shader> shader,float radius, int mLatitude, int mLong)
 {
-	Geometry* geometry = new Geometry(shader);
+	auto geometry = std::make_shared<GLframework::Geometry>(shader);
     std::vector<float>vertices;
     std::vector<float>uvs;
     std::vector<float>colors;
@@ -343,11 +343,11 @@ Geometry* Geometry::createSphere(GLframework::Shader* shader,float radius, int m
             float theta = 2 * glm::pi<float>() * static_cast<float>(j) / static_cast<float>(mLong);
 
             float x = radius * std::sin(phi) * std::cos(theta);
-            float y = radius * std::sin(phi) * std::sin(theta);
-            float z = radius * cos(phi);
+            float z = radius * std::sin(phi) * std::sin(theta);
+            float y = radius * cos(phi);
 
-            float u = 1.0f - static_cast<float>(i) / static_cast<float>(mLatitude);
-            float v = 1.0f - static_cast<float>(j) / static_cast<float>(mLong);
+            float v = 1.0f - static_cast<float>(i) / static_cast<float>(mLatitude);
+            float u = 1.0f - static_cast<float>(j) / static_cast<float>(mLong);
 
             vertices.push_back(x);
             vertices.push_back(y);
@@ -372,8 +372,8 @@ Geometry* Geometry::createSphere(GLframework::Shader* shader,float radius, int m
     {
 	    for(int j = 0;j<mLong;j++)
 	    {
-            int p1 = i * (mLatitude + 1) + j;
-            int p2 = p1 + (mLatitude + 1);
+            int p1 = i * (mLong + 1) + j;
+            int p2 = p1 + (mLong + 1);
             int p3 = p1 + 1;
             int p4 = p2 + 1;
 

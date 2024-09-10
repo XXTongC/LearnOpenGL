@@ -33,12 +33,16 @@ GLframework::Texture::Texture(const std::string& path, unsigned int unit)
 	//5 设置纹理包裹方式，设置x, y方向的超原图范围属性, S对应x(u), T对应y(v)
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT));
+	
 }
 
 GLframework::Texture::~Texture()
 {
 	if (mTexture != 0)
+	{
+		std::cout << "texture delete\n";
 		glDeleteTextures(1, &mTexture);
+	}
 }
 
 void GLframework::Texture::Bind()

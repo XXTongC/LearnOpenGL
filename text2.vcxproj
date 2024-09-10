@@ -130,11 +130,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Users\asus\Downloads\glad\src\glad.c" />
+    <ClCompile Include="ambientLight.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="cameracontrol.cpp" />
+    <ClCompile Include="directionalLight.cpp" />
     <ClCompile Include="gamecameracontrol.cpp" />
     <ClCompile Include="geometry.cpp" />
+    <ClCompile Include="light.cpp" />
     <ClCompile Include="material.cpp" />
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="object.cpp" />
@@ -142,6 +145,7 @@
     <ClCompile Include="orthographiccamera.cpp" />
     <ClCompile Include="perspectivecamera.cpp" />
     <ClCompile Include="phongMaterial.cpp" />
+    <ClCompile Include="renderer.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GL_ERROR_FIND.cpp" />
@@ -149,11 +153,14 @@
     <ClCompile Include="trackBallCameraControl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ambientLight.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="cameracontrol.h" />
     <ClInclude Include="core.h" />
+    <ClInclude Include="directionalLight.h" />
     <ClInclude Include="gamecameracontrol.h" />
     <ClInclude Include="geometry.h" />
+    <ClInclude Include="light.h" />
     <ClInclude Include="material.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="object.h" />
@@ -161,6 +168,7 @@
     <ClInclude Include="orthographiccamera.h" />
     <ClInclude Include="perspectivecamera.h" />
     <ClInclude Include="phongMaterial.h" />
+    <ClInclude Include="renderer.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="GL_ERROR_FIND.h" />
@@ -172,8 +180,9 @@
   <ItemGroup>
     <None Include="fragment.glsl" />
     <None Include="fragmentAuto.glsl" />
+    <None Include="phong.frag" />
     <None Include="vertex.glsl" />
-    <None Include="vertexAuto.glsl" />
+    <None Include="phong.vert" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="text2.rc" />
@@ -183,6 +192,7 @@
     <Image Include="Texture\land.jpg" />
     <Image Include="Texture\noise.jpg" />
     <Image Include="Texture\panda.jpg" />
+    <Image Include="Texture\wall.jpg" />
     <Image Include="Texture\下载.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

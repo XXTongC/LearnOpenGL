@@ -2,11 +2,11 @@
 #include <iostream>
 #include <windows.h>
 #include <memory>
+#include <vector>
 #include <typeinfo>
 #include "GL_ERROR_FIND.h"
 #include "Application.h"
 #include "shader.h"
-#include "OldTestCode.h"
 #include "texture.h"
 #include "perspectivecamera.h"
 #include "orthographiccamera.h"
@@ -16,7 +16,7 @@
 #include "mesh.h"
 #include "phongMaterial.h"
 #include "material.h"
-
+#include "renderer.h"
 
 /*
  * to make main.cpp clear
@@ -52,9 +52,10 @@ void prepare();
 //声明全局变量vao以及shaderProram
 //GLuint vao;
 float angle = 0.0f;
-GLframework::Shader* shader = nullptr;
-
-GLframework::Geometry* geomety = nullptr;
+std::shared_ptr < GLframework::Renderer> renderer = nullptr;
+std::vector<std::shared_ptr < GLframework::Mesh>> meshes{};
+std::shared_ptr < GLframework::DirectionalLight> dirLight = nullptr;
+std::shared_ptr <GLframework::AmbientLight> ambientLight = nullptr;
 Camera* camera = nullptr;
 CameraControl* cameracontrol = nullptr;
 
@@ -63,11 +64,6 @@ CameraControl* cameracontrol = nullptr;
 float specularIntensity = 0.5f;
 int main()
 {
-	//向量
-	glm::vec2 v0{ 0 };
-	glm::mat2x3 nm{ 1.0 };
-	std::cout << glm::to_string(nm)<<std::endl;
-	
 	std::cout << "Please set the window as x * y" << std::endl;
 	int width = 800, height = 600;
 	//std::cin >> width >> height;
@@ -80,7 +76,8 @@ int main()
 
 
 	prepareCamera();
-	prepareState();
+
+	prepare();
 
 	//测试获取该显卡驱动提供的Arrribbutes数量
 	int nrAttributes;
@@ -89,8 +86,10 @@ int main()
 	
 	while (GL_APP->update())
 	{
+		meshes[3]->rotateX(0.01f);
+		meshes[3]->rotateY(0.1f);
 		cameracontrol->update();
-		render();
+		renderer->render(meshes,camera,dirLight,ambientLight);
 	}
 
 	GL_APP->destory();
@@ -98,18 +97,44 @@ int main()
 	return 0;
 }
 
-void perpare()
+void prepare()
 {
-	//1. 创建geogetry
-	std::shared_ptr<GLframework::Geometry> geometry{ GLframework::Geometry::createSphere(shader, 3.0f) };
+	renderer = std::make_shared<GLframework::Renderer>();
 
-	//2. 创建material并且配置参数
-	auto matertial{ std::make_shared<GLframework::PhongMaterial>() };
-	matertial->mShiness = 32.0f;
-	matertial->mDiffuse = new GLframework::Texture("panda.jpg",0);
+	//1. 创建material并且配置参数
+	auto matertialGrass = std::make_shared<GLframework::PhongMaterial>();
+	matertialGrass->mShiness = 10.0f;
+	matertialGrass->mDiffuse = std::make_shared<GLframework::Texture>("Texture/grass.jpg", 0);
+
+	auto matertialLand = std::make_shared<GLframework::PhongMaterial>();
+	matertialLand->mShiness = 10.0f;
+	matertialLand->mDiffuse = std::make_shared<GLframework::Texture>("Texture/land.jpg", 1);
+
+	auto matertialNoise = std::make_shared<GLframework::PhongMaterial>();
+	matertialNoise->mShiness = 10.0f;
+	matertialNoise->mDiffuse = std::make_shared<GLframework::Texture>("Texture/noise.jpg", 2);
+	
+	//wall
+	auto matertialWall = std::make_shared<GLframework::PhongMaterial>();
+	matertialWall->mShiness = 10.0f;
+	matertialWall->mDiffuse = std::make_shared<GLframework::Texture>("Texture/wall.jpg", 0);
+	
+
+	//2. 创建geogetry
+	auto geometry = GLframework::Geometry::createSphere(renderer->getShader(matertialGrass->getMaterialType()), 2.0f);
+
 	//3. 生成mesh
-	auto mesh{ std::make_shared<GLframework::Mesh>(geometry.get(),matertial.get()) };
+	auto meshwall = std::make_shared<GLframework::Mesh>(geometry, matertialWall);
+	meshwall->setPosition(glm::vec3(4.0f, 0.0f, 0.0f));
+	meshes.push_back(std::make_shared<GLframework::Mesh>(geometry,matertialGrass));
+	meshes.push_back(std::make_shared<GLframework::Mesh>(geometry, matertialLand));
+	meshes.push_back(std::make_shared<GLframework::Mesh>(geometry, matertialNoise));
+	meshes.push_back(std::move(meshwall));
 
+	
+	dirLight = std::make_shared<GLframework::DirectionalLight>();
+	ambientLight = std::make_shared<GLframework::AmbientLight>();
+	ambientLight->setColor(glm::vec3{ 0.01f });
 }
 
 bool setAndInitWindow(int weith, int height)
@@ -136,13 +161,6 @@ void prepareState()
 	glDepthFunc(GL_LESS);
 }
 
-void render()
-{
-
-	GL_CALL(glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT));
-
-
-}
 
 
 void prepareCamera() 

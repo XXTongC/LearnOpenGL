@@ -8,15 +8,17 @@ namespace GLframework
 	class Mesh:public Object
 	{
 	public:
-		Mesh(Geometry* geometry,Material* material)
-			:mGeometry(geometry),mMaterial(material)
+		Mesh(std::shared_ptr<Geometry> geometry,std::shared_ptr<Material> material)
+			:Object(),mGeometry(std::move(geometry)),mMaterial(std::move(material))
 		{}
-		~Mesh();
-		void setGeometry(Geometry* geometry);
-		void setMaterial(Material* material);
+		~Mesh(){}
+		void setGeometry(std::shared_ptr<Geometry> geometry);
+		void setMaterial(std::shared_ptr<Material> material);
+		std::shared_ptr<Geometry> getGeometry() const;
+		std::shared_ptr<Material> getMaterial() const;
 	private:
-		Geometry* mGeometry{ nullptr };
-		Material* mMaterial{ nullptr };
+		std::shared_ptr<Geometry> mGeometry{ nullptr };
+		std::shared_ptr<Material> mMaterial{ nullptr };
 
 	};
 

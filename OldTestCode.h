@@ -4,8 +4,9 @@
  */
 #include "core.h"
 #include "shader.h"
-extern GLuint vao;
-extern GLframework::Shader* shader;
+
+
+
 
 
 /*
