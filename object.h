@@ -3,17 +3,26 @@
 
 namespace GLframework
 {
-	class Object
+	class Object : public std::enable_shared_from_this<Object>
 	{
 	public:
 		
 		Object(glm::vec3 position = glm::vec3{0.0f}, float anglex= 0.0f, float angley = 0.0f, float anglez = 0.0f, glm::vec3 scale =glm::vec3{1.0f})
 			:mPosition(position),mAngleX(anglex),mAngleY(angley),mAngleZ(anglez),mScale(scale)
 		{}
-		~Object();
+		~Object()
+		{
+			std::cout << "object destroy" << std::endl;
+		}
+		std::shared_ptr<Object> getShared() { return shared_from_this(); }
+		//parent and children
+		void addChild (	std::shared_ptr<Object> obj);
+		void addParent(	std::shared_ptr<Object> obj);
+		std::shared_ptr<Object>						getParent();
+		std::vector<std::shared_ptr<Object>>		getChildren();
 
 		void setPosition(glm::vec3 pos);
-
+		glm::vec3 getPosition() const;
 		//ÔöÁ¿Ðý×ª
 		void rotateX(float angle);
 		void rotateY(float angle);
@@ -28,8 +37,9 @@ namespace GLframework
 		float mAngleX{ 0.0f };
 		float mAngleY{ 0.0f };
 		float mAngleZ{ 0.0f };
-
 		glm::vec3 mScale{ 1.0f };
+		std::vector<std::shared_ptr<Object>>	mChildren;
+		std::shared_ptr<Object>					mParent = nullptr;
 
 	};
 }

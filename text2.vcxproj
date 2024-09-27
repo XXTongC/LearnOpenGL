@@ -44,6 +44,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <VCToolsVersion>14.39.33519</VCToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -145,12 +146,22 @@
     <ClCompile Include="orthographiccamera.cpp" />
     <ClCompile Include="perspectivecamera.cpp" />
     <ClCompile Include="phongMaterial.cpp" />
+    <ClCompile Include="pointLight.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GL_ERROR_FIND.cpp" />
+    <ClCompile Include="spotLight.cpp" />
     <ClCompile Include="texture.cpp" />
+    <ClCompile Include="third_party\imgui\imgui.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_demo.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_draw.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_tables.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_widgets.cpp" />
     <ClCompile Include="trackBallCameraControl.cpp" />
+    <ClCompile Include="whiteMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ambientLight.h" />
@@ -168,32 +179,54 @@
     <ClInclude Include="orthographiccamera.h" />
     <ClInclude Include="perspectivecamera.h" />
     <ClInclude Include="phongMaterial.h" />
+    <ClInclude Include="pointLight.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="GL_ERROR_FIND.h" />
     <ClInclude Include="Application.h" />
+    <ClInclude Include="spotLight.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="texture.h" />
+    <ClInclude Include="third_party\imgui\imconfig.h" />
+    <ClInclude Include="third_party\imgui\imgui.h" />
+    <ClInclude Include="third_party\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="third_party\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="third_party\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="third_party\imgui\imgui_internal.h" />
+    <ClInclude Include="third_party\imgui\imstb_rectpack.h" />
+    <ClInclude Include="third_party\imgui\imstb_textedit.h" />
+    <ClInclude Include="third_party\imgui\imstb_truetype.h" />
     <ClInclude Include="trackBallCameraControl.h" />
+    <ClInclude Include="whiteMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl" />
-    <None Include="fragmentAuto.glsl" />
     <None Include="phong.frag" />
+    <None Include="phongPointLight.frag" />
+    <None Include="phongPointLight.vert" />
+    <None Include="phongSpotLight.frag" />
+    <None Include="third_party\imgui\imgui.natstepfilter" />
     <None Include="vertex.glsl" />
     <None Include="phong.vert" />
+    <None Include="white.frag" />
+    <None Include="white.vert" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="text2.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Texture\box.png" />
     <Image Include="Texture\grass.jpg" />
     <Image Include="Texture\land.jpg" />
     <Image Include="Texture\noise.jpg" />
     <Image Include="Texture\panda.jpg" />
+    <Image Include="Texture\sp_mask.png" />
     <Image Include="Texture\wall.jpg" />
     <Image Include="Texture\下载.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="third_party\imgui\imgui.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

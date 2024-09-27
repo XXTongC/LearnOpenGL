@@ -6,8 +6,11 @@ namespace GLframework
 	class Light
 	{
 	public:
-		Light() {};
-		~Light() {};
+		Light() {}
+		~Light()
+		{
+			std::cout << "light destroy" << std::endl;
+		};
 		glm::vec3 getColor() const;
 		float getSpecularIntensity() const;
 		void setColor(glm::vec3 value);
