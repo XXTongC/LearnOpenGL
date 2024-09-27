@@ -16,9 +16,6 @@
     <Filter Include="资源文件\shaders">
       <UniqueIdentifier>{e7546565-836b-4814-adc7-6e52e092392f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="资源文件\textures">
-      <UniqueIdentifier>{9b5a1236-5787-4bf4-8b8c-af569dcd3464}</UniqueIdentifier>
-    </Filter>
     <Filter Include="头文件\OldTestCode">
       <UniqueIdentifier>{d7abe347-eb27-4ac1-b2ff-68f53093748a}</UniqueIdentifier>
     </Filter>
@@ -66,6 +63,15 @@
     </Filter>
     <Filter Include="头文件\GLframework\renderer">
       <UniqueIdentifier>{82ce33e3-36be-4801-965d-5dc896c26b85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\Textures">
+      <UniqueIdentifier>{9b5a1236-5787-4bf4-8b8c-af569dcd3464}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party">
+      <UniqueIdentifier>{2ded3f09-2127-43fa-9476-c70e5a12457e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\imgui">
+      <UniqueIdentifier>{b54577ae-97ac-401f-874a-8b937efbc54a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -134,6 +140,36 @@
     </ClCompile>
     <ClCompile Include="renderer.cpp">
       <Filter>源文件\GLframework\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="whiteMaterial.cpp">
+      <Filter>源文件\GLframework\material</Filter>
+    </ClCompile>
+    <ClCompile Include="pointLight.cpp">
+      <Filter>源文件\GLframework\light</Filter>
+    </ClCompile>
+    <ClCompile Include="spotLight.cpp">
+      <Filter>源文件\GLframework\light</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui.cpp">
+      <Filter>third_party\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_demo.cpp">
+      <Filter>third_party\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_draw.cpp">
+      <Filter>third_party\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_impl_glfw.cpp">
+      <Filter>third_party\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_impl_opengl3.cpp">
+      <Filter>third_party\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_tables.cpp">
+      <Filter>third_party\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_widgets.cpp">
+      <Filter>third_party\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -206,6 +242,42 @@
     <ClInclude Include="renderer.h">
       <Filter>头文件\GLframework\renderer</Filter>
     </ClInclude>
+    <ClInclude Include="whiteMaterial.h">
+      <Filter>头文件\GLframework\material</Filter>
+    </ClInclude>
+    <ClInclude Include="pointLight.h">
+      <Filter>头文件\GLframework\light</Filter>
+    </ClInclude>
+    <ClInclude Include="spotLight.h">
+      <Filter>头文件\GLframework\light</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\imgui\imconfig.h">
+      <Filter>third_party\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\imgui\imgui.h">
+      <Filter>third_party\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\imgui\imgui_impl_glfw.h">
+      <Filter>third_party\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\imgui\imgui_impl_opengl3.h">
+      <Filter>third_party\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\imgui\imgui_impl_opengl3_loader.h">
+      <Filter>third_party\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\imgui\imgui_internal.h">
+      <Filter>third_party\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\imgui\imstb_textedit.h">
+      <Filter>third_party\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\imgui\imstb_rectpack.h">
+      <Filter>third_party\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\imgui\imstb_truetype.h">
+      <Filter>third_party\imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl">
@@ -214,14 +286,29 @@
     <None Include="vertex.glsl">
       <Filter>资源文件\shaders</Filter>
     </None>
-    <None Include="fragmentAuto.glsl">
-      <Filter>资源文件\shaders</Filter>
-    </None>
     <None Include="phong.vert">
       <Filter>资源文件\shaders</Filter>
     </None>
     <None Include="phong.frag">
       <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="white.vert">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="white.frag">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="phongPointLight.vert">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="phongPointLight.frag">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="phongSpotLight.frag">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="third_party\imgui\imgui.natstepfilter">
+      <Filter>third_party\imgui</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -231,22 +318,33 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Texture\下载.jpg">
-      <Filter>资源文件\textures</Filter>
+      <Filter>资源文件\Textures</Filter>
     </Image>
     <Image Include="Texture\panda.jpg">
-      <Filter>资源文件\textures</Filter>
+      <Filter>资源文件\Textures</Filter>
     </Image>
     <Image Include="Texture\grass.jpg">
-      <Filter>资源文件\textures</Filter>
+      <Filter>资源文件\Textures</Filter>
     </Image>
     <Image Include="Texture\land.jpg">
-      <Filter>资源文件\textures</Filter>
+      <Filter>资源文件\Textures</Filter>
     </Image>
     <Image Include="Texture\noise.jpg">
-      <Filter>资源文件\textures</Filter>
+      <Filter>资源文件\Textures</Filter>
     </Image>
     <Image Include="Texture\wall.jpg">
-      <Filter>资源文件\textures</Filter>
+      <Filter>资源文件\Textures</Filter>
     </Image>
+    <Image Include="Texture\box.png">
+      <Filter>资源文件\Textures</Filter>
+    </Image>
+    <Image Include="Texture\sp_mask.png">
+      <Filter>资源文件\Textures</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="third_party\imgui\imgui.natvis">
+      <Filter>third_party\imgui</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>

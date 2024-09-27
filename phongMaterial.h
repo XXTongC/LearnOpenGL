@@ -19,6 +19,7 @@ namespace GLframework
 
 	public:
 		std::shared_ptr<Texture> mDiffuse{ nullptr };
+		std::shared_ptr<Texture> mSpecularMask{ nullptr };
 		float mShiness{ 1.0f };
 	};
 }

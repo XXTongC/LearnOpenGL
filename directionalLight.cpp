@@ -6,3 +6,7 @@ glm::vec3 DirectionalLight::getDirection() const
 {
 	return mDirection;
 }
+void DirectionalLight::setDirection(glm::vec3 value)
+{
+	mDirection = value;
+}

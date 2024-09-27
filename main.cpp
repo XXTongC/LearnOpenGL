@@ -15,8 +15,14 @@
 #include "geometry.h"
 #include "mesh.h"
 #include "phongMaterial.h"
+#include "whiteMaterial.h"
 #include "material.h"
 #include "renderer.h"
+#include "pointLight.h"
+//imgui thirdparty
+#include "third_party/imgui/imgui.h"
+#include "third_party/imgui/imgui_impl_glfw.h"
+#include "third_party/imgui/imgui_impl_opengl3.h"
 
 /*
  * to make main.cpp clear
@@ -45,23 +51,31 @@ void render();
 void prepareCamera();
 
 //状态设置初始化
+void initIMGUI();
 void prepareState();
-
 void prepare();
+
+//绘制IMGUI
+void renderIMGUI();
+
+//点光源移动
+void lightTransorm();
 
 //声明全局变量vao以及shaderProram
 //GLuint vao;
 float angle = 0.0f;
 std::shared_ptr < GLframework::Renderer> renderer = nullptr;
 std::vector<std::shared_ptr < GLframework::Mesh>> meshes{};
-std::shared_ptr < GLframework::DirectionalLight> dirLight = nullptr;
+std::shared_ptr<GLframework::Mesh> meshPointLight = nullptr;
 std::shared_ptr <GLframework::AmbientLight> ambientLight = nullptr;
 Camera* camera = nullptr;
 CameraControl* cameracontrol = nullptr;
-
-
-
-float specularIntensity = 0.5f;
+glm::vec3 clearColor{};
+//声明灯光
+std::shared_ptr < GLframework::DirectionalLight> dirLight = nullptr;
+std::shared_ptr < GLframework::SpotLight> spotLight = nullptr;
+std::vector<std::shared_ptr<GLframework::PointLight>> pointLights{};
+float specularIntensity = 0.8f;
 int main()
 {
 	std::cout << "Please set the window as x * y" << std::endl;
@@ -72,13 +86,14 @@ int main()
 
 	//设置opengl 视口并且清理颜色
 	GL_CALL(glViewport(0, 0, width, height));
-	GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 
 
 	prepareCamera();
 
 	prepare();
 
+	initIMGUI();
 	//测试获取该显卡驱动提供的Arrribbutes数量
 	int nrAttributes;
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
@@ -86,10 +101,13 @@ int main()
 	
 	while (GL_APP->update())
 	{
-		meshes[3]->rotateX(0.01f);
-		meshes[3]->rotateY(0.1f);
+		lightTransorm();
+		meshes[0]->rotateZ(1.0f);
+		meshes[1]->rotateY(1.0f);
 		cameracontrol->update();
-		renderer->render(meshes,camera,dirLight,ambientLight);
+		renderer->setClearColor(clearColor);
+		renderer->render(meshes,camera,dirLight,spotLight,pointLights,ambientLight);
+		renderIMGUI();
 	}
 
 	GL_APP->destory();
@@ -97,44 +115,81 @@ int main()
 	return 0;
 }
 
+void lightTransorm()
+{
+	float xPos = glm::sin(glfwGetTime()) + 2.3f;
+	meshPointLight->setPosition(glm::vec3(xPos, 0.0f, 0.0f));
+	spotLight->setPosition(glm::vec3(xPos, 0.0f, 0.0f));
+}
+
 void prepare()
 {
 	renderer = std::make_shared<GLframework::Renderer>();
 
 	//1. 创建material并且配置参数
-	auto matertialGrass = std::make_shared<GLframework::PhongMaterial>();
-	matertialGrass->mShiness = 10.0f;
-	matertialGrass->mDiffuse = std::make_shared<GLframework::Texture>("Texture/grass.jpg", 0);
-
-	auto matertialLand = std::make_shared<GLframework::PhongMaterial>();
-	matertialLand->mShiness = 10.0f;
-	matertialLand->mDiffuse = std::make_shared<GLframework::Texture>("Texture/land.jpg", 1);
-
-	auto matertialNoise = std::make_shared<GLframework::PhongMaterial>();
-	matertialNoise->mShiness = 10.0f;
-	matertialNoise->mDiffuse = std::make_shared<GLframework::Texture>("Texture/noise.jpg", 2);
-	
-	//wall
-	auto matertialWall = std::make_shared<GLframework::PhongMaterial>();
-	matertialWall->mShiness = 10.0f;
-	matertialWall->mDiffuse = std::make_shared<GLframework::Texture>("Texture/wall.jpg", 0);
-	
-
+	auto materialBox			= std::make_shared<GLframework::PhongMaterial>();
+	materialBox->mShiness		= 10.0f;
+	materialBox->mDiffuse		= std::make_shared<GLframework::Texture>("Texture/box.png", 0);
+	materialBox->mSpecularMask	= std::make_shared<GLframework::Texture>("Texture/sp_mask.png", 1);
+	auto materialSphere			= std::make_shared<GLframework::PhongMaterial>();
+	materialSphere->mShiness = 10.0f;
+	materialSphere->mDiffuse = std::make_shared<GLframework::Texture>("Texture/box.png",0);
+	materialSphere->mSpecularMask = std::make_shared<GLframework::Texture>("Texture/sp_mask.png", 1);
 	//2. 创建geogetry
-	auto geometry = GLframework::Geometry::createSphere(renderer->getShader(matertialGrass->getMaterialType()), 2.0f);
+	auto geometrySphere = GLframework::Geometry::createSphere(renderer->getShader(materialSphere->getMaterialType()),
+	                                                          0.1f);
+	auto geometryBox	= GLframework::Geometry::createBox(renderer->getShader(materialBox->getMaterialType()), 2.0f, 2.0f,
+	                                                    2.0f);
+	//3. 生成mesh,
 
-	//3. 生成mesh
-	auto meshwall = std::make_shared<GLframework::Mesh>(geometry, matertialWall);
-	meshwall->setPosition(glm::vec3(4.0f, 0.0f, 0.0f));
-	meshes.push_back(std::make_shared<GLframework::Mesh>(geometry,matertialGrass));
-	meshes.push_back(std::make_shared<GLframework::Mesh>(geometry, matertialLand));
-	meshes.push_back(std::make_shared<GLframework::Mesh>(geometry, matertialNoise));
-	meshes.push_back(std::move(meshwall));
+	auto meshBox	= std::make_shared<GLframework::Mesh>(geometryBox, materialBox);
+	meshPointLight	= std::make_shared<GLframework::Mesh>(geometrySphere, materialSphere);
+	meshPointLight->setPosition(glm::vec3(1.5f, 0.0f, 0.0f));
 
-	
-	dirLight = std::make_shared<GLframework::DirectionalLight>();
-	ambientLight = std::make_shared<GLframework::AmbientLight>();
-	ambientLight->setColor(glm::vec3{ 0.01f });
+	//创建父子关系
+	meshBox->addChild(meshPointLight);
+
+	meshes.push_back(meshBox);
+	meshes.push_back(meshPointLight);
+
+	spotLight	= std::make_shared<GLframework::SpotLight>(glm::vec3(-1.0f, 0.0f, 0.0f), 30.0f, 60.0f);
+	spotLight	->	setPosition(glm::vec3(1.5f, 0.0f, 0.0f));
+	spotLight	->	setColor(glm::vec3{0.0f});
+
+	dirLight	= std::make_shared<GLframework::DirectionalLight>();
+	dirLight	->	setDirection(glm::vec3(1.0f, 1.0f, 1.0f));
+	dirLight	->	setColor(glm::vec3{0.0f});
+
+	auto pointLight1 = std::make_shared<GLframework::PointLight>();
+	pointLight1	->	setSpecularIntensity(0.8f);
+	pointLight1	->	setK(0.017f, 0.07f, 1.0f);
+	pointLight1	->	setColor(glm::vec3(1.0f, 0.0f, 0.0f));
+	pointLight1	->	setPosition(glm::vec3(-1.5f, 0.0f, 0.0f));
+	pointLights.push_back(std::move(pointLight1));
+
+	auto pointLight2 = std::make_shared<GLframework::PointLight>();
+	pointLight2	->	setSpecularIntensity(0.8f);
+	pointLight2	->	setK(0.017f, 0.07f, 1.0f);
+	pointLight2	->	setColor(glm::vec3(0.0f, 1.0f, 0.0f));
+	pointLight2	->	setPosition(glm::vec3(1.5f, 0.0f, 0.0f));
+	pointLights.push_back(std::move(pointLight2));
+
+	auto pointLight3 = std::make_shared<GLframework::PointLight>();
+	pointLight3	->	setSpecularIntensity(0.8f);
+	pointLight3	->	setK(0.017f, 0.07f, 1.0f);
+	pointLight3	->	setColor(glm::vec3(0.0f, 0.0f, 1.0f));
+	pointLight3	->	setPosition(glm::vec3(0.0f, 1.5f, 0.0f));
+	pointLights.push_back(std::move(pointLight3));
+
+	auto pointLight4 = std::make_shared<GLframework::PointLight>();
+	pointLight4	->	setSpecularIntensity(0.8f);
+	pointLight4	->	setK(0.017f, 0.07f, 1.0f);
+	pointLight4	->	setColor(glm::vec3(1.0f, 1.0f, 1.0f));
+	pointLight4	->	setPosition(glm::vec3(0.0f, 0.0f, 1.5f));
+	pointLights.push_back(std::move(pointLight4));
+
+	ambientLight	 = std::make_shared<GLframework::AmbientLight>();
+	ambientLight->	setColor(glm::vec3{0.0f});
 }
 
 bool setAndInitWindow(int weith, int height)
@@ -161,7 +216,28 @@ void prepareState()
 	glDepthFunc(GL_LESS);
 }
 
+void renderIMGUI()
+{
+	// 1. 开启当前IMGUI渲染
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
 
+	// 2. 决定当前的GUI上面有哪些控件，从上到下
+	ImGui::Begin("Control");
+	ImGui::Text("yeah!\n");
+	ImGui::Button("Text Button", ImVec2(40, 20));
+	ImGui::ColorEdit3("Clear Color",(float *)(&clearColor));
+	ImGui::End();
+
+
+	// 3. 执行UI渲染
+	ImGui::Render();
+	int display_w, display_h;
+	glfwGetFramebufferSize(GL_APP->getWindow(), &display_w, &display_h);
+	glViewport(0, 0, display_w, display_h);
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
 
 void prepareCamera() 
 {
@@ -178,13 +254,25 @@ void prepareCamera()
 	//float size = 10.0f;
 	//camera = new OrthographicCamera(-size,size,size,-size,size,-size);
 	
-	cameracontrol = new TrackBallCameraControl();
+	cameracontrol = new GameCameraControl();
 	cameracontrol->setCamera(camera);
 }
 //void prepareOrtho()
 //{
 //	ortherMartix = glm::ortho(-2.0f, 2.0f, 2.0f, -2.0f, 2.0f, -2.0f);
 //}
+
+void initIMGUI()
+{
+	ImGui::CreateContext();		//创建ImGui上下文
+	ImGui::StyleColorsDark();	//选择一个主题
+
+	//	设置ImGui与GLFW和OpenGL的绑定
+	ImGui_ImplGlfw_InitForOpenGL(GL_APP->getWindow(), true);
+	ImGui_ImplOpenGL3_Init("#version 460");
+}
+
+
 
 #pragma region 回调函数定义
 //鼠标滚轮（放缩）回调函数
