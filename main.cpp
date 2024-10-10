@@ -17,12 +17,15 @@
 #include "phongMaterial.h"
 #include "whiteMaterial.h"
 #include "material.h"
+#include "scene.h"
 #include "renderer.h"
 #include "pointLight.h"
 //imgui thirdparty
 #include "third_party/imgui/imgui.h"
 #include "third_party/imgui/imgui_impl_glfw.h"
 #include "third_party/imgui/imgui_impl_opengl3.h"
+
+#include "assimpLoader.h"
 
 /*
  * to make main.cpp clear
@@ -58,14 +61,13 @@ void prepare();
 //绘制IMGUI
 void renderIMGUI();
 
-//点光源移动
-void lightTransorm();
+
 
 //声明全局变量vao以及shaderProram
 //GLuint vao;
 float angle = 0.0f;
 std::shared_ptr < GLframework::Renderer> renderer = nullptr;
-std::vector<std::shared_ptr < GLframework::Mesh>> meshes{};
+std::shared_ptr<GLframework::Scene> scene = nullptr;
 std::shared_ptr<GLframework::Mesh> meshPointLight = nullptr;
 std::shared_ptr <GLframework::AmbientLight> ambientLight = nullptr;
 Camera* camera = nullptr;
@@ -101,12 +103,10 @@ int main()
 	
 	while (GL_APP->update())
 	{
-		lightTransorm();
-		meshes[0]->rotateZ(1.0f);
-		meshes[1]->rotateY(1.0f);
+		
 		cameracontrol->update();
 		renderer->setClearColor(clearColor);
-		renderer->render(meshes,camera,dirLight,spotLight,pointLights,ambientLight);
+		renderer->render(scene,camera,dirLight,spotLight,pointLights,ambientLight);
 		renderIMGUI();
 	}
 
@@ -115,81 +115,61 @@ int main()
 	return 0;
 }
 
-void lightTransorm()
-{
-	float xPos = glm::sin(glfwGetTime()) + 2.3f;
-	meshPointLight->setPosition(glm::vec3(xPos, 0.0f, 0.0f));
-	spotLight->setPosition(glm::vec3(xPos, 0.0f, 0.0f));
-}
+
 
 void prepare()
 {
 	renderer = std::make_shared<GLframework::Renderer>();
+	scene = std::make_shared<GLframework::Scene>();
 
+	auto textModel = GL_APPLICATION::AssimpLoader::load("fbx/bag/backpack.obj",renderer);
+	textModel->setScale(glm::vec3(1.0f));
+	scene->addChild(textModel);
 	//1. 创建material并且配置参数
-	auto materialBox			= std::make_shared<GLframework::PhongMaterial>();
-	materialBox->mShiness		= 10.0f;
-	materialBox->mDiffuse		= std::make_shared<GLframework::Texture>("Texture/box.png", 0);
-	materialBox->mSpecularMask	= std::make_shared<GLframework::Texture>("Texture/sp_mask.png", 1);
-	auto materialSphere			= std::make_shared<GLframework::PhongMaterial>();
-	materialSphere->mShiness = 10.0f;
-	materialSphere->mDiffuse = std::make_shared<GLframework::Texture>("Texture/box.png",0);
-	materialSphere->mSpecularMask = std::make_shared<GLframework::Texture>("Texture/sp_mask.png", 1);
 	//2. 创建geogetry
-	auto geometrySphere = GLframework::Geometry::createSphere(renderer->getShader(materialSphere->getMaterialType()),
-	                                                          0.1f);
-	auto geometryBox	= GLframework::Geometry::createBox(renderer->getShader(materialBox->getMaterialType()), 2.0f, 2.0f,
-	                                                    2.0f);
 	//3. 生成mesh,
 
-	auto meshBox	= std::make_shared<GLframework::Mesh>(geometryBox, materialBox);
-	meshPointLight	= std::make_shared<GLframework::Mesh>(geometrySphere, materialSphere);
-	meshPointLight->setPosition(glm::vec3(1.5f, 0.0f, 0.0f));
-
 	//创建父子关系
-	meshBox->addChild(meshPointLight);
-
-	meshes.push_back(meshBox);
-	meshes.push_back(meshPointLight);
 
 	spotLight	= std::make_shared<GLframework::SpotLight>(glm::vec3(-1.0f, 0.0f, 0.0f), 30.0f, 60.0f);
 	spotLight	->	setPosition(glm::vec3(1.5f, 0.0f, 0.0f));
 	spotLight	->	setColor(glm::vec3{0.0f});
 
 	dirLight	= std::make_shared<GLframework::DirectionalLight>();
-	dirLight	->	setDirection(glm::vec3(1.0f, 1.0f, 1.0f));
-	dirLight	->	setColor(glm::vec3{0.0f});
+	dirLight	->	setDirection(glm::vec3(-1.0f));
+	dirLight	->	setSpecularIntensity(0.1f);
 
 	auto pointLight1 = std::make_shared<GLframework::PointLight>();
-	pointLight1	->	setSpecularIntensity(0.8f);
+	pointLight1	->	setSpecularIntensity(0.01f);
 	pointLight1	->	setK(0.017f, 0.07f, 1.0f);
-	pointLight1	->	setColor(glm::vec3(1.0f, 0.0f, 0.0f));
+	pointLight1	->	setColor(glm::vec3(1.0f, 1.0f, 1.0f));
 	pointLight1	->	setPosition(glm::vec3(-1.5f, 0.0f, 0.0f));
 	pointLights.push_back(std::move(pointLight1));
 
 	auto pointLight2 = std::make_shared<GLframework::PointLight>();
-	pointLight2	->	setSpecularIntensity(0.8f);
+	pointLight2	->	setSpecularIntensity(0.01f);
 	pointLight2	->	setK(0.017f, 0.07f, 1.0f);
-	pointLight2	->	setColor(glm::vec3(0.0f, 1.0f, 0.0f));
+	pointLight2	->	setColor(glm::vec3(1.0f, 1.0f, 1.0f));
 	pointLight2	->	setPosition(glm::vec3(1.5f, 0.0f, 0.0f));
 	pointLights.push_back(std::move(pointLight2));
 
 	auto pointLight3 = std::make_shared<GLframework::PointLight>();
-	pointLight3	->	setSpecularIntensity(0.8f);
+	pointLight3	->	setSpecularIntensity(0.01f);
 	pointLight3	->	setK(0.017f, 0.07f, 1.0f);
-	pointLight3	->	setColor(glm::vec3(0.0f, 0.0f, 1.0f));
+	pointLight3	->	setColor(glm::vec3(1.0f, 1.0f, 1.0f));
 	pointLight3	->	setPosition(glm::vec3(0.0f, 1.5f, 0.0f));
 	pointLights.push_back(std::move(pointLight3));
 
 	auto pointLight4 = std::make_shared<GLframework::PointLight>();
-	pointLight4	->	setSpecularIntensity(0.8f);
+	pointLight4	->	setSpecularIntensity(0.01f);
 	pointLight4	->	setK(0.017f, 0.07f, 1.0f);
 	pointLight4	->	setColor(glm::vec3(1.0f, 1.0f, 1.0f));
 	pointLight4	->	setPosition(glm::vec3(0.0f, 0.0f, 1.5f));
 	pointLights.push_back(std::move(pointLight4));
 
 	ambientLight	 = std::make_shared<GLframework::AmbientLight>();
-	ambientLight->	setColor(glm::vec3{0.0f});
+	ambientLight->	setColor(glm::vec3(0.05f));
+	
 }
 
 bool setAndInitWindow(int weith, int height)

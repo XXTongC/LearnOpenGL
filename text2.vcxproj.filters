@@ -1,14 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="源文件">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="头文件">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="资源文件">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -16,267 +8,566 @@
     <Filter Include="资源文件\shaders">
       <UniqueIdentifier>{e7546565-836b-4814-adc7-6e52e092392f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\OldTestCode">
-      <UniqueIdentifier>{d7abe347-eb27-4ac1-b2ff-68f53093748a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\OldTestCode">
-      <UniqueIdentifier>{42132605-9631-4b6b-97e8-82a7b2f5055f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\GLframework">
-      <UniqueIdentifier>{a5902198-03e7-4574-b898-c90887d8ad28}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\GLframework">
-      <UniqueIdentifier>{98157fdf-3762-4722-8320-cf49012d5584}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Application">
-      <UniqueIdentifier>{91ec29b3-af2b-411d-892e-a94dcb4714fd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Application">
-      <UniqueIdentifier>{58d860ac-20a9-48ce-b871-46a830d95949}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Application\camera">
-      <UniqueIdentifier>{dcb371ff-b6b1-408b-a22b-a6914a3bfc16}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Application\camera">
-      <UniqueIdentifier>{40a69472-ad5f-4611-8349-308ec3bf9000}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\wrapper">
-      <UniqueIdentifier>{826338fd-4bb9-427d-bb2f-bed3bb607daa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\wrapper">
-      <UniqueIdentifier>{2796c719-4fb1-4dca-a746-0af6f8b8a331}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\GLframework\material">
-      <UniqueIdentifier>{d7ad4f6c-925a-46fa-9e0e-1aa225703a84}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\GLframework\material">
-      <UniqueIdentifier>{f3764497-53fa-4cf1-a55b-8b3c1c6cfbfa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\GLframework\light">
-      <UniqueIdentifier>{9efb6cb7-8c15-4aad-b11c-83811b79e8e5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\GLframework\light">
-      <UniqueIdentifier>{23b62a03-1d1b-4b2e-aed5-6c5f784e141e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\GLframework\renderer">
-      <UniqueIdentifier>{c833c7b0-be64-4f66-bf92-794d1288b687}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\GLframework\renderer">
-      <UniqueIdentifier>{82ce33e3-36be-4801-965d-5dc896c26b85}</UniqueIdentifier>
-    </Filter>
     <Filter Include="资源文件\Textures">
       <UniqueIdentifier>{9b5a1236-5787-4bf4-8b8c-af569dcd3464}</UniqueIdentifier>
     </Filter>
     <Filter Include="third_party">
       <UniqueIdentifier>{2ded3f09-2127-43fa-9476-c70e5a12457e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="third_party\imgui">
+    <Filter Include="third_party\include">
+      <UniqueIdentifier>{091b06f6-435e-4092-9638-87cdab475e97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\include\imgui">
       <UniqueIdentifier>{b54577ae-97ac-401f-874a-8b937efbc54a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\lib">
+      <UniqueIdentifier>{11e6383f-2a28-4995-aaa1-089d159a8fc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\include\assimp">
+      <UniqueIdentifier>{14163963-55e3-43c7-8657-79fd0e53ef4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\include\assimp\complier">
+      <UniqueIdentifier>{f3a0867d-09b0-4431-8f41-9b81a7ae8077}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="include\OldTestCode">
+      <UniqueIdentifier>{d7abe347-eb27-4ac1-b2ff-68f53093748a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework">
+      <UniqueIdentifier>{a5902198-03e7-4574-b898-c90887d8ad28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\material">
+      <UniqueIdentifier>{d7ad4f6c-925a-46fa-9e0e-1aa225703a84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\light">
+      <UniqueIdentifier>{9efb6cb7-8c15-4aad-b11c-83811b79e8e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\renderer">
+      <UniqueIdentifier>{82ce33e3-36be-4801-965d-5dc896c26b85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\tools">
+      <UniqueIdentifier>{d273fb21-7222-4125-9af7-4715c154548f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\Application">
+      <UniqueIdentifier>{58d860ac-20a9-48ce-b871-46a830d95949}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\Application\camera">
+      <UniqueIdentifier>{dcb371ff-b6b1-408b-a22b-a6914a3bfc16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\wrapper">
+      <UniqueIdentifier>{2796c719-4fb1-4dca-a746-0af6f8b8a331}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="cppfile\OldTestCode">
+      <UniqueIdentifier>{42132605-9631-4b6b-97e8-82a7b2f5055f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\GLframework">
+      <UniqueIdentifier>{98157fdf-3762-4722-8320-cf49012d5584}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\GLframework\material">
+      <UniqueIdentifier>{f3764497-53fa-4cf1-a55b-8b3c1c6cfbfa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\GLframework\light">
+      <UniqueIdentifier>{23b62a03-1d1b-4b2e-aed5-6c5f784e141e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\GLframework\renderer">
+      <UniqueIdentifier>{c833c7b0-be64-4f66-bf92-794d1288b687}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\GLframework\tools">
+      <UniqueIdentifier>{11661000-ef93-44b6-8d60-f4627af9131f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\Application">
+      <UniqueIdentifier>{91ec29b3-af2b-411d-892e-a94dcb4714fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\Application\camera">
+      <UniqueIdentifier>{40a69472-ad5f-4611-8349-308ec3bf9000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\wrapper">
+      <UniqueIdentifier>{826338fd-4bb9-427d-bb2f-bed3bb607daa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\fbx">
+      <UniqueIdentifier>{7ab368e1-c331-4370-b457-ce88e25a9fc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\fbx\test">
+      <UniqueIdentifier>{1873a2bb-c7df-4203-87f7-ffc4603e89b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\fbx\test\test.fbm">
+      <UniqueIdentifier>{b48a0e92-1344-4542-949f-150101d450cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\fbx\bag">
+      <UniqueIdentifier>{42677696-1637-41b4-9aa3-cf07736c614b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
+      <Filter>cppfile</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Users\asus\Downloads\glad\src\glad.c">
-      <Filter>源文件</Filter>
+      <Filter>cppfile</Filter>
     </ClCompile>
     <ClCompile Include="OldTestCode.cpp">
-      <Filter>源文件\OldTestCode</Filter>
+      <Filter>cppfile\OldTestCode</Filter>
     </ClCompile>
     <ClCompile Include="shader.cpp">
-      <Filter>源文件\GLframework</Filter>
+      <Filter>cppfile\GLframework</Filter>
     </ClCompile>
     <ClCompile Include="Application.cpp">
-      <Filter>源文件\Application</Filter>
+      <Filter>cppfile\Application</Filter>
     </ClCompile>
     <ClCompile Include="texture.cpp">
-      <Filter>源文件\GLframework</Filter>
+      <Filter>cppfile\GLframework</Filter>
     </ClCompile>
     <ClCompile Include="camera.cpp">
-      <Filter>源文件\Application\camera</Filter>
+      <Filter>cppfile\Application\camera</Filter>
     </ClCompile>
     <ClCompile Include="orthographiccamera.cpp">
-      <Filter>源文件\Application\camera</Filter>
+      <Filter>cppfile\Application\camera</Filter>
     </ClCompile>
     <ClCompile Include="perspectivecamera.cpp">
-      <Filter>源文件\Application\camera</Filter>
+      <Filter>cppfile\Application\camera</Filter>
     </ClCompile>
     <ClCompile Include="cameracontrol.cpp">
-      <Filter>源文件\Application\camera</Filter>
+      <Filter>cppfile\Application\camera</Filter>
     </ClCompile>
     <ClCompile Include="trackBallCameraControl.cpp">
-      <Filter>源文件\Application\camera</Filter>
+      <Filter>cppfile\Application\camera</Filter>
     </ClCompile>
     <ClCompile Include="gamecameracontrol.cpp">
-      <Filter>源文件\Application\camera</Filter>
+      <Filter>cppfile\Application\camera</Filter>
     </ClCompile>
     <ClCompile Include="geometry.cpp">
-      <Filter>源文件\GLframework</Filter>
+      <Filter>cppfile\GLframework</Filter>
     </ClCompile>
     <ClCompile Include="GL_ERROR_FIND.cpp">
-      <Filter>源文件\wrapper</Filter>
+      <Filter>cppfile\wrapper</Filter>
     </ClCompile>
     <ClCompile Include="object.cpp">
-      <Filter>源文件\GLframework</Filter>
+      <Filter>cppfile\GLframework</Filter>
     </ClCompile>
     <ClCompile Include="material.cpp">
-      <Filter>源文件\GLframework\material</Filter>
+      <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
     <ClCompile Include="phongMaterial.cpp">
-      <Filter>源文件\GLframework\material</Filter>
+      <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
     <ClCompile Include="mesh.cpp">
-      <Filter>源文件\GLframework\material</Filter>
+      <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
     <ClCompile Include="light.cpp">
-      <Filter>源文件\GLframework\light</Filter>
+      <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
     <ClCompile Include="directionalLight.cpp">
-      <Filter>源文件\GLframework\light</Filter>
+      <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
     <ClCompile Include="ambientLight.cpp">
-      <Filter>源文件\GLframework\light</Filter>
+      <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
     <ClCompile Include="renderer.cpp">
-      <Filter>源文件\GLframework\renderer</Filter>
+      <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
     <ClCompile Include="whiteMaterial.cpp">
-      <Filter>源文件\GLframework\material</Filter>
+      <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
     <ClCompile Include="pointLight.cpp">
-      <Filter>源文件\GLframework\light</Filter>
+      <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
     <ClCompile Include="spotLight.cpp">
-      <Filter>源文件\GLframework\light</Filter>
+      <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
     <ClCompile Include="third_party\imgui\imgui.cpp">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third_party\imgui\imgui_demo.cpp">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third_party\imgui\imgui_draw.cpp">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third_party\imgui\imgui_impl_glfw.cpp">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third_party\imgui\imgui_impl_opengl3.cpp">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third_party\imgui\imgui_tables.cpp">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClCompile>
     <ClCompile Include="third_party\imgui\imgui_widgets.cpp">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="scene.cpp">
+      <Filter>cppfile\GLframework</Filter>
+    </ClCompile>
+    <ClCompile Include="tools.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="assimpLoader.cpp">
+      <Filter>cppfile\Application</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
-      <Filter>头文件</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="stb_image.h">
-      <Filter>头文件</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="OldTestCode.h">
-      <Filter>头文件\OldTestCode</Filter>
+      <Filter>include\OldTestCode</Filter>
     </ClInclude>
     <ClInclude Include="shader.h">
-      <Filter>头文件\GLframework</Filter>
+      <Filter>include\GLframework</Filter>
     </ClInclude>
     <ClInclude Include="Application.h">
-      <Filter>头文件\Application</Filter>
+      <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="texture.h">
-      <Filter>头文件\GLframework</Filter>
+      <Filter>include\GLframework</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">
-      <Filter>头文件\Application\camera</Filter>
+      <Filter>include\Application\camera</Filter>
     </ClInclude>
     <ClInclude Include="orthographiccamera.h">
-      <Filter>头文件\Application\camera</Filter>
+      <Filter>include\Application\camera</Filter>
     </ClInclude>
     <ClInclude Include="perspectivecamera.h">
-      <Filter>头文件\Application\camera</Filter>
+      <Filter>include\Application\camera</Filter>
     </ClInclude>
     <ClInclude Include="cameracontrol.h">
-      <Filter>头文件\Application\camera</Filter>
+      <Filter>include\Application\camera</Filter>
     </ClInclude>
     <ClInclude Include="trackBallCameraControl.h">
-      <Filter>头文件\Application\camera</Filter>
+      <Filter>include\Application\camera</Filter>
     </ClInclude>
     <ClInclude Include="gamecameracontrol.h">
-      <Filter>头文件\Application\camera</Filter>
+      <Filter>include\Application\camera</Filter>
     </ClInclude>
     <ClInclude Include="geometry.h">
-      <Filter>头文件\GLframework</Filter>
+      <Filter>include\GLframework</Filter>
     </ClInclude>
     <ClInclude Include="GL_ERROR_FIND.h">
-      <Filter>头文件\wrapper</Filter>
+      <Filter>include\wrapper</Filter>
     </ClInclude>
     <ClInclude Include="core.h">
-      <Filter>头文件\wrapper</Filter>
+      <Filter>include\wrapper</Filter>
     </ClInclude>
     <ClInclude Include="object.h">
-      <Filter>头文件\GLframework</Filter>
+      <Filter>include\GLframework</Filter>
     </ClInclude>
     <ClInclude Include="material.h">
-      <Filter>头文件\GLframework\material</Filter>
+      <Filter>include\GLframework\material</Filter>
     </ClInclude>
     <ClInclude Include="phongMaterial.h">
-      <Filter>头文件\GLframework\material</Filter>
+      <Filter>include\GLframework\material</Filter>
     </ClInclude>
     <ClInclude Include="mesh.h">
-      <Filter>头文件\GLframework\material</Filter>
+      <Filter>include\GLframework\material</Filter>
     </ClInclude>
     <ClInclude Include="light.h">
-      <Filter>头文件\GLframework\light</Filter>
+      <Filter>include\GLframework\light</Filter>
     </ClInclude>
     <ClInclude Include="directionalLight.h">
-      <Filter>头文件\GLframework\light</Filter>
+      <Filter>include\GLframework\light</Filter>
     </ClInclude>
     <ClInclude Include="ambientLight.h">
-      <Filter>头文件\GLframework\light</Filter>
+      <Filter>include\GLframework\light</Filter>
     </ClInclude>
     <ClInclude Include="renderer.h">
-      <Filter>头文件\GLframework\renderer</Filter>
+      <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="whiteMaterial.h">
-      <Filter>头文件\GLframework\material</Filter>
+      <Filter>include\GLframework\material</Filter>
     </ClInclude>
     <ClInclude Include="pointLight.h">
-      <Filter>头文件\GLframework\light</Filter>
+      <Filter>include\GLframework\light</Filter>
     </ClInclude>
     <ClInclude Include="spotLight.h">
-      <Filter>头文件\GLframework\light</Filter>
+      <Filter>include\GLframework\light</Filter>
     </ClInclude>
     <ClInclude Include="third_party\imgui\imconfig.h">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third_party\imgui\imgui.h">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third_party\imgui\imgui_impl_glfw.h">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third_party\imgui\imgui_impl_opengl3.h">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third_party\imgui\imgui_impl_opengl3_loader.h">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third_party\imgui\imgui_internal.h">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third_party\imgui\imstb_textedit.h">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third_party\imgui\imstb_rectpack.h">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </ClInclude>
     <ClInclude Include="third_party\imgui\imstb_truetype.h">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="scene.h">
+      <Filter>include\GLframework</Filter>
+    </ClInclude>
+    <ClInclude Include="tools.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\ZipArchiveIOSystem.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\XMLTools.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\XmlParser.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Vertex.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\version.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\vector3.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\vector2.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\types.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\TinyFormatter.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\texture.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Subdivision.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\StringUtils.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\StringComparison.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\StreamWriter.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\StreamReader.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\StandardShapes.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\SmoothingGroups.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\SpatialSort.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\matrix4x4.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\MemoryIOWrapper.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\mesh.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\metadata.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\NullLogger.hpp">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\ObjMaterial.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\pbrmaterial.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\ParsingUtils.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\postprocess.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Profiler.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\ProgressHandler.hpp">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\quaternion.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\qnan.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\RemoveComments.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\scene.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\SceneCombiner.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\SGSpatialSort.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\SkeletonMeshBuilder.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\SmallVector.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\aabb.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\ai_assert.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\anim.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\AssertHandler.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Base64.hpp">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\BaseImporter.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\ByteSwapper.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\camera.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\cfileio.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\cexport.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\cimport.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\ColladaMetaData.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\color4.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\commonMetaData.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\config.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\CreateAnimMesh.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\BlobIOSystem.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Bitmap.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\DefaultLogger.hpp">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\DefaultIOSystem.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\DefaultIOStream.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\defs.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\material.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\LogStream.hpp">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Logger.hpp">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\LogAux.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\LineSplitter.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\light.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\IOSystem.hpp">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\IOStreamBuffer.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\IOStream.hpp">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\importerdesc.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Hash.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Importer.hpp">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\GltfMaterial.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\GenericProperty.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\fast_atof.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Exporter.hpp">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Exceptional.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\matrix3x3.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\MathFunctions.h">
+      <Filter>third_party\include\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Compiler\poppack1.h">
+      <Filter>third_party\include\assimp\complier</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Compiler\pstdint.h">
+      <Filter>third_party\include\assimp\complier</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\assimp\Compiler\pushpack1.h">
+      <Filter>third_party\include\assimp\complier</Filter>
+    </ClInclude>
+    <ClInclude Include="assimpLoader.h">
+      <Filter>include\Application</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -308,7 +599,40 @@
       <Filter>资源文件\shaders</Filter>
     </None>
     <None Include="third_party\imgui\imgui.natstepfilter">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
+    </None>
+    <None Include="third_party\assimp\vector3.inl">
+      <Filter>third_party\include\assimp</Filter>
+    </None>
+    <None Include="third_party\assimp\vector2.inl">
+      <Filter>third_party\include\assimp</Filter>
+    </None>
+    <None Include="third_party\assimp\SmoothingGroups.inl">
+      <Filter>third_party\include\assimp</Filter>
+    </None>
+    <None Include="third_party\assimp\matrix4x4.inl">
+      <Filter>third_party\include\assimp</Filter>
+    </None>
+    <None Include="third_party\assimp\quaternion.inl">
+      <Filter>third_party\include\assimp</Filter>
+    </None>
+    <None Include="third_party\assimp\color4.inl">
+      <Filter>third_party\include\assimp</Filter>
+    </None>
+    <None Include="third_party\assimp\matrix3x3.inl">
+      <Filter>third_party\include\assimp</Filter>
+    </None>
+    <None Include="third_party\assimp\material.inl">
+      <Filter>third_party\include\assimp</Filter>
+    </None>
+    <None Include="fbx\Fist Fight B.fbx">
+      <Filter>资源文件\fbx</Filter>
+    </None>
+    <None Include="fbx\test\test.fbx">
+      <Filter>资源文件\fbx\test</Filter>
+    </None>
+    <None Include="fbx\bag\backpack.mtl">
+      <Filter>资源文件\fbx\bag</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -341,10 +665,49 @@
     <Image Include="Texture\sp_mask.png">
       <Filter>资源文件\Textures</Filter>
     </Image>
+    <Image Include="fbx\test\test.fbm\box.png">
+      <Filter>资源文件\fbx\test\test.fbm</Filter>
+    </Image>
+    <Image Include="Texture\defaultTexture.jpg">
+      <Filter>资源文件\Textures</Filter>
+    </Image>
+    <Image Include="fbx\bag\ao.jpg">
+      <Filter>资源文件\fbx\bag</Filter>
+    </Image>
+    <Image Include="fbx\bag\diffuse.jpg">
+      <Filter>资源文件\fbx\bag</Filter>
+    </Image>
+    <Image Include="fbx\bag\normal.png">
+      <Filter>资源文件\fbx\bag</Filter>
+    </Image>
+    <Image Include="fbx\bag\roughness.jpg">
+      <Filter>资源文件\fbx\bag</Filter>
+    </Image>
+    <Image Include="fbx\bag\specular.jpg">
+      <Filter>资源文件\fbx\bag</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="third_party\imgui\imgui.natvis">
-      <Filter>third_party\imgui</Filter>
+      <Filter>third_party\include\imgui</Filter>
     </Natvis>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="third_party\lib\assimp-vc143-mtd.lib">
+      <Filter>third_party\lib</Filter>
+    </Library>
+    <Library Include="third_party\lib\zlibstaticd.lib">
+      <Filter>third_party\lib</Filter>
+    </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="fbx\bag\source_attribution.txt">
+      <Filter>资源文件\fbx\bag</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="fbx\bag\backpack.obj">
+      <Filter>资源文件\fbx\bag</Filter>
+    </Object>
   </ItemGroup>
 </Project>

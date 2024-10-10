@@ -106,11 +106,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlibstaticd.lib;assimp-vc143-mtd.lib;glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)third_party\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -133,6 +135,7 @@
     <ClCompile Include="..\..\..\..\Users\asus\Downloads\glad\src\glad.c" />
     <ClCompile Include="ambientLight.cpp" />
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="assimpLoader.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="cameracontrol.cpp" />
     <ClCompile Include="directionalLight.cpp" />
@@ -148,6 +151,7 @@
     <ClCompile Include="phongMaterial.cpp" />
     <ClCompile Include="pointLight.cpp" />
     <ClCompile Include="renderer.cpp" />
+    <ClCompile Include="scene.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GL_ERROR_FIND.cpp" />
@@ -160,11 +164,13 @@
     <ClCompile Include="third_party\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="third_party\imgui\imgui_tables.cpp" />
     <ClCompile Include="third_party\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="tools.cpp" />
     <ClCompile Include="trackBallCameraControl.cpp" />
     <ClCompile Include="whiteMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ambientLight.h" />
+    <ClInclude Include="assimpLoader.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="cameracontrol.h" />
     <ClInclude Include="core.h" />
@@ -182,12 +188,94 @@
     <ClInclude Include="pointLight.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="scene.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="GL_ERROR_FIND.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="spotLight.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="texture.h" />
+    <ClInclude Include="third_party\assimp\aabb.h" />
+    <ClInclude Include="third_party\assimp\ai_assert.h" />
+    <ClInclude Include="third_party\assimp\anim.h" />
+    <ClInclude Include="third_party\assimp\AssertHandler.h" />
+    <ClInclude Include="third_party\assimp\Base64.hpp" />
+    <ClInclude Include="third_party\assimp\BaseImporter.h" />
+    <ClInclude Include="third_party\assimp\Bitmap.h" />
+    <ClInclude Include="third_party\assimp\BlobIOSystem.h" />
+    <ClInclude Include="third_party\assimp\ByteSwapper.h" />
+    <ClInclude Include="third_party\assimp\camera.h" />
+    <ClInclude Include="third_party\assimp\cexport.h" />
+    <ClInclude Include="third_party\assimp\cfileio.h" />
+    <ClInclude Include="third_party\assimp\cimport.h" />
+    <ClInclude Include="third_party\assimp\ColladaMetaData.h" />
+    <ClInclude Include="third_party\assimp\color4.h" />
+    <ClInclude Include="third_party\assimp\commonMetaData.h" />
+    <ClInclude Include="third_party\assimp\Compiler\poppack1.h" />
+    <ClInclude Include="third_party\assimp\Compiler\pstdint.h" />
+    <ClInclude Include="third_party\assimp\Compiler\pushpack1.h" />
+    <ClInclude Include="third_party\assimp\config.h" />
+    <ClInclude Include="third_party\assimp\CreateAnimMesh.h" />
+    <ClInclude Include="third_party\assimp\DefaultIOStream.h" />
+    <ClInclude Include="third_party\assimp\DefaultIOSystem.h" />
+    <ClInclude Include="third_party\assimp\DefaultLogger.hpp" />
+    <ClInclude Include="third_party\assimp\defs.h" />
+    <ClInclude Include="third_party\assimp\Exceptional.h" />
+    <ClInclude Include="third_party\assimp\Exporter.hpp" />
+    <ClInclude Include="third_party\assimp\fast_atof.h" />
+    <ClInclude Include="third_party\assimp\GenericProperty.h" />
+    <ClInclude Include="third_party\assimp\GltfMaterial.h" />
+    <ClInclude Include="third_party\assimp\Hash.h" />
+    <ClInclude Include="third_party\assimp\Importer.hpp" />
+    <ClInclude Include="third_party\assimp\importerdesc.h" />
+    <ClInclude Include="third_party\assimp\IOStream.hpp" />
+    <ClInclude Include="third_party\assimp\IOStreamBuffer.h" />
+    <ClInclude Include="third_party\assimp\IOSystem.hpp" />
+    <ClInclude Include="third_party\assimp\light.h" />
+    <ClInclude Include="third_party\assimp\LineSplitter.h" />
+    <ClInclude Include="third_party\assimp\LogAux.h" />
+    <ClInclude Include="third_party\assimp\Logger.hpp" />
+    <ClInclude Include="third_party\assimp\LogStream.hpp" />
+    <ClInclude Include="third_party\assimp\material.h" />
+    <ClInclude Include="third_party\assimp\MathFunctions.h" />
+    <ClInclude Include="third_party\assimp\matrix3x3.h" />
+    <ClInclude Include="third_party\assimp\matrix4x4.h" />
+    <ClInclude Include="third_party\assimp\MemoryIOWrapper.h" />
+    <ClInclude Include="third_party\assimp\mesh.h" />
+    <ClInclude Include="third_party\assimp\metadata.h" />
+    <ClInclude Include="third_party\assimp\NullLogger.hpp" />
+    <ClInclude Include="third_party\assimp\ObjMaterial.h" />
+    <ClInclude Include="third_party\assimp\ParsingUtils.h" />
+    <ClInclude Include="third_party\assimp\pbrmaterial.h" />
+    <ClInclude Include="third_party\assimp\postprocess.h" />
+    <ClInclude Include="third_party\assimp\Profiler.h" />
+    <ClInclude Include="third_party\assimp\ProgressHandler.hpp" />
+    <ClInclude Include="third_party\assimp\qnan.h" />
+    <ClInclude Include="third_party\assimp\quaternion.h" />
+    <ClInclude Include="third_party\assimp\RemoveComments.h" />
+    <ClInclude Include="third_party\assimp\scene.h" />
+    <ClInclude Include="third_party\assimp\SceneCombiner.h" />
+    <ClInclude Include="third_party\assimp\SGSpatialSort.h" />
+    <ClInclude Include="third_party\assimp\SkeletonMeshBuilder.h" />
+    <ClInclude Include="third_party\assimp\SmallVector.h" />
+    <ClInclude Include="third_party\assimp\SmoothingGroups.h" />
+    <ClInclude Include="third_party\assimp\SpatialSort.h" />
+    <ClInclude Include="third_party\assimp\StandardShapes.h" />
+    <ClInclude Include="third_party\assimp\StreamReader.h" />
+    <ClInclude Include="third_party\assimp\StreamWriter.h" />
+    <ClInclude Include="third_party\assimp\StringComparison.h" />
+    <ClInclude Include="third_party\assimp\StringUtils.h" />
+    <ClInclude Include="third_party\assimp\Subdivision.h" />
+    <ClInclude Include="third_party\assimp\texture.h" />
+    <ClInclude Include="third_party\assimp\TinyFormatter.h" />
+    <ClInclude Include="third_party\assimp\types.h" />
+    <ClInclude Include="third_party\assimp\vector2.h" />
+    <ClInclude Include="third_party\assimp\vector3.h" />
+    <ClInclude Include="third_party\assimp\version.h" />
+    <ClInclude Include="third_party\assimp\Vertex.h" />
+    <ClInclude Include="third_party\assimp\XmlParser.h" />
+    <ClInclude Include="third_party\assimp\XMLTools.h" />
+    <ClInclude Include="third_party\assimp\ZipArchiveIOSystem.h" />
     <ClInclude Include="third_party\imgui\imconfig.h" />
     <ClInclude Include="third_party\imgui\imgui.h" />
     <ClInclude Include="third_party\imgui\imgui_impl_glfw.h" />
@@ -197,15 +285,27 @@
     <ClInclude Include="third_party\imgui\imstb_rectpack.h" />
     <ClInclude Include="third_party\imgui\imstb_textedit.h" />
     <ClInclude Include="third_party\imgui\imstb_truetype.h" />
+    <ClInclude Include="tools.h" />
     <ClInclude Include="trackBallCameraControl.h" />
     <ClInclude Include="whiteMaterial.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="fbx\bag\backpack.mtl" />
+    <None Include="fbx\Fist Fight B.fbx" />
+    <None Include="fbx\test\test.fbx" />
     <None Include="fragment.glsl" />
     <None Include="phong.frag" />
     <None Include="phongPointLight.frag" />
     <None Include="phongPointLight.vert" />
     <None Include="phongSpotLight.frag" />
+    <None Include="third_party\assimp\color4.inl" />
+    <None Include="third_party\assimp\material.inl" />
+    <None Include="third_party\assimp\matrix3x3.inl" />
+    <None Include="third_party\assimp\matrix4x4.inl" />
+    <None Include="third_party\assimp\quaternion.inl" />
+    <None Include="third_party\assimp\SmoothingGroups.inl" />
+    <None Include="third_party\assimp\vector2.inl" />
+    <None Include="third_party\assimp\vector3.inl" />
     <None Include="third_party\imgui\imgui.natstepfilter" />
     <None Include="vertex.glsl" />
     <None Include="phong.vert" />
@@ -216,7 +316,14 @@
     <ResourceCompile Include="text2.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="fbx\bag\ao.jpg" />
+    <Image Include="fbx\bag\diffuse.jpg" />
+    <Image Include="fbx\bag\normal.png" />
+    <Image Include="fbx\bag\roughness.jpg" />
+    <Image Include="fbx\bag\specular.jpg" />
+    <Image Include="fbx\test\test.fbm\box.png" />
     <Image Include="Texture\box.png" />
+    <Image Include="Texture\defaultTexture.jpg" />
     <Image Include="Texture\grass.jpg" />
     <Image Include="Texture\land.jpg" />
     <Image Include="Texture\noise.jpg" />
@@ -227,6 +334,18 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="third_party\imgui\imgui.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="third_party\lib\assimp-vc143-mtd.lib" />
+    <Library Include="third_party\lib\zlibstaticd.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="fbx\bag\source_attribution.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="fbx\bag\backpack.obj">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </Object>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

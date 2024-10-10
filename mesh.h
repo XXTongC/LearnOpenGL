@@ -9,8 +9,10 @@ namespace GLframework
 	{
 	public:
 		Mesh(std::shared_ptr<Geometry> geometry,std::shared_ptr<Material> material)
-			:Object(),mGeometry(std::move(geometry)),mMaterial(std::move(material))
-		{}
+			:mGeometry(geometry),mMaterial(material)
+		{
+			this->setType(ObjectType::Mesh);
+		}
 		~Mesh(){}
 		void setGeometry(std::shared_ptr<Geometry> geometry);
 		void setMaterial(std::shared_ptr<Material> material);

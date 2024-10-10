@@ -84,6 +84,35 @@ void Object::addParent(std::shared_ptr<Object> obj)
 	mParent = obj;
 }
 
+ObjectType Object::getType() const
+{
+	return mType;
+}
+
+void Object::setType(ObjectType type)
+{
+	mType = type;
+}
+
+void Object::setAngleX(float angle)
+{
+	mAngleX = angle;
+}
+
+void Object::setAngleY(float angle)
+{
+	mAngleY = angle;
+}
+
+void Object::setAngleZ(float angle)
+{
+	mAngleZ = angle;
+}
+
+
+
+
+
 
 
 

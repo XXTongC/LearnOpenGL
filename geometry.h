@@ -20,6 +20,13 @@ namespace GLframework
 
 	public:
 		Geometry(std::shared_ptr<GLframework::Shader> shader) { mShader = shader; }
+		Geometry(
+			std::shared_ptr<GLframework::Shader> shader,
+			const std::vector<float>& positions,
+			const std::vector<float>& normals,
+			const std::vector<float>& uvs,
+			const std::vector<unsigned int>& indices
+		);
 		~Geometry();
 		static std::shared_ptr<Geometry> createBox(std::shared_ptr<GLframework::Shader> shader, float length, float width, float height);
 		//static Geometry* createBox(float length, float width, float height);
