@@ -16,4 +16,6 @@ public:
 	glm::vec3 mPosition;
 	glm::vec3 mUp;
 	glm::vec3 mRight;
+	float mNear;
+	float mFar;
 };

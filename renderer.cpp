@@ -5,6 +5,7 @@
 #include "phongMaterial.h"
 #include "whiteMaterial.h"
 
+
 using namespace GLframework;
 
 void Renderer::setClearColor(glm::vec3 color)
@@ -30,6 +31,9 @@ std::shared_ptr<Shader> Renderer::pickShader(MaterialType type)
 	case MaterialType::WhiteMaterial:
 		res = mWhiteShader;
 		break;
+	case MaterialType::DepthMaterial:
+		res = mDepthShader;
+		break;
 	default:
 		std::cerr << "Unknown material type to pick shader\n";
 		break;
@@ -47,9 +51,13 @@ void  Renderer::render(
 	std::shared_ptr <GLframework::AmbientLight> ambient
 )
 {
-	// 1. 设置绘制帧opengl的必要状态机参数
+	// 1. 深度缓冲信息
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+	glDepthMask(GL_TRUE);
+
+	glDisable(GL_POLYGON_OFFSET_FILL);
+	glDisable(GL_POLYGON_OFFSET_LINE);
 
 	// 2. 清理画布
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -80,6 +88,38 @@ void Renderer::renderObject(
 
 			auto shader = pickShader(material->getMaterialType());
 
+			// 设置渲染状态
+			// 1. 检测深度状态
+			if(material->getDepthTest())
+			{
+				glEnable(GL_DEPTH_TEST);
+				glDepthFunc(material->getDepthFunc());
+			}
+			else
+			{
+				glDisable(GL_DEPTH_TEST);
+			}
+
+			if(material->getDepthWrite())
+			{
+				glDepthMask(GL_TRUE);
+			}else
+			{
+				glDepthMask(GL_FALSE);
+			}
+			// 2. 检测深度偏移状态
+			if(material->getPolygonOffsetState())
+			{
+				glEnable(material->getPolygonOffsetType());
+				// Factor表示深度斜率的倍数，unit表示深度精度的最小细分值的倍数，目的在于解决zFighting现象
+				glPolygonOffset(material->getFactor(), material->getUnit());
+			}else
+			{
+				glDisable(GL_POLYGON_OFFSET_FILL);
+				glDisable(GL_POLYGON_OFFSET_LINE);
+			}
+			
+			
 			// 2. 更新shader的uniform
 			shader->begin();
 
@@ -101,9 +141,8 @@ void Renderer::renderObject(
 				phongMat->mDiffuse->Bind();
 
 				//	mask贴图
-				//GL_CALL(shader->setInt("MaskSampler", 1));
-				//phongMat->mSpecularMask->Bind();
-
+				GL_CALL(shader->setInt("MaskSampler", 1));
+				phongMat->mSpecularMask->Bind();
 
 				//	将纹理采样器与纹理单元进行挂钩
 				//	mvp变化矩阵
@@ -158,12 +197,19 @@ void Renderer::renderObject(
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 				break;
 			}
+			case MaterialType::DepthMaterial:
+			{
+				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("viewMatrix", camera->getViewMatrix());
+				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
+				shader->setFloat("near", camera->mNear);
+				shader->setFloat("far", camera->mFar);
+				break;
+			}
 			default:
 				std::cout << "wrong\n";
 				break;
 			}
-
-
 			// 3. 绑定vao
 			glBindVertexArray(geometry->getVao());
 			// 4. 执行绘制命令
@@ -172,11 +218,11 @@ void Renderer::renderObject(
 
 			//GL_CALL(glBindVertexArray(0));
 			//shader->end();
-
 		
 	}
 
 	// 2. 遍历object的子节点，对每个子节点调用renderObject函数
+	
 	for(auto& t : object->getChildren())
 	{
 		renderObject(t, camera, dirLight,spotLight,pointLights, ambient);

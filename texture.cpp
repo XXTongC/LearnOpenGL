@@ -40,6 +40,7 @@ GLframework::Texture::Texture(const std::string& path, unsigned int unit)
 	//声明图片长宽，颜色通道
 	int channels;
 	mUnit = unit;
+	
 	//反转y轴
 	stbi_set_flip_vertically_on_load(true);
 	//读取图片数据

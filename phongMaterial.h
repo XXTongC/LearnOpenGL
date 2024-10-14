@@ -2,7 +2,6 @@
 
 #include "material.h"
 #include "texture.h"
-
 namespace GLframework
 {
 	class PhongMaterial: public Material
@@ -20,6 +19,6 @@ namespace GLframework
 	public:
 		std::shared_ptr<Texture> mDiffuse{ nullptr };
 		std::shared_ptr<Texture> mSpecularMask{ nullptr };
-		float mShiness{ 1.0f };
+		float mShiness{ 10.0f };
 	};
 }

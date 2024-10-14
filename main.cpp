@@ -15,8 +15,10 @@
 #include "geometry.h"
 #include "mesh.h"
 #include "phongMaterial.h"
+#include "depthMaterial.h"
 #include "whiteMaterial.h"
 #include "material.h"
+
 #include "scene.h"
 #include "renderer.h"
 #include "pointLight.h"
@@ -45,7 +47,7 @@ void OnCursor(double xpos, double ypos);
 //void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 #pragma endregion
 
-bool setAndInitWindow(int weith = 800,int height = 600);
+bool setAndInitWindow(int weith = 1200,int height = 900);
 
 //绘制命令
 void render();
@@ -81,7 +83,7 @@ float specularIntensity = 0.8f;
 int main()
 {
 	std::cout << "Please set the window as x * y" << std::endl;
-	int width = 800, height = 600;
+	int width = 1200, height = 900;
 	//std::cin >> width >> height;
 	//初始化GLFW窗口
 	if (!setAndInitWindow(width,height)) return -1;
@@ -122,12 +124,32 @@ void prepare()
 	renderer = std::make_shared<GLframework::Renderer>();
 	scene = std::make_shared<GLframework::Scene>();
 
+	auto materialA = std::make_shared<GLframework::PhongMaterial>();
+	materialA->mDiffuse = std::make_shared<GLframework::Texture>("Texture/land.jpg", 0);
+	auto geometry = GLframework::Geometry::createPlane(renderer->getShader(materialA->getMaterialType()), 100.0f, 900.0f);
+	auto meshA = std::make_shared<GLframework::Mesh>(geometry, materialA);
+	meshA->rotateX(-88.0f);
+	scene->addChild(meshA);
+	
+	auto materialB = std::make_shared<GLframework::PhongMaterial>();
+	materialB->mDiffuse = std::make_shared<GLframework::Texture>("Texture/box.png", 0);
+	materialB->mSpecularMask = std::make_shared<GLframework::Texture>("Texture/sp_mask.png", 1);
+	materialB->setPolygonOffsetState(true);
+	materialB->setUnit(1.0f);
+	materialB->setFactor(1.0f);
+
+	auto meshB = std::make_shared<GLframework::Mesh>(geometry, materialB);
+
+	meshB->setPosition({ 1.0f, -1.0f, -0.001f});
+	meshB->rotateX(-88.0f);
+	scene->addChild(meshB);
+	
+	
+	/*
 	auto textModel = GL_APPLICATION::AssimpLoader::load("fbx/bag/backpack.obj",renderer);
 	textModel->setScale(glm::vec3(1.0f));
 	scene->addChild(textModel);
-	//1. 创建material并且配置参数
-	//2. 创建geogetry
-	//3. 生成mesh,
+	*/
 
 	//创建父子关系
 
@@ -136,39 +158,39 @@ void prepare()
 	spotLight	->	setColor(glm::vec3{0.0f});
 
 	dirLight	= std::make_shared<GLframework::DirectionalLight>();
-	dirLight	->	setDirection(glm::vec3(-1.0f));
-	dirLight	->	setSpecularIntensity(0.1f);
+	dirLight	->	setDirection(glm::vec3(-1.0f,-1.0f,-1.0f));
+	dirLight	->	setSpecularIntensity(0.5f);
 
 	auto pointLight1 = std::make_shared<GLframework::PointLight>();
 	pointLight1	->	setSpecularIntensity(0.01f);
 	pointLight1	->	setK(0.017f, 0.07f, 1.0f);
-	pointLight1	->	setColor(glm::vec3(1.0f, 1.0f, 1.0f));
+	pointLight1	->	setColor(glm::vec3(0.0F));
 	pointLight1	->	setPosition(glm::vec3(-1.5f, 0.0f, 0.0f));
 	pointLights.push_back(std::move(pointLight1));
 
 	auto pointLight2 = std::make_shared<GLframework::PointLight>();
 	pointLight2	->	setSpecularIntensity(0.01f);
 	pointLight2	->	setK(0.017f, 0.07f, 1.0f);
-	pointLight2	->	setColor(glm::vec3(1.0f, 1.0f, 1.0f));
+	pointLight2	->	setColor(glm::vec3(0.0f));
 	pointLight2	->	setPosition(glm::vec3(1.5f, 0.0f, 0.0f));
 	pointLights.push_back(std::move(pointLight2));
 
 	auto pointLight3 = std::make_shared<GLframework::PointLight>();
 	pointLight3	->	setSpecularIntensity(0.01f);
 	pointLight3	->	setK(0.017f, 0.07f, 1.0f);
-	pointLight3	->	setColor(glm::vec3(1.0f, 1.0f, 1.0f));
+	pointLight3	->	setColor(glm::vec3(0.0f));
 	pointLight3	->	setPosition(glm::vec3(0.0f, 1.5f, 0.0f));
 	pointLights.push_back(std::move(pointLight3));
 
 	auto pointLight4 = std::make_shared<GLframework::PointLight>();
 	pointLight4	->	setSpecularIntensity(0.01f);
 	pointLight4	->	setK(0.017f, 0.07f, 1.0f);
-	pointLight4	->	setColor(glm::vec3(1.0f, 1.0f, 1.0f));
+	pointLight4	->	setColor(glm::vec3(0.0f));
 	pointLight4	->	setPosition(glm::vec3(0.0f, 0.0f, 1.5f));
 	pointLights.push_back(std::move(pointLight4));
 
 	ambientLight	 = std::make_shared<GLframework::AmbientLight>();
-	ambientLight->	setColor(glm::vec3(0.05f));
+	ambientLight->	setColor(glm::vec3(0.2f));
 	
 }
 
@@ -235,6 +257,7 @@ void prepareCamera()
 	//camera = new OrthographicCamera(-size,size,size,-size,size,-size);
 	
 	cameracontrol = new GameCameraControl();
+	
 	cameracontrol->setCamera(camera);
 }
 //void prepareOrtho()

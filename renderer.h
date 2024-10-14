@@ -16,8 +16,9 @@ namespace GLframework
 	public:
 		Renderer()
 		{
-			mPhongShader = { std::make_shared<Shader>("phongPointLight.vert","phong.frag")};
-			mWhiteShader = { std::make_shared<Shader>("white.vert","white.frag") };
+			mPhongShader =  std::make_shared<Shader>("phongPointLight.vert","phong.frag");
+			mWhiteShader =  std::make_shared<Shader>("white.vert","white.frag");
+			mDepthShader = std::make_shared<Shader>("depth.vert", "depth.frag");
 		}
 		~Renderer(){}
 		std::shared_ptr<Shader> getShader(MaterialType type);
@@ -50,5 +51,6 @@ namespace GLframework
 		//根据材质类型的不同，挑选选择哪个shader对象
 		std::shared_ptr<Shader> mPhongShader{ nullptr };
 		std::shared_ptr<Shader> mWhiteShader{ nullptr };
+		std::shared_ptr<Shader> mDepthShader{ nullptr };
 	};
 }

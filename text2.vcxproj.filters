@@ -210,6 +210,9 @@
     <ClCompile Include="assimpLoader.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="depthMaterial.cpp">
+      <Filter>cppfile\GLframework\material</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -569,6 +572,9 @@
     <ClInclude Include="assimpLoader.h">
       <Filter>include\Application</Filter>
     </ClInclude>
+    <ClInclude Include="depthMaterial.h">
+      <Filter>include\GLframework\material</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl">
@@ -634,6 +640,12 @@
     <None Include="fbx\bag\backpack.mtl">
       <Filter>资源文件\fbx\bag</Filter>
     </None>
+    <None Include="depth.vert">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="depth.frag">
+      <Filter>资源文件\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="text2.rc">
@@ -685,6 +697,9 @@
     </Image>
     <Image Include="fbx\bag\specular.jpg">
       <Filter>资源文件\fbx\bag</Filter>
+    </Image>
+    <Image Include="Texture\defaultMaskSpecular.png">
+      <Filter>资源文件\Textures</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

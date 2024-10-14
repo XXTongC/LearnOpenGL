@@ -138,6 +138,7 @@
     <ClCompile Include="assimpLoader.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="cameracontrol.cpp" />
+    <ClCompile Include="depthMaterial.cpp" />
     <ClCompile Include="directionalLight.cpp" />
     <ClCompile Include="gamecameracontrol.cpp" />
     <ClCompile Include="geometry.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="cameracontrol.h" />
     <ClInclude Include="core.h" />
+    <ClInclude Include="depthMaterial.h" />
     <ClInclude Include="directionalLight.h" />
     <ClInclude Include="gamecameracontrol.h" />
     <ClInclude Include="geometry.h" />
@@ -290,6 +292,8 @@
     <ClInclude Include="whiteMaterial.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="depth.frag" />
+    <None Include="depth.vert" />
     <None Include="fbx\bag\backpack.mtl" />
     <None Include="fbx\Fist Fight B.fbx" />
     <None Include="fbx\test\test.fbx" />
@@ -323,6 +327,7 @@
     <Image Include="fbx\bag\specular.jpg" />
     <Image Include="fbx\test\test.fbm\box.png" />
     <Image Include="Texture\box.png" />
+    <Image Include="Texture\defaultMaskSpecular.png" />
     <Image Include="Texture\defaultTexture.jpg" />
     <Image Include="Texture\grass.jpg" />
     <Image Include="Texture\land.jpg" />

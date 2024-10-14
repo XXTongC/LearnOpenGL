@@ -9,7 +9,7 @@ std::shared_ptr<Object> GL_APPLICATION::AssimpLoader::load(const std::string& pa
 	//取出模型所在目录
 	std::size_t lastIndex = path.find_last_of("//");
 	auto rootPath = path.substr(0, lastIndex + 1);
-	std::cout << rootPath << std::endl;
+	//std::cout << rootPath << std::endl;
 	std::shared_ptr<Object> rootNode = std::make_shared<Object>();
 	Assimp::Importer importer;
 
@@ -108,9 +108,12 @@ std::shared_ptr<Mesh> AssimpLoader::processMesh(std::shared_ptr<Renderer> render
 
 	if(aimesh->mMaterialIndex>=0)
 	{
+		unsigned int unit = 0;
 		std::shared_ptr<Texture> texture = nullptr;
 		aiMaterial* aiMat = scene->mMaterials[aimesh->mMaterialIndex];
+		// 1. load diffuse
 		texture = processTexture(aiMat, aiTextureType_DIFFUSE, scene, rootPath);
+		texture->setUnit(unit++);
 		if(texture==nullptr)
 		{
 			material->mDiffuse = Texture::createTexture("Texture/defaultTexture.jpg", 0);
@@ -119,11 +122,18 @@ std::shared_ptr<Mesh> AssimpLoader::processMesh(std::shared_ptr<Renderer> render
 		{
 			material->mDiffuse = texture;
 		}
-		
-	}else
-	{
-		material->mDiffuse = Texture::createTexture("Texture/defaultTexture.jpg",0);
+		// 2. load specular
+		auto specularMask = processTexture(aiMat, aiTextureType_SPECULAR, scene, rootPath);
+		specularMask->setUnit(unit++);
+		if(specularMask==nullptr)
+		{
+			material->mSpecularMask = Texture::createTexture("Texture/defaultTexture.jpg", 0);
+		}else
+		{
+			material->mSpecularMask = specularMask;
+		}
 	}
+	
 	auto geometry = std::make_shared<Geometry>(renderer->getShader(material->getMaterialType()), positions, normals, uvs, indices);
 	return std::make_shared<Mesh>(geometry,material);
 }
@@ -154,13 +164,13 @@ std::shared_ptr<Texture> AssimpLoader::processTexture(const aiMaterial* aiMat, c
 	{
 		//非内嵌
 		std::string fullPath = rootPath + aipath.C_Str();
-		std::cout << fullPath << std::endl;
+		//std::cout << fullPath << std::endl;
 		texture = Texture::createTexture(fullPath, 0);
 	}
 	return texture;
 }
 
-
+//transform Assimp::Mat4 to glm::Mat4
 glm::mat4 AssimpLoader::getMat4f(aiMatrix4x4 value)
 {
 	glm::mat4 res(
