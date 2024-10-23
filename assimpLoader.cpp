@@ -104,8 +104,8 @@ std::shared_ptr<Mesh> AssimpLoader::processMesh(std::shared_ptr<Renderer> render
 	}
 	auto material = std::make_shared<PhongMaterial>();
 	//material->mDiffuse = std::make_shared<Texture>("Texture/box.png", 0);
+	//material->setDepthWrite(false);
 	
-
 	if(aimesh->mMaterialIndex>=0)
 	{
 		unsigned int unit = 0;
@@ -113,23 +113,25 @@ std::shared_ptr<Mesh> AssimpLoader::processMesh(std::shared_ptr<Renderer> render
 		aiMaterial* aiMat = scene->mMaterials[aimesh->mMaterialIndex];
 		// 1. load diffuse
 		texture = processTexture(aiMat, aiTextureType_DIFFUSE, scene, rootPath);
-		texture->setUnit(unit++);
+		
+		
 		if(texture==nullptr)
 		{
+
 			material->mDiffuse = Texture::createTexture("Texture/defaultTexture.jpg", 0);
 
-		}else
-		{
+		}else		{
+			texture->setUnit(unit++);
 			material->mDiffuse = texture;
 		}
 		// 2. load specular
 		auto specularMask = processTexture(aiMat, aiTextureType_SPECULAR, scene, rootPath);
-		specularMask->setUnit(unit++);
 		if(specularMask==nullptr)
 		{
-			material->mSpecularMask = Texture::createTexture("Texture/defaultTexture.jpg", 0);
+			material->mSpecularMask = Texture::createTexture("Texture/defaultTexture.jpg", 1);
 		}else
 		{
+			specularMask->setUnit(unit++);
 			material->mSpecularMask = specularMask;
 		}
 	}

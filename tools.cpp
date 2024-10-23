@@ -1,5 +1,5 @@
 #include "tools.h"
-
+#include "mesh.h"
 using namespace GLframework;
 
 void Tools::decompose(
@@ -21,5 +21,23 @@ void Tools::decompose(
 	eulerAngle.x = glm::degrees(eulerAngle.x);
 	eulerAngle.y = glm::degrees(eulerAngle.y);
 	eulerAngle.z = glm::degrees(eulerAngle.z);
+
+}
+
+void Tools::setModelBlend(std::shared_ptr<Object> obj,bool blend, float opacity)
+{
+	if(obj->getType()==ObjectType::Mesh)
+	{
+		std::shared_ptr<Mesh> mesh = std::static_pointer_cast<Mesh>(obj);
+		std::shared_ptr<Material> material = mesh->getMaterial();
+		material->setColorBlendState(blend);
+		material->setOpacity(opacity);
+		material->setDepthWrite(false);
+	}
+	auto children = obj->getChildren();
+	for(int i = 0;i<children.size();++i)
+	{
+		setModelBlend(children[i],blend,opacity);
+	}
 
 }

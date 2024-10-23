@@ -8,9 +8,6 @@
     <Filter Include="资源文件\shaders">
       <UniqueIdentifier>{e7546565-836b-4814-adc7-6e52e092392f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="资源文件\Textures">
-      <UniqueIdentifier>{9b5a1236-5787-4bf4-8b8c-af569dcd3464}</UniqueIdentifier>
-    </Filter>
     <Filter Include="third_party">
       <UniqueIdentifier>{2ded3f09-2127-43fa-9476-c70e5a12457e}</UniqueIdentifier>
     </Filter>
@@ -102,6 +99,12 @@
     </Filter>
     <Filter Include="资源文件\fbx\bag">
       <UniqueIdentifier>{42677696-1637-41b4-9aa3-cf07736c614b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\Texture">
+      <UniqueIdentifier>{9b5a1236-5787-4bf4-8b8c-af569dcd3464}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\fbx\textures">
+      <UniqueIdentifier>{01c1c1e6-4687-4b51-8d4b-f85eb5299fb4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -211,6 +214,9 @@
       <Filter>cppfile\Application</Filter>
     </ClCompile>
     <ClCompile Include="depthMaterial.cpp">
+      <Filter>cppfile\GLframework\material</Filter>
+    </ClCompile>
+    <ClCompile Include="opacityMaskMatetial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
   </ItemGroup>
@@ -575,6 +581,9 @@
     <ClInclude Include="depthMaterial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
+    <ClInclude Include="opacityMaskMatetial.h">
+      <Filter>include\GLframework\material</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl">
@@ -646,6 +655,15 @@
     <None Include="depth.frag">
       <Filter>资源文件\shaders</Filter>
     </None>
+    <None Include="phongOpacityMask.frag">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="phongOpacityMask.vert">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="fbx\grass.fbx">
+      <Filter>资源文件\fbx</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="text2.rc">
@@ -654,34 +672,34 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Texture\下载.jpg">
-      <Filter>资源文件\Textures</Filter>
+      <Filter>资源文件\Texture</Filter>
     </Image>
     <Image Include="Texture\panda.jpg">
-      <Filter>资源文件\Textures</Filter>
+      <Filter>资源文件\Texture</Filter>
     </Image>
     <Image Include="Texture\grass.jpg">
-      <Filter>资源文件\Textures</Filter>
+      <Filter>资源文件\Texture</Filter>
     </Image>
     <Image Include="Texture\land.jpg">
-      <Filter>资源文件\Textures</Filter>
+      <Filter>资源文件\Texture</Filter>
     </Image>
     <Image Include="Texture\noise.jpg">
-      <Filter>资源文件\Textures</Filter>
+      <Filter>资源文件\Texture</Filter>
     </Image>
     <Image Include="Texture\wall.jpg">
-      <Filter>资源文件\Textures</Filter>
+      <Filter>资源文件\Texture</Filter>
     </Image>
     <Image Include="Texture\box.png">
-      <Filter>资源文件\Textures</Filter>
+      <Filter>资源文件\Texture</Filter>
     </Image>
     <Image Include="Texture\sp_mask.png">
-      <Filter>资源文件\Textures</Filter>
+      <Filter>资源文件\Texture</Filter>
     </Image>
     <Image Include="fbx\test\test.fbm\box.png">
       <Filter>资源文件\fbx\test\test.fbm</Filter>
     </Image>
     <Image Include="Texture\defaultTexture.jpg">
-      <Filter>资源文件\Textures</Filter>
+      <Filter>资源文件\Texture</Filter>
     </Image>
     <Image Include="fbx\bag\ao.jpg">
       <Filter>资源文件\fbx\bag</Filter>
@@ -699,7 +717,22 @@
       <Filter>资源文件\fbx\bag</Filter>
     </Image>
     <Image Include="Texture\defaultMaskSpecular.png">
-      <Filter>资源文件\Textures</Filter>
+      <Filter>资源文件\Texture</Filter>
+    </Image>
+    <Image Include="Texture\window.png">
+      <Filter>资源文件\Texture</Filter>
+    </Image>
+    <Image Include="Texture\grass2.jpg">
+      <Filter>资源文件\Texture</Filter>
+    </Image>
+    <Image Include="Texture\grassMask.png">
+      <Filter>资源文件\Texture</Filter>
+    </Image>
+    <Image Include="fbx\textures\grass.jpg">
+      <Filter>资源文件\fbx\textures</Filter>
+    </Image>
+    <Image Include="fbx\textures\grassMask.png">
+      <Filter>资源文件\fbx\textures</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

@@ -10,7 +10,8 @@ namespace GLframework
 		PhongMaterial();
 		PhongMaterial(std::shared_ptr<Texture> diffuse,float shiness)
 			:mDiffuse(std::move(diffuse)), mShiness(shiness)
-		{ 
+		{
+			setColorBlendState(true);
 			setMaterialType(MaterialType::PhongMaterial);
 		}
 		~PhongMaterial();

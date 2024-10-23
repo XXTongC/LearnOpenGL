@@ -147,6 +147,7 @@
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="OldTestCode.cpp" />
+    <ClCompile Include="opacityMaskMatetial.cpp" />
     <ClCompile Include="orthographiccamera.cpp" />
     <ClCompile Include="perspectivecamera.cpp" />
     <ClCompile Include="phongMaterial.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="mesh.h" />
     <ClInclude Include="object.h" />
     <ClInclude Include="OldTestCode.h" />
+    <ClInclude Include="opacityMaskMatetial.h" />
     <ClInclude Include="orthographiccamera.h" />
     <ClInclude Include="perspectivecamera.h" />
     <ClInclude Include="phongMaterial.h" />
@@ -296,9 +298,12 @@
     <None Include="depth.vert" />
     <None Include="fbx\bag\backpack.mtl" />
     <None Include="fbx\Fist Fight B.fbx" />
+    <None Include="fbx\grass.fbx" />
     <None Include="fbx\test\test.fbx" />
     <None Include="fragment.glsl" />
     <None Include="phong.frag" />
+    <None Include="phongOpacityMask.frag" />
+    <None Include="phongOpacityMask.vert" />
     <None Include="phongPointLight.frag" />
     <None Include="phongPointLight.vert" />
     <None Include="phongSpotLight.frag" />
@@ -326,15 +331,20 @@
     <Image Include="fbx\bag\roughness.jpg" />
     <Image Include="fbx\bag\specular.jpg" />
     <Image Include="fbx\test\test.fbm\box.png" />
+    <Image Include="fbx\textures\grass.jpg" />
+    <Image Include="fbx\textures\grassMask.png" />
     <Image Include="Texture\box.png" />
     <Image Include="Texture\defaultMaskSpecular.png" />
     <Image Include="Texture\defaultTexture.jpg" />
     <Image Include="Texture\grass.jpg" />
+    <Image Include="Texture\grass2.jpg" />
+    <Image Include="Texture\grassMask.png" />
     <Image Include="Texture\land.jpg" />
     <Image Include="Texture\noise.jpg" />
     <Image Include="Texture\panda.jpg" />
     <Image Include="Texture\sp_mask.png" />
     <Image Include="Texture\wall.jpg" />
+    <Image Include="Texture\window.png" />
     <Image Include="Texture\下载.jpg" />
   </ItemGroup>
   <ItemGroup>

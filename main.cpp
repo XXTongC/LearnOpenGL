@@ -6,11 +6,13 @@
 #include <typeinfo>
 #include "GL_ERROR_FIND.h"
 #include "Application.h"
+#include "tools.h"
 #include "shader.h"
 #include "texture.h"
 #include "perspectivecamera.h"
 #include "orthographiccamera.h"
 #include "trackBallCameraControl.h"
+#include "opacityMaskMatetial.h"
 #include "gamecameracontrol.h"
 #include "geometry.h"
 #include "mesh.h"
@@ -34,6 +36,7 @@
  * if u need the code belong to past classes
  * check file "OldTestCode.h/.cpp"
  *
+ * refer to ColorBlend, there are still some problem should be solve such as opacity order, look up OIT and Depth Peeling
 */
 
 #pragma region 部分回调函数
@@ -123,36 +126,25 @@ void prepare()
 {
 	renderer = std::make_shared<GLframework::Renderer>();
 	scene = std::make_shared<GLframework::Scene>();
+	auto grassMaterial = std::make_shared<GLframework::OpacityMaskMaterial>();
+	grassMaterial->mDiffuse = std::make_shared<GLframework::Texture>("Texture/grass2.jpg", 0);
+	grassMaterial->mOpacityrMask = std::make_shared<GLframework::Texture>("Texture/grassMask.png", 1);
+	//grassMaterial6->setDepthWrite(false);
+	//----------
+	auto obj = GL_APPLICATION::AssimpLoader::load("fbx/grass.fbx", renderer);
+	obj->setScale(glm::vec3(0.005f));
+	scene->addChild(obj);
+	renderer->mGlobalMaterial = grassMaterial;
+	//----------
 
-	auto materialA = std::make_shared<GLframework::PhongMaterial>();
-	materialA->mDiffuse = std::make_shared<GLframework::Texture>("Texture/land.jpg", 0);
-	auto geometry = GLframework::Geometry::createPlane(renderer->getShader(materialA->getMaterialType()), 100.0f, 900.0f);
-	auto meshA = std::make_shared<GLframework::Mesh>(geometry, materialA);
-	meshA->rotateX(-88.0f);
-	scene->addChild(meshA);
-	
-	auto materialB = std::make_shared<GLframework::PhongMaterial>();
-	materialB->mDiffuse = std::make_shared<GLframework::Texture>("Texture/box.png", 0);
-	materialB->mSpecularMask = std::make_shared<GLframework::Texture>("Texture/sp_mask.png", 1);
-	materialB->setPolygonOffsetState(true);
-	materialB->setUnit(1.0f);
-	materialB->setFactor(1.0f);
 
-	auto meshB = std::make_shared<GLframework::Mesh>(geometry, materialB);
 
-	meshB->setPosition({ 1.0f, -1.0f, -0.001f});
-	meshB->rotateX(-88.0f);
-	scene->addChild(meshB);
-	
-	
 	/*
 	auto textModel = GL_APPLICATION::AssimpLoader::load("fbx/bag/backpack.obj",renderer);
 	textModel->setScale(glm::vec3(1.0f));
 	scene->addChild(textModel);
 	*/
-
-	//创建父子关系
-
+	
 	spotLight	= std::make_shared<GLframework::SpotLight>(glm::vec3(-1.0f, 0.0f, 0.0f), 30.0f, 60.0f);
 	spotLight	->	setPosition(glm::vec3(1.5f, 0.0f, 0.0f));
 	spotLight	->	setColor(glm::vec3{0.0f});
@@ -227,9 +219,10 @@ void renderIMGUI()
 
 	// 2. 决定当前的GUI上面有哪些控件，从上到下
 	ImGui::Begin("Control");
-	ImGui::Text("yeah!\n");
+	ImGui::Text("Background Color\n");
 	ImGui::Button("Text Button", ImVec2(40, 20));
 	ImGui::ColorEdit3("Clear Color",(float *)(&clearColor));
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();
 
 
@@ -257,13 +250,8 @@ void prepareCamera()
 	//camera = new OrthographicCamera(-size,size,size,-size,size,-size);
 	
 	cameracontrol = new GameCameraControl();
-	
 	cameracontrol->setCamera(camera);
 }
-//void prepareOrtho()
-//{
-//	ortherMartix = glm::ortho(-2.0f, 2.0f, 2.0f, -2.0f, 2.0f, -2.0f);
-//}
 
 void initIMGUI()
 {

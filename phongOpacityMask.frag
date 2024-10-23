@@ -2,7 +2,7 @@
 
 uniform float time;
 uniform sampler2D samplerGrass;
-uniform sampler2D MaskSampler;
+uniform sampler2D opacityMaskSampler;
 //光源参数
 uniform vec3 ambientColor;
 //相机世界位置
@@ -13,12 +13,7 @@ uniform float opacity;
 
 //光照强度控制参数
 
-//depth test
-//uniform float near;
-//uniform float far;
 
-//text b
-uniform float part;
 
 uniform float shiness;
 
@@ -83,7 +78,7 @@ vec3 calculateSpecular(vec3 lightColor,vec3 lightDir,vec3 normal,vec3 viewDir,fl
 	//控制光斑大小
 	specular = pow(specular,shiness);
 	//蒙版值计算
-	float specularMask = texture(MaskSampler,uv).r;
+	float specularMask = texture(opacityMaskSampler,uv).r;
 
 	//这里没有乘以材质的颜色的原因是反射光一般是以入射光本身为主，更符合现实中的物理现象
 	vec3 specularColor = lightColor * specular * flag * intensity * specularMask;
@@ -139,7 +134,7 @@ void main()
 {
 	vec3 res = vec3(0.0f,0.0f,0.0f);
 	vec3 objectColor = texture(samplerGrass,uv).xyz;
-	float alpha = texture(samplerGrass,uv).a;
+	float alpha = texture(opacityMaskSampler,uv).r;
 
 
 	vec3 lightDirN = normalize(worldPosition - spotLight.position);
