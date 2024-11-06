@@ -9,6 +9,7 @@ namespace GLframework
 		WhiteMaterial,
 		DepthMaterial,
 		OpacityMaskMaterial,
+		ScreenMaterial,
 	};
 
 	enum class PreStencilType
@@ -78,6 +79,14 @@ namespace GLframework
 		unsigned int getSFactor() const;
 		unsigned int getDFactor() const;
 
+		void setFaceCullingState(bool value);
+		void setFrontFace(unsigned int value);
+		void setCullFace(unsigned int value);
+
+		bool getFaceCullingState() const;
+		unsigned int getFrontFace() const;
+		unsigned int getCullFace() const;
+
 
 
 	private:
@@ -109,6 +118,11 @@ namespace GLframework
 		unsigned int	mSFactor{ GL_SRC_ALPHA };
 		unsigned int	mDFactor{ GL_ONE_MINUS_SRC_ALPHA };
 		float			mOpacity{ 1.0f };
+
+		//	FACE CULLING relative
+		bool			mFaceCullingState{ false };
+		unsigned int	mFrontFace{ GL_CCW };
+		unsigned int	mCullFace{ GL_BACK };
 	};
 
 }

@@ -13,6 +13,7 @@
 #include "orthographiccamera.h"
 #include "trackBallCameraControl.h"
 #include "opacityMaskMatetial.h"
+#include "screenMaterial.h"
 #include "gamecameracontrol.h"
 #include "geometry.h"
 #include "mesh.h"
@@ -62,7 +63,7 @@ void prepareCamera();
 void initIMGUI();
 void prepareState();
 void prepare();
-
+void prepareFBO();
 //绘制IMGUI
 void renderIMGUI();
 
@@ -72,12 +73,16 @@ void renderIMGUI();
 //GLuint vao;
 float angle = 0.0f;
 std::shared_ptr < GLframework::Renderer> renderer = nullptr;
-std::shared_ptr<GLframework::Scene> scene = nullptr;
+std::shared_ptr<GLframework::Scene> sceneOffScreen = nullptr;
+std::shared_ptr<GLframework::Scene> sceneInScreen = nullptr;
 std::shared_ptr<GLframework::Mesh> meshPointLight = nullptr;
 std::shared_ptr <GLframework::AmbientLight> ambientLight = nullptr;
 Camera* camera = nullptr;
 CameraControl* cameracontrol = nullptr;
+int width = 1200, height = 900;
 glm::vec3 clearColor{};
+unsigned int fbo = 0;
+std::shared_ptr<GLframework::Texture> colorAttachment = nullptr;
 //声明灯光
 std::shared_ptr < GLframework::DirectionalLight> dirLight = nullptr;
 std::shared_ptr < GLframework::SpotLight> spotLight = nullptr;
@@ -86,7 +91,6 @@ float specularIntensity = 0.8f;
 int main()
 {
 	std::cout << "Please set the window as x * y" << std::endl;
-	int width = 1200, height = 900;
 	//std::cin >> width >> height;
 	//初始化GLFW窗口
 	if (!setAndInitWindow(width,height)) return -1;
@@ -95,11 +99,11 @@ int main()
 	GL_CALL(glViewport(0, 0, width, height));
 	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 
-
 	prepareCamera();
-
+	//注意先创建FBO，否则Attachment将为空
+	prepareFBO();
 	prepare();
-
+	
 	initIMGUI();
 	//测试获取该显卡驱动提供的Arrribbutes数量
 	int nrAttributes;
@@ -108,10 +112,12 @@ int main()
 	
 	while (GL_APP->update())
 	{
-		
 		cameracontrol->update();
 		renderer->setClearColor(clearColor);
-		renderer->render(scene,camera,dirLight,spotLight,pointLights,ambientLight);
+		//pass 1: 将box渲染到colorAttachment上，新的fob上
+		renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights,ambientLight, fbo);
+		//pass 2: 将colorAttachment作为纹理，绘制到整个屏幕上
+		renderer->render(sceneInScreen,camera,dirLight,spotLight,pointLights,ambientLight);
 		renderIMGUI();
 	}
 
@@ -121,30 +127,57 @@ int main()
 }
 
 
-
 void prepare()
 {
 	renderer = std::make_shared<GLframework::Renderer>();
-	scene = std::make_shared<GLframework::Scene>();
-	auto grassMaterial = std::make_shared<GLframework::OpacityMaskMaterial>();
-	grassMaterial->mDiffuse = std::make_shared<GLframework::Texture>("Texture/grass2.jpg", 0);
-	grassMaterial->mOpacityrMask = std::make_shared<GLframework::Texture>("Texture/grassMask.png", 1);
-	//grassMaterial6->setDepthWrite(false);
-	//----------
-	auto obj = GL_APPLICATION::AssimpLoader::load("fbx/grass.fbx", renderer);
-	obj->setScale(glm::vec3(0.005f));
-	scene->addChild(obj);
-	renderer->mGlobalMaterial = grassMaterial;
-	//----------
+	sceneInScreen = std::make_shared<GLframework::Scene>();
+	sceneOffScreen = std::make_shared<GLframework::Scene>();
 
+	//----------
+	//离屏渲染
+	
+	auto boxMat = std::make_shared<GLframework::PhongMaterial>();
+	boxMat->setPreStencilPreSettingType(GLframework::PreStencilType::Custom);
+	boxMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/grass.jpg", 0);
+	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(boxMat->getMaterialType()), 1.0f, 1.0f,1.0f);
+	auto boxMesh = std::make_shared<GLframework::Mesh>(boxGeo, boxMat);
+	sceneOffScreen->addChild(boxMesh);
 
+	auto boxCulling = std::make_shared<GLframework::WhiteMaterial>();
+	boxCulling->setPreStencilPreSettingType(GLframework::PreStencilType::Outlining);
+	auto boxCullingGeo = GLframework::Geometry::createBox(renderer->getShader(boxCulling->getMaterialType()), 1.0f, 1.0f, 1.0f);
+	auto BoxCullingMesh = std::make_shared<GLframework::Mesh>(boxCullingGeo, boxCulling);
+	BoxCullingMesh->setScale({ 1.1f,1.1f,1.1f });
+	BoxCullingMesh->setPosition(boxMesh->getPosition());
+	sceneOffScreen->addChild(BoxCullingMesh);
+
+	auto boxMat2 = std::make_shared<GLframework::PhongMaterial>();
+	boxMat2->mDiffuse = std::make_shared<GLframework::Texture>("Texture/box.png", 0);
+	boxMat2->mSpecularMask = std::make_shared<GLframework::Texture>("Texture/sp_mask.png", 1);
+	auto Boxmesh2 = std::make_shared<GLframework::Mesh>(boxGeo, boxMat2);
+	Boxmesh2->setPosition({ 3.0f, 0.0f,0.0f });
+	sceneOffScreen->addChild(Boxmesh2);
+	
 
 	/*
 	auto textModel = GL_APPLICATION::AssimpLoader::load("fbx/bag/backpack.obj",renderer);
 	textModel->setScale(glm::vec3(1.0f));
-	scene->addChild(textModel);
+	textModel->setPosition({ -3.0f,0.0f,0.0f });
+	GLframework::Tools::setModelBlend(textModel, true, 0.2);
+	sceneOffScreen->addChild(textModel);
 	*/
 	
+
+	//在屏渲染
+	auto met = std::make_shared<GLframework::ScreenMaterial>();
+	met->mScreenTexture = colorAttachment;
+	//if (met->getMaterialType() == GLframework::MaterialType::ScreenMaterial) std::cout << 1 << "\n";
+	auto geo = GLframework::Geometry::createScreenPlane(renderer->getShader(met->getMaterialType()));
+	auto mesh = std::make_shared<GLframework::Mesh>(geo, met);
+	sceneInScreen->addChild(mesh);
+	//----------
+
+
 	spotLight	= std::make_shared<GLframework::SpotLight>(glm::vec3(-1.0f, 0.0f, 0.0f), 30.0f, 60.0f);
 	spotLight	->	setPosition(glm::vec3(1.5f, 0.0f, 0.0f));
 	spotLight	->	setColor(glm::vec3{0.0f});
@@ -180,7 +213,6 @@ void prepare()
 	pointLight4	->	setColor(glm::vec3(0.0f));
 	pointLight4	->	setPosition(glm::vec3(0.0f, 0.0f, 1.5f));
 	pointLights.push_back(std::move(pointLight4));
-
 	ambientLight	 = std::make_shared<GLframework::AmbientLight>();
 	ambientLight->	setColor(glm::vec3(0.2f));
 	
@@ -200,8 +232,33 @@ bool setAndInitWindow(int weith, int height)
 }
 
 
+void prepareFBO()
+{
+	//	1.生成fbo对象并绑定
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
+	//	2.生成颜色控件，并且加入fbo
+	colorAttachment = std::make_shared<GLframework::Texture>(width, height, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment->getTexture(), 0);
+	//	3.生成depth Stencil附件，加入fbo
+	unsigned int depthStencil;
+	glGenTextures(1, &depthStencil);
+	glBindTexture(GL_TEXTURE_2D, depthStencil);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthStencil, 0);
+
+	//	检查当前构建的fbo是否完整
+	if(glCheckFramebufferStatus(GL_FRAMEBUFFER)!=GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cerr << "Error: FrameBuff is not complete!" << std::endl;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glDeleteFramebuffers(1, &fbo);
+}
 
 void prepareState()
 {
@@ -225,7 +282,6 @@ void renderIMGUI()
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();
 
-
 	// 3. 执行UI渲染
 	ImGui::Render();
 	int display_w, display_h;
@@ -236,7 +292,6 @@ void renderIMGUI()
 
 void prepareCamera() 
 {
-	
 	camera = new PerspectiveCamera(
 		60.0f,
 		static_cast<float>(GL_APP->getWidth()) / static_cast<float>(GL_APP->getHeight()),

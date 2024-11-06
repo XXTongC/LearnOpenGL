@@ -22,9 +22,11 @@ namespace GLframework
 			uint32_t widthIn,
 			uint32_t heightIn
 		);
+		Texture(unsigned int width, unsigned int height, unsigned int unit);
 		~Texture();
 		void Bind();
 		void setUnit(unsigned int unit);
+		GLuint getTexture() const { return mTexture; }
 	private:
 		GLuint mTexture{ 0 };
 		int mWidth{ 0 };

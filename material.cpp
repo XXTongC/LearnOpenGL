@@ -2,6 +2,36 @@
 
 using namespace GLframework;
 
+unsigned Material::getCullFace() const
+{
+	return mCullFace;
+}
+
+bool Material::getFaceCullingState() const
+{
+	return mFaceCullingState;
+}
+
+unsigned Material::getFrontFace() const
+{
+	return mFrontFace;
+}
+
+void Material::setCullFace(unsigned value)
+{
+	mCullFace = value;
+}
+
+void Material::setFaceCullingState(bool value)
+{
+	mFaceCullingState = value;
+}
+
+void Material::setFrontFace(unsigned value)
+{
+	mFrontFace = value;
+}
+
 bool Material::getColorBlendState() const
 {
 	return mColorBlendState;

@@ -477,3 +477,58 @@ Geometry::Geometry(
 
     glBindVertexArray(0);
 }
+
+
+std::shared_ptr<Geometry> Geometry::createScreenPlane(std::shared_ptr<GLframework::Shader> shader)
+{
+    std::shared_ptr<Geometry> geometry = std::make_shared<Geometry>(shader);
+    geometry->mIndicesCount = 6;
+
+    // 创建positions uv
+    float positions[] = {
+        -1.0f,   1.0f,
+        -1.0f,  -1.0f,
+         1.0f,  -1.0f,
+         1.0f,   1.0f,
+    };
+
+    float uvs[] = {
+        0.0f,1.0f,
+    	0.0f,0.0f,
+        1.0f,0.0f,
+        1.0f,1.0f,
+    };
+
+    unsigned int indices[] = {
+        0,1,2,
+        0,2,3,
+    };
+    // 创建vao vbo等
+    GLuint& posVbo = geometry->mPosVbo, & uvVbo = geometry->mUvVbo,&ebo = geometry->mEbo,&vao = geometry->mVao;
+    GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
+    GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
+
+    glGenVertexArrays(1, &geometry->mVao);
+    glBindVertexArray(vao);
+
+	glGenBuffers(1, &posVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, posVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(positionLocation);
+    glVertexAttribPointer(positionLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+
+    glGenBuffers(1, &uvVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(uvs), uvs, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(uvLocation);
+    glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, geometry->getIndicesCount() * sizeof(int), indices, GL_STATIC_DRAW);
+
+    return geometry;
+}

@@ -32,10 +32,6 @@ void SpotLight::setOutAngle(float value)
 	mOutAngle = value;
 }
 
-
-
-
-
 glm::vec3 SpotLight::getTargetDirection() const
 {
 	return mTargetDirection;

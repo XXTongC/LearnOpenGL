@@ -14,7 +14,6 @@ void GameCameraControl::update()
 	auto up = glm::vec3{0.0f,1.0f,0.0f};
 	if(mKeyMap[GLFW_KEY_W])
 		direction += front;
-
 	if (mKeyMap[GLFW_KEY_S])
 		direction -= front;
 	if (mKeyMap[GLFW_KEY_A])

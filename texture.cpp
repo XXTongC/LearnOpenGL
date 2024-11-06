@@ -1,6 +1,7 @@
 #include "texture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+using namespace GLframework;
 std::map<std::string, std::shared_ptr<GLframework::Texture>> GLframework::Texture::mTextureCache{};
 
 std::shared_ptr<GLframework::Texture> GLframework::Texture::createTexture(const std::string& path, unsigned unit)
@@ -71,6 +72,8 @@ GLframework::Texture::Texture(const std::string& path, unsigned int unit)
 	
 }
 
+
+
 GLframework::Texture::Texture(unsigned unit, unsigned char* dataIn, uint32_t widthIn, uint32_t heightIn)
 {
 	//声明图片长宽，颜色通道
@@ -117,6 +120,22 @@ GLframework::Texture::Texture(unsigned unit, unsigned char* dataIn, uint32_t wid
 	//5 设置纹理包裹方式，设置x, y方向的超原图范围属性, S对应x(u), T对应y(v)
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT));
+}
+
+Texture::Texture(unsigned width, unsigned height, unsigned unit)
+{
+	mWidth = width;
+	mHeight = height;
+	mUnit = unit;
+
+	glGenTextures(1, &mTexture);
+	glActiveTexture(GL_TEXTURE0 + mUnit);
+	glBindTexture(GL_TEXTURE_2D, mTexture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 

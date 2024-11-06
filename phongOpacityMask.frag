@@ -7,14 +7,9 @@ uniform sampler2D opacityMaskSampler;
 uniform vec3 ambientColor;
 //相机世界位置
 uniform vec3 cameraPosition;
-
 //透明度设置
 uniform float opacity;
-
 //光照强度控制参数
-
-
-
 uniform float shiness;
 
 in vec4 color;

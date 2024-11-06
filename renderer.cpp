@@ -5,9 +5,24 @@
 #include "phongMaterial.h"
 #include "whiteMaterial.h"
 #include "opacityMaskMatetial.h"
+#include "screenMaterial.h"
 #include <algorithm>
 
 using namespace GLframework;
+
+void Renderer::setFaceCullingState(std::shared_ptr<GLframework::Material> material)
+{
+	if(material->getFaceCullingState())
+	{
+		glEnable(GL_CULL_FACE);
+		glFrontFace(material->getFrontFace());
+		glCullFace(material->getCullFace());
+	}else
+	{
+		glDisable(GL_CULL_FACE);
+	}
+}
+
 
 void Renderer::projectObject(std::shared_ptr<Object> obj)
 {
@@ -126,6 +141,9 @@ std::shared_ptr<Shader> Renderer::pickShader(MaterialType type)
 	case MaterialType::OpacityMaskMaterial:
 		res = mOpacityMaskShader;
 		break;
+	case MaterialType::ScreenMaterial:
+		res = mScreenShader;
+		break;
 	default:
 		std::cerr << "Unknown material type to pick shader\n";
 		break;
@@ -140,9 +158,12 @@ void Renderer::render(
 	std::shared_ptr<DirectionalLight> dirLight,
 	std::shared_ptr<SpotLight> spotLight,
 	std::vector<std::shared_ptr<PointLight>> pointLights,
-	std::shared_ptr<AmbientLight> ambient
+	std::shared_ptr<AmbientLight> ambient,
+	unsigned int fbo
 )
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
 	// 1. 深度缓冲信息
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -159,6 +180,7 @@ void Renderer::render(
 	// 默认颜色混合为关闭状态
 	glDisable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 
 	// 2. 清理画布
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -233,7 +255,8 @@ void Renderer::renderObject(
 		setStencilState(material);
 		// 3. 检测颜色混合状态
 		setColorBlendState(material);
-
+		// 4. 检测面剔除状态
+		setFaceCullingState(material);
 		// 2. 更新shader的uniform
 		shader->begin();
 
@@ -314,8 +337,9 @@ void Renderer::renderObject(
 				shader->setMat4("modelMatrix", mesh->getModleMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				break;
+				
 			}
+			break;
 		case MaterialType::DepthMaterial:
 			{
 				shader->setMat4("modelMatrix", mesh->getModleMatrix());
@@ -323,8 +347,9 @@ void Renderer::renderObject(
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 				shader->setFloat("near", camera->mNear);
 				shader->setFloat("far", camera->mFar);
-				break;
+				
 			}
+			break;
 		case MaterialType::OpacityMaskMaterial:
 			{
 				std::shared_ptr<OpacityMaskMaterial> opacityMat = std::static_pointer_cast<OpacityMaskMaterial>(material);
@@ -394,6 +419,13 @@ void Renderer::renderObject(
 					std::cout << "null\n";
 			}
 			break;
+		case MaterialType::ScreenMaterial:
+			{
+				std::shared_ptr<ScreenMaterial> screenMaterial = std::static_pointer_cast<ScreenMaterial>(material);
+				shader->setInt("screenTextureSampler", 0);
+				screenMaterial->mScreenTexture->Bind();
+			}
+			break;
 		default:
 			std::cout << "wrong\n";
 			break;
@@ -404,8 +436,8 @@ void Renderer::renderObject(
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDrawElements(GL_TRIANGLES, geometry->getIndicesCount(), GL_UNSIGNED_INT, static_cast<void*>(nullptr));
 
-		//GL_CALL(glBindVertexArray(0));
-		//shader->end();
+		GL_CALL(glBindVertexArray(0));
+		shader->end();
 	}
 
 }
