@@ -140,6 +140,7 @@
     <ClCompile Include="cameracontrol.cpp" />
     <ClCompile Include="depthMaterial.cpp" />
     <ClCompile Include="directionalLight.cpp" />
+    <ClCompile Include="framebuffer.cpp" />
     <ClCompile Include="gamecameracontrol.cpp" />
     <ClCompile Include="geometry.cpp" />
     <ClCompile Include="light.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="core.h" />
     <ClInclude Include="depthMaterial.h" />
     <ClInclude Include="directionalLight.h" />
+    <ClInclude Include="framebuffer.h" />
     <ClInclude Include="gamecameracontrol.h" />
     <ClInclude Include="geometry.h" />
     <ClInclude Include="light.h" />
@@ -753,6 +755,19 @@
     <Image Include="Texture\land.jpg" />
     <Image Include="Texture\noise.jpg" />
     <Image Include="Texture\panda.jpg" />
+    <Image Include="Texture\solar system\2k_earth_daymap.jpg" />
+    <Image Include="Texture\solar system\2k_earth_nightmap.jpg" />
+    <Image Include="Texture\solar system\2k_jupiter.jpg" />
+    <Image Include="Texture\solar system\2k_mars.jpg" />
+    <Image Include="Texture\solar system\2k_mercury.jpg" />
+    <Image Include="Texture\solar system\2k_neptune.jpg" />
+    <Image Include="Texture\solar system\2k_saturn.jpg" />
+    <Image Include="Texture\solar system\2k_saturn_ring_alpha.png" />
+    <Image Include="Texture\solar system\2k_sun.jpg" />
+    <Image Include="Texture\solar system\2k_uranus.jpg" />
+    <Image Include="Texture\solar system\2k_venus_atmosphere.jpg" />
+    <Image Include="Texture\solar system\2k_venus_surface.jpg" />
+    <Image Include="Texture\solar system\moon1k.jpg" />
     <Image Include="Texture\sp_mask.png" />
     <Image Include="Texture\wall.jpg" />
     <Image Include="Texture\window.png" />

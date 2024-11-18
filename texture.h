@@ -14,7 +14,18 @@ namespace GLframework
 			uint32_t widthIn,
 			uint32_t heightIn
 		);
+		static std::shared_ptr<Texture> createColorAttachment(
+			unsigned int width, 
+			unsigned int height, 
+			unsigned int unit
+		);
+		static std::shared_ptr<Texture> createDepthStencilAttachment(
+			unsigned int width,
+			unsigned int height,
+			unsigned int unit
+		);
 
+		Texture(){};
 		Texture(const std::string& path, unsigned int unit);
 		Texture(
 			unsigned int unit,
@@ -27,6 +38,10 @@ namespace GLframework
 		void Bind();
 		void setUnit(unsigned int unit);
 		GLuint getTexture() const { return mTexture; }
+		void setTexture(GLuint value);
+		void setWidth(GLuint value);
+		void setHeight(GLuint value);
+
 	private:
 		GLuint mTexture{ 0 };
 		int mWidth{ 0 };

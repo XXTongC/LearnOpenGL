@@ -4,6 +4,67 @@
 using namespace GLframework;
 std::map<std::string, std::shared_ptr<GLframework::Texture>> GLframework::Texture::mTextureCache{};
 
+
+std::shared_ptr<Texture> Texture::createColorAttachment(
+	unsigned width, 
+	unsigned height, 
+	unsigned unit
+)
+{
+	return std::make_shared<Texture>(width, height, unit);
+}
+
+
+
+std::shared_ptr<Texture> Texture::createDepthStencilAttachment(
+	unsigned int width,
+	unsigned int height,
+	unsigned int unit
+)
+{
+	std::shared_ptr<Texture> dsTex = std::make_shared<Texture>();
+
+	unsigned int depthStencil;
+	glGenTextures(1, &depthStencil);
+	glBindTexture(GL_TEXTURE_2D, depthStencil);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	dsTex->setTexture(depthStencil);
+	dsTex->setWidth(width);
+	dsTex->setHeight(height);
+	dsTex->setUnit(unit);
+
+	return dsTex;
+}
+
+void Texture::setHeight(GLuint value)
+{
+	mHeight = value;
+}
+
+void Texture::setWidth(GLuint value)
+{
+	mWidth = value;
+}
+
+
+
+void Texture::setTexture(GLuint value)
+{
+	mTexture = value;
+}
+
+static std::shared_ptr<Texture> createTexture(
+	unsigned int width,
+	unsigned int height,
+	unsigned int unit
+)
+{
+	return std::make_shared<Texture>(width, height, unit);
+
+}
 std::shared_ptr<GLframework::Texture> GLframework::Texture::createTexture(const std::string& path, unsigned unit)
 {
 	// 1. 检查是否缓存过本路径对象的纹理对象

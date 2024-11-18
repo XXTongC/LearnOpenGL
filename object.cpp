@@ -109,11 +109,3 @@ void Object::setAngleZ(float angle)
 	mAngleZ = angle;
 }
 
-
-
-
-
-
-
-
-

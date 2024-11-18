@@ -136,6 +136,15 @@
     <Filter Include="cppfile\GLframework\material\light">
       <UniqueIdentifier>{23b62a03-1d1b-4b2e-aed5-6c5f784e141e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cppfile\GLframework\framebuffer">
+      <UniqueIdentifier>{413f87ae-5003-483d-8387-6ee764261afa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\framebuffer">
+      <UniqueIdentifier>{b7f4672b-c082-49af-a72e-0d42c4dd8de0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\Texture\solar system">
+      <UniqueIdentifier>{34037783-e874-41cd-856a-20fc48dae0f6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -254,6 +263,9 @@
     </ClCompile>
     <ClCompile Include="third_party\glm\detail\glm.cpp">
       <Filter>third_party\glm\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="framebuffer.cpp">
+      <Filter>cppfile\GLframework\framebuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1427,6 +1439,9 @@
     <ClInclude Include="resource.h">
       <Filter>third_party\stb_image</Filter>
     </ClInclude>
+    <ClInclude Include="framebuffer.h">
+      <Filter>include\GLframework\framebuffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl">
@@ -1996,6 +2011,45 @@
     </Image>
     <Image Include="fbx\textures\grassMask.png">
       <Filter>资源文件\fbx\textures</Filter>
+    </Image>
+    <Image Include="Texture\solar system\2k_venus_surface.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\solar system\moon1k.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\solar system\2k_jupiter.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\solar system\2k_mars.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\solar system\2k_neptune.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\solar system\2k_saturn.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\solar system\2k_saturn_ring_alpha.png">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\solar system\2k_uranus.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\solar system\2k_venus_atmosphere.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\solar system\2k_earth_daymap.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\solar system\2k_sun.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\solar system\2k_earth_nightmap.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\solar system\2k_mercury.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

@@ -21,7 +21,7 @@
 #include "depthMaterial.h"
 #include "whiteMaterial.h"
 #include "material.h"
-
+#include "framebuffer.h"
 #include "scene.h"
 #include "renderer.h"
 #include "pointLight.h"
@@ -29,14 +29,9 @@
 #include "third_party/imgui/imgui.h"
 #include "third_party/imgui/imgui_impl_glfw.h"
 #include "third_party/imgui/imgui_impl_opengl3.h"
-
 #include "assimpLoader.h"
 
 /*
- * to make main.cpp clear
- * if u need the code belong to past classes
- * check file "OldTestCode.h/.cpp"
- *
  * refer to ColorBlend, there are still some problem should be solve such as opacity order, look up OIT and Depth Peeling
 */
 
@@ -51,7 +46,7 @@ void OnCursor(double xpos, double ypos);
 //void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 #pragma endregion
 
-bool setAndInitWindow(int weith = 1200,int height = 900);
+bool setAndInitWindow(int width = 1200,int height = 900);
 
 //绘制命令
 void render();
@@ -63,11 +58,11 @@ void prepareCamera();
 void initIMGUI();
 void prepareState();
 void prepare();
-void prepareFBO();
+//行星旋转函数
+void rotatePlant();
+
 //绘制IMGUI
 void renderIMGUI();
-
-
 
 //声明全局变量vao以及shaderProram
 //GLuint vao;
@@ -77,12 +72,23 @@ std::shared_ptr<GLframework::Scene> sceneOffScreen = nullptr;
 std::shared_ptr<GLframework::Scene> sceneInScreen = nullptr;
 std::shared_ptr<GLframework::Mesh> meshPointLight = nullptr;
 std::shared_ptr <GLframework::AmbientLight> ambientLight = nullptr;
+std::shared_ptr<GLframework::Framebuffer> framebuffer = nullptr;
 Camera* camera = nullptr;
 CameraControl* cameracontrol = nullptr;
+auto roundForAll = std::make_shared<GLframework::Object>();
+auto roundForEarth = std::make_shared<GLframework::Object>();
+auto roundForVenus = std::make_shared<GLframework::Object>();
+auto roundForUranus = std::make_shared<GLframework::Object>();
+auto roundForSaturn = std::make_shared<GLframework::Object>();
+auto roundForNeptune = std::make_shared<GLframework::Object>();
+auto roundForJupiter = std::make_shared<GLframework::Object>();
+auto roundForMars = std::make_shared<GLframework::Object>();
+auto roundForMercury = std::make_shared<GLframework::Object>();
+auto roundForMoon = std::make_shared<GLframework::Object>();
 int width = 1200, height = 900;
 glm::vec3 clearColor{};
-unsigned int fbo = 0;
-std::shared_ptr<GLframework::Texture> colorAttachment = nullptr;
+
+
 //声明灯光
 std::shared_ptr < GLframework::DirectionalLight> dirLight = nullptr;
 std::shared_ptr < GLframework::SpotLight> spotLight = nullptr;
@@ -100,8 +106,6 @@ int main()
 	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 
 	prepareCamera();
-	//注意先创建FBO，否则Attachment将为空
-	prepareFBO();
 	prepare();
 	
 	initIMGUI();
@@ -114,8 +118,9 @@ int main()
 	{
 		cameracontrol->update();
 		renderer->setClearColor(clearColor);
+		rotatePlant();
 		//pass 1: 将box渲染到colorAttachment上，新的fob上
-		renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights,ambientLight, fbo);
+		renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights,ambientLight, framebuffer->getFBO());
 		//pass 2: 将colorAttachment作为纹理，绘制到整个屏幕上
 		renderer->render(sceneInScreen,camera,dirLight,spotLight,pointLights,ambientLight);
 		renderIMGUI();
@@ -126,57 +131,167 @@ int main()
 	return 0;
 }
 
-
 void prepare()
 {
 	renderer = std::make_shared<GLframework::Renderer>();
 	sceneInScreen = std::make_shared<GLframework::Scene>();
 	sceneOffScreen = std::make_shared<GLframework::Scene>();
-
+	framebuffer = std::make_shared<GLframework::Framebuffer>(width, height);
 	//----------
 	//离屏渲染
+	float distanceEarth = 10.0f;
+	float sizeOfEarth = 1.0f;
 	
+	//月球
+	auto moonMat = std::make_shared<GLframework::PhongMaterial>();
+	moonMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/moon1k.jpg", 0);
+	auto sphereGeo = GLframework::Geometry::createSphere(renderer->getShader(moonMat->getMaterialType()),0.3f);
+	auto moonSphere = std::make_shared<GLframework::Mesh>(sphereGeo, moonMat);
+	
+	
+
+	auto sunMat = std::make_shared<GLframework::PhongMaterial>();
+	sunMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_sun.jpg", 0);
+	auto sunSphere = std::make_shared<GLframework::Mesh>(sphereGeo, sunMat);
+	//sunSphere->setPosition({ 0.0f,0.0f,0.0f });
+	sunSphere->setScale(glm::vec3(10.00f * sizeOfEarth));
+	
+	//金星
+	auto venusSphereMat = std::make_shared<GLframework::PhongMaterial>();
+	venusSphereMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_venus_surface.jpg",0);
+	auto venusSphere = std::make_shared<GLframework::Mesh>(sphereGeo, venusSphereMat);
+
+	venusSphere->setScale(glm::vec3(0.94f * sizeOfEarth));
+	venusSphere->setPosition({0.72f*distanceEarth,0.0f,0.0f});
+	
+	roundForVenus->addChild(venusSphere);
+	sceneOffScreen->addChild(roundForVenus);
+	//天王星
+	auto uranusMat = std::make_shared<GLframework::PhongMaterial>();
+	uranusMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_uranus.jpg", 0);
+	auto uranusSphere = std::make_shared<GLframework::Mesh>(sphereGeo, uranusMat);
+
+	uranusSphere->setScale(glm::vec3(4.00f * sizeOfEarth));
+	uranusSphere->setPosition({ 19.19f*distanceEarth,0.0f,0.0f });
+	
+	roundForUranus->addChild(uranusSphere);
+	sceneOffScreen->addChild(roundForUranus);
+	//土星
+	auto saturnMat = std::make_shared<GLframework::PhongMaterial>();
+	saturnMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_saturn.jpg", 0);
+	auto saturnSphere = std::make_shared<GLframework::Mesh>(sphereGeo, saturnMat);
+	roundForSaturn->addChild(saturnSphere);
+	saturnSphere->setScale(glm::vec3(9.44f * sizeOfEarth));
+	saturnSphere->setPosition({ 9.53f*distanceEarth,0.0f,0.0f });
+	
+	sceneOffScreen->addChild(roundForSaturn);
+	//海王星
+	auto neptuneMat = std::make_shared<GLframework::PhongMaterial>();
+	neptuneMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_neptune.jpg", 0);
+	auto neptuneSphere = std::make_shared<GLframework::Mesh>(sphereGeo, neptuneMat);
+	roundForNeptune->addChild(neptuneSphere);
+	neptuneSphere->setScale(glm::vec3(3.88f * sizeOfEarth));
+	neptuneSphere->setPosition({ 30.06f*distanceEarth,0.0f,0.0f });
+	
+	sceneOffScreen->addChild(roundForNeptune);
+	//木星
+	auto jupiterMat = std::make_shared<GLframework::PhongMaterial>();
+	jupiterMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_jupiter.jpg", 0);
+	auto jupiterSphere = std::make_shared<GLframework::Mesh>(sphereGeo, jupiterMat);
+	roundForJupiter->addChild(jupiterSphere);
+
+	jupiterSphere->setScale(glm::vec3(11.20f * sizeOfEarth));
+	jupiterSphere->setPosition({ 5.20f*distanceEarth,0.0f,0.0f });
+	
+	sceneOffScreen->addChild(roundForJupiter);
+	//火星
+	auto marsMat = std::make_shared<GLframework::PhongMaterial>();
+	marsMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_mars.jpg", 0);
+	auto marsSphere = std::make_shared<GLframework::Mesh>(sphereGeo, marsMat);
+	roundForMars->addChild(marsSphere);
+
+	marsSphere->setScale(glm::vec3(sizeOfEarth));
+	marsSphere->setPosition({ 1.52f*distanceEarth,0.0f,0.0f });
+	
+	sceneOffScreen->addChild(roundForMars);
+
+	auto earthMat = std::make_shared<GLframework::PhongMaterial>();
+	earthMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_earth_daymap.jpg", 0);
+	auto earthSphere = std::make_shared<GLframework::Mesh>(sphereGeo, earthMat);
+	
+	roundForEarth->addChild(earthSphere);
+	earthSphere->setScale(glm::vec3(sizeOfEarth));
+	earthSphere->setPosition({ distanceEarth*1.0f,0.0f,0.0f });
+	
+	//moonSphere->setPosition({ earthSphere->getPosition().x + 0.5f, earthSphere->getPosition().y, earthSphere->getPosition().z });
+	std::cout << earthSphere->getPosition().x << " " << earthSphere->getPosition().y << " " << earthSphere->getPosition().z<<"\n";
+	roundForEarth->addChild(roundForMoon);
+	roundForMoon->setPosition({ distanceEarth, 0.0f, 0.0f });
+	roundForMoon->addChild(moonSphere);
+	moonSphere->setScale(glm::vec3(0.27f * sizeOfEarth));
+	moonSphere->setPosition({ 1.1f,0.0f,0.0f });
+	std::cout << moonSphere->getPosition().x << " " << moonSphere->getPosition().y << " " << moonSphere->getPosition().z << "\n";
+
+	
+	auto earth2Mat = std::make_shared<GLframework::PhongMaterial>();
+	earth2Mat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_earth_nightmap.jpg", 0);
+	auto earth2Sphere = std::make_shared<GLframework::Mesh>(sphereGeo, earth2Mat);
+	roundForEarth->addChild(earth2Sphere);
+	earth2Sphere->setScale(glm::vec3(sizeOfEarth));
+	earth2Sphere->setPosition({ distanceEarth*1.0f + 0.001f,0.0f,0.0f });
+	//sceneOffScreen->addChild(roundForMoon);
+	sceneOffScreen->addChild(roundForEarth);
+	
+
+	//水星
+	auto mercuryMat = std::make_shared<GLframework::PhongMaterial>();
+	mercuryMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_mercury.jpg", 0);
+	auto mercurySphere = std::make_shared<GLframework::Mesh>(sphereGeo, mercuryMat);
+	roundForMercury->addChild(mercurySphere);
+	mercurySphere->setScale(glm::vec3(0.38f * sizeOfEarth));
+	mercurySphere->setPosition({ 0.38f*distanceEarth,0.0f,0.0f });
+	
+	sceneOffScreen->addChild(roundForMercury);
+	sceneOffScreen->addChild(sunSphere);
+	/*
 	auto boxMat = std::make_shared<GLframework::PhongMaterial>();
-	boxMat->setPreStencilPreSettingType(GLframework::PreStencilType::Custom);
+	boxMat->setPreStencilPreSettingType(GLframework::PreStencilType::Normal);
 	boxMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/grass.jpg", 0);
 	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(boxMat->getMaterialType()), 1.0f, 1.0f,1.0f);
 	auto boxMesh = std::make_shared<GLframework::Mesh>(boxGeo, boxMat);
 	sceneOffScreen->addChild(boxMesh);
-
+	
 	auto boxCulling = std::make_shared<GLframework::WhiteMaterial>();
 	boxCulling->setPreStencilPreSettingType(GLframework::PreStencilType::Outlining);
 	auto boxCullingGeo = GLframework::Geometry::createBox(renderer->getShader(boxCulling->getMaterialType()), 1.0f, 1.0f, 1.0f);
 	auto BoxCullingMesh = std::make_shared<GLframework::Mesh>(boxCullingGeo, boxCulling);
-	BoxCullingMesh->setScale({ 1.1f,1.1f,1.1f });
+	BoxCullingMesh->setScale({ 1.07f,1.07f,1.07f });
 	BoxCullingMesh->setPosition(boxMesh->getPosition());
 	sceneOffScreen->addChild(BoxCullingMesh);
-
+	
 	auto boxMat2 = std::make_shared<GLframework::PhongMaterial>();
 	boxMat2->mDiffuse = std::make_shared<GLframework::Texture>("Texture/box.png", 0);
 	boxMat2->mSpecularMask = std::make_shared<GLframework::Texture>("Texture/sp_mask.png", 1);
-	auto Boxmesh2 = std::make_shared<GLframework::Mesh>(boxGeo, boxMat2);
 	Boxmesh2->setPosition({ 3.0f, 0.0f,0.0f });
 	sceneOffScreen->addChild(Boxmesh2);
-	
+	*/
 
 	/*
 	auto textModel = GL_APPLICATION::AssimpLoader::load("fbx/bag/backpack.obj",renderer);
 	textModel->setScale(glm::vec3(1.0f));
-	textModel->setPosition({ -3.0f,0.0f,0.0f });
-	GLframework::Tools::setModelBlend(textModel, true, 0.2);
+	//textModel->setPosition({ -3.0f,0.0f,0.0f });
+	GLframework::Tools::setModelBlend(textModel, true, 0.5);
 	sceneOffScreen->addChild(textModel);
 	*/
-	
 
 	//在屏渲染
 	auto met = std::make_shared<GLframework::ScreenMaterial>();
-	met->mScreenTexture = colorAttachment;
+	met->mScreenTexture = framebuffer->getColorAttachment();
 	//if (met->getMaterialType() == GLframework::MaterialType::ScreenMaterial) std::cout << 1 << "\n";
 	auto geo = GLframework::Geometry::createScreenPlane(renderer->getShader(met->getMaterialType()));
 	auto mesh = std::make_shared<GLframework::Mesh>(geo, met);
 	sceneInScreen->addChild(mesh);
 	//----------
-
 
 	spotLight	= std::make_shared<GLframework::SpotLight>(glm::vec3(-1.0f, 0.0f, 0.0f), 30.0f, 60.0f);
 	spotLight	->	setPosition(glm::vec3(1.5f, 0.0f, 0.0f));
@@ -184,13 +299,14 @@ void prepare()
 
 	dirLight	= std::make_shared<GLframework::DirectionalLight>();
 	dirLight	->	setDirection(glm::vec3(-1.0f,-1.0f,-1.0f));
-	dirLight	->	setSpecularIntensity(0.5f);
+	dirLight	->	setColor({ 0.0f,0.0f,0.0f });
+	dirLight	->	setSpecularIntensity(0.0f);
 
 	auto pointLight1 = std::make_shared<GLframework::PointLight>();
 	pointLight1	->	setSpecularIntensity(0.01f);
 	pointLight1	->	setK(0.017f, 0.07f, 1.0f);
-	pointLight1	->	setColor(glm::vec3(0.0F));
-	pointLight1	->	setPosition(glm::vec3(-1.5f, 0.0f, 0.0f));
+	pointLight1	->	setColor(glm::vec3(10.0F));
+	//pointLight1	->	setPosition(glm::vec3(-1.5f, 0.0f, 0.0f));
 	pointLights.push_back(std::move(pointLight1));
 
 	auto pointLight2 = std::make_shared<GLframework::PointLight>();
@@ -214,13 +330,16 @@ void prepare()
 	pointLight4	->	setPosition(glm::vec3(0.0f, 0.0f, 1.5f));
 	pointLights.push_back(std::move(pointLight4));
 	ambientLight	 = std::make_shared<GLframework::AmbientLight>();
-	ambientLight->	setColor(glm::vec3(0.2f));
-	
+	ambientLight->	setColor(glm::vec3(0.8f));
+	std::cout << moonSphere->getPosition().x << " " << moonSphere->getPosition().y<<' ' << moonSphere->getPosition().z<<"\n";
+	std::cout << earthSphere->getPosition().x << " " << earthSphere->getPosition().y << ' ' << earthSphere->getPosition().z;
+
 }
 
-bool setAndInitWindow(int weith, int height)
+
+bool setAndInitWindow(int width, int height)
 {
-	if (!GL_APP->init(weith,height)) return false;
+	if (!GL_APP->init(width,height)) return false;
 	GL_APP->setResizeCallback(OnResize);
 	GL_APP->setKeyboardCallback(OnKeyboardCallback);
 	GL_APP->setMouseCallback(OnMouseCallback);
@@ -232,33 +351,6 @@ bool setAndInitWindow(int weith, int height)
 }
 
 
-void prepareFBO()
-{
-	//	1.生成fbo对象并绑定
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-	//	2.生成颜色控件，并且加入fbo
-	colorAttachment = std::make_shared<GLframework::Texture>(width, height, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment->getTexture(), 0);
-	//	3.生成depth Stencil附件，加入fbo
-	unsigned int depthStencil;
-	glGenTextures(1, &depthStencil);
-	glBindTexture(GL_TEXTURE_2D, depthStencil);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthStencil, 0);
-
-	//	检查当前构建的fbo是否完整
-	if(glCheckFramebufferStatus(GL_FRAMEBUFFER)!=GL_FRAMEBUFFER_COMPLETE)
-	{
-		std::cerr << "Error: FrameBuff is not complete!" << std::endl;
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//glDeleteFramebuffers(1, &fbo);
-}
 
 void prepareState()
 {
@@ -298,13 +390,11 @@ void prepareCamera()
 		0.1f,
 		1000.0f
 	);
-	
-	
 	//std::cout << "APP SIZE : " << GL_APP->getWidth() << ":" << GL_APP->getHeight() << std::endl;
 	//float size = 10.0f;
 	//camera = new OrthographicCamera(-size,size,size,-size,size,-size);
 	
-	cameracontrol = new GameCameraControl();
+	cameracontrol = new TrackBallCameraControl();
 	cameracontrol->setCamera(camera);
 }
 
@@ -318,6 +408,19 @@ void initIMGUI()
 	ImGui_ImplOpenGL3_Init("#version 460");
 }
 
+void rotatePlant()
+{
+	float speed = 0.01f;
+	roundForVenus->rotateY(1.6022f * speed);
+	roundForUranus->rotateY(0.0117f * speed);
+	roundForEarth->rotateY(0.9863f * speed);
+	roundForMoon->rotateY(5.0f * speed);
+	roundForJupiter->rotateY(0.08316f * speed);
+	roundForMars->rotateY(0.5240f * speed);
+	roundForSaturn->rotateY(0.0335f * speed);
+	roundForMercury->rotateY(4.0927f * speed);
+	roundForNeptune->rotateY(0.0059f * speed);
+}
 
 
 #pragma region 回调函数定义

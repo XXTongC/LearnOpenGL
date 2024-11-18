@@ -8,8 +8,6 @@ namespace GLframework
 	public:
 		Scene(){}
 		~Scene(){}
-
-		
 	};
 
 }
