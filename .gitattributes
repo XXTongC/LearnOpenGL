@@ -45,6 +45,4 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
-*.zip filter=lfs diff=lfs merge=lfs -text
-third_party/ filter=lfs diff=lfs merge=lfs -text
 third_party/lib/assimp-vc143-mtd.lib filter=lfs diff=lfs merge=lfs -text
