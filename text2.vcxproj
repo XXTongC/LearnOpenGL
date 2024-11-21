@@ -138,6 +138,7 @@
     <ClCompile Include="assimpLoader.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="cameracontrol.cpp" />
+    <ClCompile Include="cubeMaterial.cpp" />
     <ClCompile Include="depthMaterial.cpp" />
     <ClCompile Include="directionalLight.cpp" />
     <ClCompile Include="framebuffer.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="cameracontrol.h" />
     <ClInclude Include="core.h" />
+    <ClInclude Include="cubeMaterial.h" />
     <ClInclude Include="depthMaterial.h" />
     <ClInclude Include="directionalLight.h" />
     <ClInclude Include="framebuffer.h" />
@@ -567,6 +569,8 @@
     <ClInclude Include="whiteMaterial.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cube.frag" />
+    <None Include="cube.vert" />
     <None Include="depth.frag" />
     <None Include="depth.vert" />
     <None Include="fbx\bag\backpack.mtl" />
@@ -755,6 +759,12 @@
     <Image Include="Texture\land.jpg" />
     <Image Include="Texture\noise.jpg" />
     <Image Include="Texture\panda.jpg" />
+    <Image Include="Texture\skybox\back.jpg" />
+    <Image Include="Texture\skybox\bottom.jpg" />
+    <Image Include="Texture\skybox\front.jpg" />
+    <Image Include="Texture\skybox\left.jpg" />
+    <Image Include="Texture\skybox\right.jpg" />
+    <Image Include="Texture\skybox\top.jpg" />
     <Image Include="Texture\solar system\2k_earth_daymap.jpg" />
     <Image Include="Texture\solar system\2k_earth_nightmap.jpg" />
     <Image Include="Texture\solar system\2k_jupiter.jpg" />

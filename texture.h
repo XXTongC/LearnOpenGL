@@ -33,6 +33,7 @@ namespace GLframework
 			uint32_t widthIn,
 			uint32_t heightIn
 		);
+		Texture(const std::vector<std::string>& paths,unsigned int unit);
 		Texture(unsigned int width, unsigned int height, unsigned int unit);
 		~Texture();
 		void Bind();
@@ -41,13 +42,15 @@ namespace GLframework
 		void setTexture(GLuint value);
 		void setWidth(GLuint value);
 		void setHeight(GLuint value);
+		void setTextureTarget(unsigned int value);
+		unsigned int getTextureTarget() const;
 
 	private:
 		GLuint mTexture{ 0 };
 		int mWidth{ 0 };
 		int mHeight{ 0 };
 		int mUnit{ 0 };
-
+		int mTextureTarget{ GL_TEXTURE_2D };
 		//添加静态成员变量
 		static std::map<std::string, std::shared_ptr<Texture>> mTextureCache;
 	};

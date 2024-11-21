@@ -145,6 +145,9 @@
     <Filter Include="资源文件\Texture\solar system">
       <UniqueIdentifier>{34037783-e874-41cd-856a-20fc48dae0f6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\Texture\skybox">
+      <UniqueIdentifier>{79d61386-206e-4ef3-b867-10789b9323eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -266,6 +269,9 @@
     </ClCompile>
     <ClCompile Include="framebuffer.cpp">
       <Filter>cppfile\GLframework\framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="cubeMaterial.cpp">
+      <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1442,6 +1448,9 @@
     <ClInclude Include="framebuffer.h">
       <Filter>include\GLframework\framebuffer</Filter>
     </ClInclude>
+    <ClInclude Include="cubeMaterial.h">
+      <Filter>include\GLframework\material</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl">
@@ -1942,6 +1951,12 @@
     <None Include="depth.vert">
       <Filter>资源文件\shaders\depth</Filter>
     </None>
+    <None Include="cube.vert">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="cube.frag">
+      <Filter>资源文件\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="text2.rc">
@@ -2050,6 +2065,24 @@
     </Image>
     <Image Include="Texture\solar system\2k_mercury.jpg">
       <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\skybox\back.jpg">
+      <Filter>资源文件\Texture\skybox</Filter>
+    </Image>
+    <Image Include="Texture\skybox\bottom.jpg">
+      <Filter>资源文件\Texture\skybox</Filter>
+    </Image>
+    <Image Include="Texture\skybox\front.jpg">
+      <Filter>资源文件\Texture\skybox</Filter>
+    </Image>
+    <Image Include="Texture\skybox\left.jpg">
+      <Filter>资源文件\Texture\skybox</Filter>
+    </Image>
+    <Image Include="Texture\skybox\right.jpg">
+      <Filter>资源文件\Texture\skybox</Filter>
+    </Image>
+    <Image Include="Texture\skybox\top.jpg">
+      <Filter>资源文件\Texture\skybox</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

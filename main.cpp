@@ -13,6 +13,7 @@
 #include "orthographiccamera.h"
 #include "trackBallCameraControl.h"
 #include "opacityMaskMatetial.h"
+#include "cubeMaterial.h"
 #include "screenMaterial.h"
 #include "gamecameracontrol.h"
 #include "geometry.h"
@@ -75,6 +76,8 @@ std::shared_ptr <GLframework::AmbientLight> ambientLight = nullptr;
 std::shared_ptr<GLframework::Framebuffer> framebuffer = nullptr;
 Camera* camera = nullptr;
 CameraControl* cameracontrol = nullptr;
+#pragma region Ì«ÑôÏµÄ£Äâ
+/*
 auto roundForAll = std::make_shared<GLframework::Object>();
 auto roundForEarth = std::make_shared<GLframework::Object>();
 auto roundForVenus = std::make_shared<GLframework::Object>();
@@ -85,6 +88,8 @@ auto roundForJupiter = std::make_shared<GLframework::Object>();
 auto roundForMars = std::make_shared<GLframework::Object>();
 auto roundForMercury = std::make_shared<GLframework::Object>();
 auto roundForMoon = std::make_shared<GLframework::Object>();
+*/
+#pragma endregion
 int width = 1200, height = 900;
 glm::vec3 clearColor{};
 
@@ -139,16 +144,15 @@ void prepare()
 	framebuffer = std::make_shared<GLframework::Framebuffer>(width, height);
 	//----------
 	//ÀëÆÁäÖÈ¾
+#pragma region Ì«ÑôÏµÄ£Äâ
+	/*
 	float distanceEarth = 10.0f;
 	float sizeOfEarth = 1.0f;
-	
 	//ÔÂÇò
 	auto moonMat = std::make_shared<GLframework::PhongMaterial>();
 	moonMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/moon1k.jpg", 0);
-	auto sphereGeo = GLframework::Geometry::createSphere(renderer->getShader(moonMat->getMaterialType()),0.3f);
+	auto sphereGeo = GLframework::Geometry::createSphere(renderer->getShader(moonMat->getMaterialType()),0.3f,1000,1000);
 	auto moonSphere = std::make_shared<GLframework::Mesh>(sphereGeo, moonMat);
-	
-	
 
 	auto sunMat = std::make_shared<GLframework::PhongMaterial>();
 	sunMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_sun.jpg", 0);
@@ -253,14 +257,31 @@ void prepare()
 	
 	sceneOffScreen->addChild(roundForMercury);
 	sceneOffScreen->addChild(sunSphere);
-	/*
-	auto boxMat = std::make_shared<GLframework::PhongMaterial>();
-	boxMat->setPreStencilPreSettingType(GLframework::PreStencilType::Normal);
-	boxMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/grass.jpg", 0);
+	*/
+#pragma endregion
+
+	std::vector<std::string> paths = {
+		"Texture/skybox/right.jpg",
+		"Texture/skybox/left.jpg",
+		"Texture/skybox/top.jpg",
+		"Texture/skybox/bottom.jpg",
+		"Texture/skybox/back.jpg",
+		"Texture/skybox/front.jpg",
+	};
+
+	auto boxMat = std::make_shared<GLframework::CubeMaterial>();
+	//boxMat->setPreStencilPreSettingType(GLframework::PreStencilType::Normal);
+	boxMat->mDiffuse = std::make_shared<GLframework::Texture>(paths, 0);
 	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(boxMat->getMaterialType()), 1.0f, 1.0f,1.0f);
 	auto boxMesh = std::make_shared<GLframework::Mesh>(boxGeo, boxMat);
 	sceneOffScreen->addChild(boxMesh);
-	
+
+	auto earthMat = std::make_shared<GLframework::PhongMaterial>();
+	earthMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_earth_daymap.jpg", 0);
+	auto earthGeo = GLframework::Geometry::createSphere(renderer->getShader(GLframework::MaterialType::PhongMaterial), 2.0f);
+	auto earthMash = std::make_shared<GLframework::Mesh>(earthGeo, earthMat);
+	sceneOffScreen->addChild(earthMash);
+	/*
 	auto boxCulling = std::make_shared<GLframework::WhiteMaterial>();
 	boxCulling->setPreStencilPreSettingType(GLframework::PreStencilType::Outlining);
 	auto boxCullingGeo = GLframework::Geometry::createBox(renderer->getShader(boxCulling->getMaterialType()), 1.0f, 1.0f, 1.0f);
@@ -331,8 +352,6 @@ void prepare()
 	pointLights.push_back(std::move(pointLight4));
 	ambientLight	 = std::make_shared<GLframework::AmbientLight>();
 	ambientLight->	setColor(glm::vec3(0.8f));
-	std::cout << moonSphere->getPosition().x << " " << moonSphere->getPosition().y<<' ' << moonSphere->getPosition().z<<"\n";
-	std::cout << earthSphere->getPosition().x << " " << earthSphere->getPosition().y << ' ' << earthSphere->getPosition().z;
 
 }
 
@@ -410,16 +429,57 @@ void initIMGUI()
 
 void rotatePlant()
 {
+
+
+#pragma region Ì«ÑôÏµÄ£Äâ
+	/*
 	float speed = 0.01f;
 	roundForVenus->rotateY(1.6022f * speed);
+	for(auto& t:roundForVenus->getChildren())
+	{
+		t->rotateY(speed*10);
+	}
 	roundForUranus->rotateY(0.0117f * speed);
+	for (auto& t : roundForUranus->getChildren())
+	{
+		t->rotateY(speed*10);
+	}
 	roundForEarth->rotateY(0.9863f * speed);
+	for (auto& t : roundForEarth->getChildren())
+	{
+		if(t->getType()==GLframework::ObjectType::Mesh)
+			t->rotateY(speed*10);
+	}
 	roundForMoon->rotateY(5.0f * speed);
+
 	roundForJupiter->rotateY(0.08316f * speed);
+	for (auto& t : roundForJupiter->getChildren())
+	{
+		t->rotateY(speed*10);
+	}
 	roundForMars->rotateY(0.5240f * speed);
+	for (auto& t : roundForMars->getChildren())
+	{
+		t->rotateY(speed*10);
+	}
 	roundForSaturn->rotateY(0.0335f * speed);
+	for (auto& t : roundForSaturn->getChildren())
+	{
+		t->rotateY(speed*10);
+	}
 	roundForMercury->rotateY(4.0927f * speed);
+	for (auto& t : roundForMercury->getChildren())
+	{
+		t->rotateY(speed*10);
+	}
 	roundForNeptune->rotateY(0.0059f * speed);
+	for (auto& t : roundForNeptune->getChildren())
+	{
+		t->rotateY(speed*10);
+	}
+	*/
+#pragma endregion
+
 }
 
 

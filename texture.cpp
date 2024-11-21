@@ -4,6 +4,58 @@
 using namespace GLframework;
 std::map<std::string, std::shared_ptr<GLframework::Texture>> GLframework::Texture::mTextureCache{};
 
+unsigned int Texture::getTextureTarget() const
+{
+	return mTextureTarget;
+}
+
+void Texture::setTextureTarget(unsigned value)
+{
+	mTextureTarget = value;
+}
+
+
+
+//右、左、上、下、后、前（+x，-x，+y，-y，+z，-z）
+Texture::Texture(const std::vector<std::string>& paths, unsigned unit)
+{
+	//声明图片长宽，颜色通道
+	mUnit = unit;
+	setTextureTarget(GL_TEXTURE_CUBE_MAP);
+	//cubemap不需要反转y轴
+	stbi_set_flip_vertically_on_load(false);
+	//1. 创建cubemap对象
+	GL_CALL(glGenTextures(1, &mTexture));
+	GL_CALL(glActiveTexture(GL_TEXTURE0 + mUnit));
+	GL_CALL(glBindTexture(GL_TEXTURE_CUBE_MAP, mTexture));
+
+	//2. 循环读取六张贴图，将其储存在显存中
+	int channels;
+	int width = 0, height = 0;
+	unsigned char* data = nullptr;
+	for(int i = 0;i<paths.size();i++)
+	{
+		data = stbi_load(paths[i].c_str(), &width, &height, &channels, STBI_rgb_alpha);
+		if(data!=nullptr)
+		{
+			GL_CALL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
+			//释放RAM上的data
+			stbi_image_free(data);
+			
+		}else
+		{
+			std::cerr << "Error: CubeMap Texture failed to load at path - " << paths[i] << std::endl;
+			stbi_image_free(data);
+		}
+	}
+	//3. 设置纹理参数
+	GL_CALL(glTexParameteri(getTextureTarget(), GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+	GL_CALL(glTexParameteri(getTextureTarget(), GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+
+	//设置纹理包裹方式，设置x, y方向的超原图范围属性, S对应x(u), T对应y(v)
+	GL_CALL(glTexParameteri(getTextureTarget(), GL_TEXTURE_WRAP_S, GL_REPEAT));
+	GL_CALL(glTexParameteri(getTextureTarget(), GL_TEXTURE_WRAP_T, GL_REPEAT));
+}
 
 std::shared_ptr<Texture> Texture::createColorAttachment(
 	unsigned width, 
@@ -213,7 +265,7 @@ void GLframework::Texture::Bind()
 {
 	//先切换纹理单元，让后绑定纹理单元
 	GL_CALL(glActiveTexture(GL_TEXTURE0 + mUnit));
-	GL_CALL(glBindTexture(GL_TEXTURE_2D, mTexture));
+	GL_CALL(glBindTexture(mTextureTarget, mTexture));
 }
 
 void GLframework::Texture::setUnit(unsigned unit)

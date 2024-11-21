@@ -5,6 +5,7 @@
 #include "phongMaterial.h"
 #include "whiteMaterial.h"
 #include "opacityMaskMatetial.h"
+#include "cubeMaterial.h"
 #include "screenMaterial.h"
 #include <algorithm>
 
@@ -143,6 +144,9 @@ std::shared_ptr<Shader> Renderer::pickShader(MaterialType type)
 		break;
 	case MaterialType::ScreenMaterial:
 		res = mScreenShader;
+		break;
+	case MaterialType::CubeMaterial:
+		res = mCubeShader;
 		break;
 	default:
 		std::cerr << "Unknown material type to pick shader\n";
@@ -423,7 +427,21 @@ void Renderer::renderObject(
 			{
 				std::shared_ptr<ScreenMaterial> screenMaterial = std::static_pointer_cast<ScreenMaterial>(material);
 				shader->setInt("screenTextureSampler", 0);
+				shader->setFloat("texWidth", 1200);
+				shader->setFloat("texHeight", 900);
+
 				screenMaterial->mScreenTexture->Bind();
+			}
+			break;
+		case MaterialType::CubeMaterial:
+			{
+				std::shared_ptr<CubeMaterial> cubeMat = std::static_pointer_cast<CubeMaterial>(material);
+				mesh->setPosition(camera->mPosition);
+				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("viewMatrix", camera->getViewMatrix());
+				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
+				shader->setInt("cubeSampler", 0);
+				cubeMat->mDiffuse->Bind();
 			}
 			break;
 		default:

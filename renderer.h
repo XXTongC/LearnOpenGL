@@ -21,6 +21,7 @@ namespace GLframework
 			mDepthShader = std::make_shared<Shader>("depth.vert", "depth.frag");
 			mOpacityMaskShader = std::make_shared<Shader>("phongOpacityMask.vert", "phongOpacityMask.frag");
 			mScreenShader = std::make_shared<Shader>("screen.vert", "screen.frag");
+			mCubeShader = std::make_shared<Shader>("cube.vert", "cube.frag");
 		}
 		~Renderer(){}
 		std::shared_ptr<Shader> getShader(MaterialType type);
@@ -65,6 +66,7 @@ namespace GLframework
 		std::shared_ptr<Shader> mDepthShader{ nullptr };
 		std::shared_ptr<Shader> mOpacityMaskShader{ nullptr };
 		std::shared_ptr<Shader> mScreenShader{ nullptr };
+		std::shared_ptr<Shader> mCubeShader{ nullptr };
 		//不透明队列与透明队列
 		//ops: 每一帧绘制前需要清空两个队列
 		std::vector<std::shared_ptr<Mesh>> mOpacityObjects;

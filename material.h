@@ -10,6 +10,7 @@ namespace GLframework
 		DepthMaterial,
 		OpacityMaskMaterial,
 		ScreenMaterial,
+		CubeMaterial,
 	};
 
 	enum class PreStencilType
