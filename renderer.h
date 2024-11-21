@@ -16,12 +16,12 @@ namespace GLframework
 	public:
 		Renderer()
 		{
-			mPhongShader =  std::make_shared<Shader>("phongPointLight.vert","phong.frag");
-			mWhiteShader =  std::make_shared<Shader>("white.vert","white.frag");
-			mDepthShader = std::make_shared<Shader>("depth.vert", "depth.frag");
-			mOpacityMaskShader = std::make_shared<Shader>("phongOpacityMask.vert", "phongOpacityMask.frag");
-			mScreenShader = std::make_shared<Shader>("screen.vert", "screen.frag");
-			mCubeShader = std::make_shared<Shader>("cube.vert", "cube.frag");
+			mPhongShader =  std::make_shared<Shader>("shaders/phong/phongPointLight.vert","shaders/phong/phong.frag");
+			mWhiteShader =  std::make_shared<Shader>("shaders/white/white.vert","shaders/white/white.frag");
+			mDepthShader = std::make_shared<Shader>("shaders/depth/depth.vert", "shaders/depth/depth.frag");
+			mOpacityMaskShader = std::make_shared<Shader>("shaders/opacityMask/phongOpacityMask.vert", "shaders/opacityMask/phongOpacityMask.frag");
+			mScreenShader = std::make_shared<Shader>("shaders/screen/screen.vert", "shaders/screen/screen.frag");
+			mCubeShader = std::make_shared<Shader>("shaders/cube/cube.vert", "shaders/cube/cube.frag");
 		}
 		~Renderer(){}
 		std::shared_ptr<Shader> getShader(MaterialType type);

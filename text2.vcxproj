@@ -152,6 +152,7 @@
     <ClCompile Include="opacityMaskMatetial.cpp" />
     <ClCompile Include="orthographiccamera.cpp" />
     <ClCompile Include="perspectivecamera.cpp" />
+    <ClCompile Include="phongEnvMaterial.cpp" />
     <ClCompile Include="phongMaterial.cpp" />
     <ClCompile Include="pointLight.cpp" />
     <ClCompile Include="renderer.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="opacityMaskMatetial.h" />
     <ClInclude Include="orthographiccamera.h" />
     <ClInclude Include="perspectivecamera.h" />
+    <ClInclude Include="phongEnvMaterial.h" />
     <ClInclude Include="phongMaterial.h" />
     <ClInclude Include="pointLight.h" />
     <ClInclude Include="renderer.h" />
@@ -569,23 +571,29 @@
     <ClInclude Include="whiteMaterial.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="cube.frag" />
-    <None Include="cube.vert" />
-    <None Include="depth.frag" />
-    <None Include="depth.vert" />
     <None Include="fbx\bag\backpack.mtl" />
     <None Include="fbx\Fist Fight B.fbx" />
     <None Include="fbx\grass.fbx" />
     <None Include="fbx\test\test.fbx" />
-    <None Include="fragment.glsl" />
-    <None Include="phong.frag" />
-    <None Include="phongOpacityMask.frag" />
-    <None Include="phongOpacityMask.vert" />
-    <None Include="phongPointLight.frag" />
-    <None Include="phongPointLight.vert" />
-    <None Include="phongSpotLight.frag" />
-    <None Include="screen.frag" />
-    <None Include="screen.vert" />
+    <None Include="shaders\cube\cube.frag" />
+    <None Include="shaders\cube\cube.vert" />
+    <None Include="shaders\depth\depth.frag" />
+    <None Include="shaders\depth\depth.vert" />
+    <None Include="shaders\fragment.glsl" />
+    <None Include="shaders\opacityMask\phongOpacityMask.frag" />
+    <None Include="shaders\opacityMask\phongOpacityMask.vert" />
+    <None Include="shaders\phong.vert" />
+    <None Include="shaders\phongEnv\phongEnv.frag" />
+    <None Include="shaders\phongEnv\phongEnv.vert" />
+    <None Include="shaders\phongPointLight.frag" />
+    <None Include="shaders\phongSpotLight.frag" />
+    <None Include="shaders\phong\phong.frag" />
+    <None Include="shaders\phong\phongPointLight.vert" />
+    <None Include="shaders\screen\screen.frag" />
+    <None Include="shaders\screen\screen.vert" />
+    <None Include="shaders\vertex.glsl" />
+    <None Include="shaders\white\white.frag" />
+    <None Include="shaders\white\white.vert" />
     <None Include="third_party\assimp\color4.inl" />
     <None Include="third_party\assimp\material.inl" />
     <None Include="third_party\assimp\matrix3x3.inl" />
@@ -733,10 +741,6 @@
     <None Include="third_party\glm\gtx\vector_query.inl" />
     <None Include="third_party\glm\gtx\wrap.inl" />
     <None Include="third_party\imgui\imgui.natstepfilter" />
-    <None Include="vertex.glsl" />
-    <None Include="phong.vert" />
-    <None Include="white.frag" />
-    <None Include="white.vert" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="text2.rc" />

@@ -148,6 +148,24 @@
     <Filter Include="资源文件\Texture\skybox">
       <UniqueIdentifier>{79d61386-206e-4ef3-b867-10789b9323eb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\shaders\cube">
+      <UniqueIdentifier>{4db67f83-b480-458b-876d-f125330c2140}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shaders\screen">
+      <UniqueIdentifier>{ea4f8fda-1444-46c4-964e-4ead7252fe92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shaders\white">
+      <UniqueIdentifier>{e4d103c5-1e83-42e4-8ca0-08adc24d9c4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shaders\opacityMask">
+      <UniqueIdentifier>{dc3dca02-8738-48e2-9094-08d6f6cae3b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shaders\phong">
+      <UniqueIdentifier>{6682cfe8-3194-43a4-9b54-f9a34852db0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shaders\phongEnv">
+      <UniqueIdentifier>{e353fbb0-53f8-4a68-aa2e-3f9e6032ba38}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -271,6 +289,9 @@
       <Filter>cppfile\GLframework\framebuffer</Filter>
     </ClCompile>
     <ClCompile Include="cubeMaterial.cpp">
+      <Filter>cppfile\GLframework\material</Filter>
+    </ClCompile>
+    <ClCompile Include="phongEnvMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1451,35 +1472,11 @@
     <ClInclude Include="cubeMaterial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
+    <ClInclude Include="phongEnvMaterial.h">
+      <Filter>include\GLframework\material</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragment.glsl">
-      <Filter>资源文件\shaders</Filter>
-    </None>
-    <None Include="vertex.glsl">
-      <Filter>资源文件\shaders</Filter>
-    </None>
-    <None Include="phong.vert">
-      <Filter>资源文件\shaders</Filter>
-    </None>
-    <None Include="phong.frag">
-      <Filter>资源文件\shaders</Filter>
-    </None>
-    <None Include="white.vert">
-      <Filter>资源文件\shaders</Filter>
-    </None>
-    <None Include="white.frag">
-      <Filter>资源文件\shaders</Filter>
-    </None>
-    <None Include="phongPointLight.vert">
-      <Filter>资源文件\shaders</Filter>
-    </None>
-    <None Include="phongPointLight.frag">
-      <Filter>资源文件\shaders</Filter>
-    </None>
-    <None Include="phongSpotLight.frag">
-      <Filter>资源文件\shaders</Filter>
-    </None>
     <None Include="third_party\imgui\imgui.natstepfilter">
       <Filter>third_party\include\imgui</Filter>
     </None>
@@ -1516,20 +1513,8 @@
     <None Include="fbx\bag\backpack.mtl">
       <Filter>资源文件\fbx\bag</Filter>
     </None>
-    <None Include="phongOpacityMask.frag">
-      <Filter>资源文件\shaders</Filter>
-    </None>
-    <None Include="phongOpacityMask.vert">
-      <Filter>资源文件\shaders</Filter>
-    </None>
     <None Include="fbx\grass.fbx">
       <Filter>资源文件\fbx</Filter>
-    </None>
-    <None Include="screen.vert">
-      <Filter>资源文件\shaders</Filter>
-    </None>
-    <None Include="screen.frag">
-      <Filter>资源文件\shaders</Filter>
     </None>
     <None Include="third_party\glm\detail\func_common.inl">
       <Filter>third_party\glm\detail</Filter>
@@ -1945,16 +1930,61 @@
     <None Include="third_party\glm\gtx\wrap.inl">
       <Filter>third_party\glm\gtx</Filter>
     </None>
-    <None Include="depth.frag">
+    <None Include="shaders\depth\depth.frag">
       <Filter>资源文件\shaders\depth</Filter>
     </None>
-    <None Include="depth.vert">
+    <None Include="shaders\depth\depth.vert">
       <Filter>资源文件\shaders\depth</Filter>
     </None>
-    <None Include="cube.vert">
+    <None Include="shaders\cube\cube.frag">
+      <Filter>资源文件\shaders\cube</Filter>
+    </None>
+    <None Include="shaders\cube\cube.vert">
+      <Filter>资源文件\shaders\cube</Filter>
+    </None>
+    <None Include="shaders\phong\phong.frag">
+      <Filter>资源文件\shaders\phong</Filter>
+    </None>
+    <None Include="shaders\phong\phongPointLight.vert">
+      <Filter>资源文件\shaders\phong</Filter>
+    </None>
+    <None Include="shaders\opacityMask\phongOpacityMask.frag">
+      <Filter>资源文件\shaders\opacityMask</Filter>
+    </None>
+    <None Include="shaders\opacityMask\phongOpacityMask.vert">
+      <Filter>资源文件\shaders\opacityMask</Filter>
+    </None>
+    <None Include="shaders\white\white.frag">
+      <Filter>资源文件\shaders\white</Filter>
+    </None>
+    <None Include="shaders\white\white.vert">
+      <Filter>资源文件\shaders\white</Filter>
+    </None>
+    <None Include="shaders\screen\screen.frag">
+      <Filter>资源文件\shaders\screen</Filter>
+    </None>
+    <None Include="shaders\screen\screen.vert">
+      <Filter>资源文件\shaders\screen</Filter>
+    </None>
+    <None Include="shaders\phongEnv\phongEnv.frag">
+      <Filter>资源文件\shaders\phongEnv</Filter>
+    </None>
+    <None Include="shaders\phongEnv\phongEnv.vert">
+      <Filter>资源文件\shaders\phongEnv</Filter>
+    </None>
+    <None Include="shaders\fragment.glsl">
       <Filter>资源文件\shaders</Filter>
     </None>
-    <None Include="cube.frag">
+    <None Include="shaders\phong.vert">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="shaders\phongPointLight.frag">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="shaders\phongSpotLight.frag">
+      <Filter>资源文件\shaders</Filter>
+    </None>
+    <None Include="shaders\vertex.glsl">
       <Filter>资源文件\shaders</Filter>
     </None>
   </ItemGroup>
