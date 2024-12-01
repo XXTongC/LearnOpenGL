@@ -166,6 +166,12 @@
     <Filter Include="资源文件\shaders\phongEnv">
       <UniqueIdentifier>{e353fbb0-53f8-4a68-aa2e-3f9e6032ba38}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cppfile\GLframework\mesh">
+      <UniqueIdentifier>{66f74734-03ee-42ba-b150-4ca120f17ec1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\mesh">
+      <UniqueIdentifier>{158ff723-b5d0-4f3e-87c4-d50e6ec59b3d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -217,9 +223,6 @@
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
     <ClCompile Include="phongMaterial.cpp">
-      <Filter>cppfile\GLframework\material</Filter>
-    </ClCompile>
-    <ClCompile Include="mesh.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
     <ClCompile Include="light.cpp">
@@ -293,6 +296,21 @@
     </ClCompile>
     <ClCompile Include="phongEnvMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
+    </ClCompile>
+    <ClCompile Include="cubeSphereMaterial.cpp">
+      <Filter>cppfile\GLframework\material</Filter>
+    </ClCompile>
+    <ClCompile Include="phongEnvSphereMaterial.cpp">
+      <Filter>cppfile\GLframework\material</Filter>
+    </ClCompile>
+    <ClCompile Include="phongInstanceMaterial.cpp">
+      <Filter>cppfile\GLframework\material</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh\mesh.cpp">
+      <Filter>cppfile\GLframework\mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh\instancedMesh.cpp">
+      <Filter>cppfile\GLframework\mesh</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1457,9 +1475,6 @@
     <ClInclude Include="third_party\glm\simd\vector_relational.h">
       <Filter>third_party\glm\simd</Filter>
     </ClInclude>
-    <ClInclude Include="mesh.h">
-      <Filter>include\GLframework</Filter>
-    </ClInclude>
     <ClInclude Include="stb_image.h">
       <Filter>third_party\stb_image</Filter>
     </ClInclude>
@@ -1474,6 +1489,21 @@
     </ClInclude>
     <ClInclude Include="phongEnvMaterial.h">
       <Filter>include\GLframework\material</Filter>
+    </ClInclude>
+    <ClInclude Include="cubeSphereMaterial.h">
+      <Filter>include\GLframework\material</Filter>
+    </ClInclude>
+    <ClInclude Include="phongEnvSphereMaterial.h">
+      <Filter>include\GLframework\material</Filter>
+    </ClInclude>
+    <ClInclude Include="phongInstanceMaterial.h">
+      <Filter>include\GLframework\material</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh\mesh.h">
+      <Filter>include\GLframework\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh\instancedMesh.h">
+      <Filter>include\GLframework\mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1987,6 +2017,18 @@
     <None Include="shaders\vertex.glsl">
       <Filter>资源文件\shaders</Filter>
     </None>
+    <None Include="cubeSphere.frag">
+      <Filter>资源文件\shaders\cube</Filter>
+    </None>
+    <None Include="shaders\phongEnv\phongEnvSphere.frag">
+      <Filter>资源文件\shaders\phongEnv</Filter>
+    </None>
+    <None Include="cubeSphere.vert">
+      <Filter>资源文件\shaders\cube</Filter>
+    </None>
+    <None Include="phongEnvSphere.vert">
+      <Filter>资源文件\shaders\phongEnv</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="text2.rc">
@@ -2113,6 +2155,12 @@
     </Image>
     <Image Include="Texture\skybox\top.jpg">
       <Filter>资源文件\Texture\skybox</Filter>
+    </Image>
+    <Image Include="Texture\sphericalMap.png">
+      <Filter>资源文件\Texture</Filter>
+    </Image>
+    <Image Include="Texture\bk.jpg">
+      <Filter>资源文件\Texture</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

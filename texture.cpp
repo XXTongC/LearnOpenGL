@@ -17,7 +17,7 @@ void Texture::setTextureTarget(unsigned value)
 
 
 //右、左、上、下、后、前（+x，-x，+y，-y，+z，-z）
-Texture::Texture(const std::vector<std::string>& paths, unsigned unit)
+Texture::Texture(const std::vector<std::string>& paths, unsigned int unit)
 {
 	//声明图片长宽，颜色通道
 	mUnit = unit;
@@ -123,6 +123,7 @@ std::shared_ptr<GLframework::Texture> GLframework::Texture::createTexture(const 
 	auto iter = mTextureCache.find(path);
 	if(iter!=mTextureCache.end())
 	{
+		std::cout << "\"" << path << " 该纹理已在纹理池中\n";
 		return iter->second;
 	}
 
@@ -169,13 +170,13 @@ GLframework::Texture::Texture(const std::string& path, unsigned int unit)
 	//开辟显存并传输纹理数据
 	GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
 	//设置自动MipMap
-	GL_CALL(glGenerateMipmap(GL_TEXTURE_2D));
+	//GL_CALL(glGenerateMipmap(GL_TEXTURE_2D));
 	
 
 	//释放RAM上的data
 	stbi_image_free(data);
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 
 	//如果渲染像素小于原图，则就近原则，成图较清晰，锯齿感强
 	//GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
@@ -235,7 +236,7 @@ GLframework::Texture::Texture(unsigned unit, unsigned char* dataIn, uint32_t wid
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT));
 }
 
-Texture::Texture(unsigned width, unsigned height, unsigned unit)
+Texture::Texture(unsigned int width, unsigned int height, unsigned int unit)
 {
 	mWidth = width;
 	mHeight = height;

@@ -2,6 +2,11 @@
 
 using namespace GLframework;
 
+std::shared_ptr<Shader> Geometry::getShader()
+{
+    return mShader;
+}
+
 Geometry::~Geometry()
 {
 	if(mVao!=0)

@@ -49,7 +49,7 @@ namespace GLframework
 		GLuint mTexture{ 0 };
 		int mWidth{ 0 };
 		int mHeight{ 0 };
-		int mUnit{ 0 };
+		unsigned int mUnit{ 0 };
 		int mTextureTarget{ GL_TEXTURE_2D };
 		//添加静态成员变量
 		static std::map<std::string, std::shared_ptr<Texture>> mTextureCache;

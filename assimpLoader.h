@@ -4,7 +4,7 @@
 #include "third_party/assimp/Importer.hpp"
 #include "third_party/assimp/scene.h"
 #include "third_party/assimp/postprocess.h"
-#include "mesh.h"
+#include "mesh/mesh.h"
 #include "renderer.h"
 #include "texture.h"
 #include "shader.h"

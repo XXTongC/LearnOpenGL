@@ -1,7 +1,7 @@
 #pragma once
 #include "core.h"
 #include <vector>
-#include "mesh.h"
+#include "mesh/mesh.h"
 #include "camera.h"
 #include "shader.h"
 #include "directionalLight.h"
@@ -22,6 +22,10 @@ namespace GLframework
 			mOpacityMaskShader = std::make_shared<Shader>("shaders/opacityMask/phongOpacityMask.vert", "shaders/opacityMask/phongOpacityMask.frag");
 			mScreenShader = std::make_shared<Shader>("shaders/screen/screen.vert", "shaders/screen/screen.frag");
 			mCubeShader = std::make_shared<Shader>("shaders/cube/cube.vert", "shaders/cube/cube.frag");
+			mPhongEnvShader = std::make_shared<Shader>("shaders/phongEnv/phongEnv.vert", "shaders/phongEnv/phongEnv.frag");
+			mCubeSphereShader = std::make_shared<Shader>("shaders/cube/cube.vert", "shaders/cube/cubeSphere.frag");
+			mPhongEnvSphereShader = std::make_shared<Shader>("shaders/phongEnv/phongEnv.vert", "shaders/phongEnv/phongEnvSphere.frag");
+			mPhongInstanceShader = std::make_shared<Shader>("shaders/phongInstance/phongInstance.vert", "shaders/phongInstance/phongInstance.frag");
 		}
 		~Renderer(){}
 		std::shared_ptr<Shader> getShader(MaterialType type);
@@ -67,6 +71,10 @@ namespace GLframework
 		std::shared_ptr<Shader> mOpacityMaskShader{ nullptr };
 		std::shared_ptr<Shader> mScreenShader{ nullptr };
 		std::shared_ptr<Shader> mCubeShader{ nullptr };
+		std::shared_ptr<Shader> mPhongEnvShader{ nullptr };
+		std::shared_ptr<Shader> mCubeSphereShader{ nullptr };
+		std::shared_ptr<Shader> mPhongEnvSphereShader{ nullptr };
+		std::shared_ptr<Shader> mPhongInstanceShader{ nullptr };
 		//不透明队列与透明队列
 		//ops: 每一帧绘制前需要清空两个队列
 		std::vector<std::shared_ptr<Mesh>> mOpacityObjects;

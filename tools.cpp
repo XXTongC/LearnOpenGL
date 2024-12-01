@@ -1,5 +1,5 @@
 #include "tools.h"
-#include "mesh.h"
+#include "mesh/mesh.h"
 using namespace GLframework;
 
 void Tools::decompose(

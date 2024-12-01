@@ -28,12 +28,14 @@ namespace GLframework
 			const std::vector<unsigned int>& indices
 		);
 		~Geometry();
+
 		static std::shared_ptr<Geometry> createBox(std::shared_ptr<GLframework::Shader> shader, float length, float width, float height);
 		//static Geometry* createBox(float length, float width, float height);
 		static std::shared_ptr<Geometry> createSphere(std::shared_ptr< GLframework::Shader> shader, float radius, int mLatitude = 360, int mLong = 180);
 		static std::shared_ptr<Geometry> createPlane(std::shared_ptr<GLframework::Shader> shader, float width, float height);
 		static std::shared_ptr<Geometry> createScreenPlane(std::shared_ptr<GLframework::Shader> shader);
 		void setShader(std::shared_ptr<GLframework::Shader> shader);
+		std::shared_ptr<Shader> getShader();
 		GLuint getVao() const { return mVao; }
 		GLuint getIndicesCount() const { return mIndicesCount; }
 

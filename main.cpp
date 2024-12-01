@@ -17,8 +17,12 @@
 #include "screenMaterial.h"
 #include "gamecameracontrol.h"
 #include "geometry.h"
-#include "mesh.h"
+#include "mesh/mesh.h"
 #include "phongMaterial.h"
+#include "phongEnvSphereMaterial.h"
+#include "../mesh/instancedMesh.h"
+#include "phongInstanceMaterial.h"
+#include "cubeSphereMaterial.h"
 #include "depthMaterial.h"
 #include "whiteMaterial.h"
 #include "material.h"
@@ -31,6 +35,7 @@
 #include "third_party/imgui/imgui_impl_glfw.h"
 #include "third_party/imgui/imgui_impl_opengl3.h"
 #include "assimpLoader.h"
+#include "phongEnvMaterial.h"
 
 /*
  * refer to ColorBlend, there are still some problem should be solve such as opacity order, look up OIT and Depth Peeling
@@ -76,6 +81,13 @@ std::shared_ptr <GLframework::AmbientLight> ambientLight = nullptr;
 std::shared_ptr<GLframework::Framebuffer> framebuffer = nullptr;
 Camera* camera = nullptr;
 CameraControl* cameracontrol = nullptr;
+
+//----skyBox----
+std::shared_ptr<GLframework::Mesh> skyBoxMesh = nullptr;
+void prepareSkyBox();
+//---------------
+
+
 #pragma region Ì«ÑôÏµÄ£Äâ
 /*
 auto roundForAll = std::make_shared<GLframework::Object>();
@@ -135,6 +147,27 @@ int main()
 
 	return 0;
 }
+
+void prepareSkyBox()
+{
+	std::vector<std::string> paths = {
+		"Texture/skybox/right.jpg",
+		"Texture/skybox/left.jpg",
+		"Texture/skybox/top.jpg",
+		"Texture/skybox/bottom.jpg",
+		"Texture/skybox/back.jpg",
+		"Texture/skybox/front.jpg",
+	};
+
+	//boxMat->setPreStencilPreSettingType(GLframework::PreStencilType::Normal);
+	auto skyBoxMat = std::make_shared<GLframework::CubeSphereMaterial>();
+	skyBoxMat-> mDiffuse = std::make_shared<GLframework::Texture>("Texture/bk.jpg", 0);
+	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(GLframework::MaterialType::CubeSphereMaterial), 3.0f, 3.0f, 3.0f);
+	skyBoxMesh = std::make_shared<GLframework::Mesh>(boxGeo, skyBoxMat);
+	sceneOffScreen->addChild(skyBoxMesh);
+}
+
+
 
 void prepare()
 {
@@ -259,28 +292,27 @@ void prepare()
 	sceneOffScreen->addChild(sunSphere);
 	*/
 #pragma endregion
-
-	std::vector<std::string> paths = {
-		"Texture/skybox/right.jpg",
-		"Texture/skybox/left.jpg",
-		"Texture/skybox/top.jpg",
-		"Texture/skybox/bottom.jpg",
-		"Texture/skybox/back.jpg",
-		"Texture/skybox/front.jpg",
-	};
-
-	auto boxMat = std::make_shared<GLframework::CubeMaterial>();
-	//boxMat->setPreStencilPreSettingType(GLframework::PreStencilType::Normal);
-	boxMat->mDiffuse = std::make_shared<GLframework::Texture>(paths, 0);
-	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(boxMat->getMaterialType()), 1.0f, 1.0f,1.0f);
-	auto boxMesh = std::make_shared<GLframework::Mesh>(boxGeo, boxMat);
-	sceneOffScreen->addChild(boxMesh);
-
-	auto earthMat = std::make_shared<GLframework::PhongMaterial>();
+	prepareSkyBox();
+	auto skyBoxMat = std::static_pointer_cast<GLframework::PhongEnvSphereMaterial>(skyBoxMesh->getMaterial())->mDiffuse;
+	auto earthMat = std::make_shared<GLframework::PhongEnvSphereMaterial>();
 	earthMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_earth_daymap.jpg", 0);
-	auto earthGeo = GLframework::Geometry::createSphere(renderer->getShader(GLframework::MaterialType::PhongMaterial), 2.0f);
+
+	earthMat->mEnv = skyBoxMat;
+	auto earthGeo = GLframework::Geometry::createSphere(renderer->getShader(GLframework::MaterialType::PhongEnvSphereMaterial), 1.0f);
 	auto earthMash = std::make_shared<GLframework::Mesh>(earthGeo, earthMat);
 	sceneOffScreen->addChild(earthMash);
+	
+	auto earthN = std::make_shared<GLframework::PhongInstanceMaterial>();
+	earthN->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_earth_daymap.jpg", 0);
+	auto earthGeoN = GLframework::Geometry::createSphere(renderer->getShader(earthN->getMaterialType()), 1.0f);
+	auto earthNMesh = std::make_shared<GLframework::InstancedMesh>(earthGeoN, earthN,2);
+	glm::mat4 transform0 = glm::mat4(1.0f);
+	glm::mat4 transform1 = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f));
+	earthNMesh->mInstanceMatrices[0] = transform0;
+	earthNMesh->mInstanceMatrices[1] = transform1;
+	earthNMesh->updateMatrices();
+	earthNMesh->setPosition({ 2.0f,0.0f,0.0f });
+	sceneOffScreen->addChild(earthNMesh);
 	/*
 	auto boxCulling = std::make_shared<GLframework::WhiteMaterial>();
 	boxCulling->setPreStencilPreSettingType(GLframework::PreStencilType::Outlining);
@@ -320,13 +352,13 @@ void prepare()
 
 	dirLight	= std::make_shared<GLframework::DirectionalLight>();
 	dirLight	->	setDirection(glm::vec3(-1.0f,-1.0f,-1.0f));
-	dirLight	->	setColor({ 0.0f,0.0f,0.0f });
+	dirLight	->	setColor({ 0.8f,0.8f,0.9f });
 	dirLight	->	setSpecularIntensity(0.0f);
 
 	auto pointLight1 = std::make_shared<GLframework::PointLight>();
 	pointLight1	->	setSpecularIntensity(0.01f);
 	pointLight1	->	setK(0.017f, 0.07f, 1.0f);
-	pointLight1	->	setColor(glm::vec3(10.0F));
+	pointLight1	->	setColor(glm::vec3(0.0F));
 	//pointLight1	->	setPosition(glm::vec3(-1.5f, 0.0f, 0.0f));
 	pointLights.push_back(std::move(pointLight1));
 
@@ -351,7 +383,7 @@ void prepare()
 	pointLight4	->	setPosition(glm::vec3(0.0f, 0.0f, 1.5f));
 	pointLights.push_back(std::move(pointLight4));
 	ambientLight	 = std::make_shared<GLframework::AmbientLight>();
-	ambientLight->	setColor(glm::vec3(0.8f));
+	ambientLight->	setColor(glm::vec3(0.0f));
 
 }
 

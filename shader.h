@@ -15,8 +15,8 @@ namespace GLframework
 		void setVector3(const std::string& name, const float* values);
 		void setVector3(const std::string& name, glm::vec3 vec);
 		void setMat4(const std::string& name, const glm::mat4 values);
+		void setMat4Array(const std::string& name, const glm::mat4 values[],int count);
 		void setMat3(const std::string& name, const glm::mat3 values);
-
 		void begin();	
 		void end();		
 	private:

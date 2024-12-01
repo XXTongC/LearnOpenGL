@@ -11,7 +11,11 @@ namespace GLframework
 		OpacityMaskMaterial,
 		ScreenMaterial,
 		CubeMaterial,
+		CubeSphereMaterial,
 		PhongEnvMaterial,
+		PhongEnvSphereMaterial,
+		PhongInstanceMaterial,
+
 	};
 
 	enum class PreStencilType
