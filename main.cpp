@@ -91,7 +91,7 @@ void prepareSkyBox();
 //---------------
 
 
-#pragma region 太阳系模拟
+#pragma region solorsystem
 /*
 auto roundForAll = std::make_shared<GLframework::Object>();
 auto roundForEarth = std::make_shared<GLframework::Object>();
@@ -184,7 +184,7 @@ void prepare()
 
 
 
-#pragma region 太阳系模拟
+#pragma region solorsystem
 	/*
 	float distanceEarth = 10.0f;
 	float sizeOfEarth = 1.0f;
@@ -476,7 +476,7 @@ void initIMGUI()
 void rotatePlant()
 {
 
-#pragma region 太阳系模拟
+#pragma region solorsystem
 	/*
 	float speed = 0.01f;
 	roundForVenus->rotateY(1.6022f * speed);
