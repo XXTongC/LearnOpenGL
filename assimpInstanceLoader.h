@@ -48,6 +48,5 @@ namespace GL_APPLICATION
 			const std::string& rootPath,
 			const unsigned int& instanceCount
 		);
-
 	};
 }

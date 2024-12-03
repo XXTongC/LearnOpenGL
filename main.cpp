@@ -23,6 +23,8 @@
 #include "../mesh/instancedMesh.h"
 #include "phongInstanceMaterial.h"
 #include "cubeSphereMaterial.h"
+#include "grassInstanceMaterial/grassInstanceMaterial.h"
+
 #include "depthMaterial.h"
 #include "whiteMaterial.h"
 #include "material.h"
@@ -30,8 +32,8 @@
 #include "scene.h"
 #include "renderer.h"
 #include "pointLight.h"
-#include "assimpInstanceLoader.h"
 //imgui thirdparty
+#include "assimpInstanceLoader.h"
 #include "third_party/imgui/imgui.h"
 #include "third_party/imgui/imgui_impl_glfw.h"
 #include "third_party/imgui/imgui_impl_opengl3.h"
@@ -42,7 +44,7 @@
  * refer to ColorBlend, there are still some problem should be solve such as opacity order, look up OIT and Depth Peeling
 */
 
-#pragma region ²¿·Ö»Øµ÷º¯Êý
+#pragma region ï¿½ï¿½ï¿½Ö»Øµï¿½ï¿½ï¿½ï¿½ï¿½
 void OnScroll(double offset);
 void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow* window);
@@ -55,23 +57,23 @@ void OnCursor(double xpos, double ypos);
 
 bool setAndInitWindow(int width = 1200,int height = 900);
 
-//»æÖÆÃüÁî
+//
 void render();
 
-//×¼±¸ÉãÏñÍ·×ø±ê
+//×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½
 void prepareCamera();
 
-//×´Ì¬ÉèÖÃ³õÊ¼»¯
+//×´Ì¬ï¿½ï¿½ï¿½Ã³ï¿½Ê¼ï¿½ï¿½
 void initIMGUI();
 void prepareState();
 void prepare();
-//ÐÐÐÇÐý×ªº¯Êý
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
 void rotatePlant();
 
-//»æÖÆIMGUI
+//ï¿½ï¿½ï¿½ï¿½IMGUI
 void renderIMGUI();
 
-//ÉùÃ÷È«¾Ö±äÁ¿vaoÒÔ¼°shaderProram
+//ï¿½ï¿½ï¿½ï¿½È«ï¿½Ö±ï¿½ï¿½ï¿½vaoï¿½Ô¼ï¿½shaderProram
 //GLuint vao;
 float angle = 0.0f;
 std::shared_ptr < GLframework::Renderer> renderer = nullptr;
@@ -89,7 +91,7 @@ void prepareSkyBox();
 //---------------
 
 
-#pragma region Ì«ÑôÏµÄ£Äâ
+#pragma region å¤ªé˜³ç³»æ¨¡æ‹Ÿ
 /*
 auto roundForAll = std::make_shared<GLframework::Object>();
 auto roundForEarth = std::make_shared<GLframework::Object>();
@@ -107,7 +109,7 @@ int width = 1200, height = 900;
 glm::vec3 clearColor{};
 
 
-//ÉùÃ÷µÆ¹â
+//ï¿½ï¿½ï¿½ï¿½ï¿½Æ¹ï¿½
 std::shared_ptr < GLframework::DirectionalLight> dirLight = nullptr;
 std::shared_ptr < GLframework::SpotLight> spotLight = nullptr;
 std::vector<std::shared_ptr<GLframework::PointLight>> pointLights{};
@@ -116,10 +118,10 @@ int main()
 {
 	std::cout << "Please set the window as x * y" << std::endl;
 	//std::cin >> width >> height;
-	//³õÊ¼»¯GLFW´°¿Ú
+	//ï¿½ï¿½Ê¼ï¿½ï¿½GLFWï¿½ï¿½ï¿½ï¿½
 	if (!setAndInitWindow(width,height)) return -1;
 
-	//ÉèÖÃopengl ÊÓ¿Ú²¢ÇÒÇåÀíÑÕÉ«
+	//ï¿½ï¿½ï¿½ï¿½opengl ï¿½Ó¿Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«
 	GL_CALL(glViewport(0, 0, width, height));
 	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -127,7 +129,7 @@ int main()
 	prepare();
 	
 	initIMGUI();
-	//²âÊÔ»ñÈ¡¸ÃÏÔ¿¨Çý¶¯Ìá¹©µÄArrribbutesÊýÁ¿
+	//ï¿½ï¿½ï¿½Ô»ï¿½È¡ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹©ï¿½ï¿½Arrribbutesï¿½ï¿½ï¿½ï¿½
 	int nrAttributes;
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
 	std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << std::endl;
@@ -137,9 +139,9 @@ int main()
 		cameracontrol->update();
 		renderer->setClearColor(clearColor);
 		rotatePlant();
-		//pass 1: ½«boxäÖÈ¾µ½colorAttachmentÉÏ£¬ÐÂµÄfobÉÏ
+		//pass 1: ï¿½ï¿½boxï¿½ï¿½È¾ï¿½ï¿½colorAttachmentï¿½Ï£ï¿½ï¿½Âµï¿½fobï¿½ï¿½
 		renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights,ambientLight, framebuffer->getFBO());
-		//pass 2: ½«colorAttachment×÷ÎªÎÆÀí£¬»æÖÆµ½Õû¸öÆÁÄ»ÉÏ
+		//pass 2: ï¿½ï¿½colorAttachmentï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½
 		renderer->render(sceneInScreen,camera,dirLight,spotLight,pointLights,ambientLight);
 		renderIMGUI();
 	}
@@ -177,12 +179,16 @@ void prepare()
 	sceneOffScreen = std::make_shared<GLframework::Scene>();
 	framebuffer = std::make_shared<GLframework::Framebuffer>(width, height);
 	//----------
-	//ÀëÆÁäÖÈ¾
-#pragma region Ì«ÑôÏµÄ£Äâ
+	
+
+
+
+
+#pragma region å¤ªé˜³ç³»æ¨¡æ‹Ÿ
 	/*
 	float distanceEarth = 10.0f;
 	float sizeOfEarth = 1.0f;
-	//ÔÂÇò
+	//ï¿½ï¿½ï¿½ï¿½
 	auto moonMat = std::make_shared<GLframework::PhongMaterial>();
 	moonMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/moon1k.jpg", 0);
 	auto sphereGeo = GLframework::Geometry::createSphere(renderer->getShader(moonMat->getMaterialType()),0.3f,1000,1000);
@@ -194,7 +200,7 @@ void prepare()
 	//sunSphere->setPosition({ 0.0f,0.0f,0.0f });
 	sunSphere->setScale(glm::vec3(10.00f * sizeOfEarth));
 	
-	//½ðÐÇ
+	//ï¿½ï¿½ï¿½ï¿½
 	auto venusSphereMat = std::make_shared<GLframework::PhongMaterial>();
 	venusSphereMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_venus_surface.jpg",0);
 	auto venusSphere = std::make_shared<GLframework::Mesh>(sphereGeo, venusSphereMat);
@@ -204,7 +210,7 @@ void prepare()
 	
 	roundForVenus->addChild(venusSphere);
 	sceneOffScreen->addChild(roundForVenus);
-	//ÌìÍõÐÇ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	auto uranusMat = std::make_shared<GLframework::PhongMaterial>();
 	uranusMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_uranus.jpg", 0);
 	auto uranusSphere = std::make_shared<GLframework::Mesh>(sphereGeo, uranusMat);
@@ -214,7 +220,7 @@ void prepare()
 	
 	roundForUranus->addChild(uranusSphere);
 	sceneOffScreen->addChild(roundForUranus);
-	//ÍÁÐÇ
+	//ï¿½ï¿½ï¿½ï¿½
 	auto saturnMat = std::make_shared<GLframework::PhongMaterial>();
 	saturnMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_saturn.jpg", 0);
 	auto saturnSphere = std::make_shared<GLframework::Mesh>(sphereGeo, saturnMat);
@@ -223,7 +229,7 @@ void prepare()
 	saturnSphere->setPosition({ 9.53f*distanceEarth,0.0f,0.0f });
 	
 	sceneOffScreen->addChild(roundForSaturn);
-	//º£ÍõÐÇ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	auto neptuneMat = std::make_shared<GLframework::PhongMaterial>();
 	neptuneMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_neptune.jpg", 0);
 	auto neptuneSphere = std::make_shared<GLframework::Mesh>(sphereGeo, neptuneMat);
@@ -232,7 +238,7 @@ void prepare()
 	neptuneSphere->setPosition({ 30.06f*distanceEarth,0.0f,0.0f });
 	
 	sceneOffScreen->addChild(roundForNeptune);
-	//Ä¾ÐÇ
+	//Ä¾ï¿½ï¿½
 	auto jupiterMat = std::make_shared<GLframework::PhongMaterial>();
 	jupiterMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_jupiter.jpg", 0);
 	auto jupiterSphere = std::make_shared<GLframework::Mesh>(sphereGeo, jupiterMat);
@@ -242,7 +248,7 @@ void prepare()
 	jupiterSphere->setPosition({ 5.20f*distanceEarth,0.0f,0.0f });
 	
 	sceneOffScreen->addChild(roundForJupiter);
-	//»ðÐÇ
+	//ï¿½ï¿½ï¿½ï¿½
 	auto marsMat = std::make_shared<GLframework::PhongMaterial>();
 	marsMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_mars.jpg", 0);
 	auto marsSphere = std::make_shared<GLframework::Mesh>(sphereGeo, marsMat);
@@ -281,7 +287,7 @@ void prepare()
 	sceneOffScreen->addChild(roundForEarth);
 	
 
-	//Ë®ÐÇ
+	//Ë®ï¿½ï¿½
 	auto mercuryMat = std::make_shared<GLframework::PhongMaterial>();
 	mercuryMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_mercury.jpg", 0);
 	auto mercurySphere = std::make_shared<GLframework::Mesh>(sphereGeo, mercuryMat);
@@ -293,14 +299,11 @@ void prepare()
 	sceneOffScreen->addChild(sunSphere);
 	*/
 #pragma endregion
-	prepareSkyBox();
-	auto grassModel = GL_APPLICATION::AssimpInstanceLoader::load("fbx/grassNew.obj", renderer, 2);
-	auto transform0 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	auto transform1 = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f));
 
-	GL_APPLICATION::AssimpInstanceLoader::setInstanceMatrix(grassModel, 0, transform0);
-	GL_APPLICATION::AssimpInstanceLoader::setInstanceMatrix(grassModel, 1, transform1);
-	GL_APPLICATION::AssimpInstanceLoader::updateInstanceMatrix(grassModel);
+	prepareSkyBox();
+	auto grassModel = GL_APPLICATION::AssimpInstanceLoader::load("fbx/grassNew.obj",renderer, 2);
+	GL_APPLICATION::AssimpInstanceLoader::setInstanceMatrix(grassModel, 0, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+	GL_APPLICATION::AssimpInstanceLoader::setInstanceMatrix(grassModel, 1, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f)));
 	sceneOffScreen->addChild(grassModel);
 	/*
 	auto skyBoxMat = std::static_pointer_cast<GLframework::PhongEnvSphereMaterial>(skyBoxMesh->getMaterial())->mDiffuse;
@@ -323,7 +326,7 @@ void prepare()
 	earthNMesh->updateMatrices();
 	earthNMesh->setPosition({ 2.0f,0.0f,0.0f });
 	sceneOffScreen->addChild(earthNMesh);
-	*/
+*/
 	/*
 	auto boxCulling = std::make_shared<GLframework::WhiteMaterial>();
 	boxCulling->setPreStencilPreSettingType(GLframework::PreStencilType::Outlining);
@@ -348,7 +351,7 @@ void prepare()
 	sceneOffScreen->addChild(textModel);
 	*/
 
-	//ÔÚÆÁäÖÈ¾
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¾
 	auto met = std::make_shared<GLframework::ScreenMaterial>();
 	met->mScreenTexture = framebuffer->getColorAttachment();
 	//if (met->getMaterialType() == GLframework::MaterialType::ScreenMaterial) std::cout << 1 << "\n";
@@ -416,19 +419,19 @@ bool setAndInitWindow(int width, int height)
 
 void prepareState()
 {
-	//Éî¶È¼ì²âÉèÖÃ
+	//ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 }
 
 void renderIMGUI()
 {
-	// 1. ¿ªÆôµ±Ç°IMGUIäÖÈ¾
+	// 1. ï¿½ï¿½ï¿½ï¿½ï¿½Ç°IMGUIï¿½ï¿½È¾
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	// 2. ¾ö¶¨µ±Ç°µÄGUIÉÏÃæÓÐÄÄÐ©¿Ø¼þ£¬´ÓÉÏµ½ÏÂ
+	// 2. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½GUIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð©ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½
 	ImGui::Begin("Control");
 	ImGui::Text("Background Color\n");
 	ImGui::Button("Text Button", ImVec2(40, 20));
@@ -436,7 +439,7 @@ void renderIMGUI()
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();
 
-	// 3. Ö´ÐÐUIäÖÈ¾
+	// 3. Ö´ï¿½ï¿½UIï¿½ï¿½È¾
 	ImGui::Render();
 	int display_w, display_h;
 	glfwGetFramebufferSize(GL_APP->getWindow(), &display_w, &display_h);
@@ -462,10 +465,10 @@ void prepareCamera()
 
 void initIMGUI()
 {
-	ImGui::CreateContext();		//´´½¨ImGuiÉÏÏÂÎÄ
-	ImGui::StyleColorsDark();	//Ñ¡ÔñÒ»¸öÖ÷Ìâ
+	ImGui::CreateContext();		//ï¿½ï¿½ï¿½ï¿½ImGuiï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	ImGui::StyleColorsDark();	//Ñ¡ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-	//	ÉèÖÃImGuiÓëGLFWºÍOpenGLµÄ°ó¶¨
+	//	imguiç‰ˆæœ¬è®¾ç½®
 	ImGui_ImplGlfw_InitForOpenGL(GL_APP->getWindow(), true);
 	ImGui_ImplOpenGL3_Init("#version 460");
 }
@@ -473,8 +476,7 @@ void initIMGUI()
 void rotatePlant()
 {
 
-
-#pragma region Ì«ÑôÏµÄ£Äâ
+#pragma region å¤ªé˜³ç³»æ¨¡æ‹Ÿ
 	/*
 	float speed = 0.01f;
 	roundForVenus->rotateY(1.6022f * speed);
@@ -526,8 +528,8 @@ void rotatePlant()
 }
 
 
-#pragma region »Øµ÷º¯Êý¶¨Òå
-//Êó±ê¹öÂÖ£¨·ÅËõ£©»Øµ÷º¯Êý
+#pragma region å›žè°ƒå‡½æ•°
+//ï¿½ï¿½ï¿½ï¿½ï¿½Ö£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½
 void OnScroll(double offset)
 {
 	cameracontrol->onScroll(offset);
