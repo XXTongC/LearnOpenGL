@@ -23,6 +23,8 @@
 #include "../mesh/instancedMesh.h"
 #include "phongInstanceMaterial.h"
 #include "cubeSphereMaterial.h"
+#include "grassInstanceMaterial/grassInstanceMaterial.h"
+
 #include "depthMaterial.h"
 #include "whiteMaterial.h"
 #include "material.h"
@@ -31,6 +33,7 @@
 #include "renderer.h"
 #include "pointLight.h"
 //imgui thirdparty
+#include "assimpInstanceLoader.h"
 #include "third_party/imgui/imgui.h"
 #include "third_party/imgui/imgui_impl_glfw.h"
 #include "third_party/imgui/imgui_impl_opengl3.h"
@@ -54,7 +57,7 @@ void OnCursor(double xpos, double ypos);
 
 bool setAndInitWindow(int width = 1200,int height = 900);
 
-//��������
+//
 void render();
 
 //׼������ͷ����
@@ -176,7 +179,11 @@ void prepare()
 	sceneOffScreen = std::make_shared<GLframework::Scene>();
 	framebuffer = std::make_shared<GLframework::Framebuffer>(width, height);
 	//----------
-	//������Ⱦ
+	
+
+
+
+
 #pragma region 太阳系模拟
 	/*
 	float distanceEarth = 10.0f;
@@ -292,7 +299,13 @@ void prepare()
 	sceneOffScreen->addChild(sunSphere);
 	*/
 #pragma endregion
+
 	prepareSkyBox();
+	auto grassModel = GL_APPLICATION::AssimpInstanceLoader::load("fbx/grassNew.obj",renderer, 2);
+	GL_APPLICATION::AssimpInstanceLoader::setInstanceMatrix(grassModel, 0, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+	GL_APPLICATION::AssimpInstanceLoader::setInstanceMatrix(grassModel, 1, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f)));
+	sceneOffScreen->addChild(grassModel);
+	/*
 	auto skyBoxMat = std::static_pointer_cast<GLframework::PhongEnvSphereMaterial>(skyBoxMesh->getMaterial())->mDiffuse;
 	auto earthMat = std::make_shared<GLframework::PhongEnvSphereMaterial>();
 	earthMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_earth_daymap.jpg", 0);
@@ -313,6 +326,7 @@ void prepare()
 	earthNMesh->updateMatrices();
 	earthNMesh->setPosition({ 2.0f,0.0f,0.0f });
 	sceneOffScreen->addChild(earthNMesh);
+*/
 	/*
 	auto boxCulling = std::make_shared<GLframework::WhiteMaterial>();
 	boxCulling->setPreStencilPreSettingType(GLframework::PreStencilType::Outlining);
@@ -454,14 +468,13 @@ void initIMGUI()
 	ImGui::CreateContext();		//����ImGui������
 	ImGui::StyleColorsDark();	//ѡ��һ������
 
-	//	����ImGui��GLFW��OpenGL�İ�
+	//	imgui版本设置
 	ImGui_ImplGlfw_InitForOpenGL(GL_APP->getWindow(), true);
 	ImGui_ImplOpenGL3_Init("#version 460");
 }
 
 void rotatePlant()
 {
-
 
 #pragma region 太阳系模拟
 	/*
@@ -515,7 +528,7 @@ void rotatePlant()
 }
 
 
-#pragma region �ص���������
+#pragma region 回调函数
 //�����֣��������ص�����
 void OnScroll(double offset)
 {

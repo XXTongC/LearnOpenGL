@@ -135,6 +135,7 @@
   <ItemGroup>
     <ClCompile Include="ambientLight.cpp" />
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="assimpInstanceLoader.cpp" />
     <ClCompile Include="assimpLoader.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="cameracontrol.cpp" />
@@ -145,6 +146,7 @@
     <ClCompile Include="framebuffer.cpp" />
     <ClCompile Include="gamecameracontrol.cpp" />
     <ClCompile Include="geometry.cpp" />
+    <ClCompile Include="grassInstanceMaterial\grassInstanceMaterial.cpp" />
     <ClCompile Include="light.cpp" />
     <ClCompile Include="material.cpp" />
     <ClCompile Include="mesh\instancedMesh.cpp" />
@@ -182,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ambientLight.h" />
+    <ClInclude Include="assimpInstanceLoader.h" />
     <ClInclude Include="assimpLoader.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="cameracontrol.h" />
@@ -193,6 +196,7 @@
     <ClInclude Include="framebuffer.h" />
     <ClInclude Include="gamecameracontrol.h" />
     <ClInclude Include="geometry.h" />
+    <ClInclude Include="grassInstanceMaterial\grassInstanceMaterial.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="material.h" />
     <ClInclude Include="mesh\instancedMesh.h" />
@@ -593,12 +597,16 @@
     <None Include="shaders\depth\depth.frag" />
     <None Include="shaders\depth\depth.vert" />
     <None Include="shaders\fragment.glsl" />
+    <None Include="shaders\grassInstance\grassInstance.frag" />
+    <None Include="shaders\grassInstance\grassInstance.vert" />
     <None Include="shaders\opacityMask\phongOpacityMask.frag" />
     <None Include="shaders\opacityMask\phongOpacityMask.vert" />
     <None Include="shaders\phong.vert" />
     <None Include="shaders\phongEnv\phongEnv.frag" />
     <None Include="shaders\phongEnv\phongEnv.vert" />
     <None Include="shaders\phongEnv\phongEnvSphere.frag" />
+    <None Include="shaders\phongInstance\phongInstance.frag" />
+    <None Include="shaders\phongInstance\phongInstance.vert" />
     <None Include="shaders\phongPointLight.frag" />
     <None Include="shaders\phongSpotLight.frag" />
     <None Include="shaders\phong\phong.frag" />
@@ -815,6 +823,9 @@
   </ItemGroup>
   <ItemGroup>
     <Object Include="fbx\bag\backpack.obj">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </Object>
+    <Object Include="fbx\grassNew.obj">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </Object>
   </ItemGroup>

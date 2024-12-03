@@ -15,7 +15,7 @@ namespace GLframework
 		PhongEnvMaterial,
 		PhongEnvSphereMaterial,
 		PhongInstanceMaterial,
-
+		GrassInstanceMaterial,
 	};
 
 	enum class PreStencilType

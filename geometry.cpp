@@ -124,41 +124,41 @@ std::shared_ptr<Geometry> Geometry::createBox(std::shared_ptr<GLframework::Shade
     geometry->mIndicesCount = 36;
 	float position[]
 	{
-        // Ç°Ãæ (z = height/2)
-       -length / 2, -width / 2,  height / 2,  // µ×²¿×ó
-        length / 2, -width / 2,  height / 2,  // µ×²¿ÓÒ
-        length / 2,  width / 2,  height / 2,  // ¶¥²¿ÓÒ
-       -length / 2,  width / 2,  height / 2,  // ¶¥²¿×ó
+        // Ç°ï¿½ï¿½ (z = height/2)
+       -length / 2, -width / 2,  height / 2,  // ï¿½×²ï¿½ï¿½ï¿½
+        length / 2, -width / 2,  height / 2,  // ï¿½×²ï¿½ï¿½ï¿½
+        length / 2,  width / 2,  height / 2,  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+       -length / 2,  width / 2,  height / 2,  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-       // ±³Ãæ (z = -height/2)
-		-length / 2, -width / 2, -height / 2,  // µ×²¿×ó
-		-length / 2,  width / 2, -height / 2,  // µ×²¿ÓÒ
-		length / 2,   width / 2, -height / 2,  // ¶¥²¿ÓÒ
-		length / 2,  -width / 2, -height / 2,  // ¶¥²¿×ó
+       // ï¿½ï¿½ï¿½ï¿½ (z = -height/2)
+		-length / 2, -width / 2, -height / 2,  // ï¿½×²ï¿½ï¿½ï¿½
+		-length / 2,  width / 2, -height / 2,  // ï¿½×²ï¿½ï¿½ï¿½
+		length / 2,   width / 2, -height / 2,  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		length / 2,  -width / 2, -height / 2,  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-        // ¶¥Ãæ (y = width/2)
-        -length / 2,  width / 2,  height / 2,  // ºó×ó
-         length / 2,  width / 2,  height / 2,  // ºóÓÒ
-         length / 2,  width / 2, -height / 2,  // Ç°ÓÒ
-        -length / 2,  width / 2, -height / 2,  // Ç°×ó
+        // ï¿½ï¿½ï¿½ï¿½ (y = width/2)
+        -length / 2,  width / 2,  height / 2,  // ï¿½ï¿½ï¿½ï¿½
+         length / 2,  width / 2,  height / 2,  // ï¿½ï¿½ï¿½ï¿½
+         length / 2,  width / 2, -height / 2,  // Ç°ï¿½ï¿½
+        -length / 2,  width / 2, -height / 2,  // Ç°ï¿½ï¿½
 
-        // µ×Ãæ (y = -width/2)
-        -length / 2, -width / 2, -height / 2,  // ºó×ó
-         length / 2, -width / 2, -height / 2,  // ºóÓÒ
-         length / 2, -width / 2,  height / 2,  // Ç°ÓÒ
-        -length / 2, -width / 2,  height / 2,  // Ç°×ó
+        // ï¿½ï¿½ï¿½ï¿½ (y = -width/2)
+        -length / 2, -width / 2, -height / 2,  // ï¿½ï¿½ï¿½ï¿½
+         length / 2, -width / 2, -height / 2,  // ï¿½ï¿½ï¿½ï¿½
+         length / 2, -width / 2,  height / 2,  // Ç°ï¿½ï¿½
+        -length / 2, -width / 2,  height / 2,  // Ç°ï¿½ï¿½
 
-		// ÓÒÃæ (x = length/2)
-        length / 2, -width / 2,  height / 2,  // µ×²¿ºó
-        length / 2, -width / 2, -height / 2,  // µ×²¿Ç°
-        length / 2,  width / 2, -height / 2,  // ¶¥²¿Ç°
-        length / 2,  width / 2,  height / 2,  // ¶¥²¿ºó
+		// ï¿½ï¿½ï¿½ï¿½ (x = length/2)
+        length / 2, -width / 2,  height / 2,  // ï¿½×²ï¿½ï¿½ï¿½
+        length / 2, -width / 2, -height / 2,  // ï¿½×²ï¿½Ç°
+        length / 2,  width / 2, -height / 2,  // ï¿½ï¿½ï¿½ï¿½Ç°
+        length / 2,  width / 2,  height / 2,  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-		// ×óÃæ (x = -length/2)
-		-length / 2, -width / 2, -height / 2,  // µ×²¿ºó
-		-length / 2, -width / 2,  height / 2,  // µ×²¿Ç°
-		-length / 2,  width / 2,  height / 2,  // ¶¥²¿Ç°
-		-length / 2,  width / 2, -height / 2,  // ¶¥²¿ºó
+		// ï¿½ï¿½ï¿½ï¿½ (x = -length/2)
+		-length / 2, -width / 2, -height / 2,  // ï¿½×²ï¿½ï¿½ï¿½
+		-length / 2, -width / 2,  height / 2,  // ï¿½×²ï¿½Ç°
+		-length / 2,  width / 2,  height / 2,  // ï¿½ï¿½ï¿½ï¿½Ç°
+		-length / 2,  width / 2, -height / 2,  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
 	};
@@ -237,34 +237,34 @@ std::shared_ptr<Geometry> Geometry::createBox(std::shared_ptr<GLframework::Shade
         1.0f, 0.0f, 1.0f, 1.0f, // 22
         1.0f, 0.0f, 1.0f, 1.0f  // 23
     };
-    //·¨ÏßÊý¾Ý
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     float normals[] = {
-        // Ç°Ãæ
+        // Ç°ï¿½ï¿½
         0.0f,0.0f,1.0f,
         0.0f,0.0f,1.0f,
         0.0f,0.0f,1.0f,
         0.0f,0.0f,1.0f,
-        // ±³Ãæ
+        // ï¿½ï¿½ï¿½ï¿½
         0.0f,0.0f,-1.0f,
         0.0f,0.0f,-1.0f,
         0.0f,0.0f,-1.0f,
         0.0f,0.0f,-1.0f,
-        // ¶¥Ãæ
+        // ï¿½ï¿½ï¿½ï¿½
         0.0f,1.0f,0.0f,
         0.0f,1.0f,0.0f,
         0.0f,1.0f,0.0f,
         0.0f,1.0f,0.0f,
-        // µ×Ãæ
+        // ï¿½ï¿½ï¿½ï¿½
         0.0f,-1.0f,0.0f,
         0.0f,-1.0f,0.0f,
         0.0f,-1.0f,0.0f,
         0.0f,-1.0f,0.0f,
-        // ÓÒÃæ
+        // ï¿½ï¿½ï¿½ï¿½
         1.0f,0.0f,0.0f,
         1.0f,0.0f,0.0f,
         1.0f,0.0f,0.0f,
         1.0f,0.0f,0.0f,
-        // ×óÃæ
+        // ï¿½ï¿½ï¿½ï¿½
         -1.0f,0.0f,0.0f,
         -1.0f,0.0f,0.0f,
         -1.0f,0.0f,0.0f,
@@ -339,7 +339,7 @@ std::shared_ptr<Geometry> Geometry::createSphere(std::shared_ptr< GLframework::S
     std::vector<float>colors;
     std::vector<float> normals;
     std::vector<int>ebos;
-    //Éú³Éposition,uvs£¬colors
+    //ï¿½ï¿½ï¿½ï¿½position,uvsï¿½ï¿½colors
     for(int i = 0;i<=mLatitude;i++)
     {
 	    for(int j = 0;j<=mLong;j++)
@@ -372,7 +372,7 @@ std::shared_ptr<Geometry> Geometry::createSphere(std::shared_ptr< GLframework::S
 
 	    }
     }
-    //Éú³Éebo
+    //ï¿½ï¿½ï¿½ï¿½ebo
     for(int i = 0;i<mLatitude;i++)
     {
 	    for(int j = 0;j<mLong;j++)
@@ -489,7 +489,7 @@ std::shared_ptr<Geometry> Geometry::createScreenPlane(std::shared_ptr<GLframewor
     std::shared_ptr<Geometry> geometry = std::make_shared<Geometry>(shader);
     geometry->mIndicesCount = 6;
 
-    // ´´½¨positions uv
+    // ï¿½ï¿½ï¿½ï¿½positions uv
     float positions[] = {
         -1.0f,   1.0f,
         -1.0f,  -1.0f,
@@ -508,7 +508,7 @@ std::shared_ptr<Geometry> Geometry::createScreenPlane(std::shared_ptr<GLframewor
         0,1,2,
         0,2,3,
     };
-    // ´´½¨vao vboµÈ
+    // ï¿½ï¿½ï¿½ï¿½vao vboï¿½ï¿½
     GLuint& posVbo = geometry->mPosVbo, & uvVbo = geometry->mUvVbo,&ebo = geometry->mEbo,&vao = geometry->mVao;
     GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
     GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
@@ -536,4 +536,58 @@ std::shared_ptr<Geometry> Geometry::createScreenPlane(std::shared_ptr<GLframewor
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, geometry->getIndicesCount() * sizeof(int), indices, GL_STATIC_DRAW);
 
     return geometry;
+}
+
+Geometry::Geometry(
+    std::shared_ptr<GLframework::Shader> shader,
+    const std::vector<float>& positions,
+    const std::vector<float>& normals,
+    const std::vector<float>& uvs,
+    const std::vector<float>& colors,
+    const std::vector<unsigned int>& indices
+)
+{
+    mShader = shader;
+    mIndicesCount = indices.size();
+
+    GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
+    GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
+    GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+    GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
+
+    glGenVertexArrays(1, &mVao);
+    glBindVertexArray(mVao);
+
+    glGenBuffers(1, &mColorVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, mColorVbo);
+    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(colorLocation);
+    glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glGenBuffers(1, &mPosVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, mPosVbo);
+    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(float), positions.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(positionLocation);
+    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glGenBuffers(1, &mUvVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, mUvVbo);
+    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(float), uvs.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(uvLocation);
+    glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+
+    glGenBuffers(1, &mNormalVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, mNormalVbo);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(normalLocation);
+    glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glGenBuffers(1, &mEbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEbo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEbo);
+
+    glBindVertexArray(0);
 }

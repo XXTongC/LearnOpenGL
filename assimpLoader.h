@@ -14,12 +14,27 @@ namespace GL_APPLICATION
 	class AssimpLoader
 	{
 	public:
-		static std::shared_ptr<Object> load(const std::string& path, std::shared_ptr<Renderer> renderer);
+		static std::shared_ptr<Object> load(
+			const std::string& path, 
+			std::shared_ptr<Renderer> renderer
+		);
 
 	private:
-		static void processNode(std::shared_ptr<Renderer> renderer,aiNode* ainode,std::shared_ptr<Object> parent,const aiScene* scene,const std::string& rootPath);
+		static void processNode(
+			std::shared_ptr<Renderer> renderer,
+			aiNode* ainode,std::shared_ptr<Object> parent,
+			const aiScene* scene,
+			const std::string& rootPath
+		);
+
 		static glm::mat4 getMat4f(aiMatrix4x4 value);
-		static std::shared_ptr<Mesh> processMesh(std::shared_ptr<Renderer> renderer,aiMesh* aimesh,const aiScene* scene, const std::string& rootPath);
+
+		static std::shared_ptr<Mesh> processMesh(
+			std::shared_ptr<Renderer> renderer,aiMesh* aimesh,
+			const aiScene* scene, 
+			const std::string& rootPath
+		);
+
 		static std::shared_ptr<Texture> processTexture(
 			const aiMaterial* aiMat,
 			const aiTextureType & type,

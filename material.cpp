@@ -81,15 +81,15 @@ void Material::setPreStencilPreSettingType(PreStencilType preType)
 	switch (preType)
 	{
 	case PreStencilType::Normal:
-		//	Ä£°å²âÊÔ¿ªÊ¼Óë·ñ
+		//	Ä£ï¿½ï¿½ï¿½ï¿½Ô¿ï¿½Ê¼ï¿½ï¿½ï¿½
 		this->setStencilState(true);
-	//	Ä£°å²âÊÔ½á¹ûÐ´Èë¹æÔò
+	//	Ä£ï¿½ï¿½ï¿½ï¿½Ô½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½
 		this->setSFail(GL_KEEP);
 		this->setZFail(GL_KEEP);
 		this->setZPass(GL_REPLACE);
-	//	¿ØÖÆÑÚÂëÐ´Èë
+	//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½
 		this->setStencilMask(0xff);
-	//	Ä£°å²âÊÔ¹æÔò
+	//	Ä£ï¿½ï¿½ï¿½ï¿½Ô¹ï¿½ï¿½ï¿½
 		this->setStencilFunc(GL_ALWAYS);
 		this->setStencilRef(1);
 		this->setStencilFuncMask(0xff);
@@ -97,15 +97,15 @@ void Material::setPreStencilPreSettingType(PreStencilType preType)
 
 	case PreStencilType::Outlining:
 		this->setDepthTest(false);
-	//	Ä£°å²âÊÔ¿ªÊ¼Óë·ñ
+	//	Ä£ï¿½ï¿½ï¿½ï¿½Ô¿ï¿½Ê¼ï¿½ï¿½ï¿½
 		this->setStencilState(true);
-	//	Ä£°å²âÊÔ½á¹ûÐ´Èë¹æÔò
+	//	Ä£ï¿½ï¿½ï¿½ï¿½Ô½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½
 		this->setSFail(GL_KEEP);
 		this->setZFail(GL_KEEP);
 		this->setZPass(GL_KEEP);
-	//	¿ØÖÆÑÚÂëÐ´Èë
+	//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½
 		this->setStencilMask(0x00);
-	//	Ä£°å²âÊÔ¹æÔò
+	//	Ä£ï¿½ï¿½ï¿½ï¿½Ô¹ï¿½ï¿½ï¿½
 		this->setStencilFunc(GL_NOTEQUAL);
 		this->setStencilRef(1);
 		this->setStencilFuncMask(0xff);

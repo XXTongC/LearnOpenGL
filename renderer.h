@@ -26,11 +26,12 @@ namespace GLframework
 			mCubeSphereShader = std::make_shared<Shader>("shaders/cube/cube.vert", "shaders/cube/cubeSphere.frag");
 			mPhongEnvSphereShader = std::make_shared<Shader>("shaders/phongEnv/phongEnv.vert", "shaders/phongEnv/phongEnvSphere.frag");
 			mPhongInstanceShader = std::make_shared<Shader>("shaders/phongInstance/phongInstance.vert", "shaders/phongInstance/phongInstance.frag");
+			mGrassInstanceShader = std::make_shared<Shader>("shaders/grassInstance/grassInstance.vert", "shaders/grassInstance/grassInstance.frag");
 		}
 		~Renderer(){}
 		std::shared_ptr<Shader> getShader(MaterialType type);
-		//äÖÈ¾¹¦ÄÜº¯Êý
-		//1. Ã¿´Îµ÷ÓÃäÖÈ¾Ò»Ö¡
+		//ï¿½ï¿½È¾ï¿½ï¿½ï¿½Üºï¿½ï¿½ï¿½
+		//1. Ã¿ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½È¾Ò»Ö¡
 		
 		void render(
 			std::shared_ptr < GLframework::Scene> scene,
@@ -46,7 +47,7 @@ namespace GLframework
 	public:
 		std::shared_ptr<Material> mGlobalMaterial{nullptr};
 	private:
-		//¸ù¾ÝMaterialÀàÐÍ²»Í¬£¬ÌôÑ¡²»Í¬µÄshader
+		//ï¿½ï¿½ï¿½ï¿½Materialï¿½ï¿½ï¿½Í²ï¿½Í¬ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½Í¬ï¿½ï¿½shader
 		std::shared_ptr<Shader> pickShader(MaterialType type);
 		void renderObject(
 			std::shared_ptr<Object> object,
@@ -63,8 +64,8 @@ namespace GLframework
 		void projectObject(std::shared_ptr<Object> obj);
 		void setFaceCullingState(std::shared_ptr<GLframework::Material> material);
 	private:
-		//Éú³É¶àÖÖ²»Í¬µÄshader¶ÔÏó
-		//¸ù¾Ý²ÄÖÊÀàÐÍµÄ²»Í¬£¬ÌôÑ¡Ñ¡ÔñÄÄ¸öshader¶ÔÏó
+		//ï¿½ï¿½ï¿½É¶ï¿½ï¿½Ö²ï¿½Í¬ï¿½ï¿½shaderï¿½ï¿½ï¿½ï¿½
+		//ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÍµÄ²ï¿½Í¬ï¿½ï¿½ï¿½ï¿½Ñ¡Ñ¡ï¿½ï¿½ï¿½Ä¸ï¿½shaderï¿½ï¿½ï¿½ï¿½
 		std::shared_ptr<Shader> mPhongShader{ nullptr };
 		std::shared_ptr<Shader> mWhiteShader{ nullptr };
 		std::shared_ptr<Shader> mDepthShader{ nullptr };
@@ -75,8 +76,9 @@ namespace GLframework
 		std::shared_ptr<Shader> mCubeSphereShader{ nullptr };
 		std::shared_ptr<Shader> mPhongEnvSphereShader{ nullptr };
 		std::shared_ptr<Shader> mPhongInstanceShader{ nullptr };
-		//²»Í¸Ã÷¶ÓÁÐÓëÍ¸Ã÷¶ÓÁÐ
-		//ops: Ã¿Ò»Ö¡»æÖÆÇ°ÐèÒªÇå¿ÕÁ½¸ö¶ÓÁÐ
+		std::shared_ptr<Shader> mGrassInstanceShader{ nullptr };
+		//ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		//ops: Ã¿Ò»Ö¡ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		std::vector<std::shared_ptr<Mesh>> mOpacityObjects;
 		std::vector<std::shared_ptr<Mesh>> mTransparentObjects;
 	};

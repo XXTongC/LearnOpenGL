@@ -8,6 +8,7 @@
 #include "phongEnvMaterial.h"
 #include "phongEnvSphereMaterial.h"
 #include "phongInstanceMaterial.h"
+#include "grassInstanceMaterial/grassInstanceMaterial.h"
 #include "cubeSphereMaterial.h"
 #include "../mesh/instancedMesh.h"
 #include "cubeMaterial.h"
@@ -108,7 +109,7 @@ void Renderer::setPolygonOffsetState(std::shared_ptr<Material> material)
 	if (material->getPolygonOffsetState())
 	{
 		glEnable(material->getPolygonOffsetType());
-		// Factor±íÊ¾Éî¶ÈÐ±ÂÊµÄ±¶Êý£¬unit±íÊ¾Éî¶È¾«¶ÈµÄ×îÐ¡Ï¸·ÖÖµµÄ±¶Êý£¬Ä¿µÄÔÚÓÚ½â¾özFightingÏÖÏó
+		// Factorï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ð±ï¿½ÊµÄ±ï¿½ï¿½ï¿½ï¿½ï¿½unitï¿½ï¿½Ê¾ï¿½ï¿½È¾ï¿½ï¿½Èµï¿½ï¿½ï¿½Ð¡Ï¸ï¿½ï¿½Öµï¿½Ä±ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½Ú½ï¿½ï¿½zFightingï¿½ï¿½ï¿½ï¿½
 		glPolygonOffset(material->getFactor(), material->getUnit());
 	}
 	else
@@ -165,6 +166,9 @@ std::shared_ptr<Shader> Renderer::pickShader(MaterialType type)
 	case MaterialType::PhongInstanceMaterial:
 		res = mPhongInstanceShader;
 		break;
+	case MaterialType::GrassInstanceMaterial:
+		res = mGrassInstanceShader;
+		break;
 	default:
 		std::cerr << "Unknown material type to pick shader\n";
 		break;
@@ -185,7 +189,7 @@ void Renderer::render(
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	// 1. Éî¶È»º³åÐÅÏ¢
+	// 1. ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glDepthMask(GL_TRUE);
@@ -193,20 +197,20 @@ void Renderer::render(
 	glDisable(GL_POLYGON_OFFSET_FILL);
 	glDisable(GL_POLYGON_OFFSET_LINE);
 
-	// ¿ªÆô²âÊÔ¡¢ÉèÖÃ»ù±¾Ð´Èë×´Ì¬ÒÔ¼°¿ªÆôÄ£°å²âÊÔÐ´Èë
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¡ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½Ð´ï¿½ï¿½×´Ì¬ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½
 	glEnable(GL_STENCIL_TEST);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	glStencilMask(0xff); //±£Ö¤Ä£°å»º³å¿ÉÇåÀí
+	glStencilMask(0xff); //ï¿½ï¿½Ö¤Ä£ï¿½å»ºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-	// Ä¬ÈÏÑÕÉ«»ìºÏÎª¹Ø±Õ×´Ì¬
+	// Ä¬ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½Îªï¿½Ø±ï¿½×´Ì¬
 	glDisable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
-	// 2. ÇåÀí»­²¼
+	// 2. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	// Çå¿ÕÁ½¸ö¶ÓÁÐ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	mOpacityObjects.clear();
 	mTransparentObjects.clear();
 
@@ -214,7 +218,7 @@ void Renderer::render(
 
 	std::sort(mTransparentObjects.begin(), mTransparentObjects.end(), [camera](const std::shared_ptr<Mesh>& A,const std::shared_ptr<Mesh>& B)
 		{
-			//	1. ¼ÆËãAµÄÏà»úÏµµÄZ
+			//	1. ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½Z
 			auto viewMatrix = camera->getViewMatrix();
 
 			auto modelMatrixA = A->getModleMatrix();
@@ -228,7 +232,7 @@ void Renderer::render(
 			return cameraPositionA.z < cameraPositionB.z;
 		});
 
-	// 3. äÖÈ¾Á½¸ö¶ÓÁÐ
+	// 3. ï¿½ï¿½È¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	for(auto& t : mOpacityObjects)
 	{
 		renderObject(t, camera, dirLight, spotLight, pointLights, ambient);
@@ -249,10 +253,10 @@ void Renderer::renderObject(
 	std::shared_ptr<AmbientLight> ambient
 )
 {
-	// 1. ÅÐ¶ÏmeshÀàÐÍ£¬object²»ÐèÒªäÖÈ¾
+	// 1. ï¿½Ð¶ï¿½meshï¿½ï¿½ï¿½Í£ï¿½objectï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½È¾
 	if (object->getType() == ObjectType::Mesh||object->getType() == ObjectType::InstancedMesh)
 	{
-		// 3. ±éÀúmesh½øÐÐ»æÖÆ
+		// 3. ï¿½ï¿½ï¿½ï¿½meshï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½
 		auto mesh = std::static_pointer_cast<Mesh>(object);
 		std::shared_ptr<Geometry> geometry = mesh->getGeometry();
 
@@ -268,17 +272,17 @@ void Renderer::renderObject(
 
 		auto shader = pickShader(material->getMaterialType());
 
-		// ÉèÖÃäÖÈ¾×´Ì¬
-		// 1. ¼ì²âÉî¶È×´Ì¬
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¾×´Ì¬
+		// 1. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
 		setDepthState(material);
-		// 2. ¼ì²âÉî¶ÈÆ«ÒÆ×´Ì¬
+		// 2. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½×´Ì¬
 		setPolygonOffsetState(material);
 		setStencilState(material);
-		// 3. ¼ì²âÑÕÉ«»ìºÏ×´Ì¬
+		// 3. ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½×´Ì¬
 		setColorBlendState(material);
-		// 4. ¼ì²âÃæÌÞ³ý×´Ì¬
+		// 4. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ³ï¿½×´Ì¬
 		setFaceCullingState(material);
-		// 2. ¸üÐÂshaderµÄuniform
+		// 2. ï¿½ï¿½ï¿½ï¿½shaderï¿½ï¿½uniform
 		shader->begin();
 
 
@@ -290,43 +294,43 @@ void Renderer::renderObject(
 
 				if (phongMat->mDiffuse == nullptr)
 					std::cout << "null\n";
-				//ÉèÖÃÕûÌåÄ¬ÈÏÍ¸Ã÷¶È--------
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½--------
 				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 
 
 				//-----------------------
 				
-				//	ÉèÖÃshaderµÄ²ÉÑùÆ÷Îª0ºÅ²ÉÑùÆ÷
-				//	diffuseÌùÍ¼
+				//	ï¿½ï¿½ï¿½ï¿½shaderï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Îª0ï¿½Å²ï¿½ï¿½ï¿½ï¿½ï¿½
+				//	diffuseï¿½ï¿½Í¼
 				GL_CALL(shader->setInt("samplerGrass", 0));
 
-				//	½«ÎÆÀíÓëÎÆÀíµ¥Ôª¹Ò¹³
+				//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½Ò¹ï¿½
 				phongMat->mDiffuse->Bind();
 
-				//	maskÌùÍ¼
+				//	maskï¿½ï¿½Í¼
 				GL_CALL(shader->setInt("MaskSampler", 1));
 				phongMat->mSpecularMask->Bind();
 
-				//	½«ÎÆÀí²ÉÑùÆ÷ÓëÎÆÀíµ¥Ôª½øÐÐ¹Ò¹³
-				//	mvp±ä»¯¾ØÕó
+				//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½ï¿½Ð¹Ò¹ï¿½
+				//	mvpï¿½ä»¯ï¿½ï¿½ï¿½ï¿½
 				shader->setMat4("modelMatrix", mesh->getModleMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//·¨Ïß¾ØÕó¸üÐÂ£¬ÔÚÐý×ª¹ý³ÌÖÐ·¨ÏßµÄ±ä»¯¾ØÕó
+				//ï¿½ï¿½ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½Ð·ï¿½ï¿½ßµÄ±ä»¯ï¿½ï¿½ï¿½ï¿½
 				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
-				//	spotlight¹âÔ´²ÎÊý¸üÐÂ
+				//	spotlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 				shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				//	dirlight¹âÔ´²ÎÊý¸üÐÂ
+				//	dirlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				shader->setVector3("directionalLight.color", dirLight->getColor());
 				shader->setVector3("directionalLight.direction", dirLight->getDirection());
 				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 
-				//	pointlight¹âÔ´²ÎÊý¸üÐÂ
+				//	pointlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				//std::cout << pointLights.size()<<std::endl;
 				for (int i = 0; i < pointLights.size(); i++)
 				{
@@ -347,7 +351,7 @@ void Renderer::renderObject(
 				shader->setFloat("shiness", phongMat->mShiness);
 				shader->setFloat("speed", 0.5);
 
-				//	Ïà»úÐÅÏ¢¸üÐÂ
+				//	ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
 				shader->setVector3("cameraPosition", camera->mPosition);
 				if (phongMat->mDiffuse == nullptr)
 					std::cout << "null\n";
@@ -377,43 +381,43 @@ void Renderer::renderObject(
 
 				if (opacityMat->mDiffuse == nullptr)
 					std::cout << "null\n";
-				//ÉèÖÃÕûÌåÄ¬ÈÏÍ¸Ã÷¶È--------
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½--------
 				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 
 
 				//-----------------------
 
-				//	ÉèÖÃshaderµÄ²ÉÑùÆ÷Îª0ºÅ²ÉÑùÆ÷
-				//	diffuseÌùÍ¼
+				//	ï¿½ï¿½ï¿½ï¿½shaderï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Îª0ï¿½Å²ï¿½ï¿½ï¿½ï¿½ï¿½
+				//	diffuseï¿½ï¿½Í¼
 				GL_CALL(shader->setInt("samplerGrass", 0));
 
-				//	½«ÎÆÀíÓëÎÆÀíµ¥Ôª¹Ò¹³
+				//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½Ò¹ï¿½
 				opacityMat->mDiffuse->Bind();
 
-				//	maskÌùÍ¼
+				//	maskï¿½ï¿½Í¼
 				GL_CALL(shader->setInt("opacityMaskSampler", 1));
 				opacityMat->mOpacityrMask->Bind();
 
-				//	½«ÎÆÀí²ÉÑùÆ÷ÓëÎÆÀíµ¥Ôª½øÐÐ¹Ò¹³
-				//	mvp±ä»¯¾ØÕó
+				//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½ï¿½Ð¹Ò¹ï¿½
+				//	mvpï¿½ä»¯ï¿½ï¿½ï¿½ï¿½
 				shader->setMat4("modelMatrix", mesh->getModleMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//·¨Ïß¾ØÕó¸üÐÂ£¬ÔÚÐý×ª¹ý³ÌÖÐ·¨ÏßµÄ±ä»¯¾ØÕó
+				//ï¿½ï¿½ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½Ð·ï¿½ï¿½ßµÄ±ä»¯ï¿½ï¿½ï¿½ï¿½
 				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
-				//	spotlight¹âÔ´²ÎÊý¸üÐÂ
+				//	spotlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 				shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				//	dirlight¹âÔ´²ÎÊý¸üÐÂ
+				//	dirlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				shader->setVector3("directionalLight.color", dirLight->getColor());
 				shader->setVector3("directionalLight.direction", dirLight->getDirection());
 				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 
-				//	pointlight¹âÔ´²ÎÊý¸üÐÂ
+				//	pointlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				//std::cout << pointLights.size()<<std::endl;
 				for (int i = 0; i < pointLights.size(); i++)
 				{
@@ -434,7 +438,7 @@ void Renderer::renderObject(
 				shader->setFloat("shiness", opacityMat->mShiness);
 				shader->setFloat("speed", 0.5);
 
-				//	Ïà»úÐÅÏ¢¸üÐÂ
+				//	ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
 				shader->setVector3("cameraPosition", camera->mPosition);
 				if (opacityMat->mDiffuse == nullptr)
 					std::cout << "null\n";
@@ -482,44 +486,44 @@ void Renderer::renderObject(
 
 			if (phongMat->mDiffuse == nullptr)
 				std::cout << "null diffuse\n";
-			//ÉèÖÃÕûÌåÄ¬ÈÏÍ¸Ã÷¶È--------
+			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½--------
 			GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 			//-----------------------
 
-			//	ÉèÖÃshaderµÄ²ÉÑùÆ÷Îª0ºÅ²ÉÑùÆ÷
-			//	diffuseÌùÍ¼
+			//	ï¿½ï¿½ï¿½ï¿½shaderï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Îª0ï¿½Å²ï¿½ï¿½ï¿½ï¿½ï¿½
+			//	diffuseï¿½ï¿½Í¼
 			GL_CALL(shader->setInt("samplerGrass", 0));
-			//	½«ÎÆÀíÓëÎÆÀíµ¥Ôª¹Ò¹³
+			//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½Ò¹ï¿½
 			phongMat->mDiffuse->Bind();
 
-			//	maskÌùÍ¼
+			//	maskï¿½ï¿½Í¼
 			GL_CALL(shader->setInt("MaskSampler", 1));
 			phongMat->mSpecularMask->Bind();
 
-			//	cubeÌùÍ¼
+			//	cubeï¿½ï¿½Í¼
 			GL_CALL(shader->setInt("envSampler", 2));
 			phongMat->mEnv->Bind();
 
-			//	½«ÎÆÀí²ÉÑùÆ÷ÓëÎÆÀíµ¥Ôª½øÐÐ¹Ò¹³
-			//	mvp±ä»¯¾ØÕó
+			//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½ï¿½Ð¹Ò¹ï¿½
+			//	mvpï¿½ä»¯ï¿½ï¿½ï¿½ï¿½
 			shader->setMat4("modelMatrix", mesh->getModleMatrix());
 			shader->setMat4("viewMatrix", camera->getViewMatrix());
 			shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-			//·¨Ïß¾ØÕó¸üÐÂ£¬ÔÚÐý×ª¹ý³ÌÖÐ·¨ÏßµÄ±ä»¯¾ØÕó
+			//ï¿½ï¿½ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½Ð·ï¿½ï¿½ßµÄ±ä»¯ï¿½ï¿½ï¿½ï¿½
 			shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
-			//	spotlight¹âÔ´²ÎÊý¸üÐÂ
+			//	spotlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			shader->setVector3("spotLight.position", spotLight->getPosition());
 			shader->setVector3("spotLight.color", spotLight->getColor());
 			shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 			shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
 			shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 			shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-			//	dirlight¹âÔ´²ÎÊý¸üÐÂ
+			//	dirlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			shader->setVector3("directionalLight.color", dirLight->getColor());
 			shader->setVector3("directionalLight.direction", dirLight->getDirection());
 			shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 
-			//	pointlight¹âÔ´²ÎÊý¸üÐÂ
+			//	pointlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			//std::cout << pointLights.size()<<std::endl;
 			for (int i = 0; i < pointLights.size(); i++)
 			{
@@ -540,7 +544,7 @@ void Renderer::renderObject(
 			shader->setFloat("shiness", phongMat->mShiness);
 			shader->setFloat("speed", 0.5);
 
-			//	Ïà»úÐÅÏ¢¸üÐÂ
+			//	ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
 			shader->setVector3("cameraPosition", camera->mPosition);
 
 		}
@@ -551,44 +555,44 @@ void Renderer::renderObject(
 
 				if (phongMat->mDiffuse == nullptr)
 					std::cout << "null diffuse\n";
-				//ÉèÖÃÕûÌåÄ¬ÈÏÍ¸Ã÷¶È--------
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½--------
 				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 				//-----------------------
 
-				//	ÉèÖÃshaderµÄ²ÉÑùÆ÷Îª0ºÅ²ÉÑùÆ÷
-				//	diffuseÌùÍ¼
+				//	ï¿½ï¿½ï¿½ï¿½shaderï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Îª0ï¿½Å²ï¿½ï¿½ï¿½ï¿½ï¿½
+				//	diffuseï¿½ï¿½Í¼
 				GL_CALL(shader->setInt("samplerGrass", 0));
-				//	½«ÎÆÀíÓëÎÆÀíµ¥Ôª¹Ò¹³
+				//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½Ò¹ï¿½
 				phongMat->mDiffuse->Bind();
 
-				//	maskÌùÍ¼
+				//	maskï¿½ï¿½Í¼
 				GL_CALL(shader->setInt("MaskSampler", 1));
 				phongMat->mSpecularMask->Bind();
 		
-				//	cubeÌùÍ¼
+				//	cubeï¿½ï¿½Í¼
 				GL_CALL(shader->setInt("envSampler", 2));
 				phongMat->mEnv->Bind();
 
-				//	½«ÎÆÀí²ÉÑùÆ÷ÓëÎÆÀíµ¥Ôª½øÐÐ¹Ò¹³
-				//	mvp±ä»¯¾ØÕó
+				//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½ï¿½Ð¹Ò¹ï¿½
+				//	mvpï¿½ä»¯ï¿½ï¿½ï¿½ï¿½
 				shader->setMat4("modelMatrix", mesh->getModleMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//·¨Ïß¾ØÕó¸üÐÂ£¬ÔÚÐý×ª¹ý³ÌÖÐ·¨ÏßµÄ±ä»¯¾ØÕó
+				//ï¿½ï¿½ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½Ð·ï¿½ï¿½ßµÄ±ä»¯ï¿½ï¿½ï¿½ï¿½
 				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
-				//	spotlight¹âÔ´²ÎÊý¸üÐÂ
+				//	spotlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 				shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				//	dirlight¹âÔ´²ÎÊý¸üÐÂ
+				//	dirlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				shader->setVector3("directionalLight.color", dirLight->getColor());
 				shader->setVector3("directionalLight.direction", dirLight->getDirection());
 				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 
-				//	pointlight¹âÔ´²ÎÊý¸üÐÂ
+				//	pointlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				//std::cout << pointLights.size()<<std::endl;
 				for (int i = 0; i < pointLights.size(); i++)
 				{
@@ -609,7 +613,7 @@ void Renderer::renderObject(
 				shader->setFloat("shiness", phongMat->mShiness);
 				shader->setFloat("speed", 0.5);
 
-				//	Ïà»úÐÅÏ¢¸üÐÂ
+				//	ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
 				shader->setVector3("cameraPosition", camera->mPosition);
 
 			}
@@ -620,43 +624,43 @@ void Renderer::renderObject(
 				std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
 				if (phongMat->mDiffuse == nullptr)
 					std::cout << "null\n";
-				//ÉèÖÃÕûÌåÄ¬ÈÏÍ¸Ã÷¶È--------
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½--------
 				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 
 
 				//-----------------------
 
-				//	ÉèÖÃshaderµÄ²ÉÑùÆ÷Îª0ºÅ²ÉÑùÆ÷
-				//	diffuseÌùÍ¼
+				//	ï¿½ï¿½ï¿½ï¿½shaderï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Îª0ï¿½Å²ï¿½ï¿½ï¿½ï¿½ï¿½
+				//	diffuseï¿½ï¿½Í¼
 				GL_CALL(shader->setInt("samplerGrass", 0));
 
-				//	½«ÎÆÀíÓëÎÆÀíµ¥Ôª¹Ò¹³
+				//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½Ò¹ï¿½
 				phongMat->mDiffuse->Bind();
 
-				//	maskÌùÍ¼
+				//	maskï¿½ï¿½Í¼
 				GL_CALL(shader->setInt("MaskSampler", 1));
 				phongMat->mSpecularMask->Bind();
 
-				//	½«ÎÆÀí²ÉÑùÆ÷ÓëÎÆÀíµ¥Ôª½øÐÐ¹Ò¹³
-				//	mvp±ä»¯¾ØÕó
+				//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½ï¿½Ð¹Ò¹ï¿½
+				//	mvpï¿½ä»¯ï¿½ï¿½ï¿½ï¿½
 				shader->setMat4("modelMatrix", mesh->getModleMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//·¨Ïß¾ØÕó¸üÐÂ£¬ÔÚÐý×ª¹ý³ÌÖÐ·¨ÏßµÄ±ä»¯¾ØÕó
+				//ï¿½ï¿½ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½Ð·ï¿½ï¿½ßµÄ±ä»¯ï¿½ï¿½ï¿½ï¿½
 				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
-				//	spotlight¹âÔ´²ÎÊý¸üÐÂ
+				//	spotlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 				shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				//	dirlight¹âÔ´²ÎÊý¸üÐÂ
+				//	dirlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				shader->setVector3("directionalLight.color", dirLight->getColor());
 				shader->setVector3("directionalLight.direction", dirLight->getDirection());
 				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 
-				//	pointlight¹âÔ´²ÎÊý¸üÐÂ
+				//	pointlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				//std::cout << pointLights.size()<<std::endl;
 				for (int i = 0; i < pointLights.size(); i++)
 				{
@@ -677,10 +681,10 @@ void Renderer::renderObject(
 				shader->setFloat("shiness", phongMat->mShiness);
 				shader->setFloat("speed", 0.5);
 
-				//	Ïà»úÐÅÏ¢¸üÐÂ
+				//	ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
 				shader->setVector3("cameraPosition", camera->mPosition);
 
-				//´«ÊäuniformÀàÐÍ¾ØÕó±ä»»Êý×é
+				//ï¿½ï¿½ï¿½ï¿½uniformï¿½ï¿½ï¿½Í¾ï¿½ï¿½ï¿½ä»»ï¿½ï¿½ï¿½ï¿½
 				if(im->getMatricesUpdateState())
 				{
 					shader->setMat4Array("matrices",im->mInstanceMatrices,im->getInstanceCount());
@@ -693,13 +697,94 @@ void Renderer::renderObject(
 				}
 			}
 			break;
+		case MaterialType::GrassInstanceMaterial:
+		{
+			std::shared_ptr<GrassInstanceMaterial> grassMat = std::static_pointer_cast<GrassInstanceMaterial>(material);
+			std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
+			if (grassMat->mDiffuse == nullptr)
+				std::cout << "null\n";
+			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½--------
+			GL_CALL(shader->setFloat("opacity", material->getOpacity()));
+
+
+			//-----------------------
+
+			//	ï¿½ï¿½ï¿½ï¿½shaderï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Îª0ï¿½Å²ï¿½ï¿½ï¿½ï¿½ï¿½
+			//	diffuseï¿½ï¿½Í¼
+			GL_CALL(shader->setInt("samplerGrass", 0));
+
+			//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½Ò¹ï¿½
+			grassMat->mDiffuse->Bind();
+
+			//	maskï¿½ï¿½Í¼
+			GL_CALL(shader->setInt("MaskSampler", 1));
+			grassMat->mSpecularMask->Bind();
+
+			//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½ï¿½Ð¹Ò¹ï¿½
+			//	mvpï¿½ä»¯ï¿½ï¿½ï¿½ï¿½
+			shader->setMat4("modelMatrix", mesh->getModleMatrix());
+			shader->setMat4("viewMatrix", camera->getViewMatrix());
+			shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
+			//ï¿½ï¿½ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½Ð·ï¿½ï¿½ßµÄ±ä»¯ï¿½ï¿½ï¿½ï¿½
+			shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
+			//	spotlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			shader->setVector3("spotLight.position", spotLight->getPosition());
+			shader->setVector3("spotLight.color", spotLight->getColor());
+			shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
+			shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
+			shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
+			shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
+			//	dirlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			shader->setVector3("directionalLight.color", dirLight->getColor());
+			shader->setVector3("directionalLight.direction", dirLight->getDirection());
+			shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
+
+			//	pointlightï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			//std::cout << pointLights.size()<<std::endl;
+			for (int i = 0; i < pointLights.size(); i++)
+			{
+				auto& pointLight = pointLights[i];
+				std::string baseName = "pointLights[";
+				baseName.append(std::to_string(i));
+				baseName.append("]");
+				shader->setVector3(baseName + ".color", pointLight->getColor());
+				shader->setVector3(baseName + ".position", pointLight->getPosition());
+				shader->setFloat(baseName + ".specularIntensity", pointLight->getSpecularIntensity());
+				shader->setFloat(baseName + ".k2", pointLight->getK2());
+				shader->setFloat(baseName + ".k1", pointLight->getK1());
+				shader->setFloat(baseName + ".k0", pointLight->getK0());
+			}
+
+			shader->setVector3("ambientColor", ambient->getColor());
+			shader->setFloat("time", glfwGetTime());
+			shader->setFloat("shiness", grassMat->mShiness);
+			shader->setFloat("speed", 0.5);
+
+			//	ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
+			shader->setVector3("cameraPosition", camera->mPosition);
+
+			//ï¿½ï¿½ï¿½ï¿½uniformï¿½ï¿½ï¿½Í¾ï¿½ï¿½ï¿½ä»»ï¿½ï¿½ï¿½ï¿½
+			if (im->getMatricesUpdateState())
+			{
+				shader->setMat4Array("matrices", im->mInstanceMatrices, im->getInstanceCount());
+				shader->setInt("matricesUpdateState", 1);
+				//std::cout << "The matrix update as UNIFORM way" << std::endl;
+			}
+			else
+			{
+				shader->setInt("matricesUpdateState", 0);
+				//std::cout << "The matrix update as ATTRIBUTE way" << std::endl;
+			}
+		}
+		break;
+
 		default:
 			std::cout << "wrong\n";
 			break;
 		}
-		// 3. °ó¶¨vao
+		// 3. ï¿½ï¿½vao
 		glBindVertexArray(geometry->getVao());
-		// 4. Ö´ÐÐ»æÖÆÃüÁî
+		// 4. Ö´ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		if(object->getType()==ObjectType::Mesh)
 			glDrawElements(GL_TRIANGLES, geometry->getIndicesCount(), GL_UNSIGNED_INT, static_cast<void*>(nullptr));
