@@ -172,6 +172,15 @@
     <Filter Include="include\GLframework\mesh">
       <UniqueIdentifier>{158ff723-b5d0-4f3e-87c4-d50e6ec59b3d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cppfile\GLframework\material\grassInstanceMaterial">
+      <UniqueIdentifier>{695eb700-91fa-4e8d-a52b-ad69bfb66b5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\material\grassInstanceMaterial">
+      <UniqueIdentifier>{cabb7d3c-6bda-4ae9-b767-13651f523804}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shaders\grassInstance">
+      <UniqueIdentifier>{9eff15bb-c8d4-45f2-b530-4fa052a0e2b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -311,6 +320,12 @@
     </ClCompile>
     <ClCompile Include="mesh\instancedMesh.cpp">
       <Filter>cppfile\GLframework\mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="assimpInstanceLoader.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="grassInstanceMaterial.cpp">
+      <Filter>cppfile\GLframework\material\grassInstanceMaterial</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1505,6 +1520,12 @@
     <ClInclude Include="mesh\instancedMesh.h">
       <Filter>include\GLframework\mesh</Filter>
     </ClInclude>
+    <ClInclude Include="assimpInstanceLoader.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="grassInstanceMaterial\grassInstanceMaterial.h">
+      <Filter>include\GLframework\material\grassInstanceMaterial</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="third_party\imgui\imgui.natstepfilter">
@@ -2029,6 +2050,12 @@
     <None Include="phongEnvSphere.vert">
       <Filter>资源文件\shaders\phongEnv</Filter>
     </None>
+    <None Include="shaders\grassInstance\grassInstance.frag">
+      <Filter>资源文件\shaders\grassInstance</Filter>
+    </None>
+    <None Include="shaders\grassInstance\grassInstance.vert">
+      <Filter>资源文件\shaders\grassInstance</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="text2.rc">
@@ -2184,6 +2211,9 @@
   <ItemGroup>
     <Object Include="fbx\bag\backpack.obj">
       <Filter>资源文件\fbx\bag</Filter>
+    </Object>
+    <Object Include="fbx\grassNew.obj">
+      <Filter>资源文件\fbx</Filter>
     </Object>
   </ItemGroup>
 </Project>

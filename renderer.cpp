@@ -8,6 +8,7 @@
 #include "phongEnvMaterial.h"
 #include "phongEnvSphereMaterial.h"
 #include "phongInstanceMaterial.h"
+#include "grassInstanceMaterial/grassInstanceMaterial.h"
 #include "cubeSphereMaterial.h"
 #include "../mesh/instancedMesh.h"
 #include "cubeMaterial.h"
@@ -164,6 +165,9 @@ std::shared_ptr<Shader> Renderer::pickShader(MaterialType type)
 		break;
 	case MaterialType::PhongInstanceMaterial:
 		res = mPhongInstanceShader;
+		break;
+	case MaterialType::GrassInstanceMaterial:
+		res = mGrassInstanceShader;
 		break;
 	default:
 		std::cerr << "Unknown material type to pick shader\n";
@@ -693,6 +697,87 @@ void Renderer::renderObject(
 				}
 			}
 			break;
+		case MaterialType::GrassInstanceMaterial:
+		{
+			std::shared_ptr<GrassInstanceMaterial> grassMat = std::static_pointer_cast<GrassInstanceMaterial>(material);
+			std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
+			if (grassMat->mDiffuse == nullptr)
+				std::cout << "null\n";
+			//设置整体默认透明度--------
+			GL_CALL(shader->setFloat("opacity", material->getOpacity()));
+
+
+			//-----------------------
+
+			//	设置shader的采样器为0号采样器
+			//	diffuse贴图
+			GL_CALL(shader->setInt("samplerGrass", 0));
+
+			//	将纹理与纹理单元挂钩
+			grassMat->mDiffuse->Bind();
+
+			//	mask贴图
+			GL_CALL(shader->setInt("MaskSampler", 1));
+			grassMat->mSpecularMask->Bind();
+
+			//	将纹理采样器与纹理单元进行挂钩
+			//	mvp变化矩阵
+			shader->setMat4("modelMatrix", mesh->getModleMatrix());
+			shader->setMat4("viewMatrix", camera->getViewMatrix());
+			shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
+			//法线矩阵更新，在旋转过程中法线的变化矩阵
+			shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
+			//	spotlight光源参数更新
+			shader->setVector3("spotLight.position", spotLight->getPosition());
+			shader->setVector3("spotLight.color", spotLight->getColor());
+			shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
+			shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
+			shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
+			shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
+			//	dirlight光源参数更新
+			shader->setVector3("directionalLight.color", dirLight->getColor());
+			shader->setVector3("directionalLight.direction", dirLight->getDirection());
+			shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
+
+			//	pointlight光源参数更新
+			//std::cout << pointLights.size()<<std::endl;
+			for (int i = 0; i < pointLights.size(); i++)
+			{
+				auto& pointLight = pointLights[i];
+				std::string baseName = "pointLights[";
+				baseName.append(std::to_string(i));
+				baseName.append("]");
+				shader->setVector3(baseName + ".color", pointLight->getColor());
+				shader->setVector3(baseName + ".position", pointLight->getPosition());
+				shader->setFloat(baseName + ".specularIntensity", pointLight->getSpecularIntensity());
+				shader->setFloat(baseName + ".k2", pointLight->getK2());
+				shader->setFloat(baseName + ".k1", pointLight->getK1());
+				shader->setFloat(baseName + ".k0", pointLight->getK0());
+			}
+
+			shader->setVector3("ambientColor", ambient->getColor());
+			shader->setFloat("time", glfwGetTime());
+			shader->setFloat("shiness", grassMat->mShiness);
+			shader->setFloat("speed", 0.5);
+
+			//	相机信息更新
+			shader->setVector3("cameraPosition", camera->mPosition);
+
+			//传输uniform类型矩阵变换数组
+			if (im->getMatricesUpdateState())
+			{
+				shader->setMat4Array("matrices", im->mInstanceMatrices, im->getInstanceCount());
+				shader->setInt("matricesUpdateState", 1);
+				//std::cout << "The matrix update as UNIFORM way" << std::endl;
+			}
+			else
+			{
+				shader->setInt("matricesUpdateState", 0);
+				//std::cout << "The matrix update as ATTRIBUTE way" << std::endl;
+			}
+		}
+		break;
+
 		default:
 			std::cout << "wrong\n";
 			break;

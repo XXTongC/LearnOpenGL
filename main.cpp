@@ -30,6 +30,7 @@
 #include "scene.h"
 #include "renderer.h"
 #include "pointLight.h"
+#include "assimpInstanceLoader.h"
 //imgui thirdparty
 #include "third_party/imgui/imgui.h"
 #include "third_party/imgui/imgui_impl_glfw.h"
@@ -293,6 +294,15 @@ void prepare()
 	*/
 #pragma endregion
 	prepareSkyBox();
+	auto grassModel = GL_APPLICATION::AssimpInstanceLoader::load("fbx/grassNew.obj", renderer, 2);
+	auto transform0 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	auto transform1 = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f));
+
+	GL_APPLICATION::AssimpInstanceLoader::setInstanceMatrix(grassModel, 0, transform0);
+	GL_APPLICATION::AssimpInstanceLoader::setInstanceMatrix(grassModel, 1, transform1);
+	GL_APPLICATION::AssimpInstanceLoader::updateInstanceMatrix(grassModel);
+	sceneOffScreen->addChild(grassModel);
+	/*
 	auto skyBoxMat = std::static_pointer_cast<GLframework::PhongEnvSphereMaterial>(skyBoxMesh->getMaterial())->mDiffuse;
 	auto earthMat = std::make_shared<GLframework::PhongEnvSphereMaterial>();
 	earthMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_earth_daymap.jpg", 0);
@@ -313,6 +323,7 @@ void prepare()
 	earthNMesh->updateMatrices();
 	earthNMesh->setPosition({ 2.0f,0.0f,0.0f });
 	sceneOffScreen->addChild(earthNMesh);
+	*/
 	/*
 	auto boxCulling = std::make_shared<GLframework::WhiteMaterial>();
 	boxCulling->setPreStencilPreSettingType(GLframework::PreStencilType::Outlining);

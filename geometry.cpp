@@ -537,3 +537,57 @@ std::shared_ptr<Geometry> Geometry::createScreenPlane(std::shared_ptr<GLframewor
 
     return geometry;
 }
+
+Geometry::Geometry(
+    std::shared_ptr<GLframework::Shader> shader,
+    const std::vector<float>& positions,
+    const std::vector<float>& normals,
+    const std::vector<float>& uvs,
+    const std::vector<float>& colors,
+    const std::vector<unsigned int>& indices
+)
+{
+    mShader = shader;
+    mIndicesCount = indices.size();
+
+    GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
+    GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
+    GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+    GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
+
+    glGenVertexArrays(1, &mVao);
+    glBindVertexArray(mVao);
+
+    glGenBuffers(1, &mColorVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, mColorVbo);
+    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(colorLocation);
+    glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glGenBuffers(1, &mPosVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, mPosVbo);
+    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(float), positions.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(positionLocation);
+    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glGenBuffers(1, &mUvVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, mUvVbo);
+    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(float), uvs.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(uvLocation);
+    glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+
+    glGenBuffers(1, &mNormalVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, mNormalVbo);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(normalLocation);
+    glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glGenBuffers(1, &mEbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEbo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEbo);
+
+    glBindVertexArray(0);
+}

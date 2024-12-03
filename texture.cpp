@@ -14,8 +14,6 @@ void Texture::setTextureTarget(unsigned value)
 	mTextureTarget = value;
 }
 
-
-
 //右、左、上、下、后、前（+x，-x，+y，-y，+z，-z）
 Texture::Texture(const std::vector<std::string>& paths, unsigned int unit)
 {
