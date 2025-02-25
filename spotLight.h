@@ -4,11 +4,11 @@
 
 namespace GLframework
 {
-	class SpotLight : public Light,public Object
+	class SpotLight : public Light
 	{
 	public:
 		SpotLight(glm::vec3 targetDirection = glm::vec3{ -1.0f },float innerangle = 1.0f,float outangle = 2.0f)
-			:Light(), Object(), mTargetDirection(targetDirection),mInnerAngle(innerangle),mOutAngle(outangle)
+			:Light(),mTargetDirection(targetDirection),mInnerAngle(innerangle),mOutAngle(outangle)
 		{}
 		~SpotLight(){}
 		void setTargetDirection(glm::vec3 value);

@@ -1,11 +1,20 @@
 #version 460 core
+
+// epsilon number
+const float EPSILON = 0.00001f;
+
 out vec4 FragColor;
 in vec2 uv;
 
 uniform sampler2D screenTextureSampler;
+uniform sampler2D depthTextureSampler;
 uniform float texWidth;
 uniform float texHeight;
 
+// calculate floating point numbers equality accurately
+bool isApproximatelyEqual(float a, float b);
+// get the max value between three values
+float max3(vec3 v);
 vec3 blur();
 vec3 colorInvert(vec3 color);
 vec3 gray(vec3 color);
@@ -13,9 +22,53 @@ vec3 grayCorrect(vec3 color);
 
 void main()
 {
+/*
+     // fragment coordination
+    ivec2 coords = ivec2(gl_FragCoord.xy);
+
+    // fragment revealage
+    float revealage = texelFetch(depthTextureSampler, coords, 0).r;
+
+    // save the blending and color texture fetch cost if there is not a transparent fragment
+    if (isApproximatelyEqual(revealage, 1.0f))
+        discard;
+
+    // fragment color
+    vec4 accumulation = texelFetch(screenTextureSampler, coords, 0);
+
+    // suppress overflow
+    if (isinf(max3(abs(accumulation.rgb))))
+        accumulation.rgb = vec3(accumulation.a);
+
+    // prevent floating point precision bug
+    vec3 average_color = accumulation.rgb / max(accumulation.a, EPSILON);
+
+    // blend pixels
+    FragColor = vec4(average_color, 1.0f - revealage);
+*/
     vec3 color = texture(screenTextureSampler,uv).rgb;
+    // 1 将sRGB转换为RGB
+    //color = pow(color,vec3(2.2));
+    // 2 与光照进行计算、
+
+    // 3 最终计算结果要抵抗屏幕gamma
+   
+    color = pow(color,vec3(1.0/2.2));
     //vec3 color = blur();
     FragColor = vec4(color, 1.0f);
+    
+}
+
+// calculate floating point numbers equality accurately
+bool isApproximatelyEqual(float a, float b)
+{
+    return abs(a - b) <= (abs(a) < abs(b) ? abs(b) : abs(a)) * EPSILON;
+}
+
+// get the max value between three values
+float max3(vec3 v)
+{
+    return max(max(v.x, v.y), v.z);
 }
 
 vec3 colorInvert(vec3 color)

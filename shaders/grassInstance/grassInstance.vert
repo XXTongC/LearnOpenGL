@@ -9,6 +9,10 @@ uniform mat4 projectionMatrix;
 uniform mat3 normalMatrix;
 uniform mat4 matrices[N];
 uniform bool matricesUpdateState;
+uniform float windScale;
+uniform float phaseScale;
+uniform vec3 windDirection;
+
 in vec3 aPos;   //0
 in vec4 aColor; //1
 in vec2 aUV;    //2
@@ -22,6 +26,7 @@ out vec4 color;
 out vec2 uv;
 out vec3 normal;
 out vec3 worldPosition;
+out vec2 worldXZ;
 
 /* 如果在shader计算中需要一些不变量，最好在shader外计算好再传入
  * shader中，否则每个像素都进行这样计算将是十分消耗性能的
@@ -34,16 +39,22 @@ void main()
     {
         //中间变量transformPosition用于计算其他以其为过程值的变量
         transformPosition = modelMatrix * matrices[gl_InstanceID] * transformPosition;
+		normal = transpose(inverse(mat3(modelMatrix * matrices[gl_InstanceID]))) * aNormal;
     }else
     {
         mat4 aInstanceMatrix = mat4(col0,col1,col2,col3);
         transformPosition = modelMatrix * aInstanceMatrix * transformPosition;
+		normal = transpose(inverse(mat3(modelMatrix * aInstanceMatrix))) * aNormal;
     }   
-
+	worldXZ = transformPosition.xz;
+	//风力变动
+	float phaseDistance = dot(windDirection, transformPosition.xyz);
+	transformPosition += vec4(sin(time + phaseDistance/phaseScale) * (1.0f - aColor.r) * windScale * windDirection,0.0f);
 	worldPosition = transformPosition.xyz;
 	gl_Position = projectionMatrix * viewMatrix * transformPosition;
 	//gl_Position = position;
 	color = aColor;
 	uv = aUV;
-	normal = normalMatrix * normalize(aNormal);
+	//normal = transpose(inverse(mat3(modelMatrix))) * aNormal;
+	//normal = normalMatrix * normalize(aNormal);
 }

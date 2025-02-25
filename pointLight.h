@@ -4,11 +4,11 @@
 #include "object.h"
 namespace GLframework
 {
-	class PointLight : public Light, public Object
+	class PointLight : public Light
 	{
 	public:
 		PointLight(float k2=1.0f,float k1=1.0f,float k0=1.0f)
-			:Light(), Object(),mK2(k2),mK1(k1),mK0(k0)
+			:Light(),mK2(k2),mK1(k1),mK0(k0)
 		{}
 		~PointLight() {};
 		void setK(float k2, float k1, float k0);

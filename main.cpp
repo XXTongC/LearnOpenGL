@@ -73,6 +73,13 @@ void rotatePlant();
 //����IMGUI
 void renderIMGUI();
 
+//grass texture attribute
+int rNum = 30;
+int cNum = 30;
+float scale = 0.0f;
+float brigtnesee = 1.0f;
+
+
 //����ȫ�ֱ���vao�Լ�shaderProram
 //GLuint vao;
 float angle = 0.0f;
@@ -82,17 +89,19 @@ std::shared_ptr<GLframework::Scene> sceneInScreen = nullptr;
 std::shared_ptr<GLframework::Mesh> meshPointLight = nullptr;
 std::shared_ptr <GLframework::AmbientLight> ambientLight = nullptr;
 std::shared_ptr<GLframework::Framebuffer> framebuffer = nullptr;
+std::shared_ptr<GLframework::GrassInstanceMaterial> grassMaterial = nullptr;
 Camera* camera = nullptr;
 CameraControl* cameracontrol = nullptr;
 
 //----skyBox----
 std::shared_ptr<GLframework::Mesh> skyBoxMesh = nullptr;
+std::string TexturePath{ "Texture/bk.jpg" };
 void prepareSkyBox();
 //---------------
 
 
 #pragma region solorsystem
-/*
+
 auto roundForAll = std::make_shared<GLframework::Object>();
 auto roundForEarth = std::make_shared<GLframework::Object>();
 auto roundForVenus = std::make_shared<GLframework::Object>();
@@ -103,7 +112,7 @@ auto roundForJupiter = std::make_shared<GLframework::Object>();
 auto roundForMars = std::make_shared<GLframework::Object>();
 auto roundForMercury = std::make_shared<GLframework::Object>();
 auto roundForMoon = std::make_shared<GLframework::Object>();
-*/
+float speed = 0.01f;
 #pragma endregion
 int width = 1200, height = 900;
 glm::vec3 clearColor{};
@@ -124,7 +133,7 @@ int main()
 	//����opengl �ӿڲ���������ɫ
 	GL_CALL(glViewport(0, 0, width, height));
 	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
-
+	
 	prepareCamera();
 	prepare();
 	
@@ -164,7 +173,7 @@ void prepareSkyBox()
 
 	//boxMat->setPreStencilPreSettingType(GLframework::PreStencilType::Normal);
 	auto skyBoxMat = std::make_shared<GLframework::CubeSphereMaterial>();
-	skyBoxMat-> mDiffuse = std::make_shared<GLframework::Texture>("Texture/bk.jpg", 0);
+	skyBoxMat-> mDiffuse = std::make_shared<GLframework::Texture>(TexturePath, 0);
 	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(GLframework::MaterialType::CubeSphereMaterial), 3.0f, 3.0f, 3.0f);
 	skyBoxMesh = std::make_shared<GLframework::Mesh>(boxGeo, skyBoxMat);
 	sceneOffScreen->addChild(skyBoxMesh);
@@ -174,18 +183,16 @@ void prepareSkyBox()
 
 void prepare()
 {
+	//glEnable(GL_FRAMEBUFFER_SRGB);
 	renderer = std::make_shared<GLframework::Renderer>();
 	sceneInScreen = std::make_shared<GLframework::Scene>();
 	sceneOffScreen = std::make_shared<GLframework::Scene>();
 	framebuffer = std::make_shared<GLframework::Framebuffer>(width, height);
 	//----------
 	
-
-
-
-
 #pragma region solorsystem
 	/*
+	
 	float distanceEarth = 10.0f;
 	float sizeOfEarth = 1.0f;
 	//����
@@ -299,12 +306,44 @@ void prepare()
 	sceneOffScreen->addChild(sunSphere);
 	*/
 #pragma endregion
+	//离屏渲染
+
 
 	prepareSkyBox();
-	auto grassModel = GL_APPLICATION::AssimpInstanceLoader::load("fbx/grassNew.obj",renderer, 2);
-	GL_APPLICATION::AssimpInstanceLoader::setInstanceMatrix(grassModel, 0, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-	GL_APPLICATION::AssimpInstanceLoader::setInstanceMatrix(grassModel, 1, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f)));
+#pragma region grassplane
+	/*
+	grassMaterial = std::make_shared<GLframework::GrassInstanceMaterial>();
+	grassMaterial->mDiffuse = std::make_shared<GLframework::Texture>("fbx/textures/GRASS.PNG", 0);
+	grassMaterial->mOpacityMask = std::make_shared<GLframework::Texture>("fbx/textures/grassMask.png", 2);
+
+	grassMaterial->mCloudMask = std::make_shared<GLframework::Texture>("Texture/CLOUD.PNG", 3);
+
+	auto house = GL_APPLICATION::AssimpLoader::load("fbx/house.fbx",renderer);
+	house->setScale(glm::vec3(0.5f));
+	house->setPosition(glm::vec3(rNum * 0.2f / 2.0f, 0.4, cNum * 0.2f / 2.0f));
+	sceneOffScreen->addChild(house);
+	auto grassModel = GL_APPLICATION::AssimpInstanceLoader::load("fbx/grassNew.obj",renderer, rNum * cNum);
+	glm::mat4 translate;
+	glm::mat4 rotate;
+	glm::mat4 transform;
+
+	srand(glfwGetTime());
+	for(int i = 0;i<rNum;++i)
+	{
+		for(int j = 0;j<cNum;++j)
+		{
+			translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.2*i, 0.0f, 0.2*j));
+			rotate = glm::rotate(glm::radians(static_cast<float>(rand() % 90)), glm::vec3(0.0f, 1.0f, 0.0f));
+			transform = translate * rotate;
+			GL_APPLICATION::AssimpInstanceLoader::setInstanceMatrix(grassModel,j + i * cNum,transform);
+		}
+	}
+	GL_APPLICATION::AssimpInstanceLoader::updateInstanceMatrix(grassModel);
+	GL_APPLICATION::AssimpInstanceLoader::setInstanceMaterial(grassModel, grassMaterial);
 	sceneOffScreen->addChild(grassModel);
+	*/
+
+
 	/*
 	auto skyBoxMat = std::static_pointer_cast<GLframework::PhongEnvSphereMaterial>(skyBoxMesh->getMaterial())->mDiffuse;
 	auto earthMat = std::make_shared<GLframework::PhongEnvSphereMaterial>();
@@ -327,6 +366,14 @@ void prepare()
 	earthNMesh->setPosition({ 2.0f,0.0f,0.0f });
 	sceneOffScreen->addChild(earthNMesh);
 */
+#pragma endregion
+	auto smat = std::make_shared<GLframework::PhongMaterial>();
+	smat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/wall.jpg", 0, GL_SRGB_ALPHA);
+	smat->mSpecularMask = std::make_shared<GLframework::Texture>("Texture/FFFFFF.png", 1);
+	smat->mShiness = 64;
+	auto sgeo = GLframework::Geometry::createBox(renderer->getShader(smat->getMaterialType()),5.0,5.0,5.0);
+	auto smesh = std::make_shared<GLframework::Mesh>(sgeo, smat);
+	sceneOffScreen->addChild(smesh);
 	/*
 	auto boxCulling = std::make_shared<GLframework::WhiteMaterial>();
 	boxCulling->setPreStencilPreSettingType(GLframework::PreStencilType::Outlining);
@@ -351,9 +398,11 @@ void prepare()
 	sceneOffScreen->addChild(textModel);
 	*/
 
-	//������Ⱦ
+	//在屏渲染
+
 	auto met = std::make_shared<GLframework::ScreenMaterial>();
 	met->mScreenTexture = framebuffer->getColorAttachment();
+	met->mmDepthStencilTexture = framebuffer->getDepthStencilAttachment();
 	//if (met->getMaterialType() == GLframework::MaterialType::ScreenMaterial) std::cout << 1 << "\n";
 	auto geo = GLframework::Geometry::createScreenPlane(renderer->getShader(met->getMaterialType()));
 	auto mesh = std::make_shared<GLframework::Mesh>(geo, met);
@@ -367,7 +416,7 @@ void prepare()
 	dirLight	= std::make_shared<GLframework::DirectionalLight>();
 	dirLight	->	setDirection(glm::vec3(-1.0f,-1.0f,-1.0f));
 	dirLight	->	setColor({ 0.8f,0.8f,0.9f });
-	dirLight	->	setSpecularIntensity(0.0f);
+	dirLight	->	setSpecularIntensity(1.0f);
 
 	auto pointLight1 = std::make_shared<GLframework::PointLight>();
 	pointLight1	->	setSpecularIntensity(0.01f);
@@ -432,11 +481,33 @@ void renderIMGUI()
 	ImGui::NewFrame();
 
 	// 2. ������ǰ��GUI��������Щ�ؼ������ϵ���
-	ImGui::Begin("Control");
-	ImGui::Text("Background Color\n");
-	ImGui::Button("Text Button", ImVec2(40, 20));
+	
+	ImGui::Begin("Solar System");
+	/*
+	ImGui::Text("Light");
+	ImGui::InputFloat("intencity", dirLight->Control_Intensity(), 0.0f, 100.0f);
+
+	ImGui::Text("MIX");
+	ImGui::SliderFloat("CloudLerp", grassMaterial->Control_CloudLerp(), 0.0f, 1.0f);
+	ImGui::Text("GrassColor");
+	ImGui::SliderFloat("UVScale",grassMaterial->Control_UVScale(),0.0f,100.0f);
+	
+	ImGui::InputFloat("Brightness", grassMaterial->Control_Brightness());
+
+	ImGui::Text("Wind");
+	ImGui::SliderFloat("WindScale", grassMaterial->Control_WindScale(),-0.12f,0.12f);
+	ImGui::InputFloat("PhaseScale", grassMaterial->Control_PhaseScale());
+	ImGui::ColorEdit3("WindDirection",(float*)(grassMaterial->Control_WindDirection()));
+	ImGui::Text("Cloud");
+	ImGui::SliderFloat("CloudScale", grassMaterial->Control_CloudUVScale(), 0.0f, 100.0f);
+	ImGui::SliderFloat("CloudSpeed", grassMaterial->Control_CloudSpeed(), 0.0f, 3.0f);
+	ImGui::ColorEdit3("CloudWhiteColor", (float*)(grassMaterial->Control_CloudWhiteColor()));
+	ImGui::ColorEdit3("CloudBlackColor", (float*)(grassMaterial->Control_CloudBlackColor()));
+	
+
 	ImGui::ColorEdit3("Clear Color",(float *)(&clearColor));
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	*/
 	ImGui::End();
 
 	// 3. ִ��UI��Ⱦ
@@ -477,8 +548,8 @@ void rotatePlant()
 {
 
 #pragma region solorsystem
+	
 	/*
-	float speed = 0.01f;
 	roundForVenus->rotateY(1.6022f * speed);
 	for(auto& t:roundForVenus->getChildren())
 	{

@@ -7,6 +7,20 @@
 using namespace GLframework;
 using namespace GL_APPLICATION;
 
+void AssimpInstanceLoader::setInstanceMaterial(std::shared_ptr<GLframework::Object> obj, std::shared_ptr < GLframework::Material > material)
+{
+	if (obj->getType() == ObjectType::InstancedMesh)
+	{
+		std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(obj);
+		im->setMaterial(material);
+	}
+
+	for (auto& child : obj->getChildren())
+	{
+		setInstanceMaterial(child, material);
+	}
+}
+
 void AssimpInstanceLoader::setInstanceMatrix(std::shared_ptr<GLframework::Object> obj, unsigned index, glm::mat4 matrix)
 {
 	if(obj->getType()==ObjectType::InstancedMesh)
@@ -152,9 +166,10 @@ std::shared_ptr<InstancedMesh> AssimpInstanceLoader::processInstanceMesh(
 	}
 	for (int i = 0; i < aimesh->mNumFaces; ++i)
 	{
-		for (int j = 0; j < aimesh->mFaces[i].mNumIndices; ++j)
+		aiFace aiface = aimesh->mFaces[i];
+		for (int j = 0; j < aiface.mNumIndices; ++j)
 		{
-			indices.push_back(aimesh->mFaces[i].mIndices[j]);
+			indices.push_back(aiface.mIndices[j]);
 		}
 	}
 	auto material = std::make_shared<GrassInstanceMaterial>();

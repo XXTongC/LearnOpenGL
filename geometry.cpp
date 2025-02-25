@@ -253,7 +253,7 @@ std::shared_ptr<Geometry> Geometry::createBox(std::shared_ptr<GLframework::Shade
         0.0f,1.0f,0.0f,
         0.0f,1.0f,0.0f,
         0.0f,1.0f,0.0f,
-        0.0f,1.0f,0.0f,
+        0.0f,1.0f,0.0f, 
         // ����
         0.0f,-1.0f,0.0f,
         0.0f,-1.0f,0.0f,

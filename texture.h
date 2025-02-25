@@ -26,15 +26,16 @@ namespace GLframework
 		);
 
 		Texture(){};
-		Texture(const std::string& path, unsigned int unit);
+		Texture(const std::string& path, unsigned int unit, unsigned int internalFormat = GL_RGBA);
 		Texture(
 			unsigned int unit,
 			unsigned char* dataIn,
 			uint32_t widthIn,
-			uint32_t heightIn
+			uint32_t heightIn,
+			unsigned int internalFormat = GL_RGBA
 		);
-		Texture(const std::vector<std::string>& paths,unsigned int unit);
-		Texture(unsigned int width, unsigned int height, unsigned int unit);
+		Texture(const std::vector<std::string>& paths,unsigned int unit, unsigned int internalFormat = GL_RGBA);
+		Texture(unsigned int width, unsigned int height, unsigned int unit, unsigned int internalFormat = GL_RGBA);
 		~Texture();
 		void Bind();
 		void setUnit(unsigned int unit);

@@ -22,4 +22,18 @@ void Light::setSpecularIntensity(float value)
 	mSpecularIntensity = value;
 }
 
+float Light::getIntensity() const
+{
+	return mIntensity;
+}
 
+void Light::setIntensity(float value)
+{
+	mIntensity = value;
+}
+
+
+float* Light::Control_Intensity()
+{
+	return &mIntensity;
+}

@@ -21,8 +21,11 @@ namespace GL_APPLICATION
 		);
 		static void setInstanceMatrix(std::shared_ptr<GLframework::Object> obj, unsigned int index, glm::mat4 matrix);
 		static void updateInstanceMatrix(std::shared_ptr<GLframework::Object> obj);
+		static void setInstanceMaterial(std::shared_ptr<GLframework::Object> obj, std::shared_ptr < GLframework::Material > material);
+
 
 	private:
+		
 		static void processNode(
 			std::shared_ptr<GLframework::Renderer> renderer, 
 			aiNode* ainode, 

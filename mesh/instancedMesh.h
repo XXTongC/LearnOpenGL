@@ -10,11 +10,11 @@ namespace GLframework
 			:Mesh(geometry,material),mInstanceCount(instanceCount),mMatricesUpdateState(matricesUpdateState)
 		{
 			this->setType(GLframework::ObjectType::InstancedMesh);
-			mInstanceMatrices = new glm::mat4[instanceCount];
+			mInstanceMatrices.resize(instanceCount);
 
 			glGenBuffers(1, &mMatrixVbo);
 			glBindBuffer(GL_ARRAY_BUFFER, mMatrixVbo);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * instanceCount, mInstanceMatrices, GL_DYNAMIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * instanceCount, mInstanceMatrices.data(), GL_DYNAMIC_DRAW);
 
 			glBindVertexArray(this->getGeometry()->getVao( ));
 			glBindBuffer(GL_ARRAY_BUFFER, mMatrixVbo);
@@ -30,7 +30,7 @@ namespace GLframework
 		}
 		~InstancedMesh( )
 		{
-			delete []mInstanceMatrices;
+			
 		}
 		void updateMatrices( );
 		void setMatrixVbo(unsigned int value );
@@ -39,11 +39,12 @@ namespace GLframework
 		int getMatricesUpdateState( ) const;
 		unsigned int getMatrixVbo( ) const;
 		unsigned int getInstanceCount( ) const;
-		glm::mat4* mInstanceMatrices = nullptr;
+		void sortMatrix(glm::mat4 viewMatrix);
+		std::vector<glm::mat4> mInstanceMatrices;
 	private:
-		unsigned int mInstanceCount{ 0 };
-		unsigned int mMatrixVbo{ 0 };
+		unsigned int	mInstanceCount{ 0 };
+		unsigned int	mMatrixVbo{ 0 };
 		//1 : uniformway, 0 : attribway
-		int mMatricesUpdateState = 1;
+		int				mMatricesUpdateState = 1;
 	};
 }

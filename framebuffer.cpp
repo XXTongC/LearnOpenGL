@@ -23,7 +23,7 @@ Framebuffer::Framebuffer(unsigned width, unsigned height)
 		std::cerr << "Error: FrameBuff is not complete!" << std::endl;
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//glDeleteFramebuffers(1, &fbo);
+	
 }
 
 

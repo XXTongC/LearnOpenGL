@@ -99,7 +99,7 @@ namespace GLframework
 		MaterialType	mType;
 		//	DEPTH TEST relative
 		bool			mDepthTest{ true };
-		GLenum			mDepthFunc{ GL_LESS };
+		GLenum			mDepthFunc{ GL_LEQUAL };
 		bool			mDepthWrite{ true };
 
 		//	POLYGON_OFFSET relative

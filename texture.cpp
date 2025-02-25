@@ -15,7 +15,7 @@ void Texture::setTextureTarget(unsigned value)
 }
 
 //右、左、上、下、后、前（+x，-x，+y，-y，+z，-z）
-Texture::Texture(const std::vector<std::string>& paths, unsigned int unit)
+Texture::Texture(const std::vector<std::string>& paths, unsigned int unit, unsigned int internalFormat)
 {
 	//声明图片长宽，颜色通道
 	mUnit = unit;
@@ -36,7 +36,7 @@ Texture::Texture(const std::vector<std::string>& paths, unsigned int unit)
 		data = stbi_load(paths[i].c_str(), &width, &height, &channels, STBI_rgb_alpha);
 		if(data!=nullptr)
 		{
-			GL_CALL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
+			GL_CALL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
 			//释放RAM上的data
 			stbi_image_free(data);
 			
@@ -126,7 +126,7 @@ std::shared_ptr<GLframework::Texture> GLframework::Texture::createTexture(const 
 	}
 
 	// 2. 如果本六九对应的texture没有生成过，则生成
-	auto texture = std::make_shared<Texture>(path, unit);
+	auto texture = std::make_shared<Texture>(path, unit,GL_SRGB_ALPHA);
 	mTextureCache[path] = texture;
 	return texture;
 }
@@ -141,14 +141,14 @@ std::shared_ptr<GLframework::Texture> GLframework::Texture::createTextureFromMem
 	}
 
 	// 2. 如果本六九对应的texture没有生成过，则生成
-	auto texture = std::make_shared<Texture>( unit,dataIn,widthIn,heightIn);
+	auto texture = std::make_shared<Texture>( unit,dataIn,widthIn,heightIn, GL_SRGB_ALPHA);
 	mTextureCache[path] = texture;
 	return texture;
 
 }
 
 
-GLframework::Texture::Texture(const std::string& path, unsigned int unit)
+GLframework::Texture::Texture(const std::string& path, unsigned int unit, unsigned int internalFormat)
 {
 	//声明图片长宽，颜色通道
 	int channels;
@@ -166,7 +166,7 @@ GLframework::Texture::Texture(const std::string& path, unsigned int unit)
 	//绑定纹理对象
 	GL_CALL(glBindTexture(GL_TEXTURE_2D, mTexture));
 	//开辟显存并传输纹理数据
-	GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
+	GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
 	//设置自动MipMap
 	//GL_CALL(glGenerateMipmap(GL_TEXTURE_2D));
 	
@@ -186,7 +186,7 @@ GLframework::Texture::Texture(const std::string& path, unsigned int unit)
 
 
 
-GLframework::Texture::Texture(unsigned unit, unsigned char* dataIn, uint32_t widthIn, uint32_t heightIn)
+GLframework::Texture::Texture(unsigned unit, unsigned char* dataIn, uint32_t widthIn, uint32_t heightIn, unsigned int internalFormat)
 {
 	//声明图片长宽，颜色通道
 	int channels;
@@ -216,7 +216,7 @@ GLframework::Texture::Texture(unsigned unit, unsigned char* dataIn, uint32_t wid
 	//绑定纹理对象
 	GL_CALL(glBindTexture(GL_TEXTURE_2D, mTexture));
 	//开辟显存并传输纹理数据
-	GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
+	GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
 	//设置自动MipMap
 	GL_CALL(glGenerateMipmap(GL_TEXTURE_2D));
 
@@ -234,7 +234,7 @@ GLframework::Texture::Texture(unsigned unit, unsigned char* dataIn, uint32_t wid
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT));
 }
 
-Texture::Texture(unsigned int width, unsigned int height, unsigned int unit)
+Texture::Texture(unsigned int width, unsigned int height, unsigned int unit, unsigned int internalFormat)
 {
 	mWidth = width;
 	mHeight = height;
@@ -244,7 +244,7 @@ Texture::Texture(unsigned int width, unsigned int height, unsigned int unit)
 	glActiveTexture(GL_TEXTURE0 + mUnit);
 	glBindTexture(GL_TEXTURE_2D, mTexture);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

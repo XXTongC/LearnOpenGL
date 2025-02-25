@@ -11,7 +11,7 @@ void Mesh::setGeometry(std::shared_ptr<Geometry> geometry)
 
 void Mesh::setMaterial(std::shared_ptr<Material> material)
 {
-	mMaterial = std::move(material);
+	mMaterial = material;
 }
 
 std::shared_ptr<Geometry> Mesh::getGeometry() const

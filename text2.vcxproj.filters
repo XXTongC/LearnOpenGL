@@ -133,9 +133,6 @@
     <Filter Include="资源文件\shaders\depth">
       <UniqueIdentifier>{2cec1c60-4ce4-4559-9f38-49d1542bf882}</UniqueIdentifier>
     </Filter>
-    <Filter Include="cppfile\GLframework\material\light">
-      <UniqueIdentifier>{23b62a03-1d1b-4b2e-aed5-6c5f784e141e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="cppfile\GLframework\framebuffer">
       <UniqueIdentifier>{413f87ae-5003-483d-8387-6ee764261afa}</UniqueIdentifier>
     </Filter>
@@ -180,6 +177,9 @@
     </Filter>
     <Filter Include="资源文件\shaders\grassInstance">
       <UniqueIdentifier>{9eff15bb-c8d4-45f2-b530-4fa052a0e2b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\GLframework\light">
+      <UniqueIdentifier>{23b62a03-1d1b-4b2e-aed5-6c5f784e141e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -235,13 +235,13 @@
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
     <ClCompile Include="light.cpp">
-      <Filter>cppfile\GLframework\material\light</Filter>
+      <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
     <ClCompile Include="directionalLight.cpp">
-      <Filter>cppfile\GLframework\material\light</Filter>
+      <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
     <ClCompile Include="ambientLight.cpp">
-      <Filter>cppfile\GLframework\material\light</Filter>
+      <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
     <ClCompile Include="renderer.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
@@ -250,10 +250,10 @@
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
     <ClCompile Include="pointLight.cpp">
-      <Filter>cppfile\GLframework\material\light</Filter>
+      <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
     <ClCompile Include="spotLight.cpp">
-      <Filter>cppfile\GLframework\material\light</Filter>
+      <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
     <ClCompile Include="third_party\imgui\imgui.cpp">
       <Filter>third_party\include\imgui</Filter>
@@ -2056,6 +2056,9 @@
     <None Include="shaders\grassInstance\grassInstance.vert">
       <Filter>资源文件\shaders\grassInstance</Filter>
     </None>
+    <None Include="fbx\house.fbx">
+      <Filter>资源文件\fbx</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="text2.rc">
@@ -2187,6 +2190,24 @@
       <Filter>资源文件\Texture</Filter>
     </Image>
     <Image Include="Texture\bk.jpg">
+      <Filter>资源文件\Texture</Filter>
+    </Image>
+    <Image Include="fbx\textures\GRASS.PNG">
+      <Filter>资源文件\fbx\textures</Filter>
+    </Image>
+    <Image Include="Texture\CLOUD.PNG">
+      <Filter>资源文件\Texture</Filter>
+    </Image>
+    <Image Include="Texture\potw2025a.jpg">
+      <Filter>资源文件\Texture\solar system</Filter>
+    </Image>
+    <Image Include="Texture\skybox\skybox1.png">
+      <Filter>资源文件\Texture\skybox</Filter>
+    </Image>
+    <Image Include="Texture\skybox\skybox2.jpg">
+      <Filter>资源文件\Texture\skybox</Filter>
+    </Image>
+    <Image Include="Texture\FFFFFF.png">
       <Filter>资源文件\Texture</Filter>
     </Image>
   </ItemGroup>
