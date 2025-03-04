@@ -22,6 +22,7 @@
 #include "phongEnvSphereMaterial.h"
 #include "../mesh/instancedMesh.h"
 #include "phongInstanceMaterial.h"
+#include "materials/phongNormalMaterial.h"
 #include "cubeSphereMaterial.h"
 #include "grassInstanceMaterial/grassInstanceMaterial.h"
 
@@ -367,13 +368,17 @@ void prepare()
 	sceneOffScreen->addChild(earthNMesh);
 */
 #pragma endregion
-	auto smat = std::make_shared<GLframework::PhongMaterial>();
-	smat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/wall.jpg", 0, GL_SRGB_ALPHA);
-	smat->mSpecularMask = std::make_shared<GLframework::Texture>("Texture/FFFFFF.png", 1);
-	smat->mShiness = 64;
-	auto sgeo = GLframework::Geometry::createBox(renderer->getShader(smat->getMaterialType()),5.0,5.0,5.0);
-	auto smesh = std::make_shared<GLframework::Mesh>(sgeo, smat);
-	sceneOffScreen->addChild(smesh);
+	auto planeMa = std::make_shared<GLframework::PhongNormalMaterial>();
+	planeMa->mDiffuse = std::make_shared<GLframework::Texture>("Texture/normal/brickwall.jpg",0,GL_SRGB_ALPHA);
+	planeMa->mSpecularMask = std::make_shared<GLframework::Texture>("Texture/FFFFFF.png", 1);
+	planeMa->mNormal = std::make_shared<GLframework::Texture>("Texture/normal/normal_map.png", 2);
+	planeMa->mShiness = 32;
+	auto planeGe = GLframework::Geometry::createPlane(renderer->getShader(planeMa->getMaterialType()), 3.0, 3.0);
+	auto planeMesh = std::make_shared<GLframework::Mesh>(planeGe, planeMa);
+	planeMesh->rotateX(-90.0f);
+	sceneOffScreen->addChild(planeMesh);
+
+
 	/*
 	auto boxCulling = std::make_shared<GLframework::WhiteMaterial>();
 	boxCulling->setPreStencilPreSettingType(GLframework::PreStencilType::Outlining);
@@ -397,7 +402,7 @@ void prepare()
 	GLframework::Tools::setModelBlend(textModel, true, 0.5);
 	sceneOffScreen->addChild(textModel);
 	*/
-
+	
 	//在屏渲染
 
 	auto met = std::make_shared<GLframework::ScreenMaterial>();
@@ -414,9 +419,9 @@ void prepare()
 	spotLight	->	setColor(glm::vec3{0.0f});
 
 	dirLight	= std::make_shared<GLframework::DirectionalLight>();
-	dirLight	->	setDirection(glm::vec3(-1.0f,-1.0f,-1.0f));
+	dirLight	->	setDirection(glm::vec3(0.0f,-1.0f,0.0f));
 	dirLight	->	setColor({ 0.8f,0.8f,0.9f });
-	dirLight	->	setSpecularIntensity(1.0f);
+	dirLight	->	setSpecularIntensity(0.5f);
 
 	auto pointLight1 = std::make_shared<GLframework::PointLight>();
 	pointLight1	->	setSpecularIntensity(0.01f);

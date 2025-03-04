@@ -27,6 +27,7 @@ namespace GLframework
 			mPhongEnvSphereShader = std::make_shared<Shader>("shaders/phongEnv/phongEnv.vert", "shaders/phongEnv/phongEnvSphere.frag");
 			mPhongInstanceShader = std::make_shared<Shader>("shaders/phongInstance/phongInstance.vert", "shaders/phongInstance/phongInstance.frag");
 			mGrassInstanceShader = std::make_shared<Shader>("shaders/grassInstance/grassInstance.vert", "shaders/grassInstance/grassInstance.frag");
+			mPhongNormalShader = std::make_shared<Shader>("shaders/phongNormal/phongNormal.vert", "shaders/phongNormal/phongNormal.frag");
 		}
 		~Renderer(){}
 		std::shared_ptr<Shader> getShader(MaterialType type);
@@ -77,6 +78,7 @@ namespace GLframework
 		std::shared_ptr<Shader> mPhongEnvSphereShader{ nullptr };
 		std::shared_ptr<Shader> mPhongInstanceShader{ nullptr };
 		std::shared_ptr<Shader> mGrassInstanceShader{ nullptr };
+		std::shared_ptr<Shader> mPhongNormalShader{ nullptr };
 		//不透明队列与透明队列
 		//ops: 每一帧绘制前需要清空两个队列
 		std::vector<std::shared_ptr<Mesh>> mOpacityObjects;

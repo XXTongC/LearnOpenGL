@@ -15,6 +15,7 @@ namespace GLframework
 		PhongEnvMaterial,
 		PhongEnvSphereMaterial,
 		PhongInstanceMaterial,
+		PhongNormalMaterial,
 		GrassInstanceMaterial,
 	};
 

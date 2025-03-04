@@ -10,6 +10,7 @@
 #include "phongInstanceMaterial.h"
 #include "grassInstanceMaterial/grassInstanceMaterial.h"
 #include "cubeSphereMaterial.h"
+#include "materials/phongNormalMaterial.h"
 #include "../mesh/instancedMesh.h"
 #include "cubeMaterial.h"
 #include "screenMaterial.h"
@@ -168,6 +169,9 @@ std::shared_ptr<Shader> Renderer::pickShader(MaterialType type)
 		break;
 	case MaterialType::GrassInstanceMaterial:
 		res = mGrassInstanceShader;
+		break;
+	case MaterialType::PhongNormalMaterial:
+		res = mPhongNormalShader;
 		break;
 	default:
 		std::cerr << "Unknown material type to pick shader\n";
@@ -794,7 +798,78 @@ void Renderer::renderObject(
 					//std::cout << "The matrix update as ATTRIBUTE way" << std::endl;
 				}
 		}
-		break;
+			break;
+		case MaterialType::PhongNormalMaterial:
+			{
+				std::shared_ptr<PhongNormalMaterial> phongMat = std::static_pointer_cast<PhongNormalMaterial>(material);
+
+				//��������Ĭ��͸����--------
+				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
+
+
+				//-----------------------
+
+				//	shader settings
+				//	diffuse sampler set
+				GL_CALL(shader->setInt("samplerGrass", 0));
+				phongMat->mDiffuse->Bind();
+
+				//	mask sampler set
+				GL_CALL(shader->setInt("MaskSampler", 1));
+				phongMat->mSpecularMask->Bind();
+
+				//	normal sampler set
+				GL_CALL(shader->setInt("NormalMapSampler", 2));
+				phongMat->mNormal->Bind();
+
+				//	������������������Ԫ���йҹ�
+				//	mvp transform settings
+				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("viewMatrix", camera->getViewMatrix());
+				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
+				//���߾�����£�����ת�����з��ߵı仯����
+				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
+				//	spotlight settings
+				shader->setVector3("spotLight.position", spotLight->getPosition());
+				shader->setVector3("spotLight.color", spotLight->getColor());
+				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
+				shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
+				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
+				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
+				//	dirlight settings
+				shader->setVector3("directionalLight.color", dirLight->getColor());
+				shader->setVector3("directionalLight.direction", dirLight->getDirection());
+				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
+				shader->setFloat("directionalLight.intensity", dirLight->getIntensity());
+				//	pointlight settings
+				//std::cout << pointLights.size()<<std::endl;
+				for (int i = 0; i < pointLights.size(); i++)
+				{
+					auto& pointLight = pointLights[i];
+					std::string baseName = "pointLights[";
+					baseName.append(std::to_string(i));
+					baseName.append("]");
+					shader->setVector3(baseName + ".color", pointLight->getColor());
+					shader->setVector3(baseName + ".position", pointLight->getPosition());
+					shader->setFloat(baseName + ".specularIntensity", pointLight->getSpecularIntensity());
+					shader->setFloat(baseName + ".k2", pointLight->getK2());
+					shader->setFloat(baseName + ".k1", pointLight->getK1());
+					shader->setFloat(baseName + ".k0", pointLight->getK0());
+				}
+
+				shader->setVector3("ambientColor", ambient->getColor());
+				shader->setFloat("time", glfwGetTime());
+				shader->setFloat("shiness", phongMat->mShiness);
+				shader->setFloat("speed", 0.5);
+
+				//	�����Ϣ����
+				shader->setVector3("cameraPosition", camera->mPosition);
+				if (phongMat->mDiffuse == nullptr)
+					std::cout << "mDiffuse null\n";
+				if (phongMat->mNormal == nullptr)
+					std::cout << "mNormal null\n";
+		}
+			break;
 		default:
 			std::cout << "wrong\n";
 			break;

@@ -149,6 +149,7 @@
     <ClCompile Include="grassInstanceMaterial.cpp" />
     <ClCompile Include="light.cpp" />
     <ClCompile Include="material.cpp" />
+    <ClCompile Include="materials\phongNormalMaterial.cpp" />
     <ClCompile Include="mesh\instancedMesh.cpp" />
     <ClCompile Include="mesh\mesh.cpp" />
     <ClCompile Include="object.cpp" />
@@ -198,6 +199,7 @@
     <ClInclude Include="grassInstanceMaterial\grassInstanceMaterial.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="material.h" />
+    <ClInclude Include="materials\phongNormalMaterial.h" />
     <ClInclude Include="mesh\instancedMesh.h" />
     <ClInclude Include="mesh\mesh.h" />
     <ClInclude Include="object.h" />
@@ -785,6 +787,8 @@
     <Image Include="Texture\grassMask.png" />
     <Image Include="Texture\land.jpg" />
     <Image Include="Texture\noise.jpg" />
+    <Image Include="Texture\normal\brickwall.jpg" />
+    <Image Include="Texture\normal\normal_map.png" />
     <Image Include="Texture\panda.jpg" />
     <Image Include="Texture\potw2025a.jpg" />
     <Image Include="Texture\skybox\back.jpg" />

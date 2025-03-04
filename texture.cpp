@@ -262,7 +262,7 @@ GLframework::Texture::~Texture()
 
 void GLframework::Texture::Bind()
 {
-	//先切换纹理单元，让后绑定纹理单元
+	//change texture unit first, bind texture unit after
 	GL_CALL(glActiveTexture(GL_TEXTURE0 + mUnit));
 	GL_CALL(glBindTexture(mTextureTarget, mTexture));
 }

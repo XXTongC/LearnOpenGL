@@ -181,6 +181,9 @@
     <Filter Include="cppfile\GLframework\light">
       <UniqueIdentifier>{23b62a03-1d1b-4b2e-aed5-6c5f784e141e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\Texture\normal">
+      <UniqueIdentifier>{8dea4cc5-b63e-4895-876e-1ba1267fef83}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -326,6 +329,9 @@
     </ClCompile>
     <ClCompile Include="grassInstanceMaterial.cpp">
       <Filter>cppfile\GLframework\material\grassInstanceMaterial</Filter>
+    </ClCompile>
+    <ClCompile Include="materials\phongNormalMaterial.cpp">
+      <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1526,6 +1532,9 @@
     <ClInclude Include="grassInstanceMaterial\grassInstanceMaterial.h">
       <Filter>include\GLframework\material\grassInstanceMaterial</Filter>
     </ClInclude>
+    <ClInclude Include="materials\phongNormalMaterial.h">
+      <Filter>include\GLframework\material</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="third_party\imgui\imgui.natstepfilter">
@@ -2209,6 +2218,12 @@
     </Image>
     <Image Include="Texture\FFFFFF.png">
       <Filter>资源文件\Texture</Filter>
+    </Image>
+    <Image Include="Texture\normal\brickwall.jpg">
+      <Filter>资源文件\Texture\normal</Filter>
+    </Image>
+    <Image Include="Texture\normal\normal_map.png">
+      <Filter>资源文件\Texture\normal</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
