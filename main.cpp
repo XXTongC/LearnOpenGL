@@ -368,14 +368,69 @@ void prepare()
 	sceneOffScreen->addChild(earthNMesh);
 */
 #pragma endregion
+	float halfW = 2.5f, halfH = 3.5f;
+	std::vector<float> positions = {
+		-halfW, -halfH, 0.0f,
+		halfW, -halfH, 0.0f,
+		halfW, halfH, 0.0f,
+		-halfW, halfH, 0.0f,
+	};
+
+	std::vector<float> uvs = {
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f,
+		0.0f, 1.0f
+	};
+
+	std::vector<float> normals = {
+		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f,
+	};
+
+	std::vector<unsigned int> indices = {
+		0, 1, 2,
+		2, 3, 0
+	};
+	// tangents
+	std::vector<float> tangents = {};
+	glm::vec3 position1(positions[0], positions[1], positions[2]);
+	glm::vec3 position2(positions[3], positions[4], positions[5]);
+	glm::vec3 position3(positions[6], positions[7], positions[8]);
+
+	glm::vec2 uv1(uvs[0], uvs[1]);
+	glm::vec2 uv2(uvs[2], uvs[3]);
+	glm::vec2 uv3(uvs[4], uvs[5]);
+
+	glm::vec3 e1 = position2 - position1;
+	glm::vec3 e2 = position3 - position2;
+
+	glm::vec2 dUV1 = uv2 - uv1;
+	glm::vec2 dUV2 = uv3 - uv2;
+
+	float f = 1.0f / (dUV1.x * dUV2.y - dUV2.x * dUV1.y);
+	glm::vec3 tangent;
+	tangent.x = f * (dUV2.y * e1.x - dUV1.y * e2.x);
+	tangent.y = f * (dUV2.y * e1.y - dUV1.y * e2.y);
+	tangent.z = f * (dUV2.y * e1.z - dUV1.y * e2.z);
+
+	for(int i = 0;i<4;i++)
+	{
+		tangents.push_back(tangent.x);
+		tangents.push_back(tangent.y);
+		tangents.push_back(tangent.z);
+	}
+
 	auto planeMa = std::make_shared<GLframework::PhongNormalMaterial>();
 	planeMa->mDiffuse = std::make_shared<GLframework::Texture>("Texture/normal/brickwall.jpg",0,GL_SRGB_ALPHA);
 	planeMa->mSpecularMask = std::make_shared<GLframework::Texture>("Texture/FFFFFF.png", 1);
 	planeMa->mNormal = std::make_shared<GLframework::Texture>("Texture/normal/normal_map.png", 2);
 	planeMa->mShiness = 32;
-	auto planeGe = GLframework::Geometry::createPlane(renderer->getShader(planeMa->getMaterialType()), 3.0, 3.0);
+	auto planeGe = std::make_shared<GLframework::Geometry>(renderer->getShader(planeMa->getMaterialType()), positions, normals, uvs, indices, tangents);
 	auto planeMesh = std::make_shared<GLframework::Mesh>(planeGe, planeMa);
-	planeMesh->rotateX(-90.0f);
+	//planeMesh->rotateX(-90.0f);
 	sceneOffScreen->addChild(planeMesh);
 
 
@@ -419,7 +474,7 @@ void prepare()
 	spotLight	->	setColor(glm::vec3{0.0f});
 
 	dirLight	= std::make_shared<GLframework::DirectionalLight>();
-	dirLight	->	setDirection(glm::vec3(0.0f,-1.0f,0.0f));
+	dirLight	->	setDirection(glm::vec3(0.0f,0.0f,-1.0f));
 	dirLight	->	setColor({ 0.8f,0.8f,0.9f });
 	dirLight	->	setSpecularIntensity(0.5f);
 

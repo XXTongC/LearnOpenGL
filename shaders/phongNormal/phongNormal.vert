@@ -10,10 +10,12 @@ in vec3 aPos; //0
 in vec4 aColor;//1
 in vec2 aUV;//2
 in vec3 aNormal;//3
+in vec3 aTangent;//4
 out vec4 color;
 out vec2 uv;
 out vec3 normal;
 out vec3 worldPosition;
+out mat3 TBN;
 
 /* 如果在shader计算中需要一些不变量，最好在shader外计算好再传入
  * shader中，否则每个像素都进行这样计算将是十分消耗性能的
@@ -31,4 +33,7 @@ void main()
 	color = aColor;
 	uv = aUV;
 	normal = normalMatrix * normalize(aNormal);
+	vec3 tangent = mat3(modelMatrix) * aTangent;
+	vec3 bitangent = normalize(cross(normal,tangent));
+	TBN = mat3(tangent,bitangent,normal);
 }

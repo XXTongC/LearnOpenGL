@@ -808,7 +808,6 @@ void Renderer::renderObject(
 
 
 				//-----------------------
-
 				//	shader settings
 				//	diffuse sampler set
 				GL_CALL(shader->setInt("samplerGrass", 0));
@@ -822,12 +821,10 @@ void Renderer::renderObject(
 				GL_CALL(shader->setInt("NormalMapSampler", 2));
 				phongMat->mNormal->Bind();
 
-				//	������������������Ԫ���йҹ�
 				//	mvp transform settings
 				shader->setMat4("modelMatrix", mesh->getModleMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//���߾�����£�����ת�����з��ߵı仯����
 				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
 				//	spotlight settings
 				shader->setVector3("spotLight.position", spotLight->getPosition());
@@ -862,7 +859,6 @@ void Renderer::renderObject(
 				shader->setFloat("shiness", phongMat->mShiness);
 				shader->setFloat("speed", 0.5);
 
-				//	�����Ϣ����
 				shader->setVector3("cameraPosition", camera->mPosition);
 				if (phongMat->mDiffuse == nullptr)
 					std::cout << "mDiffuse null\n";

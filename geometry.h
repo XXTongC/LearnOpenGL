@@ -14,6 +14,8 @@ namespace GLframework
 		GLuint mUvVbo{ 0 };
 		GLuint mColorVbo{ 0 };
 		GLuint mNormalVbo{ 0 };
+		GLuint mTangentVbo{ 0 };
+
 		GLuint mEbo{ 0 };
 		GLsizei mIndicesCount{ 0 };
 		std::shared_ptr<GLframework::Shader> mShader = nullptr;
@@ -34,6 +36,14 @@ namespace GLframework
 			const std::vector<float>& uvs,
 			const std::vector<float>& colors,
 			const std::vector<unsigned int>& indices
+		);
+		Geometry(
+			std::shared_ptr<GLframework::Shader> shader,
+			const std::vector<float>& positions,
+			const std::vector<float>& normals,
+			const std::vector<float>& uvs,
+			const std::vector<unsigned int>& indices,
+			const std::vector<float>& tangents
 		);
 		~Geometry();
 

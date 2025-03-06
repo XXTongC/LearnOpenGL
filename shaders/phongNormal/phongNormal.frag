@@ -27,6 +27,7 @@ in vec4 color;
 in vec2 uv;//2
 in vec3 normal;
 in vec3 worldPosition;
+in mat3 TBN;
 out vec4 FragColor;
 
 struct DirectionalLight
@@ -150,7 +151,7 @@ void main()
 	vec3 viewDir = normalize(worldPosition - cameraPosition);
 	vec3 normalN = texture(NormalMapSampler,uv).rgb;
 	normalN = normalN * 2.0f - vec3(1.0f);
-	normalN = normalize(normalN);
+	normalN = normalize(TBN * normalN);
 	//环境光计算
 	vec3 ambientColor = objectColor * ambientColor;
 	res += calculateSpotLight(spotLight,normalN,viewDir);
