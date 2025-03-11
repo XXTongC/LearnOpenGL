@@ -2,7 +2,7 @@
 
 #include "assimpInstanceLoader.h"
 #include "tools.h"
-#include "grassInstanceMaterial/grassInstanceMaterial.h"
+#include "materials/grassInstanceMaterial/grassInstanceMaterial.h"
 
 using namespace GLframework;
 using namespace GL_APPLICATION;

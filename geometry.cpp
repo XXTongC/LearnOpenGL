@@ -89,7 +89,8 @@ void Geometry::setShader(std::shared_ptr<GLframework::Shader>shader)
 std::shared_ptr<Geometry> Geometry::createPlane(std::shared_ptr<GLframework::Shader> shader,float width, float height)
 {
 	auto geometry = std::make_shared<GLframework::Geometry>(shader);
-    geometry->mIndicesCount = 6;
+    std::vector<float> tangents;
+	geometry->mIndicesCount = 6;
 
     float halfW = width / 2.0f;
     float halfH = height / 2.0f;
@@ -130,12 +131,80 @@ std::shared_ptr<Geometry> Geometry::createPlane(std::shared_ptr<GLframework::Sha
         2,3,0,
     };
 
-    GLuint& ebo = geometry->mEbo,& vao =geometry->mVao,& colorVbo = geometry->mColorVbo,& uvVbo = geometry->mUvVbo,& posVbo = geometry->mPosVbo,& normalVbo = geometry->mNormalVbo;
+    //  tangent
+    tangents.resize(12);
+    for (int i = 0; i < 6; i += 3)
+    {
+        //  1 get vertices of current triangle
+        int idx0 = ebos[i];
+        int idx1 = ebos[i + 1];
+        int idx2 = ebos[i + 2];
+
+        //  2 find vertices information from vertices array by reference of three vertices
+        auto p0 = glm::vec3(positions[idx0 * 3], positions[idx0 * 3 + 1], positions[idx0 * 3 + 2]);
+        auto p1 = glm::vec3(positions[idx1 * 3], positions[idx1 * 3 + 1], positions[idx1 * 3 + 2]);
+        auto p2 = glm::vec3(positions[idx2 * 3], positions[idx2 * 3 + 1], positions[idx2 * 3 + 2]);
+
+        //  3 find uv information from uv array by reference of three vertices
+        auto uv0 = glm::vec2(uvs[idx0 * 2], uvs[idx0 * 2 + 1]);
+        auto uv1 = glm::vec2(uvs[idx1 * 2], uvs[idx1 * 2 + 1]);
+        auto uv2 = glm::vec2(uvs[idx2 * 2], uvs[idx2 * 2 + 1]);
+
+        //  4 calculate the tangent of the current triangle according to the formula
+
+        glm::vec3 e0 = p1 - p0;
+        glm::vec3 e1 = p2 - p1;
+
+        glm::vec2 dUV0 = uv1 - uv0;
+        glm::vec2 dUV1 = uv2 - uv1;
+
+        float f = 1.0f / (dUV0.x * dUV1.y - dUV1.x * dUV0.y);
+        glm::vec3 tangent;
+        tangent.x = f * (dUV1.y * e0.x - dUV0.y * e1.x);
+        tangent.y = f * (dUV1.y * e0.y - dUV0.y * e1.y);
+        tangent.z = f * (dUV0.y * e0.z - dUV0.y * e1.z);
+        tangent = glm::normalize(tangent);
+        //  5 for the normal of the three vertices of this triangle, tangent is orthogonalized
+        auto n0 = glm::normalize(glm::vec3(normals[idx0 * 3], normals[idx0 * 3 + 1], normals[idx0 * 3 + 2]));
+        auto n1 = glm::normalize(glm::vec3(normals[idx1 * 3], normals[idx1 * 3 + 1], normals[idx1 * 3 + 2]));
+        auto n2 = glm::normalize(glm::vec3(normals[idx2 * 3], normals[idx2 * 3 + 1], normals[idx2 * 3 + 2]));
+
+        auto t0 = tangent - glm::dot(tangent, n0) * n0;
+        auto t1 = tangent - glm::dot(tangent, n1) * n1;
+        auto t2 = tangent - glm::dot(tangent, n2) * n2;
+
+
+        //  6 add to each tangent
+        tangents[idx0 * 3] += t0.x;
+        tangents[idx0 * 3 + 1] += t0.y;
+        tangents[idx0 * 3 + 2] += t0.z;
+
+        tangents[idx1 * 3] += t1.x;
+        tangents[idx1 * 3 + 1] += t1.y;
+        tangents[idx1 * 3 + 2] += t1.z;
+
+        tangents[idx2 * 3] += t2.x;
+        tangents[idx2 * 3 + 1] += t2.y;
+        tangents[idx2 * 3 + 2] += t2.z;
+
+    }
+
+    //  6 normalize the final tangent for each vertex
+    for (int i = 0; i < tangents.size(); i += 3)
+    {
+        glm::vec3 tangent = glm::normalize(glm::vec3(tangents[i], tangents[i + 1], tangents[i + 2]));
+        tangents[i] = tangent.x;
+        tangents[i + 1] = tangent.y;
+        tangents[i + 2] = tangent.z;
+    }
+
+    GLuint& ebo = geometry->mEbo,& vao =geometry->mVao,& colorVbo = geometry->mColorVbo,& uvVbo = geometry->mUvVbo,& posVbo = geometry->mPosVbo,& normalVbo = geometry->mNormalVbo,&tangentVbo = geometry->mTangentVbo;
 
 	GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
     GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
     GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
     GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+    GLuint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
 
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -164,6 +233,14 @@ std::shared_ptr<Geometry> Geometry::createPlane(std::shared_ptr<GLframework::Sha
     glEnableVertexAttribArray(normalLocation);
     glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
+    if (tangentLocation != -1) {
+        glGenBuffers(1, &tangentVbo);
+        glBindBuffer(GL_ARRAY_BUFFER, tangentVbo);
+        glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(float), tangents.data(), GL_STATIC_DRAW);
+        glEnableVertexAttribArray(tangentLocation);
+        glVertexAttribPointer(tangentLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    }
+
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ebos), ebos, GL_STATIC_DRAW);
@@ -179,39 +256,40 @@ std::shared_ptr<Geometry> Geometry::createBox(std::shared_ptr<GLframework::Shade
 {
     auto geometry = std::make_shared<GLframework::Geometry>(shader);
     geometry->mIndicesCount = 36;
+    std::vector<float> tangents;
 	float position[]
 	{
-        // ǰ�� (z = height/2)
+        // Front face (z = height/2)
        -length / 2, -width / 2,  height / 2,  // �ײ���
         length / 2, -width / 2,  height / 2,  // �ײ���
         length / 2,  width / 2,  height / 2,  // ������
        -length / 2,  width / 2,  height / 2,  // ������
 
-       // ���� (z = -height/2)
+       // Back face (z = -height/2)
 		-length / 2, -width / 2, -height / 2,  // �ײ���
 		-length / 2,  width / 2, -height / 2,  // �ײ���
 		length / 2,   width / 2, -height / 2,  // ������
 		length / 2,  -width / 2, -height / 2,  // ������
 
-        // ���� (y = width/2)
+        // Top face (y = width/2)
         -length / 2,  width / 2,  height / 2,  // ����
          length / 2,  width / 2,  height / 2,  // ����
          length / 2,  width / 2, -height / 2,  // ǰ��
         -length / 2,  width / 2, -height / 2,  // ǰ��
 
-        // ���� (y = -width/2)
+        // Bottom face (y = -width/2)
         -length / 2, -width / 2, -height / 2,  // ����
          length / 2, -width / 2, -height / 2,  // ����
          length / 2, -width / 2,  height / 2,  // ǰ��
         -length / 2, -width / 2,  height / 2,  // ǰ��
 
-		// ���� (x = length/2)
+		// Left face (x = length/2)
         length / 2, -width / 2,  height / 2,  // �ײ���
         length / 2, -width / 2, -height / 2,  // �ײ�ǰ
         length / 2,  width / 2, -height / 2,  // ����ǰ
         length / 2,  width / 2,  height / 2,  // ������
 
-		// ���� (x = -length/2)
+		// Right face (x = -length/2)
 		-length / 2, -width / 2, -height / 2,  // �ײ���
 		-length / 2, -width / 2,  height / 2,  // �ײ�ǰ
 		-length / 2,  width / 2,  height / 2,  // ����ǰ
@@ -296,32 +374,32 @@ std::shared_ptr<Geometry> Geometry::createBox(std::shared_ptr<GLframework::Shade
     };
     //��������
     float normals[] = {
-        // ǰ��
+        // 前
         0.0f,0.0f,1.0f,
         0.0f,0.0f,1.0f,
         0.0f,0.0f,1.0f,
         0.0f,0.0f,1.0f,
-        // ����
+        // 后
         0.0f,0.0f,-1.0f,
         0.0f,0.0f,-1.0f,
         0.0f,0.0f,-1.0f,
         0.0f,0.0f,-1.0f,
-        // ����
+        // 上
         0.0f,1.0f,0.0f,
         0.0f,1.0f,0.0f,
         0.0f,1.0f,0.0f,
         0.0f,1.0f,0.0f, 
-        // ����
+        // 下
         0.0f,-1.0f,0.0f,
         0.0f,-1.0f,0.0f,
         0.0f,-1.0f,0.0f,
         0.0f,-1.0f,0.0f,
-        // ����
+        // 左
         1.0f,0.0f,0.0f,
         1.0f,0.0f,0.0f,
         1.0f,0.0f,0.0f,
         1.0f,0.0f,0.0f,
-        // ����
+        // 右
         -1.0f,0.0f,0.0f,
         -1.0f,0.0f,0.0f,
         -1.0f,0.0f,0.0f,
@@ -344,11 +422,80 @@ std::shared_ptr<Geometry> Geometry::createBox(std::shared_ptr<GLframework::Shade
 		// Right face
 		20, 21, 22, 22, 23, 20
     };
-    GLuint& vao = geometry->mVao,&posVbo = geometry->mPosVbo,&uvVbo = geometry->mUvVbo,&colorVob = geometry->mColorVbo,&ebo = geometry->mEbo,&normalvbo = geometry->mNormalVbo;
+
+    //  tangent
+    tangents.resize(72);
+    for (int i = 0; i < 36; i += 3)
+    {
+        //  1 get vertices of current triangle
+        int idx0 = ebos[i];
+        int idx1 = ebos[i + 1];
+        int idx2 = ebos[i + 2];
+
+        //  2 find vertices information from vertices array by reference of three vertices
+        auto p0 = glm::vec3(position[idx0 * 3], position[idx0 * 3 + 1], position[idx0 * 3 + 2]);
+        auto p1 = glm::vec3(position[idx1 * 3], position[idx1 * 3 + 1], position[idx1 * 3 + 2]);
+        auto p2 = glm::vec3(position[idx2 * 3], position[idx2 * 3 + 1], position[idx2 * 3 + 2]);
+
+        //  3 find uv information from uv array by reference of three vertices
+        auto uv0 = glm::vec2(uvs[idx0 * 2], uvs[idx0 * 2 + 1]);
+        auto uv1 = glm::vec2(uvs[idx1 * 2], uvs[idx1 * 2 + 1]);
+        auto uv2 = glm::vec2(uvs[idx2 * 2], uvs[idx2 * 2 + 1]);
+
+        //  4 calculate the tangent of the current triangle according to the formula
+
+        glm::vec3 e0 = p1 - p0;
+        glm::vec3 e1 = p2 - p1;
+
+        glm::vec2 dUV0 = uv1 - uv0;
+        glm::vec2 dUV1 = uv2 - uv1;
+
+        float f = 1.0f / (dUV0.x * dUV1.y - dUV1.x * dUV0.y);
+        glm::vec3 tangent;
+        tangent.x = f * (dUV1.y * e0.x - dUV0.y * e1.x);
+        tangent.y = f * (dUV1.y * e0.y - dUV0.y * e1.y);
+        tangent.z = f * (dUV0.y * e0.z - dUV0.y * e1.z);
+        tangent = glm::normalize(tangent);
+        //  5 for the normal of the three vertices of this triangle, tangent is orthogonalized
+        auto n0 = glm::normalize(glm::vec3(normals[idx0 * 3], normals[idx0 * 3 + 1], normals[idx0 * 3 + 2]));
+        auto n1 = glm::normalize(glm::vec3(normals[idx1 * 3], normals[idx1 * 3 + 1], normals[idx1 * 3 + 2]));
+        auto n2 = glm::normalize(glm::vec3(normals[idx2 * 3], normals[idx2 * 3 + 1], normals[idx2 * 3 + 2]));
+
+        auto t0 = tangent - glm::dot(tangent, n0) * n0;
+        auto t1 = tangent - glm::dot(tangent, n1) * n1;
+        auto t2 = tangent - glm::dot(tangent, n2) * n2;
+
+
+        //  6 add to each tangent
+        tangents[idx0 * 3] += t0.x;
+        tangents[idx0 * 3 + 1] += t0.y;
+        tangents[idx0 * 3 + 2] += t0.z;
+
+        tangents[idx1 * 3] += t1.x;
+        tangents[idx1 * 3 + 1] += t1.y;
+        tangents[idx1 * 3 + 2] += t1.z;
+
+        tangents[idx2 * 3] += t2.x;
+        tangents[idx2 * 3 + 1] += t2.y;
+        tangents[idx2 * 3 + 2] += t2.z;
+
+    }
+
+    //  6 normalize the final tangent for each vertex
+    for (int i = 0; i < tangents.size(); i += 3)
+    {
+        glm::vec3 tangent = glm::normalize(glm::vec3(tangents[i], tangents[i + 1], tangents[i + 2]));
+        tangents[i] = tangent.x;
+        tangents[i + 1] = tangent.y;
+        tangents[i + 2] = tangent.z;
+    }
+
+    GLuint& vao = geometry->mVao,&posVbo = geometry->mPosVbo,&uvVbo = geometry->mUvVbo,&colorVbo = geometry->mColorVbo,&ebo = geometry->mEbo,&normalvbo = geometry->mNormalVbo,&tangentVbo = geometry->mTangentVbo;
     GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
     GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
     GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
     GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+    GLuint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
 
 	glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -365,8 +512,8 @@ std::shared_ptr<Geometry> Geometry::createBox(std::shared_ptr<GLframework::Shade
     glEnableVertexAttribArray(uvLocation);
     glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 
-    glGenBuffers(1, &colorVob);
-    glBindBuffer(GL_ARRAY_BUFFER, colorVob);
+    glGenBuffers(1, &colorVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
     glEnableVertexAttribArray(colorLocation);
     glVertexAttribPointer(colorLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
@@ -376,6 +523,13 @@ std::shared_ptr<Geometry> Geometry::createBox(std::shared_ptr<GLframework::Shade
     glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
     glEnableVertexAttribArray(normalLocation);
     glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    if (tangentLocation != -1) {
+        glGenBuffers(1, &tangentVbo);
+        glBindBuffer(GL_ARRAY_BUFFER, tangentVbo);
+        glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(float), tangents.data(), GL_STATIC_DRAW);
+        glEnableVertexAttribArray(tangentLocation);
+        glVertexAttribPointer(tangentLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    }
 
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
@@ -395,8 +549,9 @@ std::shared_ptr<Geometry> Geometry::createSphere(std::shared_ptr< GLframework::S
     std::vector<float>uvs;
     std::vector<float>colors;
     std::vector<float> normals;
+    std::vector<float> tangents;
     std::vector<int>ebos;
-    //����position,uvs��colors
+    //  position,uvs,colors
     for(int i = 0;i<=mLatitude;i++)
     {
 	    for(int j = 0;j<=mLong;j++)
@@ -429,7 +584,7 @@ std::shared_ptr<Geometry> Geometry::createSphere(std::shared_ptr< GLframework::S
 
 	    }
     }
-    //����ebo
+    //  ebo
     for(int i = 0;i<mLatitude;i++)
     {
 	    for(int j = 0;j<mLong;j++)
@@ -450,11 +605,80 @@ std::shared_ptr<Geometry> Geometry::createSphere(std::shared_ptr< GLframework::S
 	    }
     }
 
-    GLuint& vao = geometry->mVao, &posVbo = geometry->mPosVbo, &uvVbo = geometry->mUvVbo, &colorVob = geometry->mColorVbo, &ebo = geometry->mEbo,&normalVbo = geometry->mNormalVbo;
+    //  tangent
+    tangents.resize(vertices.size());
+    for(int i = 0;i<ebos.size();i+=3)
+    {
+	    //  1 get vertices of current triangle
+        int idx0 = ebos[i];
+        int idx1 = ebos[i+1];
+        int idx2 = ebos[i+2];
+
+        //  2 find vertices information from vertices array by reference of three vertices
+        auto p0 = glm::vec3(vertices[idx0 * 3], vertices[idx0 * 3 + 1], vertices[idx0 * 3 + 2]);
+        auto p1 = glm::vec3(vertices[idx1 * 3], vertices[idx1 * 3 + 1], vertices[idx1 * 3 + 2]);
+        auto p2 = glm::vec3(vertices[idx2 * 3], vertices[idx2 * 3 + 1], vertices[idx2 * 3 + 2]);
+
+    	//  3 find uv information from uv array by reference of three vertices
+        auto uv0 = glm::vec2(uvs[idx0 * 2], uvs[idx0 * 2 + 1]);
+        auto uv1 = glm::vec2(uvs[idx1 * 2], uvs[idx1 * 2 + 1]);
+        auto uv2 = glm::vec2(uvs[idx2 * 2], uvs[idx2 * 2 + 1]);
+
+        //  4 calculate the tangent of the current triangle according to the formula
+
+        glm::vec3 e0 = p1 - p0;
+        glm::vec3 e1 = p2 - p1;
+
+        glm::vec2 dUV0 = uv1 - uv0;
+        glm::vec2 dUV1 = uv2 - uv1;
+
+        float f = 1.0f / (dUV0.x * dUV1.y - dUV1.x * dUV0.y);
+        glm::vec3 tangent;
+        tangent.x = f * (dUV1.y * e0.x - dUV0.y * e1.x);
+        tangent.y = f * (dUV1.y * e0.y - dUV0.y * e1.y);
+        tangent.z = f * (dUV0.y * e0.z - dUV0.y * e1.z);
+        tangent = glm::normalize(tangent);
+        //  5 for the normal of the three vertices of this triangle, tangent is orthogonalized
+        auto n0 = glm::normalize(glm::vec3(normals[idx0 * 3], normals[idx0 * 3 + 1], normals[idx0 * 3 + 2]));
+        auto n1 = glm::normalize(glm::vec3(normals[idx1 * 3], normals[idx1 * 3 + 1], normals[idx1 * 3 + 2]));
+        auto n2 = glm::normalize(glm::vec3(normals[idx2 * 3], normals[idx2 * 3 + 1], normals[idx2 * 3 + 2]));
+
+        auto t0 = tangent - glm::dot(tangent, n0) * n0;
+        auto t1 = tangent - glm::dot(tangent, n1) * n1;
+        auto t2 = tangent - glm::dot(tangent, n2) * n2;
+
+
+        //  6 add to each tangent
+        tangents[idx0 * 3] += t0.x;
+        tangents[idx0 * 3+1] += t0.y;
+        tangents[idx0 * 3+2] += t0.z;
+
+        tangents[idx1 * 3] += t1.x;
+        tangents[idx1 * 3 + 1] += t1.y;
+        tangents[idx1 * 3 + 2] += t1.z;
+
+        tangents[idx2 * 3] += t2.x;
+        tangents[idx2 * 3 + 1] += t2.y;
+        tangents[idx2 * 3 + 2] += t2.z;
+
+    }
+
+    //  6 normalize the final tangent for each vertex
+    for(int i = 0;i<tangents.size();i+=3)
+    {
+        glm::vec3 tangent = glm::normalize(glm::vec3(tangents[i], tangents[i + 1], tangents[i + 2]));
+        tangents[i] = tangent.x;
+        tangents[i+1] = tangent.y;
+        tangents[i + 2] = tangent.z;
+    }
+
+
+    GLuint& vao = geometry->mVao, &posVbo = geometry->mPosVbo, &uvVbo = geometry->mUvVbo, &colorVob = geometry->mColorVbo, &ebo = geometry->mEbo,&normalVbo = geometry->mNormalVbo,&tangentVbo = geometry->mTangentVbo;
     GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
     GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
     GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
     GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+    GLuint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
 
 	glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -482,6 +706,14 @@ std::shared_ptr<Geometry> Geometry::createSphere(std::shared_ptr< GLframework::S
     glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(normalLocation);
     glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    if (tangentLocation != -1) {
+        glGenBuffers(1, &tangentVbo);
+        glBindBuffer(GL_ARRAY_BUFFER, tangentVbo);
+        glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(float), tangents.data(), GL_STATIC_DRAW);
+        glEnableVertexAttribArray(tangentLocation);
+        glVertexAttribPointer(tangentLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    }
 
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);

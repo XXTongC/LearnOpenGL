@@ -1,4 +1,4 @@
-#include "grassInstanceMaterial/grassInstanceMaterial.h"
+#include "materials/grassInstanceMaterial/grassInstanceMaterial.h"
 
 using namespace GLframework;
 
