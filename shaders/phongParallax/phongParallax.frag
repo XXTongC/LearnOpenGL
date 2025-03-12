@@ -11,6 +11,7 @@ uniform vec3 ambientColor;
 uniform vec3 cameraPosition;
 
 uniform float heightScale;
+uniform int layerNum;
 
 //透明度设置
 uniform float opacity;
@@ -147,9 +148,28 @@ vec3 calculatePointLight(PointLight light, vec3 normal,vec3 viewDir)
 vec2 parallaxUV(vec2 uv,vec3 viewDir)
 {
 	viewDir = normalize(transpose(TBN) * viewDir);
-	float height = texture(ParallaxMapSampler,uv).r;
-	vec2 offset = viewDir.xy / viewDir.z * height * heightScale;
-	return uv - offset;
+	float layerDepth = 1.0f/layerNum;
+	vec2 deltaTexCoords;
+	float lastLenth = 0.0f;
+	deltaTexCoords = viewDir.xy / viewDir.z * heightScale / layerNum;
+	
+	vec2 currentTexCoords = uv;
+	float currentSampleValue = texture(ParallaxMapSampler,currentTexCoords).r;
+	float currentLayerDepth = 0.0f;
+	while(currentLayerDepth<currentSampleValue)
+	{
+		lastLenth = currentSampleValue - currentLayerDepth;
+		currentTexCoords -= deltaTexCoords;
+		currentSampleValue = texture(ParallaxMapSampler,currentTexCoords).r;
+		currentLayerDepth += layerDepth;
+	}
+	if(lastLenth>0.0f)
+	{
+		float currentLenth = currentLayerDepth - currentSampleValue;
+		currentTexCoords = currentTexCoords + currentLenth/(lastLenth + currentLenth) * deltaTexCoords;
+	}
+
+	return currentTexCoords;
 
 }
 

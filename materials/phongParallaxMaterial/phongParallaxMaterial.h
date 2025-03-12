@@ -16,7 +16,6 @@ namespace GLframework
 		}
 		~PhongParallaxMaterial();
 
-
 	public:
 		std::shared_ptr<Texture> mDiffuse{ nullptr };
 		std::shared_ptr<Texture> mSpecularMask{ nullptr };
@@ -24,5 +23,6 @@ namespace GLframework
 		std::shared_ptr<Texture> mParallaxMap{ nullptr };
 		float mHeightScale{ 0.1f };
 		float mShiness{ 10.0f };
+		int mLayerNum{ 10 };
 	};
 }

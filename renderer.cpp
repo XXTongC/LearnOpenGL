@@ -897,7 +897,7 @@ void Renderer::renderObject(
 				phongMat->mParallaxMap->Bind();
 
 				shader->setFloat("heightScale", phongMat->mHeightScale);
-
+				shader->setInt("layerNum", phongMat->mLayerNum);
 				//	mvp transform settings
 				shader->setMat4("modelMatrix", mesh->getModleMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());

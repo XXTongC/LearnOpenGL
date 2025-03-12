@@ -492,6 +492,8 @@ void renderIMGUI()
 	ImGui::Begin("controller");
 	ImGui::Text("parallax Scale");
 	ImGui::SliderFloat("Parallax Scale", &parallaxMat->mHeightScale, 0.0f, 1.0f);
+	ImGui::SliderInt("layerNumber",&parallaxMat->mLayerNum, 1, 10000);
+
 	/*
 	ImGui::Text("Light");
 	ImGui::InputFloat("intencity", dirLight->Control_Intensity(), 0.0f, 100.0f);
