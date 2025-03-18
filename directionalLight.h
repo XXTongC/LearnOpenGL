@@ -10,9 +10,5 @@ namespace GLframework
 			:Light()
 		{}
 		~DirectionalLight(){}
-		void setDirection(glm::vec3 value);
-		glm::vec3 getDirection() const;
-	private:
-		glm::vec3 mDirection{ -1.0f };
 	};
 }

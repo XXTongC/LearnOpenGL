@@ -4,6 +4,35 @@
 using namespace GLframework;
 std::map<std::string, std::shared_ptr<GLframework::Texture>> GLframework::Texture::mTextureCache{};
 
+unsigned int Texture::getUnit() const
+{
+	return mUnit;
+}
+
+
+std::shared_ptr<Texture> Texture::createDepthAttachment(unsigned width, unsigned height, unsigned unit)
+{
+	std::shared_ptr<Texture> dsTex = std::make_shared<Texture>();
+
+	unsigned int depth;
+	glGenTextures(1, &depth);
+	glBindTexture(GL_TEXTURE_2D, depth);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT,GL_FLOAT, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	//u
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);	//v
+
+	dsTex->setTexture(depth);
+	dsTex->setWidth(width);
+	dsTex->setHeight(height);
+	dsTex->setUnit(unit);
+
+	return dsTex;
+}
+
+
 unsigned int Texture::getTextureTarget() const
 {
 	return mTextureTarget;

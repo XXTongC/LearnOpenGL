@@ -15,6 +15,6 @@ namespace GLframework
 	
 	public:
 		std::shared_ptr<Texture> mScreenTexture{ nullptr };
-		std::shared_ptr<Texture> mmDepthStencilTexture{ nullptr };
+		std::shared_ptr<Texture> mDepthStencilTexture{ nullptr };
 	};
 }

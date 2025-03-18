@@ -268,7 +268,7 @@ void Material::setStencilMask(unsigned value)
 
 void Material::setStencilRef(unsigned value)
 {
-	mStencilRef = value;
+	mStencilRef = value;	
 }
 
 void Material::setStencilState(bool value)

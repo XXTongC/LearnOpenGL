@@ -2,17 +2,25 @@
 
 using namespace GLframework;
 
+glm::vec3 Object::getDirection() const
+{
+	auto modelMatrix = glm::mat3(this->getModelMatrix());
+	glm::vec3 direction = glm::normalize(-modelMatrix[2]);
+	return direction;
+}
+
+
 glm::vec3 Object::getPosition() const
 {
 	return mPosition;
 }
 
-glm::mat4 Object::getModleMatrix()
+glm::mat4 Object::getModelMatrix() const
 {
 	glm::mat4 parentModleMatrix{ 1.0f };
 	if(mParent!=nullptr)
 	{
-		parentModleMatrix = mParent->getModleMatrix();
+		parentModleMatrix = mParent->getModelMatrix();
 	}
 
 	//Ë³Ðò£ºËõ·Å -> Ðý×ª -> Æ½ÒÆ

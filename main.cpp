@@ -22,10 +22,11 @@
 #include "phongEnvSphereMaterial.h"
 #include "../mesh/instancedMesh.h"
 #include "phongInstanceMaterial.h"
-#include "materials/phongNormalMaterial.h"
+#include "materials/phongNormalMaterial/phongNormalMaterial.h"
 #include "cubeSphereMaterial.h"
 #include "materials/grassInstanceMaterial/grassInstanceMaterial.h"
 #include "materials/phongParallaxMaterial/phongParallaxMaterial.h"
+#include "materials/phongShadowMaterial/phongShadowMaterial.h"
 
 #include "depthMaterial.h"
 #include "whiteMaterial.h"
@@ -180,7 +181,7 @@ void prepareSkyBox()
 	skyBoxMat-> mDiffuse = std::make_shared<GLframework::Texture>(TexturePath, 0);
 	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(GLframework::MaterialType::CubeSphereMaterial), 3.0f, 3.0f, 3.0f);
 	skyBoxMesh = std::make_shared<GLframework::Mesh>(boxGeo, skyBoxMat);
-	sceneOffScreen->addChild(skyBoxMesh);
+	//sceneOffScreen->addChild(skyBoxMesh);
 }
 
 
@@ -192,8 +193,8 @@ void prepare()
 	sceneInScreen = std::make_shared<GLframework::Scene>();
 	sceneOffScreen = std::make_shared<GLframework::Scene>();
 	framebuffer = std::make_shared<GLframework::Framebuffer>(width, height);
+
 	//----------
-	
 #pragma region solorsystem
 	/*
 	
@@ -369,18 +370,31 @@ void prepare()
 	sceneOffScreen->addChild(earthNMesh);
 */
 #pragma endregion
-	parallaxMat = std::make_shared<GLframework::PhongParallaxMaterial>();
+	
+	auto parallaxMat = std::make_shared<GLframework::PhongShadowMaterial>();
 	parallaxMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/parallax/bricks.jpg",0,GL_SRGB_ALPHA);
-	parallaxMat->mSpecularMask = std::make_shared<GLframework::Texture>("Texture/FFFFFF.png", 1);
-	parallaxMat->mNormal = std::make_shared<GLframework::Texture>("Texture/parallax/bricks_normal.jpg", 2);
-	parallaxMat->mParallaxMap = std::make_shared<GLframework::Texture>("Texture/parallax/disp.jpg", 3);
-	parallaxMat->mShiness = 32;
-	auto planeGe = GLframework::Geometry::createPlane(renderer->getShader(parallaxMat->getMaterialType()),2,2);
+	//parallaxMat->mNormal = std::make_shared<GLframework::Texture>("Texture/parallax/bricks_normal.jpg", 2);
+	//parallaxMat->mParallaxMap = std::make_shared<GLframework::Texture>("Texture/parallax/disp.jpg", 3);
+	auto planeGe = GLframework::Geometry::createPlane(renderer->getShader(parallaxMat->getMaterialType()),5,5);
 	auto planeMesh = std::make_shared<GLframework::Mesh>(planeGe, parallaxMat);
-	//planeMesh->rotateX(-90);
+	planeMesh->rotateX(-90);
 	sceneOffScreen->addChild(planeMesh);
 
+	auto textplan = std::make_shared<GLframework::PhongMaterial>();
+	textplan->mDiffuse = renderer->mShadowFBO->getDepthAttachment();
+	auto textGeo = GLframework::Geometry::createPlane(renderer->getShader(textplan->getMaterialType()), 2, 2);
+	auto meshit = std::make_shared<GLframework::Mesh>(textGeo, textplan);
+	meshit->setPosition({ 3.0f,1.0f,0.0f });
+	sceneOffScreen->addChild(meshit);
 
+	auto mat2 = std::make_shared<GLframework::PhongShadowMaterial>();
+	mat2->mDiffuse = std::make_shared < GLframework::Texture >("Texture/box.png", 0, GL_SRGB_ALPHA);
+	//mat2->mDiffuse = renderer->mShadowFBO->getDepthAttachment();
+	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(mat2->getMaterialType()), 1.0, 1.0, 1.0);
+	auto meshbox = std::make_shared<GLframework::Mesh>(boxGeo, mat2);
+	meshbox->setPosition({ 0.0f,0.5f,0.0f });
+	sceneOffScreen->addChild(meshbox);
+	
 	/*
 	auto boxCulling = std::make_shared<GLframework::WhiteMaterial>();
 	boxCulling->setPreStencilPreSettingType(GLframework::PreStencilType::Outlining);
@@ -406,22 +420,23 @@ void prepare()
 	*/
 	
 	//在屏渲染
-
 	auto met = std::make_shared<GLframework::ScreenMaterial>();
 	met->mScreenTexture = framebuffer->getColorAttachment();
-	met->mmDepthStencilTexture = framebuffer->getDepthStencilAttachment();
-	//if (met->getMaterialType() == GLframework::MaterialType::ScreenMaterial) std::cout << 1 << "\n";
+	//met->mScreenTexture = renderer->mShadowFBO->getDepthAttachment();
+	//met->mDepthStencilTexture = framebuffer->getDepthStencilAttachment();
 	auto geo = GLframework::Geometry::createScreenPlane(renderer->getShader(met->getMaterialType()));
 	auto mesh = std::make_shared<GLframework::Mesh>(geo, met);
 	sceneInScreen->addChild(mesh);
 	//----------
 
-	spotLight	= std::make_shared<GLframework::SpotLight>(glm::vec3(-1.0f, 0.0f, 0.0f), 30.0f, 60.0f);
+	spotLight	= std::make_shared<GLframework::SpotLight>( 30.0f, 60.0f);
 	spotLight	->	setPosition(glm::vec3(1.5f, 0.0f, 0.0f));
 	spotLight	->	setColor(glm::vec3{0.0f});
 
 	dirLight	= std::make_shared<GLframework::DirectionalLight>();
-	dirLight	->	setDirection(glm::vec3(0.0f,0.0f,-1.0f));
+	dirLight->setPosition(glm::vec3(3.0f, 3.0f, 3.0f));
+	dirLight	->	rotateY(45.0f);
+	dirLight	->	rotateX(-45.0f);
 	dirLight	->	setColor({ 0.8f,0.8f,0.9f });
 	dirLight	->	setSpecularIntensity(0.5f);
 
@@ -453,7 +468,7 @@ void prepare()
 	pointLight4	->	setPosition(glm::vec3(0.0f, 0.0f, 1.5f));
 	pointLights.push_back(std::move(pointLight4));
 	ambientLight	 = std::make_shared<GLframework::AmbientLight>();
-	ambientLight->	setColor(glm::vec3(0.2f));
+	ambientLight->	setColor(glm::vec3(0.3f));
 
 }
 
@@ -491,8 +506,8 @@ void renderIMGUI()
 	
 	ImGui::Begin("controller");
 	ImGui::Text("parallax Scale");
-	ImGui::SliderFloat("Parallax Scale", &parallaxMat->mHeightScale, 0.0f, 1.0f);
-	ImGui::SliderInt("layerNumber",&parallaxMat->mLayerNum, 1, 10000);
+	//ImGui::SliderFloat("Parallax Scale", &parallaxMat->mHeightScale, 0.0f, 1.0f);
+	//ImGui::SliderInt("layerNumber",&parallaxMat->mLayerNum, 1, 10000);
 
 	/*
 	ImGui::Text("Light");

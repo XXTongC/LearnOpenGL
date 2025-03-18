@@ -48,8 +48,8 @@ namespace GLframework
 
 		void setScale(glm::vec3 scale);
 
-		glm::mat4 getModleMatrix();
-
+		glm::mat4 getModelMatrix() const;
+		glm::vec3 getDirection() const;
 	protected:
 		glm::vec3 mPosition{ 0.0f };
 		float mAngleX{ 0.0f };

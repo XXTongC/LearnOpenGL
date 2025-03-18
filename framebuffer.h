@@ -12,13 +12,17 @@ namespace GLframework
 		unsigned int getFBO() const;
 		std::shared_ptr<Texture> getColorAttachment() const;
 		std::shared_ptr<Texture> getDepthStencilAttachment() const;
+		std::shared_ptr<Texture> getDepthAttachment() const;
 
 		void setWidth(unsigned int value);
 		void setHeight(unsigned int value);
 		void setFBO(unsigned int value);
 		void setColorAttachment(std::shared_ptr<Texture> value);
 		void setDepthStencilAttachment(std::shared_ptr<Texture> value);
+		void setDepthAttachment(std::shared_ptr<Texture> value);
 
+		static std::shared_ptr<Framebuffer> createShadowFBO(unsigned width, unsigned height);
+		Framebuffer(){}
 		Framebuffer(
 			unsigned int width,
 			unsigned int height
@@ -29,7 +33,7 @@ namespace GLframework
 			{
 				glDeleteFramebuffers(1,&mFBO);
 			}
-		};
+		}
 
 
 	private:
@@ -39,5 +43,6 @@ namespace GLframework
 
 		std::shared_ptr<Texture> mColorAttachment{ nullptr };
 		std::shared_ptr<Texture> mDepthStencilAttachment{ nullptr };
+		std::shared_ptr<Texture> mDepthAttachment{ nullptr };
 	};
 }

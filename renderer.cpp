@@ -11,13 +11,87 @@
 #include "materials/grassInstanceMaterial/grassInstanceMaterial.h"
 #include "materials/phongParallaxMaterial/phongParallaxMaterial.h"
 #include "cubeSphereMaterial.h"
-#include "materials/phongNormalMaterial.h"
+#include "materials/phongNormalMaterial/phongNormalMaterial.h"
+#include "materials/phongShadowMaterial/phongShadowMaterial.h"
+#include "orthographiccamera.h"
 #include "../mesh/instancedMesh.h"
 #include "cubeMaterial.h"
 #include "screenMaterial.h"
 #include <algorithm>
 
 using namespace GLframework;
+
+glm::mat4 Renderer::getLightMatrix(std::shared_ptr<DirectionalLight> dirLight)
+{
+	//	1. viewMatrix
+	auto lgihtViewMatrix = glm::inverse(dirLight->getModelMatrix());
+
+	//	2. projection
+	float size = 6.0f;
+	auto lightCamera = new OrthographicCamera(-size, size, size, -size, 0.1f, 80.0f);
+	auto lightProjectionMatrix = lightCamera->getProjectionMatrix();
+
+	//	3. get light matrix
+	return lightProjectionMatrix * lgihtViewMatrix;
+
+
+}
+
+void Renderer::renderShadowMap(const std::vector<std::shared_ptr<Mesh>>& meshes, std::shared_ptr<DirectionalLight> dirLight, std::shared_ptr<Framebuffer> fbo)
+{
+	//	1. make sure that the current draw is not a postProcessPass draw, if it is, then the render is not performed
+	bool isPostProcessPass = true;
+	for(auto& mesh : meshes)
+	{
+		if(mesh->getMaterial()->getMaterialType()!=GLframework::MaterialType::ScreenMaterial)
+		{
+			isPostProcessPass = false;
+			break;
+		}
+	}
+	if (isPostProcessPass) return;
+
+	//	2. save the original state, after drawing shadowmap, to restore the original state
+	GLint preFbo;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &preFbo);
+
+	GLint preViewPort[4];
+	glGetIntegerv(GL_VIEWPORT, preViewPort);
+
+	//	3. set the state required when ShadowPass is drawn
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glDepthMask(GL_TRUE);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo->getFBO());
+	glViewport(0, 0, fbo->getWidth(), fbo->getHeight());
+
+
+	//	4. start drawing
+	glClear(GL_DEPTH_BUFFER_BIT);
+	auto lightMatrix = getLightMatrix(dirLight);
+	mShadowShader->begin();
+	mShadowShader->setMat4("lightMatrix", lightMatrix);
+	for(auto& mesh : meshes)
+	{
+		glBindVertexArray(mesh->getGeometry()->getVao());
+		mShadowShader->setMat4("modelMatrix", mesh->getModelMatrix());
+
+		if (mesh->getType() == ObjectType::InstancedMesh)
+		{
+			std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
+			glDrawElementsInstanced(GL_TRIANGLES, mesh->getGeometry()->getIndicesCount(), GL_UNSIGNED_INT, 0, im->getInstanceCount());
+		}
+		else
+		{
+			glDrawElements(GL_TRIANGLES, mesh->getGeometry()->getIndicesCount(), GL_UNSIGNED_INT, nullptr);
+		}
+	}
+	mShadowShader->end();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, preFbo);
+	glViewport(preViewPort[0], preViewPort[1], preViewPort[2], preViewPort[3]);
+}
 
 void Renderer::setFaceCullingState(std::shared_ptr<GLframework::Material> material)
 {
@@ -177,6 +251,9 @@ std::shared_ptr<Shader> Renderer::pickShader(MaterialType type)
 	case MaterialType::PhongParallaxMaterial:
 		res = mPhongParallaxShader;
 		break;
+	case MaterialType::PhongShadowMaterial:
+		res = mPhongShadowShader;
+		break;
 	default:
 		std::cerr << "Unknown material type to pick shader\n";
 		break;
@@ -229,17 +306,20 @@ void Renderer::render(
 			//	1. 计算a的相机系的Z
 			auto viewMatrix = camera->getViewMatrix();
 
-			auto modelMatrixA = A->getModleMatrix();
+			auto modelMatrixA = A->getModelMatrix();
 			auto worldPositionA = modelMatrixA * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 			auto cameraPositionA = viewMatrix * worldPositionA;
 
 			//2 计算b的相机系的Z
-			auto modelMatrixB = B->getModleMatrix();
+			auto modelMatrixB = B->getModelMatrix();
 			auto worldPositionB = modelMatrixB * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 			auto cameraPositionB = viewMatrix * worldPositionB;
 
 			return cameraPositionA.z < cameraPositionB.z;
 		});
+
+	//	render shadowmap
+	renderShadowMap(mOpacityObjects, dirLight, mShadowFBO);
 
 	// 3. 渲染两个队列
 	for(auto& t : mOpacityObjects)
@@ -317,16 +397,16 @@ void Renderer::renderObject(
 
 				//	������������������Ԫ���йҹ�
 				//	mvp�仯����
-				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 				//���߾�����£�����ת�����з��ߵı仯����
-				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
+				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
 				//	spotlight��Դ��������
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
-				shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
+				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
 				//	dirlight��Դ��������
@@ -361,9 +441,83 @@ void Renderer::renderObject(
 					std::cout << "null\n";
 			}
 			break;
+		case MaterialType::PhongShadowMaterial:
+			{
+				std::shared_ptr<PhongShadowMaterial> phongMat = std::static_pointer_cast<PhongShadowMaterial>(material);
+
+				if (phongMat->mDiffuse == nullptr)
+					std::cout << "null\n";
+				//��������Ĭ��͸����--------
+				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
+
+
+				//-----------------------
+
+		
+				//	diffuse
+				GL_CALL(shader->setInt("samplerGrass", 0));
+				phongMat->mDiffuse->Bind();
+
+				//	mask��ͼ
+				GL_CALL(shader->setInt("MaskSampler", 1));
+				phongMat->mSpecularMask->Bind();
+
+				GL_CALL(shader->setInt("shadowMapSampler", 3));
+				mShadowFBO->getDepthAttachment()->setUnit(3);
+				mShadowFBO->getDepthAttachment()->Bind();
+
+				shader->setMat4("lightMatrix", getLightMatrix(dirLight));
+
+				//	������������������Ԫ���йҹ�
+				//	mvp�仯����
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
+				shader->setMat4("viewMatrix", camera->getViewMatrix());
+				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
+				//���߾�����£�����ת�����з��ߵı仯����
+				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
+				//	spotlight��Դ��������
+				shader->setVector3("spotLight.position", spotLight->getPosition());
+				shader->setVector3("spotLight.color", spotLight->getColor());
+				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
+				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
+				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
+				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
+				//	dirlight��Դ��������
+				shader->setVector3("directionalLight.color", dirLight->getColor());
+				shader->setVector3("directionalLight.direction", dirLight->getDirection());
+				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
+				shader->setFloat("directionalLight.intensity", dirLight->getIntensity());
+				//	pointlight��Դ��������
+				//std::cout << pointLights.size()<<std::endl;
+				for (int i = 0; i < pointLights.size(); i++)
+				{
+					auto& pointLight = pointLights[i];
+					std::string baseName = "pointLights[";
+					baseName.append(std::to_string(i));
+					baseName.append("]");
+					shader->setVector3(baseName + ".color", pointLight->getColor());
+					shader->setVector3(baseName + ".position", pointLight->getPosition());
+					shader->setFloat(baseName + ".specularIntensity", pointLight->getSpecularIntensity());
+					shader->setFloat(baseName + ".k2", pointLight->getK2());
+					shader->setFloat(baseName + ".k1", pointLight->getK1());
+					shader->setFloat(baseName + ".k0", pointLight->getK0());
+				}
+
+				shader->setVector3("ambientColor", ambient->getColor());
+				shader->setFloat("time", glfwGetTime());
+				shader->setFloat("shiness", phongMat->mShiness);
+				shader->setFloat("speed", 0.5);
+
+				//	�����Ϣ����
+				shader->setVector3("cameraPosition", camera->mPosition);
+				if (phongMat->mDiffuse == nullptr)
+					std::cout << "null\n";
+
+			}
+			break;
 		case MaterialType::WhiteMaterial:
 			{
-				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 				
@@ -371,7 +525,7 @@ void Renderer::renderObject(
 			break;
 		case MaterialType::DepthMaterial:
 			{
-				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 				shader->setFloat("near", camera->mNear);
@@ -404,16 +558,16 @@ void Renderer::renderObject(
 
 				//	������������������Ԫ���йҹ�
 				//	mvp�仯����
-				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 				//���߾�����£�����ת�����з��ߵı仯����
-				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
+				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
 				//	spotlight��Դ��������
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
-				shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
+				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
 				//	dirlight��Դ��������
@@ -463,7 +617,7 @@ void Renderer::renderObject(
 			{
 				std::shared_ptr<CubeSphereMaterial> cubeMat = std::static_pointer_cast<CubeSphereMaterial>(material);
 				mesh->setPosition(camera->mPosition);
-				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 				shader->setInt("cubeSampler", 0);
@@ -476,7 +630,7 @@ void Renderer::renderObject(
 			{
 				std::shared_ptr<CubeMaterial> cubeMat = std::static_pointer_cast<CubeMaterial>(material);
 				mesh->setPosition(camera->mPosition);
-				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 				shader->setInt("cubeSampler", 0);
@@ -511,16 +665,16 @@ void Renderer::renderObject(
 
 			//	������������������Ԫ���йҹ�
 			//	mvp�仯����
-			shader->setMat4("modelMatrix", mesh->getModleMatrix());
+			shader->setMat4("modelMatrix", mesh->getModelMatrix());
 			shader->setMat4("viewMatrix", camera->getViewMatrix());
 			shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 			//���߾�����£�����ת�����з��ߵı仯����
-			shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
+			shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
 			//	spotlight��Դ��������
 			shader->setVector3("spotLight.position", spotLight->getPosition());
 			shader->setVector3("spotLight.color", spotLight->getColor());
 			shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
-			shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
+			shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 			shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 			shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
 			//	dirlight��Դ��������
@@ -580,16 +734,16 @@ void Renderer::renderObject(
 
 				//	������������������Ԫ���йҹ�
 				//	mvp�仯����
-				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 				//���߾�����£�����ת�����з��ߵı仯����
-				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
+				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
 				//	spotlight��Դ��������
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
-				shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
+				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
 				//	dirlight��Դ��������
@@ -650,16 +804,16 @@ void Renderer::renderObject(
 
 				//	������������������Ԫ���йҹ�
 				//	mvp变换矩阵
-				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 				//计算并传输法线矩阵 实例绘制中只能在GPU端进行计算
-				//shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
+				//shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
 				//	spotlight数据传入
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
-				shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
+				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
 				//	dirlight数据传入
@@ -746,16 +900,16 @@ void Renderer::renderObject(
 				instance_material->mCloudMask->Bind();
 				//	������������������Ԫ���йҹ�
 				//	mvp矩阵变换
-				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 				//���߾�����£�����ת�����з��ߵı仯����
-				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
+				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
 				//	spotlight��Դ��������
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
-				shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
+				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
 				//	dirlight��Դ��������
@@ -826,15 +980,15 @@ void Renderer::renderObject(
 				phongMat->mNormal->Bind();
 
 				//	mvp transform settings
-				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
+				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
 				//	spotlight settings
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
-				shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
+				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
 				//	dirlight settings
@@ -899,15 +1053,15 @@ void Renderer::renderObject(
 				shader->setFloat("heightScale", phongMat->mHeightScale);
 				shader->setInt("layerNum", phongMat->mLayerNum);
 				//	mvp transform settings
-				shader->setMat4("modelMatrix", mesh->getModleMatrix());
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModleMatrix()))));
+				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
 				//	spotlight settings
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
-				shader->setVector3("spotLight.targetDirection", spotLight->getTargetDirection());
+				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
 				//	dirlight settings

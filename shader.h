@@ -17,6 +17,7 @@ namespace GLframework
 		void setMat4(const std::string& name, const glm::mat4 values);
 		void setMat4Array(const std::string& name, const glm::mat4 values[],int count);
 		void setMat3(const std::string& name, const glm::mat3 values);
+		std::string loadShader(const std::string& filePath);
 		void begin();	
 		void end();		
 	private:

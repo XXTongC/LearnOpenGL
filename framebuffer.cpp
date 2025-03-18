@@ -1,6 +1,39 @@
 #include "framebuffer.h"
 using namespace GLframework;
 
+std::shared_ptr<Texture> Framebuffer::getDepthAttachment() const
+{
+	return mDepthAttachment;
+}
+
+void Framebuffer::setDepthAttachment(std::shared_ptr<Texture> value)
+{
+	mDepthAttachment = std::move(value);
+}
+
+std::shared_ptr<Framebuffer> Framebuffer::createShadowFBO(unsigned width, unsigned height)
+{
+	std::shared_ptr<Framebuffer> fb = std::make_shared<Framebuffer>();
+	fb->setWidth(width);
+	fb->setHeight(height);
+
+	glGenFramebuffers(1, &fb->mFBO);
+	GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb->mFBO));
+
+	fb->mDepthAttachment = Texture::createDepthAttachment(width, height, 0);
+	
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, fb->mDepthAttachment->getTexture(), 0);
+	std::cout << fb->mDepthAttachment << std::endl;
+	glDrawBuffer(GL_NONE);	//tell opengl there is no color output in current fbo
+	
+	if (glCheckFramebufferStatus(GL_READ_FRAMEBUFFER) == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT)
+	{
+		std::cerr <<"Error: FrameBuff is not complete! ERROR:GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT" << std::endl;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return fb;
+}
+
 Framebuffer::Framebuffer(unsigned width, unsigned height)
 {
 	mWidth = width;
@@ -20,7 +53,7 @@ Framebuffer::Framebuffer(unsigned width, unsigned height)
 	//	检查当前构建的fbo是否完整
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
-		std::cerr << "Error: FrameBuff is not complete!" << std::endl;
+		std::cerr << "Error: FrameBuff is not complete! " << std::endl;
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	

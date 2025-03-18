@@ -24,8 +24,13 @@ namespace GLframework
 			unsigned int height,
 			unsigned int unit
 		);
+		static std::shared_ptr<Texture> createDepthAttachment(
+			unsigned int width,
+			unsigned int height,
+			unsigned int unit
+		);
 
-		Texture(){};
+		Texture(){}
 		Texture(const std::string& path, unsigned int unit, unsigned int internalFormat = GL_RGBA);
 		Texture(
 			unsigned int unit,
@@ -45,6 +50,7 @@ namespace GLframework
 		void setHeight(GLuint value);
 		void setTextureTarget(unsigned int value);
 		unsigned int getTextureTarget() const;
+		unsigned int getUnit()const;
 
 	private:
 		GLuint mTexture{ 0 };

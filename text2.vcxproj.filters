@@ -193,6 +193,27 @@
     <Filter Include="资源文件\Texture\parallax">
       <UniqueIdentifier>{f0dd3a95-ee61-431c-9c88-de61e9057a39}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\shaders\phongParallax">
+      <UniqueIdentifier>{70657c3c-36c9-485d-ba8b-b836e489e52d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shaders\phongNormal">
+      <UniqueIdentifier>{4c6e521d-a259-4578-871b-6655ed9e9067}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shaders\shadow">
+      <UniqueIdentifier>{7e0de483-25bf-4311-b632-2c0443bb03a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\material\phongShadowMaterial">
+      <UniqueIdentifier>{a1fa0b48-2b56-4d97-b97c-97c6b9ee0eab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\material\phongNormalMaterial">
+      <UniqueIdentifier>{0c55d3b1-59be-4f0f-8753-4d9d344255c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\GLframework\material\phongNormalMaterial">
+      <UniqueIdentifier>{6cf701cd-a655-4712-a826-60d856cd0f33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\GLframework\material\phongShadowMaterial">
+      <UniqueIdentifier>{7961353f-5daa-4c9f-8b87-5f34645b0247}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -339,11 +360,14 @@
     <ClCompile Include="grassInstanceMaterial.cpp">
       <Filter>cppfile\GLframework\material\grassInstanceMaterial</Filter>
     </ClCompile>
-    <ClCompile Include="materials\phongNormalMaterial.cpp">
-      <Filter>cppfile\GLframework\material</Filter>
-    </ClCompile>
     <ClCompile Include="materials\phongParallaxMaterial\phongParallaxMaterial.cpp">
       <Filter>cppfile\GLframework\material\phongParallaxMaterial</Filter>
+    </ClCompile>
+    <ClCompile Include="materials\phongNormalMaterial\phongNormalMaterial.cpp">
+      <Filter>cppfile\GLframework\material\phongNormalMaterial</Filter>
+    </ClCompile>
+    <ClCompile Include="materials\phongShadowMaterial\phongShadowMaterial.cpp">
+      <Filter>cppfile\GLframework\material\phongShadowMaterial</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1544,11 +1568,14 @@
     <ClInclude Include="grassInstanceMaterial\grassInstanceMaterial.h">
       <Filter>include\GLframework\material\grassInstanceMaterial</Filter>
     </ClInclude>
-    <ClInclude Include="materials\phongNormalMaterial.h">
-      <Filter>include\GLframework\material</Filter>
-    </ClInclude>
     <ClInclude Include="materials\phongParallaxMaterial\phongParallaxMaterial.h">
       <Filter>include\GLframework\material\phongParallaxMaterial</Filter>
+    </ClInclude>
+    <ClInclude Include="materials\phongNormalMaterial\phongNormalMaterial.h">
+      <Filter>include\GLframework\material\phongNormalMaterial</Filter>
+    </ClInclude>
+    <ClInclude Include="materials\phongShadowMaterial\phongShadowMaterial.h">
+      <Filter>include\GLframework\material\phongShadowMaterial</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2082,6 +2109,30 @@
     </None>
     <None Include="fbx\house.fbx">
       <Filter>资源文件\fbx</Filter>
+    </None>
+    <None Include="shaders\phongParallax\phongParallax_V2.frag">
+      <Filter>资源文件\shaders\phongParallax</Filter>
+    </None>
+    <None Include="shaders\phongParallax\phongParallax_V2.vert">
+      <Filter>资源文件\shaders\phongParallax</Filter>
+    </None>
+    <None Include="shaders\phongNormal\phongNormal_V2.frag">
+      <Filter>资源文件\shaders\phongNormal</Filter>
+    </None>
+    <None Include="shaders\phongNormal\phongNormal_V2.vert">
+      <Filter>资源文件\shaders\phongNormal</Filter>
+    </None>
+    <None Include="shaders\phong\phong_V2.frag">
+      <Filter>资源文件\shaders\phong</Filter>
+    </None>
+    <None Include="shaders\phong\phong_V2.vert">
+      <Filter>资源文件\shaders\phong</Filter>
+    </None>
+    <None Include="shaders\phong\phongShadow.frag">
+      <Filter>资源文件\shaders\phong</Filter>
+    </None>
+    <None Include="shaders\phong\phongShadow.vert">
+      <Filter>资源文件\shaders\phong</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
