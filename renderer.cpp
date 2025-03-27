@@ -13,6 +13,7 @@
 #include "cubeSphereMaterial.h"
 #include "materials/phongNormalMaterial/phongNormalMaterial.h"
 #include "materials/phongShadowMaterial/phongShadowMaterial.h"
+#include "light/shadow/directionalLightShadow/directionalLightShadow.h"
 #include "orthographiccamera.h"
 #include "../mesh/instancedMesh.h"
 #include "cubeMaterial.h"
@@ -21,21 +22,6 @@
 
 using namespace GLframework;
 
-glm::mat4 Renderer::getLightMatrix(std::shared_ptr<DirectionalLight> dirLight)
-{
-	//	1. viewMatrix
-	auto lgihtViewMatrix = glm::inverse(dirLight->getModelMatrix());
-
-	//	2. projection
-	float size = 6.0f;
-	auto lightCamera = new OrthographicCamera(-size, size, size, -size, 0.1f, 80.0f);
-	auto lightProjectionMatrix = lightCamera->getProjectionMatrix();
-
-	//	3. get light matrix
-	return lightProjectionMatrix * lgihtViewMatrix;
-
-
-}
 
 void Renderer::renderShadowMap(const std::vector<std::shared_ptr<Mesh>>& meshes, std::shared_ptr<DirectionalLight> dirLight, std::shared_ptr<Framebuffer> fbo)
 {
@@ -69,7 +55,7 @@ void Renderer::renderShadowMap(const std::vector<std::shared_ptr<Mesh>>& meshes,
 
 	//	4. start drawing
 	glClear(GL_DEPTH_BUFFER_BIT);
-	auto lightMatrix = getLightMatrix(dirLight);
+	auto lightMatrix = std::static_pointer_cast<DirectionalLightShadow>( dirLight->getShadow())->getLightMatrix(dirLight->getModelMatrix());
 	mShadowShader->begin();
 	mShadowShader->setMat4("lightMatrix", lightMatrix);
 	for(auto& mesh : meshes)
@@ -319,7 +305,7 @@ void Renderer::render(
 		});
 
 	//	render shadowmap
-	renderShadowMap(mOpacityObjects, dirLight, mShadowFBO);
+	renderShadowMap(mOpacityObjects, dirLight,dirLight->getShadow()->mRenderTarget);
 
 	// 3. 渲染两个队列
 	for(auto& t : mOpacityObjects)
@@ -386,11 +372,12 @@ void Renderer::renderObject(
 				
 				//	����shader�Ĳ�����Ϊ0�Ų�����
 				//	diffuse��ͼ
-				GL_CALL(shader->setInt("samplerGrass", 0));
+				
+				GL_CALL(shader->setInt("samplerGrass", phongMat->mDiffuse->getUnit()));
 
 				//	�������������Ԫ�ҹ�
 				phongMat->mDiffuse->Bind();
-
+				
 				//	mask��ͼ
 				GL_CALL(shader->setInt("MaskSampler", 1));
 				phongMat->mSpecularMask->Bind();
@@ -444,7 +431,7 @@ void Renderer::renderObject(
 		case MaterialType::PhongShadowMaterial:
 			{
 				std::shared_ptr<PhongShadowMaterial> phongMat = std::static_pointer_cast<PhongShadowMaterial>(material);
-
+				std::shared_ptr<DirectionalLightShadow> dirShadow = std::static_pointer_cast<DirectionalLightShadow>(dirLight->getShadow());
 				if (phongMat->mDiffuse == nullptr)
 					std::cout << "null\n";
 				//��������Ĭ��͸����--------
@@ -455,18 +442,21 @@ void Renderer::renderObject(
 
 		
 				//	diffuse
-				GL_CALL(shader->setInt("samplerGrass", 0));
+				GL_CALL(shader->setInt("samplerGrass", phongMat->mDiffuse->getUnit()));
 				phongMat->mDiffuse->Bind();
 
 				//	mask��ͼ
 				GL_CALL(shader->setInt("MaskSampler", 1));
 				phongMat->mSpecularMask->Bind();
 
-				GL_CALL(shader->setInt("shadowMapSampler", 3));
-				mShadowFBO->getDepthAttachment()->setUnit(3);
-				mShadowFBO->getDepthAttachment()->Bind();
+				GL_CALL(shader->setInt("shadowMapSampler", 2));
+				dirShadow-> mRenderTarget->getDepthAttachment()->setUnit(2);
+				dirShadow->mRenderTarget->getDepthAttachment()->Bind();
 
-				shader->setMat4("lightMatrix", getLightMatrix(dirLight));
+				shader->setMat4("lightMatrix", dirShadow->getLightMatrix(dirLight->getModelMatrix()));
+				shader->setFloat("bias", dirShadow->mBias);
+				shader->setFloat("diskTightness", dirShadow->mDiskTightness);
+				shader->setFloat("pcfRadius", dirShadow->mPcfRadius);
 
 				//	������������������Ԫ���йҹ�
 				//	mvp�仯����

@@ -33,7 +33,7 @@ namespace GLframework
 			mShadowShader = std::make_shared<Shader>("shaders/shadow/shadow.vert", "shaders/shadow/shadow.frag");
 			mPhongShadowShader = std::make_shared<Shader>("shaders/phong/phongShadow.vert", "shaders/phong/phongShadow.frag");
 
-			mShadowFBO = Framebuffer::createShadowFBO(2048,2048); 
+		
 		}
 		~Renderer(){}
 		std::shared_ptr<Shader> getShader(MaterialType type);
@@ -75,7 +75,6 @@ namespace GLframework
 		void setColorBlendState(std::shared_ptr<GLframework::Material> material);
 		void projectObject(std::shared_ptr<Object> obj);
 		void setFaceCullingState(std::shared_ptr<GLframework::Material> material);
-		glm::mat4 getLightMatrix(std::shared_ptr<DirectionalLight> dirLight);
 	private:
 		//生成多种不同的shader对象
 		//根据材质类型的不同，挑选选择哪个shader对象
@@ -98,8 +97,6 @@ namespace GLframework
 		//ops: 每一帧绘制前需要清空两个队列
 		std::vector<std::shared_ptr<Mesh>> mOpacityObjects;
 		std::vector<std::shared_ptr<Mesh>> mTransparentObjects;
-		
-	public:
-		std::shared_ptr<Framebuffer> mShadowFBO{ nullptr };
+
 	};
 }

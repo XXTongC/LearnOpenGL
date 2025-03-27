@@ -148,6 +148,8 @@
     <ClCompile Include="geometry.cpp" />
     <ClCompile Include="grassInstanceMaterial.cpp" />
     <ClCompile Include="light.cpp" />
+    <ClCompile Include="light\shadow\directionalLightShadow\directionalLightShadow.cpp" />
+    <ClCompile Include="light\shadow\shadow.cpp" />
     <ClCompile Include="material.cpp" />
     <ClCompile Include="materials\phongNormalMaterial\phongNormalMaterial.cpp" />
     <ClCompile Include="materials\phongParallaxMaterial\phongParallaxMaterial.cpp" />
@@ -200,6 +202,8 @@
     <ClInclude Include="geometry.h" />
     <ClInclude Include="grassInstanceMaterial\grassInstanceMaterial.h" />
     <ClInclude Include="light.h" />
+    <ClInclude Include="light\shadow\directionalLightShadow\directionalLightShadow.h" />
+    <ClInclude Include="light\shadow\shadow.h" />
     <ClInclude Include="material.h" />
     <ClInclude Include="materials\phongNormalMaterial\phongNormalMaterial.h" />
     <ClInclude Include="materials\phongParallaxMaterial\phongParallaxMaterial.h" />

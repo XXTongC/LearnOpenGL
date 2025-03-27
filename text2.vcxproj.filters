@@ -214,6 +214,18 @@
     <Filter Include="cppfile\GLframework\material\phongShadowMaterial">
       <UniqueIdentifier>{7961353f-5daa-4c9f-8b87-5f34645b0247}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cppfile\GLframework\light\shadow">
+      <UniqueIdentifier>{6572b7b4-76a5-42f7-b64f-56ca385218bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\light\shadow">
+      <UniqueIdentifier>{fee81cb4-20ab-49ad-a7ef-d7255e069e40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\light\shadow\directionalLightShadow">
+      <UniqueIdentifier>{a8de5d11-8136-4407-a389-fa396724b688}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\GLframework\light\shadow\directionalLightShadow">
+      <UniqueIdentifier>{1b31aabb-7f87-4376-984f-3c06ab9753ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -368,6 +380,12 @@
     </ClCompile>
     <ClCompile Include="materials\phongShadowMaterial\phongShadowMaterial.cpp">
       <Filter>cppfile\GLframework\material\phongShadowMaterial</Filter>
+    </ClCompile>
+    <ClCompile Include="light\shadow\shadow.cpp">
+      <Filter>cppfile\GLframework\light\shadow</Filter>
+    </ClCompile>
+    <ClCompile Include="light\shadow\directionalLightShadow\directionalLightShadow.cpp">
+      <Filter>cppfile\GLframework\light\shadow\directionalLightShadow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1576,6 +1594,12 @@
     </ClInclude>
     <ClInclude Include="materials\phongShadowMaterial\phongShadowMaterial.h">
       <Filter>include\GLframework\material\phongShadowMaterial</Filter>
+    </ClInclude>
+    <ClInclude Include="light\shadow\shadow.h">
+      <Filter>include\GLframework\light\shadow</Filter>
+    </ClInclude>
+    <ClInclude Include="light\shadow\directionalLightShadow\directionalLightShadow.h">
+      <Filter>include\GLframework\light\shadow\directionalLightShadow</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

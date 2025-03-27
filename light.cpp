@@ -2,6 +2,19 @@
 
 using namespace GLframework;
 
+
+
+std::shared_ptr<Shadow> Light::getShadow() const
+{
+	return mShadow;
+}
+
+void Light::setShadow(std::shared_ptr<Shadow> value)
+{
+	mShadow = std::move(value);
+}
+
+
 glm::vec3 Light::getColor() const
 {
 	return mColor;

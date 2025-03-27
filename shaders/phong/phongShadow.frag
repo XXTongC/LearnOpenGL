@@ -1,5 +1,8 @@
 #version 460 core
 
+#define NUM_SAMPLER 32
+#define PI 3.141592653589793
+#define PI2 6.283185307179586
 uniform float time;
 uniform sampler2D samplerGrass;
 uniform sampler2D MaskSampler;
@@ -8,6 +11,7 @@ uniform sampler2D shadowMapSampler;
 uniform vec3 ambientColor;
 //相机世界位置
 uniform vec3 cameraPosition;
+uniform float bias;
 
 //透明度设置
 uniform float opacity;
@@ -16,6 +20,7 @@ uniform float opacity;
 //text b
 uniform float part;
 uniform float shiness;
+
 
 in vec4 color;
 in vec2 uv;//2
@@ -32,7 +37,45 @@ uniform DirectionalLight directionalLight;
 #define POINT_LIGHT_NUM 4
 uniform PointLight pointLights[POINT_LIGHT_NUM];
 
-float calculateShadow()
+vec2 disk[NUM_SAMPLER];
+uniform float diskTightness;
+uniform float pcfRadius;
+float rand_2to1(vec2 uv)
+{
+	const highp float a = 12.9898, b = 78.233, c = 43758.5453;
+	highp float dt = dot( uv.xy, vec2( a,b ) ), sn = mod( dt, PI );
+	return fract(sin(sn) * c);
+}
+
+void poissonDiskSampler(vec2 randomSeed){
+	//	1. 初始弧度
+	float angle = rand_2to1(randomSeed) * PI2;
+	//	2. 初始半径
+	float radius = 1.0 / float(NUM_SAMPLER);
+	//	3. 弧度步长
+	float angleStep = 3.883222077450933;
+	//	4. 半径步长
+	float radiusStep = radius;
+	//	5. 循环生成
+	for(int i = 0;i<NUM_SAMPLER;++i)
+	{
+		disk[i] = vec2(cos(angle),sin(angle)) * pow(radius,diskTightness);
+		angle += angleStep;
+		radius += radiusStep;
+	}
+}
+
+
+
+float getBias(vec3 normal,vec3 lightDir)
+{
+	vec3 normalN = normalize(normal);
+	vec3 lightDirN = normalize(lightDir);
+
+	return max(bias * (1- dot(lightDirN,normalN)),0.0005);
+}
+
+float calculateShadow(vec3 normal,vec3 lightDir)
 {
     //  1. 找到当前像素在光源空间内的NDC坐标
     vec3 lightNDC = lightSpaceClipCoord.xyz/lightSpaceClipCoord.w;
@@ -46,9 +89,11 @@ float calculateShadow()
 
     //  4. 对比当前像素在光源空间内的深度值与ClosestDepth的大小
     float selfDepth = projectCoord.z;
-    float shadow = selfDepth>ClosestDepth?1.0f:0.0f;
+    float shadow = (selfDepth - getBias(normal,lightDir)) > ClosestDepth?1.0f:0.0f;
     return shadow;
 }
+
+float pcf(vec3 normal,vec3 lightDir);
 
 void main()
 {
@@ -69,7 +114,7 @@ void main()
 		res += calculatePointLight(pointLights[i],normal,viewDir);
 	}
 
-    float shadow = calculateShadow();
+    float shadow = pcf(normal,-directionalLight.direction);
 	vec3 finalColor = res * (1.0 - shadow) + ambientColor;
 
 	/*
@@ -81,3 +126,36 @@ void main()
 	//FragColor = vec4(texture(shadowMapSampler,uv).xyz,alpha * opacity);
 
 }
+
+float pcf(vec3 normal,vec3 lightDir)
+{
+	vec3 lightNDC = lightSpaceClipCoord.xyz/lightSpaceClipCoord.w;
+
+	vec3 lightProjectCoord = lightNDC * 0.5 +0.5;
+	vec2 texelSize = 1.0f/textureSize(shadowMapSampler,0);
+	vec2 uv = lightProjectCoord.xy;
+	float depth = lightProjectCoord.z;
+	poissonDiskSampler(uv);
+	float sum = 0.0;
+	
+	for(int i = 0;i<NUM_SAMPLER;++i)
+	{
+		float closestDepth = texture(shadowMapSampler,uv + disk[i] * pcfRadius).r;
+		sum += (closestDepth<(depth - getBias(normal,lightDir))?1.0f:0.0f);
+	}
+	
+	/*
+	for(int x = -1;x<=1;++x)
+	{
+		for(int y = -1;y<=1;++y)
+		{
+			float closestDepth = texture(shadowMapSampler,uv + vec2(x,y) * texelSize).r;
+			sum += (closestDepth<(depth - getBias(normal,lightDir))?1.0f:0.0f);
+		}
+	}
+	*/
+	//return sum/9.0;
+	return sum/NUM_SAMPLER;
+}
+
+

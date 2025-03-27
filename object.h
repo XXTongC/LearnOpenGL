@@ -18,7 +18,7 @@ namespace GLframework
 		Object(glm::vec3 position = glm::vec3{0.0f}, float anglex= 0.0f, float angley = 0.0f, float anglez = 0.0f, glm::vec3 scale =glm::vec3{1.0f},ObjectType object = ObjectType::Object)
 			:mPosition(position),mAngleX(anglex),mAngleY(angley),mAngleZ(anglez),mScale(scale),mType(object)
 		{}
-		~Object()
+		virtual ~Object()
 		{
 			std::cout << "object destroy" << std::endl;
 		}
