@@ -14,7 +14,7 @@ namespace GLframework
 		float mBias{ 0.0003f };
 		float mPcfRadius{ 0.1f };
 		float mDiskTightness{ 1.0f };
-
+		float mLightSize{ 0.04f };
 
 
 	public:

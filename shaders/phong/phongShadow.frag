@@ -20,6 +20,10 @@ uniform float opacity;
 //text b
 uniform float part;
 uniform float shiness;
+// PCSS relative
+uniform float lightSize;
+uniform float frustum;
+uniform float nearPlane;
 
 
 in vec4 color;
@@ -27,6 +31,7 @@ in vec2 uv;//2
 in vec3 normal;
 in vec3 worldPosition;
 in vec4 lightSpaceClipCoord;
+in vec3 lightSpacePosition;
 
 out vec4 FragColor;
 
@@ -93,7 +98,30 @@ float calculateShadow(vec3 normal,vec3 lightDir)
     return shadow;
 }
 
-float pcf(vec3 normal,vec3 lightDir);
+float pcf(vec3 normal,vec3 lightDir, float pcfUVRadius);
+float findBlocker(vec3 lightSpacePosition, vec2 shadowUV, float depthReceiver, vec3 normal, vec3 lightDir)
+{
+	poissonDiskSampler(shadowUV);
+	
+	float searchRadius = (-lightSpacePosition.z - nearPlane) / (-lightSpacePosition.z) * lightSize;
+	float searchRadiusUV = searchRadius / frustum;
+
+	int blockNum = 0;
+	float blockSumDepth = 0.0f;
+	for(int i = 0;i<NUM_SAMPLER;++i)
+	{
+		float samplerDepth = texture(shadowMapSampler,shadowUV + disk[i] * searchRadiusUV).r;
+		if(depthReceiver - getBias(normal,lightDir)>samplerDepth)
+		{
+			++blockNum;
+			blockSumDepth += samplerDepth;
+		}
+	}
+	return blockNum!=0?blockSumDepth / blockNum:-1.0;
+
+}
+
+float pcss(vec3 lightSpacePosition, vec4 lightSpaceClipCoord, vec3 normal,vec3 lightDir);
 
 void main()
 {
@@ -114,7 +142,7 @@ void main()
 		res += calculatePointLight(pointLights[i],normal,viewDir);
 	}
 
-    float shadow = pcf(normal,-directionalLight.direction);
+    float shadow = pcss(lightSpacePosition,lightSpaceClipCoord,normal,-directionalLight.direction);
 	vec3 finalColor = res * (1.0 - shadow) + ambientColor;
 
 	/*
@@ -122,12 +150,16 @@ void main()
 	float depth = 2.0f * near / (far + near - Zndc * (far - near));
 	finalColor = vec3(depth,depth,depth);
 	*/
+	//---text---
+
+	//----------
+	
 	FragColor = vec4(finalColor,alpha * opacity);
 	//FragColor = vec4(texture(shadowMapSampler,uv).xyz,alpha * opacity);
 
 }
 
-float pcf(vec3 normal,vec3 lightDir)
+float pcf(vec3 normal,vec3 lightDir, float pcfUVRadius)
 {
 	vec3 lightNDC = lightSpaceClipCoord.xyz/lightSpaceClipCoord.w;
 
@@ -140,22 +172,28 @@ float pcf(vec3 normal,vec3 lightDir)
 	
 	for(int i = 0;i<NUM_SAMPLER;++i)
 	{
-		float closestDepth = texture(shadowMapSampler,uv + disk[i] * pcfRadius).r;
+		float closestDepth = texture(shadowMapSampler,uv + disk[i] * pcfUVRadius).r;
 		sum += (closestDepth<(depth - getBias(normal,lightDir))?1.0f:0.0f);
 	}
 	
-	/*
-	for(int x = -1;x<=1;++x)
-	{
-		for(int y = -1;y<=1;++y)
-		{
-			float closestDepth = texture(shadowMapSampler,uv + vec2(x,y) * texelSize).r;
-			sum += (closestDepth<(depth - getBias(normal,lightDir))?1.0f:0.0f);
-		}
-	}
-	*/
-	//return sum/9.0;
 	return sum/NUM_SAMPLER;
 }
 
+float pcss(vec3 lightSpacePosition, vec4 lightSpaceClipCoord, vec3 normal,vec3 lightDir)
+{
+	// 	1. 获取当前像素在ShadowMap下的uv以及在光源坐标系中的深度值
+	vec3 lightNDC = lightSpaceClipCoord.xyz/lightSpaceClipCoord.w;
+	vec3 lightProjectCoord = lightNDC * 0.5 +0.5;
+	vec2 texelSize = 1.0f/textureSize(shadowMapSampler,0);
+	vec2 uv = lightProjectCoord.xy;
+	float depth = lightProjectCoord.z;
 
+	// 	2. 计算dBlock
+	float dBlocker = findBlocker(lightSpacePosition,uv,depth,normal,-directionalLight.direction);
+
+	// 	3. 计算penumbra
+	float penumbra = ((depth - dBlocker) / dBlocker) * (lightSize / frustum);
+
+	//	4. 计算pcfRadius
+	return pcf(normal, lightDir, penumbra * pcfRadius);
+}

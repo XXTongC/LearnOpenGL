@@ -440,7 +440,6 @@ void Renderer::renderObject(
 
 				//-----------------------
 
-		
 				//	diffuse
 				GL_CALL(shader->setInt("samplerGrass", phongMat->mDiffuse->getUnit()));
 				phongMat->mDiffuse->Bind();
@@ -452,6 +451,14 @@ void Renderer::renderObject(
 				GL_CALL(shader->setInt("shadowMapSampler", 2));
 				dirShadow-> mRenderTarget->getDepthAttachment()->setUnit(2);
 				dirShadow->mRenderTarget->getDepthAttachment()->Bind();
+
+				//	PCSS
+				shader->setFloat("lightSize", dirShadow->mLightSize);
+				shader->setMat4("lightViewMatrix", glm::inverse(dirLight->getModelMatrix()));
+				//	frustum & nearPlane
+				std::shared_ptr<OrthographicCamera> aCamera = std::static_pointer_cast<OrthographicCamera>(dirShadow->mCamera);
+				shader->setFloat("frustum", aCamera->mR - aCamera->mL);
+				shader->setFloat("nearPlane", aCamera->mNear);
 
 				shader->setMat4("lightMatrix", dirShadow->getLightMatrix(dirLight->getModelMatrix()));
 				shader->setFloat("bias", dirShadow->mBias);

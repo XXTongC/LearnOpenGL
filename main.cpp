@@ -104,7 +104,14 @@ std::string TexturePath{ "Texture/bk.jpg" };
 void prepareSkyBox();
 //---------------
 
+//--------text--------
+std::shared_ptr<GLframework::Mesh> movePlane = nullptr;
+void moveit()
+{
+	movePlane->setPosition({ 0.0f,(glm::sin(glfwGetTime()) + 1) * 5,0.0f });
+}
 
+//--------------------
 #pragma region solorsystem
 
 auto roundForAll = std::make_shared<GLframework::Object>();
@@ -156,6 +163,7 @@ int main()
 		cameracontrol->update();
 		renderer->setClearColor(clearColor);
 		rotatePlant();
+		moveit();
 		//pass 1: ��box��Ⱦ��colorAttachment�ϣ��µ�fob��
 		renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights,ambientLight, framebuffer->getFBO());
 		//pass 2: ��colorAttachment��Ϊ��������Ƶ�������Ļ��
@@ -376,17 +384,18 @@ void prepare()
 	mat2 = std::make_shared<GLframework::PhongShadowMaterial>();
 	mat2->mDiffuse = std::make_shared < GLframework::Texture >("Texture/box.png", 0, GL_SRGB_ALPHA);
 	//mat2->mDiffuse = renderer->mShadowFBO->getDepthAttachment();
-	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(mat2->getMaterialType()), 1.0, 1.0, 1.0);
-	auto meshbox = std::make_shared<GLframework::Mesh>(boxGeo, mat2);
-	meshbox->setPosition({ 0.0f,0.5f,0.0f });
-	sceneOffScreen->addChild(meshbox);
+	auto boxGeo = GLframework::Geometry::createPlane(renderer->getShader(mat2->getMaterialType()), 1.0, 1.0);
+	movePlane = std::make_shared<GLframework::Mesh>(boxGeo, mat2);
+	movePlane->setPosition({ 0.0f,0.0f,0.0f });
+	movePlane->rotateX(-90);
+	sceneOffScreen->addChild(movePlane);
 
 	auto parallaxMat = std::make_shared<GLframework::PhongShadowMaterial>();
 	parallaxMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/parallax/bricks.jpg",0,GL_SRGB_ALPHA);
 	//parallaxMat->mNormal = std::make_shared<GLframework::Texture>("Texture/parallax/bricks_normal.jpg", 2);
 	//parallaxMat->mParallaxMap = std::make_shared<GLframework::Texture>("Texture/parallax/disp.jpg", 3);
 	auto planeGe = GLframework::Geometry::createPlane(renderer->getShader(parallaxMat->getMaterialType()),10,10);
-	auto planeMesh = std::make_shared<GLframework::Mesh>(planeGe, mat2);
+	auto planeMesh = std::make_shared<GLframework::Mesh>(planeGe, parallaxMat);
 	planeMesh->rotateX(-90);
 	sceneOffScreen->addChild(planeMesh);
 	
@@ -433,9 +442,11 @@ void prepare()
 	spotLight	->	setColor(glm::vec3{0.0f});
 
 	dirLight	= std::make_shared<GLframework::DirectionalLight>();
-	dirLight->setPosition(glm::vec3(3.0f, 3.0f, 3.0f));
-	dirLight	->	rotateY(45.0f);
-	dirLight	->	rotateX(-45.0f);
+	dirLight->setPosition(glm::vec3(0.0f, 11.0f, 0.0f));
+	//dirLight	->	rotateY(45.0f);
+	//dirLight	->	rotateX(-45.0f);
+	dirLight	->	rotateX(-90.0f);
+
 	dirLight	->	setColor({ 0.8f,0.8f,0.9f });
 	dirLight	->	setSpecularIntensity(0.5f);
 
@@ -526,9 +537,9 @@ void renderIMGUI()
 	if(ImGui::SliderInt("FBO width:" , &width,1,4096)|| ImGui::SliderInt("FBO height:", &height, 1, 4096))
 	{
 		dirLight->getShadow()->setRenderTargetSize(width, height);
-	
-
 	}
+	ImGui::SliderFloat("lightSize", &dirLight->getShadow()->mLightSize, 0.0f, 10.0f);
+
 
 	//ImGui::SliderFloat("Parallax Scale", &parallaxMat->mHeightScale, 0.0f, 1.0f);
 	//ImGui::SliderInt("layerNumber",&parallaxMat->mLayerNum, 1, 10000);

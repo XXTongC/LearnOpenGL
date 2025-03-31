@@ -27,7 +27,6 @@ struct SpotLight
 	float innerLine;
 	float specularIntensity;
 };
-
 vec3 calculateDiffuse(vec3 lightColor,vec3 objectColor,vec3 lightDir,vec3 normal)
 {
 	//计算diffuse
@@ -58,7 +57,6 @@ vec3 calculateSpecular(vec3 lightColor,vec3 lightDir,vec3 normal,vec3 viewDir,fl
 
 	return specularColor;
 }
-
 vec3 calculateSpotLight(SpotLight light,vec3 normal,vec3 viewDir)
 {
 	vec3 objectColor = texture(samplerGrass,uv).xyz;
@@ -75,7 +73,6 @@ vec3 calculateSpotLight(SpotLight light,vec3 normal,vec3 viewDir)
 
 	return (diffuseColor + specularColor ) * intensity;
 }
-
 vec3 calculateDirectionalLight(DirectionalLight light, vec3 normal,vec3 viewDir)
 {
 	light.color *= light.intensity;
@@ -87,7 +84,6 @@ vec3 calculateDirectionalLight(DirectionalLight light, vec3 normal,vec3 viewDir)
 
 	return diffuseColor + specularColor;
 }
-
 vec3 calculatePointLight(PointLight light, vec3 normal,vec3 viewDir)
 {
 	vec3 objectColor = texture(samplerGrass,uv).xyz;

@@ -6,6 +6,7 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat3 normalMatrix;
+uniform mat4 lightViewMatrix;
 uniform mat4 lightMatrix;   //lightProject * lightView
 
 
@@ -18,7 +19,7 @@ out vec2 uv;
 out vec3 normal;
 out vec3 worldPosition;
 out vec4 lightSpaceClipCoord;    //光源空间内的剪裁空间坐标
-
+out vec3 lightSpacePosition;
 /* 如果在shader计算中需要一些不变量，最好在shader外计算好再传入
  * shader中，否则每个像素都进行这样计算将是十分消耗性能的
 */
@@ -36,5 +37,6 @@ void main()
 	uv = aUV;
 	normal = normalMatrix * normalize(aNormal);
 
+	lightSpacePosition = (lightViewMatrix * transformPosition).xyz;
     lightSpaceClipCoord = lightMatrix * transformPosition;
 }
