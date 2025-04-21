@@ -148,11 +148,15 @@
     <ClCompile Include="geometry.cpp" />
     <ClCompile Include="grassInstanceMaterial.cpp" />
     <ClCompile Include="light.cpp" />
+    <ClCompile Include="light\shadow\directionalLightCSMShadow\directionalLightCSMShadow.cpp" />
     <ClCompile Include="light\shadow\directionalLightShadow\directionalLightShadow.cpp" />
+    <ClCompile Include="light\shadow\pointLightShadow\pointLightShadow.cpp" />
     <ClCompile Include="light\shadow\shadow.cpp" />
     <ClCompile Include="material.cpp" />
+    <ClCompile Include="materials\phongCSMShadowMaterial\phongCSMShadowMaterial.cpp" />
     <ClCompile Include="materials\phongNormalMaterial\phongNormalMaterial.cpp" />
     <ClCompile Include="materials\phongParallaxMaterial\phongParallaxMaterial.cpp" />
+    <ClCompile Include="materials\phongPointShadowMaterial\phongPointShadowMaterial.cpp" />
     <ClCompile Include="materials\phongShadowMaterial\phongShadowMaterial.cpp" />
     <ClCompile Include="mesh\instancedMesh.cpp" />
     <ClCompile Include="mesh\mesh.cpp" />
@@ -182,7 +186,7 @@
     <ClCompile Include="third_party\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="third_party\imgui\imgui_tables.cpp" />
     <ClCompile Include="third_party\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="tools.cpp" />
+    <ClCompile Include="tools\tools.cpp" />
     <ClCompile Include="trackBallCameraControl.cpp" />
     <ClCompile Include="whiteMaterial.cpp" />
   </ItemGroup>
@@ -202,11 +206,15 @@
     <ClInclude Include="geometry.h" />
     <ClInclude Include="grassInstanceMaterial\grassInstanceMaterial.h" />
     <ClInclude Include="light.h" />
+    <ClInclude Include="light\shadow\directionalLightCSMShadow\directionalLightCSMShadow.h" />
     <ClInclude Include="light\shadow\directionalLightShadow\directionalLightShadow.h" />
+    <ClInclude Include="light\shadow\pointLightShadow\pointLightShadow.h" />
     <ClInclude Include="light\shadow\shadow.h" />
     <ClInclude Include="material.h" />
+    <ClInclude Include="materials\phongCSMShadowMaterial\phongCSMShadowMaterial.h" />
     <ClInclude Include="materials\phongNormalMaterial\phongNormalMaterial.h" />
     <ClInclude Include="materials\phongParallaxMaterial\phongParallaxMaterial.h" />
+    <ClInclude Include="materials\phongPointShadowMaterial\phongPointShadowMaterial.h" />
     <ClInclude Include="materials\phongShadowMaterial\phongShadowMaterial.h" />
     <ClInclude Include="mesh\instancedMesh.h" />
     <ClInclude Include="mesh\mesh.h" />
@@ -588,7 +596,8 @@
     <ClInclude Include="third_party\imgui\imstb_rectpack.h" />
     <ClInclude Include="third_party\imgui\imstb_textedit.h" />
     <ClInclude Include="third_party\imgui\imstb_truetype.h" />
-    <ClInclude Include="tools.h" />
+    <ClInclude Include="tools\ScreenShot.h" />
+    <ClInclude Include="tools\tools.h" />
     <ClInclude Include="trackBallCameraControl.h" />
     <ClInclude Include="whiteMaterial.h" />
   </ItemGroup>
@@ -611,6 +620,8 @@
     <None Include="shaders\opacityMask\phongOpacityMask.frag" />
     <None Include="shaders\opacityMask\phongOpacityMask.vert" />
     <None Include="shaders\phong.vert" />
+    <None Include="shaders\phongCSMShadow\phongCSMShadow.frag" />
+    <None Include="shaders\phongCSMShadow\phongCSMShadow.vert" />
     <None Include="shaders\phongEnv\phongEnv.frag" />
     <None Include="shaders\phongEnv\phongEnv.vert" />
     <None Include="shaders\phongEnv\phongEnvSphere.frag" />

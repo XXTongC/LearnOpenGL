@@ -6,7 +6,7 @@
 #include <typeinfo>
 #include "GL_ERROR_FIND.h"
 #include "Application.h"
-#include "tools.h"
+#include "tools/tools.h"
 #include "shader.h"
 #include "texture.h"
 #include "perspectivecamera.h"
@@ -26,7 +26,11 @@
 #include "cubeSphereMaterial.h"
 #include "materials/grassInstanceMaterial/grassInstanceMaterial.h"
 #include "materials/phongParallaxMaterial/phongParallaxMaterial.h"
+#include "materials/phongCSMShadowMaterial/phongCSMShadowMaterial.h"
+#include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
+#include "light/shadow/pointLightShadow/pointLightShadow.h"
 #include "materials/phongShadowMaterial/phongShadowMaterial.h"
+#include "materials/phongCSMShadowMaterial/phongCSMShadowMaterial.h"
 
 #include "depthMaterial.h"
 #include "whiteMaterial.h"
@@ -42,7 +46,8 @@
 #include "third_party/imgui/imgui_impl_opengl3.h"
 #include "assimpLoader.h"
 #include "phongEnvMaterial.h"
-
+#include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
+int GLframework::PointLightShadow::MAX_POINT_LIGHTS = 2;
 /*
  * refer to ColorBlend, there are still some problem should be solve such as opacity order, look up OIT and Depth Peeling
 */
@@ -136,10 +141,11 @@ std::shared_ptr < GLframework::SpotLight> spotLight = nullptr;
 std::vector<std::shared_ptr<GLframework::PointLight>> pointLights{};
 float specularIntensity = 0.8f;
 
-std::shared_ptr<GLframework::PhongShadowMaterial> mat2{nullptr};
+std::shared_ptr<GLframework::PhongCSMShadowMaterial> mat2{nullptr};
 
 int main()
 {
+
 	std::cout << "Please set the window as x * y" << std::endl;
 	//std::cin >> width >> height;
 	//��ʼ��GLFW����
@@ -163,7 +169,7 @@ int main()
 		cameracontrol->update();
 		renderer->setClearColor(clearColor);
 		rotatePlant();
-		moveit();
+		//moveit();
 		//pass 1: ��box��Ⱦ��colorAttachment�ϣ��µ�fob��
 		renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights,ambientLight, framebuffer->getFBO());
 		//pass 2: ��colorAttachment��Ϊ��������Ƶ�������Ļ��
@@ -203,6 +209,8 @@ void prepare()
 	sceneInScreen = std::make_shared<GLframework::Scene>();
 	sceneOffScreen = std::make_shared<GLframework::Scene>();
 	framebuffer = std::make_shared<GLframework::Framebuffer>(width, height);
+	GLframework::PointLightShadow::initializeSharedDepthTexture(1024, 1024, 2); // 假设最多支持1个点光源
+
 
 	//----------
 #pragma region solorsystem
@@ -380,8 +388,8 @@ void prepare()
 	sceneOffScreen->addChild(earthNMesh);
 */
 #pragma endregion
-
-	mat2 = std::make_shared<GLframework::PhongShadowMaterial>();
+	/*
+	mat2 = std::make_shared<GLframework::PhongCSMShadowMaterial>();
 	mat2->mDiffuse = std::make_shared < GLframework::Texture >("Texture/box.png", 0, GL_SRGB_ALPHA);
 	//mat2->mDiffuse = renderer->mShadowFBO->getDepthAttachment();
 	auto boxGeo = GLframework::Geometry::createPlane(renderer->getShader(mat2->getMaterialType()), 1.0, 1.0);
@@ -390,7 +398,7 @@ void prepare()
 	movePlane->rotateX(-90);
 	sceneOffScreen->addChild(movePlane);
 
-	auto parallaxMat = std::make_shared<GLframework::PhongShadowMaterial>();
+	auto parallaxMat = std::make_shared<GLframework::PhongCSMShadowMaterial>();
 	parallaxMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/parallax/bricks.jpg",0,GL_SRGB_ALPHA);
 	//parallaxMat->mNormal = std::make_shared<GLframework::Texture>("Texture/parallax/bricks_normal.jpg", 2);
 	//parallaxMat->mParallaxMap = std::make_shared<GLframework::Texture>("Texture/parallax/disp.jpg", 3);
@@ -398,12 +406,39 @@ void prepare()
 	auto planeMesh = std::make_shared<GLframework::Mesh>(planeGe, parallaxMat);
 	planeMesh->rotateX(-90);
 	sceneOffScreen->addChild(planeMesh);
+	*/
+
+	//----------------text
+
 	
 
+	// 添加地面
+	auto groundMat = std::make_shared<GLframework::PhongPointShadowMaterial>();
+	groundMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/land.jpg", 0, GL_SRGB_ALPHA);
+	auto groundGeo = GLframework::Geometry::createPlane(renderer->getShader(groundMat->getMaterialType()), 20.0, 20.0);
+	auto groundMesh = std::make_shared<GLframework::Mesh>(groundGeo, groundMat);
+	groundMesh->rotateX(-90);
+	groundMesh->setPosition({ 0, -2, 0 });
+	sceneOffScreen->addChild(groundMesh);
 
-	
+	// 添加几个立方体
+	auto boxMat = std::make_shared<GLframework::PhongPointShadowMaterial>();
+	boxMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/box.png", 0, GL_SRGB_ALPHA);
+	for (int i = 0; i < 5; ++i) {
+		auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(boxMat->getMaterialType()), 1.0f, 1.0f, 1.0f);
+		auto boxMesh = std::make_shared<GLframework::Mesh>(boxGeo, boxMat);
+		boxMesh->setPosition({ float(i) * 2.0f - 4.0f, 0, 0 });
+		sceneOffScreen->addChild(boxMesh);
+	}
+	//-----------------------
+	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(boxMat->getMaterialType()), 1.0f, 1.0f, 1.0f);
+	auto boxMesh = std::make_shared<GLframework::Mesh>(boxGeo, boxMat);
+	boxMesh->setPosition({ 0.0, 0, 1.0 });
+	sceneOffScreen->addChild(boxMesh);
+
 	
 	/*
+	
 	auto boxCulling = std::make_shared<GLframework::WhiteMaterial>();
 	boxCulling->setPreStencilPreSettingType(GLframework::PreStencilType::Outlining);
 	auto boxCullingGeo = GLframework::Geometry::createBox(renderer->getShader(boxCulling->getMaterialType()), 1.0f, 1.0f, 1.0f);
@@ -443,13 +478,12 @@ void prepare()
 
 	dirLight	= std::make_shared<GLframework::DirectionalLight>();
 	dirLight->setPosition(glm::vec3(0.0f, 11.0f, 0.0f));
-	//dirLight	->	rotateY(45.0f);
-	//dirLight	->	rotateX(-45.0f);
-	dirLight	->	rotateX(-90.0f);
+	dirLight->rotateX(-45.0f);
+	dirLight->rotateY(45.0f);
 
-	dirLight	->	setColor({ 0.8f,0.8f,0.9f });
+	dirLight	->	setColor({ 0.0f,0.0f,0.0f });
 	dirLight	->	setSpecularIntensity(0.5f);
-
+	/*
 	auto pointLight1 = std::make_shared<GLframework::PointLight>();
 	pointLight1	->	setSpecularIntensity(0.01f);
 	pointLight1	->	setK(0.017f, 0.07f, 1.0f);
@@ -477,10 +511,48 @@ void prepare()
 	pointLight4	->	setColor(glm::vec3(0.0f));
 	pointLight4	->	setPosition(glm::vec3(0.0f, 0.0f, 1.5f));
 	pointLights.push_back(std::move(pointLight4));
+	*/
 	ambientLight	 = std::make_shared<GLframework::AmbientLight>();
-	ambientLight->	setColor(glm::vec3(0.3f));
+	ambientLight->	setColor(glm::vec3(0.0f));
+	
+	for (int i = 0; i < 2; ++i) {
+		auto pointLight = std::make_shared<GLframework::PointLight>();
+		pointLight->setSpecularIntensity(0.9f);
+		pointLight->setK(0.0f, 0.0f, 1.0f); // 减少衰减
+		
 
+		// 设置点光源位置
+		float angle = i * (2 * glm::pi<float>() / 4);
+		float radius = 5.0f;
+		float x = cos(angle) * radius;
+		float z = sin(angle) * radius;
+		if(i==0)
+		{
+			pointLight->setPosition(glm::vec3(3.0, 6.0f, 10.0));
+			pointLight->setColor(glm::vec3(1.0f, 1.0f, 1.0f));
+		}
+		if (i == 1)
+		{
+			pointLight->setPosition(glm::vec3(-3.0, 6.0f, 10.0));
+			pointLight->setColor(glm::vec3(1.0f, 1.0f, 1.0f));
+		}
+		pointLights.push_back(std::move(pointLight));
+	}
+	GLframework::PointLightShadow::setMAX_POINT_LIGHT(pointLights.size());
 
+	/*
+	 *
+	 *
+Depth range for light 0, face 0: 0.160103 - 1
+Depth range for light 0, face 1: 0.160103 - 1
+Depth range for light 0, face 2: 1 - 1
+Depth range for light 0, face 3: 0.0777936 - 0.195861
+Depth range for light 0, face 4: 0.160103 - 1
+Depth range for light 0, face 5: 0.160103 - 1
+	 *
+	 *
+	 */
+	/*
 	auto textplan = std::make_shared<GLframework::PhongMaterial>();
 	dirLight->getShadow()->mRenderTarget->getDepthAttachment()->setUnit(2);
 	textplan->mDiffuse = dirLight->getShadow()->mRenderTarget->getDepthAttachment();
@@ -489,9 +561,8 @@ void prepare()
 	auto meshit = std::make_shared<GLframework::Mesh>(textGeo, textplan);
 	meshit->setPosition({ 3.0f,1.0f,0.0f });
 	sceneOffScreen->addChild(meshit);
-
+	*/
 }
-
 
 bool setAndInitWindow(int width, int height)
 {
@@ -505,8 +576,6 @@ bool setAndInitWindow(int width, int height)
 	//glClearDepth(0.0);
 	return true;
 }
-
-
 
 void prepareState()
 {
@@ -524,14 +593,15 @@ void renderIMGUI()
 	// 2. setting ImGui UI
 	
 	ImGui::Begin("controller");
+	
 	auto pos = dirLight->getPosition();
 	if(ImGui::SliderFloat("light.x", &pos.x, 0.0f, 50.f, "%.2f"))
 	{
 		dirLight->setPosition(pos);
-	}
+	} 
 	ImGui::SliderFloat("tightness", &dirLight->getShadow()->mDiskTightness, 0.0f, 1.0f,"%.3f");
 	ImGui::SliderFloat("pcfRadius", &dirLight->getShadow()->mPcfRadius, 0.0f, 0.1f, "%.6f");
-
+	/*
 	int width = dirLight->getShadow()->mRenderTarget->getWidth();
 	int height = dirLight->getShadow()->mRenderTarget->getHeight();
 	if(ImGui::SliderInt("FBO width:" , &width,1,4096)|| ImGui::SliderInt("FBO height:", &height, 1, 4096))
@@ -539,8 +609,12 @@ void renderIMGUI()
 		dirLight->getShadow()->setRenderTargetSize(width, height);
 	}
 	ImGui::SliderFloat("lightSize", &dirLight->getShadow()->mLightSize, 0.0f, 10.0f);
-
-
+	float h = movePlane->getPosition().y;
+	if(ImGui::SliderFloat("plane H",&h,1,10))
+	{
+		movePlane->setPosition({ 0.0f,h,0.0f });
+	}
+	*/
 	//ImGui::SliderFloat("Parallax Scale", &parallaxMat->mHeightScale, 0.0f, 1.0f);
 	//ImGui::SliderInt("layerNumber",&parallaxMat->mLayerNum, 1, 10000);
 
@@ -567,8 +641,9 @@ void renderIMGUI()
 	
 
 	ImGui::ColorEdit3("Clear Color",(float *)(&clearColor));
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	*/
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	
 	ImGui::End();
 
 	// 3. ִ��UI��Ⱦ
@@ -591,7 +666,7 @@ void prepareCamera()
 	//float size = 10.0f;
 	//camera = new OrthographicCamera(-size,size,size,-size,size,-size);
 	
-	cameracontrol = new TrackBallCameraControl();
+	cameracontrol = new GameCameraControl();
 	cameracontrol->setCamera(camera);
 }
 

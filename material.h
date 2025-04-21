@@ -19,6 +19,8 @@ namespace GLframework
 		GrassInstanceMaterial,
 		PhongParallaxMaterial,
 		PhongShadowMaterial,
+		PhongCSMShadowMaterial,
+		PhongPointShadowMaterial,
 	};
 
 	enum class PreStencilType
@@ -32,7 +34,7 @@ namespace GLframework
 	{
 	public:
 		Material(){}
-		~Material(){}
+		virtual ~Material(){}
 		MaterialType getMaterialType() const;
 		void setMaterialType(MaterialType type);
 		void setDepthTest(bool value);

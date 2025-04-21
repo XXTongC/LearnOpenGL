@@ -22,6 +22,9 @@ public:
 	~PerspectiveCamera();
 	void setFovy(float value);
 	void setAspect(float value);
+	float getFovy() const;
+	float getAspect()const;
+
 	glm::mat4 getProjectionMatrix() const override;
 	void scale(float deltaScale) override;
 public:

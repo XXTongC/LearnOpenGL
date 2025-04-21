@@ -24,7 +24,7 @@ namespace GLframework
 		void setIntensity(float value);
 		void setColor(glm::vec3 value);
 		void setSpecularIntensity(float value);
-		void setShadow(std::shared_ptr<Shadow> value);
+		virtual void setShadow(std::shared_ptr<Shadow> value);
 	private:
 		glm::vec3 mColor{ 1.0f };
 		float mSpecularIntensity{ 1.0f };

@@ -1,5 +1,5 @@
 ﻿#include "assimpLoader.h"
-#include "tools.h"
+#include "tools/tools.h"
 #include "phongMaterial.h"
 using namespace GLframework;
 using namespace GL_APPLICATION;

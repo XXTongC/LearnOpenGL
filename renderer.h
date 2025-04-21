@@ -17,6 +17,7 @@ namespace GLframework
 	public:
 		Renderer()
 		{
+			
 			mPhongShader =  std::make_shared<Shader>("shaders/phong/phong_V2.vert","shaders/phong/phong_V2.frag");
 			mWhiteShader =  std::make_shared<Shader>("shaders/white/white.vert","shaders/white/white.frag");
 			mDepthShader = std::make_shared<Shader>("shaders/depth/depth.vert", "shaders/depth/depth.frag");
@@ -32,8 +33,12 @@ namespace GLframework
 			mPhongParallaxShader = std::make_shared<Shader>("shaders/phongParallax/phongParallax_V2.vert", "shaders/phongParallax/phongParallax_V2.frag");
 			mShadowShader = std::make_shared<Shader>("shaders/shadow/shadow.vert", "shaders/shadow/shadow.frag");
 			mPhongShadowShader = std::make_shared<Shader>("shaders/phong/phongShadow.vert", "shaders/phong/phongShadow.frag");
-
-		
+			mPhongCSMShadowShader = std::make_shared<Shader>("shaders/phongCSMShadow/phongCSMShadow.vert", "shaders/phongCSMShadow/phongCSMShadow.frag");
+			
+			mPhongPointShadowShader = std::make_shared<Shader>("shaders/phongPointShadow/phongPointShadow.vert", "shaders/phongPointShadow/phongPointShadow.frag");
+			
+			mShadowDistanceShader = std::make_shared<Shader>("shaders/shadowDistance/shadowDistance.vert", "shaders/shadowDistance/shadowDistance.frag");
+			
 		}
 		~Renderer(){}
 		std::shared_ptr<Shader> getShader(MaterialType type);
@@ -65,9 +70,20 @@ namespace GLframework
 			std::shared_ptr <GLframework::AmbientLight> ambient
 		);
 		void renderShadowMap(
+			Camera* camera,
 			const std::vector<std::shared_ptr<Mesh>>& meshes,
 			std::shared_ptr<DirectionalLight> dirLight,
-			std::shared_ptr<Framebuffer> fbo
+			std::vector<std::shared_ptr<GLframework::PointLight>> pointLights
+		);
+		void renderDirShadowMap(
+			Camera* camera,
+			const std::vector<std::shared_ptr<Mesh>>& meshes,
+			std::shared_ptr<DirectionalLight> dirLight
+		);
+		void renderPointShadowMap(
+			Camera* camera, 
+			const std::vector<std::shared_ptr<Mesh>>& meshes,
+			std::vector<std::shared_ptr<GLframework::PointLight>> pointLights
 		);
 		void setDepthState(std::shared_ptr<GLframework::Material> material);
 		void setPolygonOffsetState(std::shared_ptr<GLframework::Material> material);
@@ -93,6 +109,10 @@ namespace GLframework
 		std::shared_ptr<Shader> mPhongParallaxShader{ nullptr };
 		std::shared_ptr<Shader> mShadowShader{ nullptr };
 		std::shared_ptr<Shader> mPhongShadowShader{ nullptr };
+		std::shared_ptr<Shader> mPhongCSMShadowShader{ nullptr };
+		std::shared_ptr<Shader> mPhongPointShadowShader{ nullptr };
+		std::shared_ptr<Shader> mShadowDistanceShader{ nullptr };
+		
 		//不透明队列与透明队列
 		//ops: 每一帧绘制前需要清空两个队列
 		std::vector<std::shared_ptr<Mesh>> mOpacityObjects;

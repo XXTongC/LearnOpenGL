@@ -226,6 +226,33 @@
     <Filter Include="cppfile\GLframework\light\shadow\directionalLightShadow">
       <UniqueIdentifier>{1b31aabb-7f87-4376-984f-3c06ab9753ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cppfile\GLframework\light\shadow\directionalLightCSMShadow">
+      <UniqueIdentifier>{783f90ad-ac14-447e-910e-5881e1b63f28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\light\shadow\directionalLightCSMShadow">
+      <UniqueIdentifier>{ada52a9f-9070-4a4a-a7b5-030be6b9daec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\GLframework\material\phongCSMShadowMaterial">
+      <UniqueIdentifier>{4927fa13-92fd-48f9-bd1f-08405667bb60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\material\phongCSMShadowMaterial">
+      <UniqueIdentifier>{2602ea67-bf1e-4368-bec6-66501207ba43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shaders\phongCSMShadow">
+      <UniqueIdentifier>{e1212f55-ff35-4d4b-8b6c-cd16746ea061}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\GLframework\material\phongPointShadowMaterial">
+      <UniqueIdentifier>{bfa3a8ab-afb6-4826-8f01-f3cb91d80f1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\material\phongPointShadowMaterial">
+      <UniqueIdentifier>{fc345c03-05c5-4927-8929-a67ae9484d61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\light\shadow\pointLightShadow">
+      <UniqueIdentifier>{9629bcbb-2870-4052-a7c0-5d28545e0780}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cppfile\GLframework\light\shadow\pointLightShadow">
+      <UniqueIdentifier>{28157945-c3c2-4a2c-a80e-0ffcc046d8bd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -324,9 +351,6 @@
     <ClCompile Include="scene.cpp">
       <Filter>cppfile\GLframework</Filter>
     </ClCompile>
-    <ClCompile Include="tools.cpp">
-      <Filter>cppfile\GLframework\tools</Filter>
-    </ClCompile>
     <ClCompile Include="assimpLoader.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -386,6 +410,21 @@
     </ClCompile>
     <ClCompile Include="light\shadow\directionalLightShadow\directionalLightShadow.cpp">
       <Filter>cppfile\GLframework\light\shadow\directionalLightShadow</Filter>
+    </ClCompile>
+    <ClCompile Include="light\shadow\directionalLightCSMShadow\directionalLightCSMShadow.cpp">
+      <Filter>cppfile\GLframework\light\shadow\directionalLightCSMShadow</Filter>
+    </ClCompile>
+    <ClCompile Include="materials\phongCSMShadowMaterial\phongCSMShadowMaterial.cpp">
+      <Filter>cppfile\GLframework\material\phongCSMShadowMaterial</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\tools.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="materials\phongPointShadowMaterial\phongPointShadowMaterial.cpp">
+      <Filter>cppfile\GLframework\material\phongPointShadowMaterial</Filter>
+    </ClCompile>
+    <ClCompile Include="light\shadow\pointLightShadow\pointLightShadow.cpp">
+      <Filter>cppfile\GLframework\light\shadow\pointLightShadow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -487,9 +526,6 @@
     </ClInclude>
     <ClInclude Include="scene.h">
       <Filter>include\GLframework</Filter>
-    </ClInclude>
-    <ClInclude Include="tools.h">
-      <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="third_party\assimp\ZipArchiveIOSystem.h">
       <Filter>third_party\include\assimp</Filter>
@@ -1601,6 +1637,24 @@
     <ClInclude Include="light\shadow\directionalLightShadow\directionalLightShadow.h">
       <Filter>include\GLframework\light\shadow\directionalLightShadow</Filter>
     </ClInclude>
+    <ClInclude Include="light\shadow\directionalLightCSMShadow\directionalLightCSMShadow.h">
+      <Filter>include\GLframework\light\shadow\directionalLightCSMShadow</Filter>
+    </ClInclude>
+    <ClInclude Include="materials\phongCSMShadowMaterial\phongCSMShadowMaterial.h">
+      <Filter>include\GLframework\material\phongCSMShadowMaterial</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\tools.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="materials\phongPointShadowMaterial\phongPointShadowMaterial.h">
+      <Filter>include\GLframework\material\phongPointShadowMaterial</Filter>
+    </ClInclude>
+    <ClInclude Include="light\shadow\pointLightShadow\pointLightShadow.h">
+      <Filter>include\GLframework\light\shadow\pointLightShadow</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\ScreenShot.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="third_party\imgui\imgui.natstepfilter">
@@ -2157,6 +2211,12 @@
     </None>
     <None Include="shaders\phong\phongShadow.vert">
       <Filter>资源文件\shaders\phong</Filter>
+    </None>
+    <None Include="shaders\phongCSMShadow\phongCSMShadow.frag">
+      <Filter>资源文件\shaders\phongCSMShadow</Filter>
+    </None>
+    <None Include="shaders\phongCSMShadow\phongCSMShadow.vert">
+      <Filter>资源文件\shaders\phongCSMShadow</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

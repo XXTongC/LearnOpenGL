@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include "phongMaterial.h"
+#include "../tools/ScreenShot.h"
 #include "whiteMaterial.h"
 #include "opacityMaskMatetial.h"
 #include "phongEnvMaterial.h"
@@ -14,69 +15,26 @@
 #include "materials/phongNormalMaterial/phongNormalMaterial.h"
 #include "materials/phongShadowMaterial/phongShadowMaterial.h"
 #include "light/shadow/directionalLightShadow/directionalLightShadow.h"
+#include "../perspectivecamera.h"
+#include "light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
+#include "light/shadow/pointLightShadow/pointLightShadow.h"
+#include "materials/phongCSMShadowMaterial/phongCSMShadowMaterial.h"
+#include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
 #include "orthographiccamera.h"
 #include "../mesh/instancedMesh.h"
 #include "cubeMaterial.h"
 #include "screenMaterial.h"
 #include <algorithm>
 
+#include "tools/tools.h"
+
 using namespace GLframework;
 
 
-void Renderer::renderShadowMap(const std::vector<std::shared_ptr<Mesh>>& meshes, std::shared_ptr<DirectionalLight> dirLight, std::shared_ptr<Framebuffer> fbo)
+void Renderer::renderShadowMap(Camera* camera, const std::vector<std::shared_ptr<Mesh>>& meshes, std::shared_ptr<DirectionalLight> dirLight, std::vector<std::shared_ptr<GLframework::PointLight>> pointLights )
 {
-	//	1. make sure that the current draw is not a postProcessPass draw, if it is, then the render is not performed
-	bool isPostProcessPass = true;
-	for(auto& mesh : meshes)
-	{
-		if(mesh->getMaterial()->getMaterialType()!=GLframework::MaterialType::ScreenMaterial)
-		{
-			isPostProcessPass = false;
-			break;
-		}
-	}
-	if (isPostProcessPass) return;
-
-	//	2. save the original state, after drawing shadowmap, to restore the original state
-	GLint preFbo;
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &preFbo);
-
-	GLint preViewPort[4];
-	glGetIntegerv(GL_VIEWPORT, preViewPort);
-
-	//	3. set the state required when ShadowPass is drawn
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-	glDepthMask(GL_TRUE);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo->getFBO());
-	glViewport(0, 0, fbo->getWidth(), fbo->getHeight());
-
-
-	//	4. start drawing
-	glClear(GL_DEPTH_BUFFER_BIT);
-	auto lightMatrix = std::static_pointer_cast<DirectionalLightShadow>( dirLight->getShadow())->getLightMatrix(dirLight->getModelMatrix());
-	mShadowShader->begin();
-	mShadowShader->setMat4("lightMatrix", lightMatrix);
-	for(auto& mesh : meshes)
-	{
-		glBindVertexArray(mesh->getGeometry()->getVao());
-		mShadowShader->setMat4("modelMatrix", mesh->getModelMatrix());
-
-		if (mesh->getType() == ObjectType::InstancedMesh)
-		{
-			std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
-			glDrawElementsInstanced(GL_TRIANGLES, mesh->getGeometry()->getIndicesCount(), GL_UNSIGNED_INT, 0, im->getInstanceCount());
-		}
-		else
-		{
-			glDrawElements(GL_TRIANGLES, mesh->getGeometry()->getIndicesCount(), GL_UNSIGNED_INT, nullptr);
-		}
-	}
-	mShadowShader->end();
-
-	glBindFramebuffer(GL_FRAMEBUFFER, preFbo);
-	glViewport(preViewPort[0], preViewPort[1], preViewPort[2], preViewPort[3]);
+	renderDirShadowMap(camera, mOpacityObjects, dirLight);
+	renderPointShadowMap(camera, mOpacityObjects, pointLights);
 }
 
 void Renderer::setFaceCullingState(std::shared_ptr<GLframework::Material> material)
@@ -240,6 +198,12 @@ std::shared_ptr<Shader> Renderer::pickShader(MaterialType type)
 	case MaterialType::PhongShadowMaterial:
 		res = mPhongShadowShader;
 		break;
+	case MaterialType::PhongCSMShadowMaterial:
+		res = mPhongCSMShadowShader;
+		break;
+	case MaterialType::PhongPointShadowMaterial:
+		res = mPhongPointShadowShader;
+		break;
 	default:
 		std::cerr << "Unknown material type to pick shader\n";
 		break;
@@ -305,7 +269,7 @@ void Renderer::render(
 		});
 
 	//	render shadowmap
-	renderShadowMap(mOpacityObjects, dirLight,dirLight->getShadow()->mRenderTarget);
+	renderShadowMap(camera,mOpacityObjects, dirLight,pointLights);
 
 	// 3. 渲染两个队列
 	for(auto& t : mOpacityObjects)
@@ -316,6 +280,7 @@ void Renderer::render(
 	{
 		renderObject(t, camera, dirLight, spotLight, pointLights, ambient);
 	}
+	
 }
 
 
@@ -415,6 +380,8 @@ void Renderer::renderObject(
 					shader->setFloat(baseName + ".k2", pointLight->getK2());
 					shader->setFloat(baseName + ".k1", pointLight->getK1());
 					shader->setFloat(baseName + ".k0", pointLight->getK0());
+					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
+
 				}
 
 				shader->setVector3("ambientColor", ambient->getColor());
@@ -447,7 +414,7 @@ void Renderer::renderObject(
 				//	mask��ͼ
 				GL_CALL(shader->setInt("MaskSampler", 1));
 				phongMat->mSpecularMask->Bind();
-
+				/*
 				GL_CALL(shader->setInt("shadowMapSampler", 2));
 				dirShadow-> mRenderTarget->getDepthAttachment()->setUnit(2);
 				dirShadow->mRenderTarget->getDepthAttachment()->Bind();
@@ -464,7 +431,7 @@ void Renderer::renderObject(
 				shader->setFloat("bias", dirShadow->mBias);
 				shader->setFloat("diskTightness", dirShadow->mDiskTightness);
 				shader->setFloat("pcfRadius", dirShadow->mPcfRadius);
-
+				*/
 				//	������������������Ԫ���йҹ�
 				//	mvp�仯����
 				shader->setMat4("modelMatrix", mesh->getModelMatrix());
@@ -498,6 +465,8 @@ void Renderer::renderObject(
 					shader->setFloat(baseName + ".k2", pointLight->getK2());
 					shader->setFloat(baseName + ".k1", pointLight->getK1());
 					shader->setFloat(baseName + ".k0", pointLight->getK0());
+					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
+
 				}
 
 				shader->setVector3("ambientColor", ambient->getColor());
@@ -586,6 +555,8 @@ void Renderer::renderObject(
 					shader->setFloat(baseName + ".k2", pointLight->getK2());
 					shader->setFloat(baseName + ".k1", pointLight->getK1());
 					shader->setFloat(baseName + ".k0", pointLight->getK0());
+					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
+
 				}
 
 				shader->setVector3("ambientColor", ambient->getColor());
@@ -693,6 +664,8 @@ void Renderer::renderObject(
 				shader->setFloat(baseName + ".k2", pointLight->getK2());
 				shader->setFloat(baseName + ".k1", pointLight->getK1());
 				shader->setFloat(baseName + ".k0", pointLight->getK0());
+				shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
+
 			}
 
 			shader->setVector3("ambientColor", ambient->getColor());
@@ -762,6 +735,8 @@ void Renderer::renderObject(
 					shader->setFloat(baseName + ".k2", pointLight->getK2());
 					shader->setFloat(baseName + ".k1", pointLight->getK1());
 					shader->setFloat(baseName + ".k0", pointLight->getK0());
+					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
+
 				}
 
 				shader->setVector3("ambientColor", ambient->getColor());
@@ -832,6 +807,8 @@ void Renderer::renderObject(
 					shader->setFloat(baseName + ".k2", pointLight->getK2());
 					shader->setFloat(baseName + ".k1", pointLight->getK1());
 					shader->setFloat(baseName + ".k0", pointLight->getK0());
+					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
+
 				}
 
 				shader->setVector3("ambientColor", ambient->getColor());
@@ -930,6 +907,8 @@ void Renderer::renderObject(
 					shader->setFloat(baseName + ".k2", pointLight->getK2());
 					shader->setFloat(baseName + ".k1", pointLight->getK1());
 					shader->setFloat(baseName + ".k0", pointLight->getK0());
+					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
+
 				}
 
 				shader->setVector3("ambientColor", ambient->getColor());
@@ -1007,6 +986,8 @@ void Renderer::renderObject(
 					shader->setFloat(baseName + ".k2", pointLight->getK2());
 					shader->setFloat(baseName + ".k1", pointLight->getK1());
 					shader->setFloat(baseName + ".k0", pointLight->getK0());
+					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
+
 				}
 
 				shader->setVector3("ambientColor", ambient->getColor());
@@ -1080,6 +1061,8 @@ void Renderer::renderObject(
 					shader->setFloat(baseName + ".k2", pointLight->getK2());
 					shader->setFloat(baseName + ".k1", pointLight->getK1());
 					shader->setFloat(baseName + ".k0", pointLight->getK0());
+					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
+
 				}
 
 				shader->setVector3("ambientColor", ambient->getColor());
@@ -1088,6 +1071,199 @@ void Renderer::renderObject(
 				shader->setFloat("speed", 0.5);
 
 				shader->setVector3("cameraPosition", camera->mPosition);
+			}
+			break;
+		case MaterialType::PhongCSMShadowMaterial:
+			{
+				std::shared_ptr<PhongCSMShadowMaterial> phongMat = std::static_pointer_cast<PhongCSMShadowMaterial>(material);
+				std::shared_ptr<DirectionalLightCSMShadow> dirCSMShadow = std::static_pointer_cast<DirectionalLightCSMShadow>(dirLight->getShadow());
+				if (phongMat->mDiffuse == nullptr)
+					std::cout << "null\n";
+				//��������Ĭ��͸����--------
+				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
+
+
+				//-----------------------
+
+				//	diffuse 
+				GL_CALL(shader->setInt("samplerGrass", phongMat->mDiffuse->getUnit()));
+				phongMat->mDiffuse->Bind();
+
+				//	mask��ͼ
+				GL_CALL(shader->setInt("MaskSampler", 1));
+				phongMat->mSpecularMask->Bind();
+
+				//	CSM
+				shader->setInt("csmLayerCount", dirCSMShadow->getLayerCount());
+				std::vector<float> layers;
+				dirCSMShadow->generateCascadeLayers(layers, camera->mNear, camera->mFar);
+				shader->setFloatArray("csmLayers", layers.data(), layers.size());
+
+				
+				GL_CALL(shader->setInt("shadowMapSampler", 2));
+				dirCSMShadow->mRenderTarget->getDepthAttachment()->setUnit(2);
+				dirCSMShadow->mRenderTarget->getDepthAttachment()->Bind();
+				
+				auto lightMatrices = (dirCSMShadow->getLightMatrix(camera, dirLight->getDirection(), layers));
+				shader->setMat4Array("lightMatrices", lightMatrices.data(), lightMatrices.size());
+
+				//	PCSS
+				shader->setFloat("lightSize", dirCSMShadow->mLightSize);
+				shader->setMat4("lightViewMatrix", glm::inverse(dirLight->getModelMatrix()));
+				//	frustum & nearPlane
+				//std::shared_ptr<OrthographicCamera> aCamera = std::static_pointer_cast<OrthographicCamera>(dirCSMShadow->mCamera);
+				//shader->setFloat("frustum", aCamera->mR - aCamera->mL);
+				//shader->setFloat("nearPlane", aCamera->mNear);
+
+				//shader->setMat4("lightMatrix", dirShadow->getLightMatrix(dirLight->getModelMatrix()));
+				shader->setFloat("bias", dirCSMShadow->mBias);
+				shader->setFloat("diskTightness", dirCSMShadow->mDiskTightness);
+				shader->setFloat("pcfRadius", dirCSMShadow->mPcfRadius);
+
+				//	������������������Ԫ���йҹ�
+				//	mvp�仯����
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
+				shader->setMat4("viewMatrix", camera->getViewMatrix());
+				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
+				//���߾�����£�����ת�����з��ߵı仯����
+				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
+				//	spotlight��Դ��������
+				shader->setVector3("spotLight.position", spotLight->getPosition());
+				shader->setVector3("spotLight.color", spotLight->getColor());
+				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
+				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
+				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
+				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
+				//	dirlight��Դ��������
+				shader->setVector3("directionalLight.color", dirLight->getColor());
+				shader->setVector3("directionalLight.direction", dirLight->getDirection());
+				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
+				shader->setFloat("directionalLight.intensity", dirLight->getIntensity());
+				//	pointlight��Դ��������
+				//std::cout << pointLights.size()<<std::endl;
+				for (int i = 0; i < pointLights.size(); i++)
+				{
+					auto& pointLight = pointLights[i];
+					std::string baseName = "pointLights[";
+					baseName.append(std::to_string(i));
+					baseName.append("]");
+					shader->setVector3(baseName + ".color", pointLight->getColor());
+					shader->setVector3(baseName + ".position", pointLight->getPosition());
+					shader->setFloat(baseName + ".specularIntensity", pointLight->getSpecularIntensity());
+					shader->setFloat(baseName + ".k2", pointLight->getK2());
+					shader->setFloat(baseName + ".k1", pointLight->getK1());
+					shader->setFloat(baseName + ".k0", pointLight->getK0());
+					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
+
+				}
+
+				shader->setVector3("ambientColor", ambient->getColor());
+				shader->setFloat("time", glfwGetTime());
+				shader->setFloat("shiness", phongMat->mShiness);
+				shader->setFloat("speed", 0.5);
+
+				//	�����Ϣ����
+				shader->setVector3("cameraPosition", camera->mPosition);
+				if (phongMat->mDiffuse == nullptr)
+					std::cout << "null\n";
+
+			}
+			break;
+		case MaterialType::PhongPointShadowMaterial:
+			{
+				std::shared_ptr<PhongPointShadowMaterial> phongMat = std::static_pointer_cast<PhongPointShadowMaterial>(material);
+
+				if (phongMat->mDiffuse == nullptr)
+					std::cout << "null\n";
+				//��������Ĭ��͸����--------
+				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
+
+
+				//-----------------------
+
+				//	diffuse
+				GL_CALL(shader->setInt("samplerGrass", phongMat->mDiffuse->getUnit()));
+				phongMat->mDiffuse->Bind();
+
+				//	mask��ͼ
+				GL_CALL(shader->setInt("MaskSampler", 1));
+				phongMat->mSpecularMask->Bind();
+				
+				GL_CALL(shader->setInt("pointShadowMaps", 2));  // 使用纹理单元2
+				PointLightShadow::getSharedDepthTexture()->setUnit(2);
+				PointLightShadow::getSharedDepthTexture()->Bind();
+
+				glm::mat4 directionalLightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f,80.0f);
+				glm::mat4 directionalLightView = glm::lookAt(dirLight->getPosition(), dirLight->getPosition() + glm::vec3(1.0f), glm::vec3(0.0, 1.0, 0.0));
+				glm::mat4 directionalLightSpaceMatrix = directionalLightProjection * directionalLightView;
+
+				shader->setMat4("directionalLightSpaceMatrix", directionalLightSpaceMatrix);
+				
+				/*
+				//	PCSS
+				shader->setFloat("lightSize", dirShadow->mLightSize);
+				shader->setMat4("lightViewMatrix", glm::inverse(dirLight->getModelMatrix()));
+				//	frustum & nearPlane
+				std::shared_ptr<OrthographicCamera> aCamera = std::static_pointer_cast<OrthographicCamera>(dirShadow->mCamera);
+				shader->setFloat("frustum", aCamera->mR - aCamera->mL);
+				shader->setFloat("nearPlane", aCamera->mNear);
+
+				shader->setMat4("lightMatrix", dirShadow->getLightMatrix(dirLight->getModelMatrix()));
+				shader->setFloat("bias", dirShadow->mBias);
+				shader->setFloat("diskTightness", dirShadow->mDiskTightness);
+				shader->setFloat("pcfRadius", dirShadow->mPcfRadius);
+				*/
+				//	������������������Ԫ���йҹ�
+				//	mvp�仯����
+				shader->setMat4("modelMatrix", mesh->getModelMatrix());
+				shader->setMat4("viewMatrix", camera->getViewMatrix());
+				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
+				//���߾�����£�����ת�����з��ߵı仯����
+				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
+				//	spotlight��Դ��������
+				shader->setVector3("spotLight.position", spotLight->getPosition());
+				shader->setVector3("spotLight.color", spotLight->getColor());
+				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
+				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
+				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
+				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
+				//	dirlight��Դ��������
+				shader->setVector3("directionalLight.color", dirLight->getColor());
+				shader->setVector3("directionalLight.direction", dirLight->getDirection());
+				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
+				shader->setFloat("directionalLight.intensity", dirLight->getIntensity());
+				//	pointlight��Դ��������
+				//std::cout << pointLights.size()<<std::endl;
+				for (int i = 0; i < pointLights.size(); i++)
+				{
+					const auto& pointLight = pointLights[i];
+					const auto& pointShadow = std::static_pointer_cast<PointLightShadow>(pointLight->getShadow());
+					std::string baseName = "pointLights[";
+					baseName.append(std::to_string(i));
+					baseName.append("]");
+					shader->setVector3(baseName + ".color", pointLight->getColor());
+					shader->setVector3(baseName + ".position", pointLight->getPosition());
+					shader->setFloat(baseName + ".specularIntensity", pointLight->getSpecularIntensity());
+					shader->setFloat(baseName + ".k2", pointLight->getK2());
+					shader->setFloat(baseName + ".k1", pointLight->getK1());
+					shader->setFloat(baseName + ".k0", pointLight->getK0());
+					shader->setFloat(baseName + ".far", pointShadow->mCamera->mFar);
+					shader->setFloat(baseName + ".near", pointShadow->mCamera->mNear);
+					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
+				}
+				shader->setInt("debugShadowMap", 1);
+				shader->setInt("debugLightIndex", 0); // 要调试的点光源索引
+
+				shader->setVector3("ambientColor", ambient->getColor());
+				shader->setFloat("time", glfwGetTime());
+				shader->setFloat("shiness", phongMat->mShiness);
+				shader->setFloat("speed", 0.5);
+
+				//	�����Ϣ����
+				shader->setVector3("cameraPosition", camera->mPosition);
+				if (phongMat->mDiffuse == nullptr)
+					std::cout << "null\n";
+
 			}
 			break;
 		default:
@@ -1108,4 +1284,191 @@ void Renderer::renderObject(
 		GL_CALL(glBindVertexArray(0));
 		shader->end();
 	}
+	
+}
+
+
+void Renderer::renderDirShadowMap(
+	Camera* camera,
+	const std::vector<std::shared_ptr<Mesh>>& meshes,
+	std::shared_ptr<DirectionalLight> dirLight
+)
+{
+	//	1. make sure that the current draw is not a postProcessPass draw, if it is, then the render is not performed
+	bool isPostProcessPass = true;
+	for (auto& mesh : meshes)
+	{
+		if (mesh->getMaterial()->getMaterialType() != GLframework::MaterialType::ScreenMaterial)
+		{
+			isPostProcessPass = false;
+			break;
+
+		}
+	}
+	if (isPostProcessPass) return;
+
+	//	2. save the original state, after drawing shadowmap, to restore the original state
+	GLint preFbo;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &preFbo);
+
+	GLint preViewPort[4];
+	glGetIntegerv(GL_VIEWPORT, preViewPort);
+
+	//	3. set the state required when ShadowPass is drawn
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glDepthMask(GL_TRUE);
+
+
+
+	//	4. The loop renders a shadowMap for each child cone
+	auto csmShadow = std::static_pointer_cast<DirectionalLightCSMShadow>(dirLight->getShadow());
+	glBindFramebuffer(GL_FRAMEBUFFER, csmShadow->mRenderTarget->getFBO());
+
+	std::vector<float> layers;
+	csmShadow->generateCascadeLayers(layers, camera->mNear, camera->mFar);
+	auto lightMatrices = csmShadow->getLightMatrix(camera, dirLight->getDirection(), layers);
+	glViewport(0, 0, csmShadow->mRenderTarget->getWidth(), csmShadow->mRenderTarget->getHeight());
+
+	for (int i = 0; i < csmShadow->getLayerCount(); ++i)
+	{
+		glFramebufferTextureLayer(
+			GL_FRAMEBUFFER,
+			GL_DEPTH_ATTACHMENT,
+			csmShadow->mRenderTarget->getDepthAttachment()->getTexture(),
+			0,
+			i
+		);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		mShadowShader->begin();
+		mShadowShader->setMat4("lightMatrix", lightMatrices[i]);
+		for (auto& mesh : meshes)
+		{
+			glBindVertexArray(mesh->getGeometry()->getVao());
+			mShadowShader->setMat4("modelMatrix", mesh->getModelMatrix());
+
+			if (mesh->getType() == ObjectType::InstancedMesh)
+			{
+				std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
+				glDrawElementsInstanced(GL_TRIANGLES, mesh->getGeometry()->getIndicesCount(), GL_UNSIGNED_INT, nullptr,
+					im->getInstanceCount());
+			}
+			else
+			{
+				glDrawElements(GL_TRIANGLES, mesh->getGeometry()->getIndicesCount(), GL_UNSIGNED_INT, nullptr);
+			}
+		}
+
+		mShadowShader->end();
+
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, preFbo);
+	glViewport(preViewPort[0], preViewPort[1], preViewPort[2], preViewPort[3]);
+}
+
+void Renderer::renderPointShadowMap(
+	Camera* camera,
+	const std::vector<std::shared_ptr<Mesh>>& meshes,
+	std::vector<std::shared_ptr<PointLight>> pointLights
+)
+{
+	bool isPostProcessPass = true;
+	for (auto& mesh : meshes)
+	{
+		if (mesh->getMaterial()->getMaterialType() != MaterialType::ScreenMaterial)
+		{
+			isPostProcessPass = false;
+			break;
+		}
+	}
+	if (isPostProcessPass) return;
+	// store state
+	GLint preFbo;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &preFbo);
+	GLint preViewPort[4];
+	glGetIntegerv(GL_VIEWPORT, preViewPort);
+
+	// set render state
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LESS);
+
+	auto depthTexture = PointLightShadow::getSharedDepthTexture();
+	
+	int width = depthTexture->getWidth();
+	int height = depthTexture->getHeight();
+
+	// 创建并绑定临时FBO
+	GLuint tempFBO;
+	glGenFramebuffers(1, &tempFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, tempFBO);
+	//std::cout << "temp " << tempFBO << std::endl;
+	
+	//glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture->getTexture(), 0, 0);
+	glViewport(0, 0, width, height);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+
+	for (size_t i = 0; i < pointLights.size(); ++i)
+	{
+		const auto& pointLight = pointLights[i];
+		const auto& pointShadow = std::static_pointer_cast<PointLightShadow>(pointLight->getShadow());
+		pointShadow->setShadowMapIndex(i);
+		
+		// 渲染六个面的深度贴图
+		for (unsigned int face = 0; face < 6; ++face)
+		{
+			int layerIndex = pointShadow->getShadowMapIndex() * 6 + face;
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture->getTexture(), 0, layerIndex);
+			// 检查 FBO 状态
+			//std::cerr << layerIndex << std::endl;
+
+
+			glClear(GL_DEPTH_BUFFER_BIT);
+
+			// 设置光源视图和投影矩阵
+			glm::mat4 shadowProj = std::static_pointer_cast<PerspectiveCamera>(pointShadow->mCamera)->getProjectionMatrix();
+			glm::mat4 shadowView = lookAt(pointLight->getPosition(),
+			                              pointLight->getPosition() + Tools::getCubemapFaceDirection(face),
+			                              Tools::getCubemapFaceUp(face));
+			mShadowDistanceShader->begin();
+			mShadowDistanceShader->setMat4("lightSpaceMatrix", shadowProj * shadowView);
+			mShadowDistanceShader->setVector3("lightPos", pointLight->getPosition());
+			mShadowDistanceShader->setFloat("far_plane", pointShadow->mCamera->mFar);
+
+			//****text
+			for (auto& mesh : meshes)
+			{
+				glBindVertexArray(mesh->getGeometry()->getVao());
+				mShadowDistanceShader->setMat4("modelMatrix", mesh->getModelMatrix());
+
+				if (mesh->getType() == ObjectType::InstancedMesh)
+				{
+					std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
+					glDrawElementsInstanced(GL_TRIANGLES, mesh->getGeometry()->getIndicesCount(), GL_UNSIGNED_INT,
+					                        nullptr,
+					                        im->getInstanceCount());
+				}
+				else
+				{
+					glDrawElements(GL_TRIANGLES, mesh->getGeometry()->getIndicesCount(), GL_UNSIGNED_INT, nullptr);
+				}
+			}
+		
+			
+			mShadowDistanceShader->end();
+	
+		}
+		
+
+	}
+
+	// delete tempFBO
+	glDeleteFramebuffers(1, &tempFBO);
+
+	// render back last state
+	glBindFramebuffer(GL_FRAMEBUFFER, preFbo);
+	glViewport(preViewPort[0], preViewPort[1], preViewPort[2], preViewPort[3]);
 }

@@ -22,6 +22,8 @@ namespace GLframework
 		void setDepthAttachment(std::shared_ptr<Texture> value);
 
 		static std::shared_ptr<Framebuffer> createShadowFBO(unsigned width, unsigned height);
+		static std::shared_ptr<Framebuffer> createCSMShadowFBO(unsigned width, unsigned height,unsigned int layerNum);
+		static std::shared_ptr<Framebuffer> createPointLightShadowFBO(unsigned width, unsigned height, unsigned layerCount);
 		Framebuffer(){}
 		Framebuffer(
 			unsigned int width,

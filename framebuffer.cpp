@@ -1,6 +1,35 @@
 #include "framebuffer.h"
 using namespace GLframework;
 
+std::shared_ptr<Framebuffer> Framebuffer::createPointLightShadowFBO(unsigned width, unsigned height, unsigned layerCount)
+{
+	std::shared_ptr<Framebuffer> fb = std::make_shared<Framebuffer>();
+	fb->setWidth(width);
+	fb->setHeight(height);
+
+	glGenFramebuffers(1, &fb->mFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, fb->mFBO);
+	std::cout << fb->mFBO;
+	
+	// 创建深度纹理数组
+	fb->mDepthAttachment = Texture::createTexture2DArray(width, height, layerCount, 0, GL_DEPTH_COMPONENT32F);
+
+	// 绑定深度纹理数组到帧缓冲
+	glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, fb->mDepthAttachment->getTexture(), 0, 0);
+
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	// 检查帧缓冲是否完整
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cerr << "Error: PointLight Shadow Framebuffer is not complete!" << std::endl;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return fb;
+}
+
 std::shared_ptr<Texture> Framebuffer::getDepthAttachment() const
 {
 	return mDepthAttachment;
@@ -57,6 +86,28 @@ Framebuffer::Framebuffer(unsigned width, unsigned height)
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
+}
+
+std::shared_ptr<Framebuffer> Framebuffer::createCSMShadowFBO(unsigned width, unsigned height, unsigned int layerNum)
+{
+	std::shared_ptr<Framebuffer> fb = std::make_shared<Framebuffer>();
+	unsigned int fbo;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	//	add depthAttachment
+	auto depthAttachment = Texture::createDepthAttachmentCSMArray(width, height, layerNum, 0);
+	glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthAttachment->getTexture(), 0, 0);
+	glDrawBuffer(GL_NONE);
+	glBindBuffer(GL_FRAMEBUFFER, 0);
+
+	fb->setFBO(fbo);
+	fb->setDepthAttachment(depthAttachment);
+	fb->setWidth(width);
+	fb->setHeight(height);
+
+	return fb;
+
 }
 
 

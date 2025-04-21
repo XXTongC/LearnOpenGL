@@ -281,6 +281,56 @@ Texture::Texture(unsigned int width, unsigned int height, unsigned int unit, uns
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
+std::shared_ptr<Texture> Texture::createDepthAttachmentCSMArray(
+	unsigned int width,
+	unsigned int height,
+	unsigned int layerNum,
+	unsigned int unit
+)
+{
+	/*
+	std::shared_ptr<Texture> dTex = std::make_shared<Texture>();
+
+	unsigned int depth;
+	glGenTextures(1, &depth);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, depth);
+
+	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT, width, height, layerNum, 0, GL_DEPTH_COMPONENT, GL_FLOAT,nullptr);
+
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	GLfloat borderColor[] = { 1.0f,1.0f,1.0f };
+	glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);	//u
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);	//v
+
+	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
+	dTex->setTexture(depth);
+	dTex->setWidth(width);
+	dTex->setHeight(height);
+	dTex->setUnit(unit);
+	dTex->setTextureTarget(GL_TEXTURE_2D_ARRAY);
+
+	return dTex;
+	*/
+
+	std::shared_ptr<Texture> dTex = createTexture2DArray(width, height, layerNum, unit, GL_DEPTH_COMPONENT32F);
+
+	glBindTexture(GL_TEXTURE_2D_ARRAY, dTex->getTexture());
+
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	GLfloat borderColor[] = { 1.0f,1.0f,1.0f };
+	glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
+	return dTex;
+}
+
 
 GLframework::Texture::~Texture()
 {
@@ -290,6 +340,17 @@ GLframework::Texture::~Texture()
 		glDeleteTextures(1, &mTexture);
 	}
 }
+
+GLuint Texture::getHeight() const
+{
+	return mHeight;
+}
+
+GLuint Texture::getWidth() const
+{
+	return mWidth;
+}
+
 
 void GLframework::Texture::Bind()
 {
@@ -301,4 +362,70 @@ void GLframework::Texture::Bind()
 void GLframework::Texture::setUnit(unsigned unit)
 {
 	mUnit = unit;
+}
+
+
+std::shared_ptr<Texture> Texture::createTexture2DArray(unsigned int width, unsigned int height, unsigned int layers, unsigned int unit, unsigned int internalFormat)
+{
+	std::shared_ptr<Texture> tex = std::make_shared<Texture>();
+
+	
+	glGenTextures(1, &tex->mTexture);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, tex->mTexture);
+
+	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormat, width, height, layers, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+	std::cout << "layers = " << layers << std::endl;
+
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+	
+	tex->mWidth = width;
+	tex->mHeight = height;
+	tex->mLayers = layers;
+	tex->mUnit = unit;
+	tex->mTextureTarget = GL_TEXTURE_2D_ARRAY;
+	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+	return tex;
+}
+
+void Texture::setLayerCount(unsigned int layers)
+{
+	mLayers = layers;
+}
+
+unsigned int Texture::getLayerCount() const
+{
+	return mLayers;
+}
+
+std::shared_ptr<Texture>  Texture::createDepthCubemap(unsigned int size, unsigned int unit)
+{
+	std::shared_ptr<Texture> cubemapTex = std::make_shared<Texture>();
+
+	glGenTextures(1, &cubemapTex->mTexture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTex->mTexture);
+
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
+			size, size, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	cubemapTex->setWidth(size);
+	cubemapTex->setHeight(size);
+	cubemapTex->setUnit(unit);
+	cubemapTex->setTextureTarget(GL_TEXTURE_CUBE_MAP);
+
+	return cubemapTex;
 }

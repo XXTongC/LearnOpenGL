@@ -42,6 +42,11 @@ void GLframework::Shader::setMat4Array(const std::string& name, const glm::mat4 
 	GL_CALL(glUniformMatrix4fv(location,count,GL_FALSE,glm::value_ptr(values[0])));
 }
 
+void GLframework::Shader::setFloatArray(const std::string& name, float* value, int count)
+{
+	GLuint location = GL_CALL(glGetUniformLocation(mProgram, name.c_str()));
+	GL_CALL(glUniform1fv(location, count, value));
+}
 
 
 

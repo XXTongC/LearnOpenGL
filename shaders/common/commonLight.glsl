@@ -16,6 +16,9 @@ struct PointLight
 	float k2;
 	float k1;
 	float k0;
+
+	float far;
+	float near;
 };
 
 struct SpotLight
@@ -97,4 +100,5 @@ vec3 calculatePointLight(PointLight light, vec3 normal,vec3 viewDir)
 	vec3 specularColor = calculateSpecular(light.color,lightDir,normal,viewDir,light.specularIntensity);
 
 	return (diffuseColor + specularColor ) * attenuation;
+
 }

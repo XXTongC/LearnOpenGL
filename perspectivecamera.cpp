@@ -21,6 +21,16 @@ void PerspectiveCamera::scale(float deltaScale)
 	mPosition += front * deltaScale;
 }
 
+float PerspectiveCamera::getAspect() const
+{
+	return mAspect;
+}
+
+float PerspectiveCamera::getFovy() const
+{
+	return mFovy;
+}
+
 
 glm::mat4 PerspectiveCamera::getProjectionMatrix() const
 {

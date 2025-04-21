@@ -1,5 +1,15 @@
 #include "pointLight.h"
+#include "light/shadow/pointLightShadow/pointLightShadow.h"
 using namespace GLframework;
+PointLight::PointLight()
+{
+	mK2 = 1.0f;
+	mK1 = 1.0f;
+	mK0 = 1.0f;
+	
+	setShadow(std::make_shared<PointLightShadow>());
+
+}
 
 float PointLight::getK0() const
 {
