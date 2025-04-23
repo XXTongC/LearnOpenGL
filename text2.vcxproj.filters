@@ -253,6 +253,9 @@
     <Filter Include="cppfile\GLframework\light\shadow\pointLightShadow">
       <UniqueIdentifier>{28157945-c3c2-4a2c-a80e-0ffcc046d8bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\shaders\phongPointShadow">
+      <UniqueIdentifier>{7b1e2684-2a7e-47d4-aca9-828d98231e5e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -2217,6 +2220,12 @@
     </None>
     <None Include="shaders\phongCSMShadow\phongCSMShadow.vert">
       <Filter>资源文件\shaders\phongCSMShadow</Filter>
+    </None>
+    <None Include="shaders\phongPointShadow\phongPointShadow.frag">
+      <Filter>资源文件\shaders\phongPointShadow</Filter>
+    </None>
+    <None Include="shaders\phongPointShadow\phongPointShadow.vert">
+      <Filter>资源文件\shaders\phongPointShadow</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

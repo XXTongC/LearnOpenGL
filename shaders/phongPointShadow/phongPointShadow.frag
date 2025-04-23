@@ -1,6 +1,6 @@
 #version 460 core
 
-#define NUM_SAMPLER 32
+#define NUM_SAMPLER 8
 #define PI 3.141592653589793
 #define PI2 6.283185307179586
 uniform float time;
@@ -42,6 +42,10 @@ uniform SpotLight spotLight;
 uniform DirectionalLight directionalLight;
 uniform int POINT_LIGHT_NUM;
 uniform PointLight pointLights[20];
+
+float findBlockerDistance_PointLight(vec2 uv, float currentDepth, int layerIndex, float searchWidth, PointLight light);
+float PCSS_PointLight(float currentDepth, vec2 uv, int layerIndex, PointLight light);
+
 
 vec2 disk[NUM_SAMPLER];
 uniform float diskTightness;
@@ -145,7 +149,9 @@ float ShadowCalculationPointLight(vec3 fragPos, PointLight light, int shadowMapI
     
     // 计算在Texture2DArray中的层索引
     int layerIndex = shadowMapIndex * 6 + faceIndex;
-    
+    return PCSS_PointLight(currentDepth, uv, layerIndex, light);
+
+    /*
     // 从深度贴图数组中采样
     float closestDepth = texture(pointShadowMaps, vec3(uv, layerIndex)).r;
     
@@ -155,9 +161,20 @@ float ShadowCalculationPointLight(vec3 fragPos, PointLight light, int shadowMapI
     // 应用偏移以避免阴影失真
     float bias = 1;  // 使用一个固定的小值
 
-    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
-    //return closestDepth/(light.far * 1.414);
-    return shadow;
+    //float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+    poissonDiskSampler(uv);
+	float sum = 0.0;
+	
+	for(int i = 0;i<NUM_SAMPLER;++i)
+	{
+        float closestDepth = texture(pointShadowMaps, vec3(uv + disk[i] * pcfRadius, layerIndex)).r;
+		closestDepth *= light.far * 1.414;
+        sum += (closestDepth<(currentDepth - max(bias * (1- dot(normalize(fragToLight),normal)),1))?1.0f:0.0f);
+	}
+	
+	return sum/NUM_SAMPLER;
+    //return shadow;
+    */
 }
 
 vec3 calculatePointLightWithShadow(PointLight light, vec3 normal, vec3 viewDir, int shadowMapIndex)
@@ -177,12 +194,7 @@ float calculateDirectionalShadow(vec3 normal, vec3 lightDir)
     float bias = getBias(normal, lightDir);
     return (currentDepth - bias > closestDepth) ? 1.0 : 0.0;
 }
-
-
-//text
-
-uniform int debugShadowMap;
-uniform int debugLightIndex;
+float pcss(vec3 lightSpacePosition, vec4 lightSpaceClipCoord, vec3 normal,vec3 lightDir);
 
 void main()
 {
@@ -228,6 +240,57 @@ void main()
     
     FragColor = vec4(finalColor, 1.0);
 	//FragColor = vec4(texture(shadowMapSampler,uv).xyz,alpha * opacity);
-
 }
 
+float findBlockerDistance_PointLight(vec2 uv, float currentDepth, int layerIndex, float searchWidth, PointLight light)
+{
+    float sumBlockerDepth = 0.0;
+    int numBlockers = 0;
+
+    for(int i = 0; i < NUM_SAMPLER; i++)
+    {
+        float shadowMapDepth = texture(pointShadowMaps, vec3(uv + disk[i] * searchWidth, layerIndex)).r;
+        shadowMapDepth *= light.far;
+        if(shadowMapDepth < currentDepth)
+        {
+            sumBlockerDepth += shadowMapDepth;
+            numBlockers++;
+        }
+    }
+
+    if(numBlockers == 0) return -1.0;
+    return sumBlockerDepth / float(numBlockers);
+}
+
+float PCSS_PointLight(float currentDepth, vec2 uv, int layerIndex, PointLight light)
+{
+    // 1. 寻找平均遮挡深度
+    float searchWidth = (currentDepth - light.near) / currentDepth;
+    float avgBlockerDepth = findBlockerDistance_PointLight(uv, currentDepth, layerIndex, searchWidth, light);
+    if(avgBlockerDepth == -1.0) return 0.0;  // 没有遮挡
+
+    // 2. 计算半影
+    float penumbraRatio = (currentDepth - avgBlockerDepth) / avgBlockerDepth;
+    float filterRadius = penumbraRatio * light.near / currentDepth;
+
+    // 3. PCF 过滤
+    poissonDiskSampler(uv);
+	float sum = 0.0;
+	
+	for(int i = 0;i<NUM_SAMPLER;++i)
+	{
+        float closestDepth = texture(pointShadowMaps, vec3(uv + disk[i] * filterRadius * pcfRadius, layerIndex)).r;
+		closestDepth *= light.far * 1.414;
+        sum += (currentDepth - 1 > closestDepth) ? 1.0 : 0.0;
+	}
+    /*
+    float sum = 0.0;
+    for(int i = 0; i < NUM_SAMPLER; i++)
+    {
+        float closestDepth = texture(pointShadowMaps, vec3(uv + disk[i] * filterRadius, layerIndex)).r;
+        closestDepth *= light.far * 1.414;
+        sum += (currentDepth - 1 > closestDepth) ? 1.0 : 0.0;
+    }
+    */
+    return sum / float(NUM_SAMPLER);
+}

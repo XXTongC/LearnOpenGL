@@ -429,3 +429,26 @@ std::shared_ptr<Texture>  Texture::createDepthCubemap(unsigned int size, unsigne
 
 	return cubemapTex;
 }
+std::shared_ptr<Texture> Texture::createMultiSampleTexture(
+	unsigned int width,
+	unsigned int height,
+	unsigned int samplesNumber,
+	unsigned int format,
+	unsigned int unit
+)
+{
+	std::shared_ptr<Texture> tex = std::make_shared<Texture>();
+
+	GLuint glTex;
+	glGenTextures(1, &glTex);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE , glTex);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samplesNumber, format, width, height, GL_TRUE);
+
+	tex->setTexture(glTex);
+	tex->mWidth = width;
+	tex->mHeight = height;
+	tex->mUnit = unit;
+	tex->mTextureTarget = GL_TEXTURE_2D_MULTISAMPLE;
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+	return tex;
+}

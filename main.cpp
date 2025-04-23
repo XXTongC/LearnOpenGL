@@ -98,7 +98,8 @@ std::shared_ptr<GLframework::Scene> sceneOffScreen = nullptr;
 std::shared_ptr<GLframework::Scene> sceneInScreen = nullptr;
 std::shared_ptr<GLframework::Mesh> meshPointLight = nullptr;
 std::shared_ptr <GLframework::AmbientLight> ambientLight = nullptr;
-std::shared_ptr<GLframework::Framebuffer> framebuffer = nullptr;
+std::shared_ptr<GLframework::Framebuffer> framebufferMultisample = nullptr;
+std::shared_ptr<GLframework::Framebuffer> framebufferResolve = nullptr;
 std::shared_ptr<GLframework::GrassInstanceMaterial> grassMaterial = nullptr;
 Camera* camera = nullptr;
 CameraControl* cameracontrol = nullptr;
@@ -171,7 +172,8 @@ int main()
 		rotatePlant();
 		//moveit();
 		//pass 1: ��box��Ⱦ��colorAttachment�ϣ��µ�fob��
-		renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights,ambientLight, framebuffer->getFBO());
+		renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights,ambientLight, framebufferMultisample->getFBO());
+		renderer->msaaResolve(framebufferMultisample, framebufferResolve);
 		//pass 2: ��colorAttachment��Ϊ��������Ƶ�������Ļ��
 		renderer->render(sceneInScreen,camera,dirLight,spotLight,pointLights,ambientLight);
 		renderIMGUI();
@@ -208,7 +210,8 @@ void prepare()
 	renderer = std::make_shared<GLframework::Renderer>();
 	sceneInScreen = std::make_shared<GLframework::Scene>();
 	sceneOffScreen = std::make_shared<GLframework::Scene>();
-	framebuffer = std::make_shared<GLframework::Framebuffer>(width, height);
+	framebufferMultisample = GLframework::Framebuffer::createMultiSampleFbo(width, height, 4);
+	framebufferResolve = std::make_shared<GLframework::Framebuffer>(width, height);
 	GLframework::PointLightShadow::initializeSharedDepthTexture(1024, 1024, 2); // 假设最多支持1个点光源
 
 
@@ -464,7 +467,7 @@ void prepare()
 	
 	//在屏渲染
 	auto met = std::make_shared<GLframework::ScreenMaterial>();
-	met->mScreenTexture = framebuffer->getColorAttachment();
+	met->mScreenTexture = framebufferResolve->getColorAttachment();
 	//met->mScreenTexture = renderer->mShadowFBO->getDepthAttachment();
 	//met->mDepthStencilTexture = framebuffer->getDepthStencilAttachment();
 	auto geo = GLframework::Geometry::createScreenPlane(renderer->getShader(met->getMaterialType()));
@@ -513,7 +516,7 @@ void prepare()
 	pointLights.push_back(std::move(pointLight4));
 	*/
 	ambientLight	 = std::make_shared<GLframework::AmbientLight>();
-	ambientLight->	setColor(glm::vec3(0.0f));
+	ambientLight->	setColor(glm::vec3(0.1f));
 	
 	for (int i = 0; i < 2; ++i) {
 		auto pointLight = std::make_shared<GLframework::PointLight>();
@@ -540,18 +543,6 @@ void prepare()
 	}
 	GLframework::PointLightShadow::setMAX_POINT_LIGHT(pointLights.size());
 
-	/*
-	 *
-	 *
-Depth range for light 0, face 0: 0.160103 - 1
-Depth range for light 0, face 1: 0.160103 - 1
-Depth range for light 0, face 2: 1 - 1
-Depth range for light 0, face 3: 0.0777936 - 0.195861
-Depth range for light 0, face 4: 0.160103 - 1
-Depth range for light 0, face 5: 0.160103 - 1
-	 *
-	 *
-	 */
 	/*
 	auto textplan = std::make_shared<GLframework::PhongMaterial>();
 	dirLight->getShadow()->mRenderTarget->getDepthAttachment()->setUnit(2);
@@ -600,7 +591,7 @@ void renderIMGUI()
 		dirLight->setPosition(pos);
 	} 
 	ImGui::SliderFloat("tightness", &dirLight->getShadow()->mDiskTightness, 0.0f, 1.0f,"%.3f");
-	ImGui::SliderFloat("pcfRadius", &dirLight->getShadow()->mPcfRadius, 0.0f, 0.1f, "%.6f");
+	ImGui::SliderFloat("pcfRadius", &dirLight->getShadow()->mPcfRadius, 0.0f, 10.0f, "%.3f");
 	/*
 	int width = dirLight->getShadow()->mRenderTarget->getWidth();
 	int height = dirLight->getShadow()->mRenderTarget->getHeight();

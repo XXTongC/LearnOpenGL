@@ -34,11 +34,8 @@ namespace GLframework
 			mShadowShader = std::make_shared<Shader>("shaders/shadow/shadow.vert", "shaders/shadow/shadow.frag");
 			mPhongShadowShader = std::make_shared<Shader>("shaders/phong/phongShadow.vert", "shaders/phong/phongShadow.frag");
 			mPhongCSMShadowShader = std::make_shared<Shader>("shaders/phongCSMShadow/phongCSMShadow.vert", "shaders/phongCSMShadow/phongCSMShadow.frag");
-			
 			mPhongPointShadowShader = std::make_shared<Shader>("shaders/phongPointShadow/phongPointShadow.vert", "shaders/phongPointShadow/phongPointShadow.frag");
-			
 			mShadowDistanceShader = std::make_shared<Shader>("shaders/shadowDistance/shadowDistance.vert", "shaders/shadowDistance/shadowDistance.frag");
-			
 		}
 		~Renderer(){}
 		std::shared_ptr<Shader> getShader(MaterialType type);
@@ -55,7 +52,7 @@ namespace GLframework
 			unsigned int fbo = 0
 		);
 		void setClearColor(glm::vec3 color);
-
+		void msaaResolve(std::shared_ptr<Framebuffer> src, std::shared_ptr<Framebuffer> dst);
 	public:
 		std::shared_ptr<Material> mGlobalMaterial{nullptr};
 	private:

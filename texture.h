@@ -36,7 +36,13 @@ namespace GLframework
 			unsigned int unit
 		); 
 		static std::shared_ptr<Texture> createDepthCubemap(unsigned int size, unsigned int unit);
-		
+		static std::shared_ptr<Texture> createMultiSampleTexture(
+			unsigned int width,
+			unsigned int height,
+			unsigned int samplesNumber,
+			unsigned int format,
+			unsigned int unit
+		);
 
 		Texture(){}
 		Texture(const std::string& path, unsigned int unit, unsigned int internalFormat = GL_RGBA);

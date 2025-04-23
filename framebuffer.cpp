@@ -111,6 +111,35 @@ std::shared_ptr<Framebuffer> Framebuffer::createCSMShadowFBO(unsigned width, uns
 }
 
 
+std::shared_ptr<Framebuffer> Framebuffer::createMultiSampleFbo(
+	unsigned int width,
+	unsigned int height, 
+	unsigned int sampleNumber
+)
+{
+	std::shared_ptr<Framebuffer> fb = std::make_shared<Framebuffer>();
+	unsigned int fbo;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	auto colorAttachment = Texture::createMultiSampleTexture(width, height, sampleNumber,GL_RGBA,0);
+	auto depthStencilAttachment = Texture::createMultiSampleTexture(width, height, sampleNumber, GL_DEPTH24_STENCIL8, 0);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, colorAttachment->getTexture(), 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, depthStencilAttachment->getTexture(), 0);
+
+	fb->setFBO(fbo);
+	fb->setDepthStencilAttachment(depthStencilAttachment);
+	fb->setColorAttachment(colorAttachment);
+	fb->setWidth(width);
+	fb->setHeight(height);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return fb;
+}
+
+
+
 std::shared_ptr<Texture> Framebuffer::getColorAttachment() const
 {
 	return mColorAttachment;

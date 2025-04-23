@@ -1172,6 +1172,7 @@ void Renderer::renderObject(
 		case MaterialType::PhongPointShadowMaterial:
 			{
 				std::shared_ptr<PhongPointShadowMaterial> phongMat = std::static_pointer_cast<PhongPointShadowMaterial>(material);
+				std::shared_ptr<DirectionalLightShadow> dirShadow = std::static_pointer_cast<DirectionalLightShadow>(dirLight->getShadow());
 
 				if (phongMat->mDiffuse == nullptr)
 					std::cout << "null\n";
@@ -1199,20 +1200,24 @@ void Renderer::renderObject(
 
 				shader->setMat4("directionalLightSpaceMatrix", directionalLightSpaceMatrix);
 				
-				/*
+				
 				//	PCSS
-				shader->setFloat("lightSize", dirShadow->mLightSize);
+				
+				/*
+				shader->setFloat("lightSize", dirLight->getShadow()->mLightSize);
 				shader->setMat4("lightViewMatrix", glm::inverse(dirLight->getModelMatrix()));
 				//	frustum & nearPlane
 				std::shared_ptr<OrthographicCamera> aCamera = std::static_pointer_cast<OrthographicCamera>(dirShadow->mCamera);
 				shader->setFloat("frustum", aCamera->mR - aCamera->mL);
 				shader->setFloat("nearPlane", aCamera->mNear);
-
+				
+				
 				shader->setMat4("lightMatrix", dirShadow->getLightMatrix(dirLight->getModelMatrix()));
+				*/
 				shader->setFloat("bias", dirShadow->mBias);
 				shader->setFloat("diskTightness", dirShadow->mDiskTightness);
 				shader->setFloat("pcfRadius", dirShadow->mPcfRadius);
-				*/
+				
 				//	������������������Ԫ���йҹ�
 				//	mvp�仯����
 				shader->setMat4("modelMatrix", mesh->getModelMatrix());
@@ -1249,7 +1254,9 @@ void Renderer::renderObject(
 					shader->setFloat(baseName + ".k0", pointLight->getK0());
 					shader->setFloat(baseName + ".far", pointShadow->mCamera->mFar);
 					shader->setFloat(baseName + ".near", pointShadow->mCamera->mNear);
+
 					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
+
 				}
 				shader->setInt("debugShadowMap", 1);
 				shader->setInt("debugLightIndex", 0); // 要调试的点光源索引
@@ -1471,4 +1478,11 @@ void Renderer::renderPointShadowMap(
 	// render back last state
 	glBindFramebuffer(GL_FRAMEBUFFER, preFbo);
 	glViewport(preViewPort[0], preViewPort[1], preViewPort[2], preViewPort[3]);
+}
+
+void Renderer::msaaResolve(std::shared_ptr<Framebuffer> src, std::shared_ptr<Framebuffer> dst)
+{
+	glBindFramebuffer(GL_READ_FRAMEBUFFER,src->getFBO());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dst->getFBO());
+	glBlitFramebuffer(0, 0, src->getWidth(), src->getHeight(), 0, 0, dst->getWidth(), dst->getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
