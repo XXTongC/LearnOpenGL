@@ -577,7 +577,7 @@ void Renderer::renderObject(
 				shader->setInt("depthTextureSampler", 1);
 				shader->setFloat("texWidth", 1200);
 				shader->setFloat("texHeight", 900);
-
+				shader->setFloat("exposure", screenMaterial->mExposure);
 				screenMaterial->mScreenTexture->Bind();
 			}
 			break;
@@ -1224,7 +1224,7 @@ void Renderer::renderObject(
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
 				//���߾�����£�����ת�����з��ߵı仯����
-				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
+				shader->setMat3("normalMatrix", glm::mat(glm::transpose(glm::inverse(mesh->getModelMatrix()))));
 				//	spotlight��Դ��������
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());

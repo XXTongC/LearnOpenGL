@@ -9,6 +9,20 @@ glm::vec3 Object::getDirection() const
 	return direction;
 }
 
+float Object::getAngleX() const
+{
+	return mAngleX;
+}
+
+float Object::getAngleY() const
+{
+	return mAngleY;
+}
+
+float Object::getAngleZ() const
+{
+	return mAngleZ;
+}
 
 glm::vec3 Object::getPosition() const
 {

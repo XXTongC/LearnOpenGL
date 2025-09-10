@@ -110,14 +110,7 @@ std::string TexturePath{ "Texture/bk.jpg" };
 void prepareSkyBox();
 //---------------
 
-//--------text--------
-std::shared_ptr<GLframework::Mesh> movePlane = nullptr;
-void moveit()
-{
-	movePlane->setPosition({ 0.0f,(glm::sin(glfwGetTime()) + 1) * 5,0.0f });
-}
 
-//--------------------
 #pragma region solorsystem
 
 auto roundForAll = std::make_shared<GLframework::Object>();
@@ -136,6 +129,7 @@ int width = 1920, height = 1080;
 glm::vec3 clearColor{};
 
 
+
 //�����ƹ�
 std::shared_ptr < GLframework::DirectionalLight> dirLight = nullptr;
 std::shared_ptr < GLframework::SpotLight> spotLight = nullptr;
@@ -143,7 +137,17 @@ std::vector<std::shared_ptr<GLframework::PointLight>> pointLights{};
 float specularIntensity = 0.8f;
 
 std::shared_ptr<GLframework::PhongCSMShadowMaterial> mat2{nullptr};
-
+//--------text--------
+std::shared_ptr<GLframework::Mesh> movePlane = nullptr;
+void moveit()
+{
+	movePlane->setPosition({ 0.0f,(glm::sin(glfwGetTime()) + 1) * 5,0.0f });
+}
+std::shared_ptr<GLframework::Mesh> textD = nullptr;
+void rotateLight();
+float m_time = 0.0f;
+std::shared_ptr<GLframework::ScreenMaterial> ScreenMat = nullptr;
+//--------------------
 int main()
 {
 
@@ -170,6 +174,7 @@ int main()
 		cameracontrol->update();
 		renderer->setClearColor(clearColor);
 		rotatePlant();
+		rotateLight();
 		//moveit();
 		//pass 1: ��box��Ⱦ��colorAttachment�ϣ��µ�fob��
 		renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights,ambientLight, framebufferMultisample->getFBO());
@@ -211,7 +216,11 @@ void prepare()
 	sceneInScreen = std::make_shared<GLframework::Scene>();
 	sceneOffScreen = std::make_shared<GLframework::Scene>();
 	framebufferMultisample = GLframework::Framebuffer::createMultiSampleFbo(width, height, 4);
-	framebufferResolve = std::make_shared<GLframework::Framebuffer>(width, height);
+	//framebufferResolve = std::make_shared<GLframework::Framebuffer>(width, height);
+	//hdr test
+	framebufferResolve = GLframework::Framebuffer::createHDRFbo(width, height);
+	//
+
 	GLframework::PointLightShadow::initializeSharedDepthTexture(1024, 1024, 2); // 假设最多支持1个点光源
 
 
@@ -414,32 +423,55 @@ void prepare()
 	//----------------text
 
 	
-
+	//普通物品使用GL_SRGB_ALPHA
 	// 添加地面
 	auto groundMat = std::make_shared<GLframework::PhongPointShadowMaterial>();
 	groundMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/land.jpg", 0, GL_SRGB_ALPHA);
-	auto groundGeo = GLframework::Geometry::createPlane(renderer->getShader(groundMat->getMaterialType()), 20.0, 20.0);
-	auto groundMesh = std::make_shared<GLframework::Mesh>(groundGeo, groundMat);
-	groundMesh->rotateX(-90);
-	groundMesh->setPosition({ 0, -2, 0 });
-	sceneOffScreen->addChild(groundMesh);
+	auto groundMatTex = std::make_shared<GLframework::PhongMaterial>();
 
-	// 添加几个立方体
-	auto boxMat = std::make_shared<GLframework::PhongPointShadowMaterial>();
-	boxMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/box.png", 0, GL_SRGB_ALPHA);
-	for (int i = 0; i < 5; ++i) {
-		auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(boxMat->getMaterialType()), 1.0f, 1.0f, 1.0f);
-		auto boxMesh = std::make_shared<GLframework::Mesh>(boxGeo, boxMat);
-		boxMesh->setPosition({ float(i) * 2.0f - 4.0f, 0, 0 });
-		sceneOffScreen->addChild(boxMesh);
-	}
-	//-----------------------
-	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(boxMat->getMaterialType()), 1.0f, 1.0f, 1.0f);
-	auto boxMesh = std::make_shared<GLframework::Mesh>(boxGeo, boxMat);
-	boxMesh->setPosition({ 0.0, 0, 1.0 });
-	sceneOffScreen->addChild(boxMesh);
+	groundMatTex->mDiffuse = std::make_shared<GLframework::Texture>("Texture/land.jpg", 0, GL_SRGB_ALPHA);
+
+	auto groundGeo = GLframework::Geometry::createPlane(renderer->getShader(groundMat->getMaterialType()), 10.0, 10.0);
+	auto groundMeshA = std::make_shared<GLframework::Mesh>(groundGeo, groundMat);
+	auto groundMeshB = std::make_shared<GLframework::Mesh>(groundGeo, groundMat);
+	auto groundMeshC = std::make_shared<GLframework::Mesh>(groundGeo, groundMat);
+	textD = std::make_shared<GLframework::Mesh>(groundGeo, groundMat);
+	auto groundMeshE = std::make_shared<GLframework::Mesh>(groundGeo, groundMat);
+	auto groundMeshF = std::make_shared<GLframework::Mesh>(groundGeo, groundMat);
+	
+	groundMeshA->setPosition({ 0.0f,-5.0f,0.0f });
+	groundMeshA->rotateX(-90);
+
+	groundMeshB->setPosition({ 0.0f,5.0f,0.0f });
+	groundMeshB->rotateX(90);
+
+	groundMeshC->setPosition({ 0.0f,0.0f,-5.0f });
+	
+
+	textD->setPosition({ 0.0f,0.0f,5.0f });
+	textD->rotateX(180);
 
 	
+	groundMeshE->setPosition({ -5.0f,0.0f,0.0f });
+	groundMeshE->rotateY(90);
+
+	groundMeshF->setPosition({ 5.0f,0.0f,0.0f });
+	groundMeshF->rotateY(-90);
+
+	sceneOffScreen->addChild(groundMeshA);
+	sceneOffScreen->addChild(groundMeshB);
+	sceneOffScreen->addChild(groundMeshC);
+	sceneOffScreen->addChild(textD);
+	sceneOffScreen->addChild(groundMeshE);
+	sceneOffScreen->addChild(groundMeshF);
+
+	auto boxMat = std::make_shared<GLframework::PhongPointShadowMaterial>();
+	boxMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/box.png", 0, GL_SRGB_ALPHA);
+	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(boxMat->getMaterialType()), 3, 1, 1);
+	auto boxMeshA = std::make_shared<GLframework::Mesh>(boxGeo, boxMat);
+	sceneOffScreen->addChild(boxMeshA);
+
+
 	/*
 	
 	auto boxCulling = std::make_shared<GLframework::WhiteMaterial>();
@@ -466,12 +498,12 @@ void prepare()
 	*/
 	
 	//在屏渲染
-	auto met = std::make_shared<GLframework::ScreenMaterial>();
-	met->mScreenTexture = framebufferResolve->getColorAttachment();
+	ScreenMat = std::make_shared<GLframework::ScreenMaterial>();
+	ScreenMat->mScreenTexture = framebufferResolve->getColorAttachment();
 	//met->mScreenTexture = renderer->mShadowFBO->getDepthAttachment();
 	//met->mDepthStencilTexture = framebuffer->getDepthStencilAttachment();
-	auto geo = GLframework::Geometry::createScreenPlane(renderer->getShader(met->getMaterialType()));
-	auto mesh = std::make_shared<GLframework::Mesh>(geo, met);
+	auto geo = GLframework::Geometry::createScreenPlane(renderer->getShader(ScreenMat->getMaterialType()));
+	auto mesh = std::make_shared<GLframework::Mesh>(geo, ScreenMat);
 	sceneInScreen->addChild(mesh);
 	//----------
 
@@ -531,12 +563,13 @@ void prepare()
 		float z = sin(angle) * radius;
 		if(i==0)
 		{
-			pointLight->setPosition(glm::vec3(3.0, 6.0f, 10.0));
-			pointLight->setColor(glm::vec3(1.0f, 1.0f, 1.0f));
+			pointLight->setPosition(glm::vec3(3.0, 3.0f, -1.0));
+			pointLight->setColor(glm::vec3(0.8f, 0.8f, 0.9f));
+		
 		}
 		if (i == 1)
 		{
-			pointLight->setPosition(glm::vec3(-3.0, 6.0f, 10.0));
+			pointLight->setPosition(glm::vec3(-3.0, 3.0f, -1.0));
 			pointLight->setColor(glm::vec3(1.0f, 1.0f, 1.0f));
 		}
 		pointLights.push_back(std::move(pointLight));
@@ -589,9 +622,23 @@ void renderIMGUI()
 	if(ImGui::SliderFloat("light.x", &pos.x, 0.0f, 50.f, "%.2f"))
 	{
 		dirLight->setPosition(pos);
-	} 
+	}
+	float rotate = textD->getAngleX();
+	if (ImGui::SliderFloat("Text Rotate:", &rotate, -360, 360))
+	{
+		textD->setAngleX(rotate);
+	}
 	ImGui::SliderFloat("tightness", &dirLight->getShadow()->mDiskTightness, 0.0f, 1.0f,"%.3f");
 	ImGui::SliderFloat("pcfRadius", &dirLight->getShadow()->mPcfRadius, 0.0f, 10.0f, "%.3f");
+	
+	if(ImGui::SliderAngle("angle", &m_time))
+	{
+		double r = 3;
+		double x = r * glm::sin(m_time);
+		double y = r * glm::cos(m_time);
+		pointLights[0]->setPosition({ x,3,y });
+	}
+	ImGui::SliderFloat("Exposure", &ScreenMat->mExposure, 0.0f, 1.0f);
 	/*
 	int width = dirLight->getShadow()->mRenderTarget->getWidth();
 	int height = dirLight->getShadow()->mRenderTarget->getHeight();
@@ -736,25 +783,30 @@ void OnScroll(double offset)
 void OnResize(int width, int height)
 {
 	GL_CALL(glViewport(0, 0, width, height));
+#ifdef _DEBUG
 	std::cout << "OnResize" << std::endl;
+#endif
+
 }
 
 void OnKeyboardCallback(int key, int action, int mods)
 {
 	GL_CALL(cameracontrol->onKey(key, action, mods));
+#ifdef _DEBUG
 	std::cout << "OnKeyboardCallback Pressed: " << key << " " << action << " " << mods << std::endl;
-	
+#endif
 }
 
 void OnMouseCallback(int button, int action, int mods)
 {
 	double x, y;
 	GL_APP->getCursorPosition(&x, &y);
+#ifdef _DEBUG
 	std::cout << "OnMouseCallback : " << button << " " << action << " " << mods << std::endl;
+#endif
 	cameracontrol->onMouse(button, action,x, y);
 	if(CameraControl* control=dynamic_cast<GameCameraControl*>(cameracontrol))
 	{
-		std::cout << "call1\n";
 		if(PerspectiveCamera* icamera = dynamic_cast<PerspectiveCamera*>(camera))
 		{
 			if(button==GLFW_MOUSE_BUTTON_MIDDLE&&action==GLFW_PRESS)
@@ -786,6 +838,7 @@ void processInput(GLFWwindow* window)
 
 void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+#ifdef _DEBUG
 	if (action == GLFW_PRESS)
 		std::cout << "press the bottom" << std::endl;
 	else if (action == GLFW_RELEASE)
@@ -795,6 +848,8 @@ void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods
 	std::cout << "Pressed: " << key << std::endl;
 	std::cout << "Action: " << action << std::endl;
 	std::cout << "Mods: " << mods << std::endl;
+#endif
+
 }
 
 void OnCursor(double xpos, double ypos)
@@ -805,3 +860,13 @@ void OnCursor(double xpos, double ypos)
 #pragma endregion
 
 
+void rotateLight()
+{
+	/*
+	double r = 3;
+	double Time = glfwGetTime();
+	double x = r * glm::sin(Time);
+	double y = r * glm::cos(Time);
+	pointLights[0]->setPosition({ x,3,y });
+	*/
+}

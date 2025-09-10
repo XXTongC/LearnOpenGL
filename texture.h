@@ -35,7 +35,15 @@ namespace GLframework
 			unsigned int layerNum,
 			unsigned int unit
 		); 
-		static std::shared_ptr<Texture> createDepthCubemap(unsigned int size, unsigned int unit);
+		static std::shared_ptr<Texture> createDepthCubemap(
+			unsigned int size, 
+			unsigned int unit
+		);
+		static std::shared_ptr<Texture> createHDRTexture(
+			unsigned int width,
+			unsigned int height,
+			unsigned int unit
+		);
 		static std::shared_ptr<Texture> createMultiSampleTexture(
 			unsigned int width,
 			unsigned int height,

@@ -17,7 +17,6 @@ namespace GLframework
 	public:
 		Renderer()
 		{
-			
 			mPhongShader =  std::make_shared<Shader>("shaders/phong/phong_V2.vert","shaders/phong/phong_V2.frag");
 			mWhiteShader =  std::make_shared<Shader>("shaders/white/white.vert","shaders/white/white.frag");
 			mDepthShader = std::make_shared<Shader>("shaders/depth/depth.vert", "shaders/depth/depth.frag");

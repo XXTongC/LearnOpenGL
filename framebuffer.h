@@ -25,6 +25,9 @@ namespace GLframework
 		static std::shared_ptr<Framebuffer> createCSMShadowFBO(unsigned width, unsigned height,unsigned int layerNum);
 		static std::shared_ptr<Framebuffer> createPointLightShadowFBO(unsigned width, unsigned height, unsigned layerCount);
 		static std::shared_ptr<Framebuffer> createMultiSampleFbo(unsigned int width, unsigned int height, unsigned int sampleNumber);
+		static std::shared_ptr<Framebuffer> createHDRFbo(unsigned int width, unsigned int height);
+
+
 		Framebuffer(){}
 		Framebuffer(
 			unsigned int width,

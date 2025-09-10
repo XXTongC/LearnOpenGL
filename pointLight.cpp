@@ -4,8 +4,8 @@ using namespace GLframework;
 PointLight::PointLight()
 {
 	mK2 = 1.0f;
-	mK1 = 1.0f;
-	mK0 = 1.0f;
+	mK1 = 0.0f;
+	mK0 = 0.0f;
 	
 	setShadow(std::make_shared<PointLightShadow>());
 

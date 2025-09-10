@@ -1,6 +1,31 @@
 #include "framebuffer.h"
 using namespace GLframework;
 
+
+
+std::shared_ptr<Framebuffer> Framebuffer::createHDRFbo(unsigned width, unsigned height)
+{
+	std::shared_ptr<Framebuffer> fb = std::make_shared<Framebuffer>();
+	unsigned int fbo;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	auto colorAttachment = Texture::createHDRTexture(width, height, 0);
+	auto depthStencilAttachment = Texture::createDepthStencilAttachment(width, height, 0);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment->getTexture(), 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthStencilAttachment->getTexture(), 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	fb->setFBO(fbo);
+	fb->setDepthStencilAttachment(depthStencilAttachment);
+	fb->setColorAttachment(colorAttachment);
+	fb->setWidth(width);
+	fb->setHeight(height);
+
+	return fb;
+}
 std::shared_ptr<Framebuffer> Framebuffer::createPointLightShadowFBO(unsigned width, unsigned height, unsigned layerCount)
 {
 	std::shared_ptr<Framebuffer> fb = std::make_shared<Framebuffer>();
@@ -9,8 +34,11 @@ std::shared_ptr<Framebuffer> Framebuffer::createPointLightShadowFBO(unsigned wid
 
 	glGenFramebuffers(1, &fb->mFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, fb->mFBO);
+
+#ifdef _DEBUG
 	std::cout << fb->mFBO;
-	
+#endif
+
 	// 创建深度纹理数组
 	fb->mDepthAttachment = Texture::createTexture2DArray(width, height, layerCount, 0, GL_DEPTH_COMPONENT32F);
 
@@ -122,7 +150,7 @@ std::shared_ptr<Framebuffer> Framebuffer::createMultiSampleFbo(
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	auto colorAttachment = Texture::createMultiSampleTexture(width, height, sampleNumber,GL_RGBA,0);
+	auto colorAttachment = Texture::createMultiSampleTexture(width, height, sampleNumber,GL_RGB16F,0);
 	auto depthStencilAttachment = Texture::createMultiSampleTexture(width, height, sampleNumber, GL_DEPTH24_STENCIL8, 0);
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, colorAttachment->getTexture(), 0);

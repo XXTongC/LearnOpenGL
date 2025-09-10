@@ -48,8 +48,6 @@ void GLframework::Shader::setFloatArray(const std::string& name, float* value, i
 	GL_CALL(glUniform1fv(location, count, value));
 }
 
-
-
 void GLframework::Shader::setVector3(const std::string& name, glm::vec3 vec)
 {
 	GLuint location = GL_CALL(glGetUniformLocation(mProgram, name.c_str()));

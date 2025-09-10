@@ -19,6 +19,8 @@ vec3 blur();
 vec3 colorInvert(vec3 color);
 vec3 gray(vec3 color);
 vec3 grayCorrect(vec3 color);
+vec3 toneMappingReinhard(vec3 hdrColor);
+vec3 toneMappingExposure(vec3 hdrColor);
 
 void main()
 {
@@ -47,6 +49,7 @@ void main()
     FragColor = vec4(average_color, 1.0f - revealage);
 */
     vec3 color = texture(screenTextureSampler,uv).rgb;
+    color = toneMappingExposure(color);
     // 1 将sRGB转换为RGB
     //color = pow(color,vec3(2.2));
     // 2 与光照进行计算、
@@ -57,6 +60,17 @@ void main()
     //vec3 color = blur();
     FragColor = vec4(color, 1.0f);
     
+}
+
+uniform float exposure;
+vec3 toneMappingExposure(vec3 hdrColor)
+{
+    return (vec3(1.0) - exp(-hdrColor * exposure));
+}
+
+vec3 toneMappingReinhard(vec3 hdrColor)
+{
+    return hdrColor / (hdrColor + vec3(1.0));
 }
 
 // calculate floating point numbers equality accurately

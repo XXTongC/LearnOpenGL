@@ -222,7 +222,6 @@ void main()
         res += pointLightResult * (1.0 - pointShadow);
         //res += pointLightResult;
         //res +=  pointShadow;
-
     }
 
     //res += pointLightContribution;

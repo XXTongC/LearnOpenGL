@@ -9,6 +9,7 @@ namespace GLframework
 		Mesh,
 		Scene,
 		InstancedMesh,
+		Light,
 	};
 
 	class Object : public std::enable_shared_from_this<Object>
@@ -45,11 +46,15 @@ namespace GLframework
 		void setAngleY(float angle);
 		void setAngleZ(float angle);
 
+		float getAngleX() const;
+		float getAngleY() const;
+		float getAngleZ() const;
 
 		void setScale(glm::vec3 scale);
 
 		glm::mat4 getModelMatrix() const;
 		glm::vec3 getDirection() const;
+
 	protected:
 		glm::vec3 mPosition{ 0.0f };
 		float mAngleX{ 0.0f };
