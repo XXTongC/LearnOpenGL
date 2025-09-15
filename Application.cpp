@@ -2,7 +2,7 @@
 #include "GL_ERROR_FIND.h"
 #include "core.h"
 #include <iostream>
-
+#include "tools/Logger/LogManager.h"
 
 //几个静态函数的实现
 //初始化静态函数的实现
@@ -100,7 +100,8 @@ bool GL_APPLICATION::Application::init(const int& width, const int& height)
 	mWindow = glfwCreateWindow(mWidth,mHeight , "MyFirstWindow", NULL, NULL);
 	if (mWindow == NULL)
 	{
-		std::cout << "Failed to create GLFW window" << std::endl;
+		std::cerr << "Failed to create GLFW window" << std::endl;
+		LogError("Failed to create GLFW window");
 		glfwTerminate();
 		return false;
 	}
@@ -109,7 +110,8 @@ bool GL_APPLICATION::Application::init(const int& width, const int& height)
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
+		std::cerr << "Failed to initialize GLAD" << std::endl;
+		LogError("Failed to initialize GLAD");
 		return false;
 	}
 	//窗口大小变化响应

@@ -21,3 +21,5 @@ private:
 	std::thread m_thread;
 	bool m_exit{ false };
 };
+
+void loggerMessge(Logger& logger,const std::string& message);

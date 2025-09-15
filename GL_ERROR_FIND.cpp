@@ -1,6 +1,6 @@
 #include "core.h"
 #include "GL_ERROR_FIND.h"
-
+#include "tools/Logger/LogManager.h"
 
 void GL_ERROR_FIND::findError()
 {
@@ -33,6 +33,7 @@ void GL_ERROR_FIND::findError()
 			errorInfo = "UNKNOWN_ERROR";
 			break;
 		}
+		LogError(errorInfo);
 		std::cout << errorInfo << std::endl;
 		assert(false);
 	}

@@ -262,6 +262,9 @@
     <Filter Include="cppfile\GLframework\tools\Logger">
       <UniqueIdentifier>{e5ea62c1-83b1-4730-97ae-303cbdb47f08}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\GLframework\tools\ObjectPool">
+      <UniqueIdentifier>{49ad85c0-586d-4ed7-9fd1-8a5315718dee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -436,6 +439,9 @@
       <Filter>cppfile\GLframework\light\shadow\pointLightShadow</Filter>
     </ClCompile>
     <ClCompile Include="tools\Logger\Logger.cpp">
+      <Filter>cppfile\GLframework\tools\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\Logger\LogManager.cpp">
       <Filter>cppfile\GLframework\tools\Logger</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1669,6 +1675,12 @@
     </ClInclude>
     <ClInclude Include="tools\Logger\Logger.h">
       <Filter>include\GLframework\tools\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\Logger\LogManager.h">
+      <Filter>include\GLframework\tools\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\ObjectPool\ObjectPool.h">
+      <Filter>include\GLframework\tools\ObjectPool</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

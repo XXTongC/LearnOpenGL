@@ -1309,7 +1309,6 @@ void Renderer::renderDirShadowMap(
 		{
 			isPostProcessPass = false;
 			break;
-
 		}
 	}
 	if (isPostProcessPass) return;

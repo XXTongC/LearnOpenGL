@@ -37,6 +37,7 @@
 #include "material.h"
 #include "framebuffer.h"
 #include "scene.h"
+#include <chrono>
 #include "renderer.h"
 #include "pointLight.h"
 //imgui thirdparty
@@ -47,6 +48,8 @@
 #include "assimpLoader.h"
 #include "phongEnvMaterial.h"
 #include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
+#include "tools/Logger/Logger.h"
+#include "tools/Logger/LogManager.h"
 int GLframework::PointLightShadow::MAX_POINT_LIGHTS = 2;
 /*
  * refer to ColorBlend, there are still some problem should be solve such as opacity order, look up OIT and Depth Peeling
@@ -68,17 +71,17 @@ bool setAndInitWindow(int width = 1200,int height = 900);
 //
 void render();
 
-//׼������ͷ����
+//
 void prepareCamera();
 
-//״̬���ó�ʼ��
+//
 void initIMGUI();
 void prepareState();
 void prepare();
 //������ת����
 void rotatePlant();
 
-//����IMGUI
+//IMGUI
 void renderIMGUI();
 
 //grass texture attribute
@@ -129,7 +132,6 @@ int width = 1920, height = 1080;
 glm::vec3 clearColor{};
 
 
-
 //�����ƹ�
 std::shared_ptr < GLframework::DirectionalLight> dirLight = nullptr;
 std::shared_ptr < GLframework::SpotLight> spotLight = nullptr;
@@ -150,13 +152,13 @@ std::shared_ptr<GLframework::ScreenMaterial> ScreenMat = nullptr;
 //--------------------
 int main()
 {
-
+	LogManager::getInstance().setMinLevel(LogManager::Level::info);
 	std::cout << "Please set the window as x * y" << std::endl;
 	//std::cin >> width >> height;
-	//��ʼ��GLFW����
+	// GLFW
 	if (!setAndInitWindow(width,height)) return -1;
 
-	//����opengl �ӿڲ���������ɫ
+	//opengl
 	GL_CALL(glViewport(0, 0, width, height));
 	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 	
@@ -164,7 +166,7 @@ int main()
 	prepare();
 	
 	initIMGUI();
-	//���Ի�ȡ���Կ������ṩ��Arrribbutes����
+	//Arrribbutes
 	int nrAttributes;
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
 	std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << std::endl;
@@ -176,10 +178,10 @@ int main()
 		rotatePlant();
 		rotateLight();
 		//moveit();
-		//pass 1: ��box��Ⱦ��colorAttachment�ϣ��µ�fob��
+		//pass 1: box colorAttachment
 		renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights,ambientLight, framebufferMultisample->getFBO());
 		renderer->msaaResolve(framebufferMultisample, framebufferResolve);
-		//pass 2: ��colorAttachment��Ϊ��������Ƶ�������Ļ��
+		//pass 2: colorAttachment
 		renderer->render(sceneInScreen,camera,dirLight,spotLight,pointLights,ambientLight);
 		renderIMGUI();
 	}
@@ -191,6 +193,7 @@ int main()
 
 void prepareSkyBox()
 {
+	LogInfo("SkyBox Starting prepare");
 	std::vector<std::string> paths = {
 		"Texture/skybox/right.jpg",
 		"Texture/skybox/left.jpg",
@@ -206,6 +209,7 @@ void prepareSkyBox()
 	auto boxGeo = GLframework::Geometry::createBox(renderer->getShader(GLframework::MaterialType::CubeSphereMaterial), 3.0f, 3.0f, 3.0f);
 	skyBoxMesh = std::make_shared<GLframework::Mesh>(boxGeo, skyBoxMat);
 	//sceneOffScreen->addChild(skyBoxMesh);
+	LogInfo("SkyBox Prepared");
 }
 
 
@@ -586,10 +590,12 @@ void prepare()
 	meshit->setPosition({ 3.0f,1.0f,0.0f });
 	sceneOffScreen->addChild(meshit);
 	*/
+	LogInfo(":\n Renderer Prepared\n SceneInScreen Prepared\n SceneOffScreen Prepared \n FramebufferMultisample Prepared\n FramebufferResolve Prepared\n PointLightShadow initialized\n Lights Ready \n Objects Ready");
 }
 
 bool setAndInitWindow(int width, int height)
 {
+	LogInfo("Window Initializing...");
 	if (!GL_APP->init(width,height)) return false;
 	GL_APP->setResizeCallback(OnResize);
 	GL_APP->setKeyboardCallback(OnKeyboardCallback);
@@ -598,6 +604,7 @@ bool setAndInitWindow(int width, int height)
 	GL_APP->setScrollCallback(OnScroll);
 	
 	//glClearDepth(0.0);
+	LogInfo("Window Initialized");
 	return true;
 }
 
@@ -690,10 +697,13 @@ void renderIMGUI()
 	glfwGetFramebufferSize(GL_APP->getWindow(), &display_w, &display_h);
 	glViewport(0, 0, display_w, display_h);
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	
+
 }
 
 void prepareCamera() 
 {
+	LogInfo(static_cast<std::string>(__func__)+ "(): " + "Camera preparing...");
 	camera = new PerspectiveCamera(
 		60.0f,
 		static_cast<float>(GL_APP->getWidth()) / static_cast<float>(GL_APP->getHeight()),
@@ -706,16 +716,19 @@ void prepareCamera()
 	
 	cameracontrol = new GameCameraControl();
 	cameracontrol->setCamera(camera);
+	LogInfo("Camera prepared");
 }
 
 void initIMGUI()
 {
+	LogInfo("GUI Initializing...");
 	ImGui::CreateContext();		//����ImGui������
 	ImGui::StyleColorsDark();	//ѡ��һ������
 
 	//	imgui版本设置
 	ImGui_ImplGlfw_InitForOpenGL(GL_APP->getWindow(), true);
 	ImGui_ImplOpenGL3_Init("#version 460");
+	LogInfo("GUI Initialized");
 }
 
 void rotatePlant()

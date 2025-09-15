@@ -1,5 +1,7 @@
 #include "Logger.h"
 #include <iostream>
+#include <chrono>
+#include <format>
 
 Logger::Logger()
 {
@@ -28,8 +30,11 @@ void Logger::log(std::string entry)
 
 void Logger::processEntries()
 {
+	auto time = std::chrono::system_clock::now();
+	std::chrono::zoned_time zone_time{ std::chrono::locate_zone("UTC"),std::chrono::clock_cast<std::chrono::system_clock>(time) };
+	std::string time_str = std::format("{0:%Y}_{0:%m}_{0:%d}_{0:%OH}_{0:%M}_{0:%S}", zone_time.get_sys_time() + std::chrono::hours(8));
 	// Open log file
-	std::ofstream logFile{ "log.txt" };
+	std::ofstream logFile{ "Log/log_" + time_str + ".txt"};
 	if (logFile.fail())
 	{
 		std::cerr << "Failed to open logfile.\n"<<std::endl;
@@ -71,4 +76,12 @@ void Logger::processEntriesHelper(std::queue<std::string>& queue, std::ofstream&
 		ofs << queue.front() << std::endl;
 		queue.pop();
 	}
+}
+
+void loggerMessge(Logger& logger,const std::string& message)
+{
+	auto time = std::chrono::system_clock::now();
+	std::chrono::zoned_time zone_time{std::chrono::locate_zone("UTC"),std::chrono::clock_cast<std::chrono::system_clock>(time)};
+	std::string time_str = std::format("{0:%Y}-{0:%m}-{0:%d} {0:%OH}:{0:%M}:{0:%S}", zone_time.get_sys_time() + std::chrono::hours(8));
+	logger.log(time_str + " : " + message);
 }

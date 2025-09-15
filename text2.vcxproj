@@ -187,6 +187,7 @@
     <ClCompile Include="third_party\imgui\imgui_tables.cpp" />
     <ClCompile Include="third_party\imgui\imgui_widgets.cpp" />
     <ClCompile Include="tools\Logger\Logger.cpp" />
+    <ClCompile Include="tools\Logger\LogManager.cpp" />
     <ClCompile Include="tools\tools.cpp" />
     <ClCompile Include="trackBallCameraControl.cpp" />
     <ClCompile Include="whiteMaterial.cpp" />
@@ -598,6 +599,8 @@
     <ClInclude Include="third_party\imgui\imstb_textedit.h" />
     <ClInclude Include="third_party\imgui\imstb_truetype.h" />
     <ClInclude Include="tools\Logger\Logger.h" />
+    <ClInclude Include="tools\Logger\LogManager.h" />
+    <ClInclude Include="tools\ObjectPool\ObjectPool.h" />
     <ClInclude Include="tools\ScreenShot.h" />
     <ClInclude Include="tools\tools.h" />
     <ClInclude Include="trackBallCameraControl.h" />
