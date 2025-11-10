@@ -63,7 +63,7 @@ namespace GLframework
 		glm::vec3 mScale{ 1.0f };
 		std::vector<std::shared_ptr<Object>>	mChildren;
 		std::shared_ptr<Object>					mParent = nullptr;
-		//ÀàÐÍ¼ÇÂ¼
+		
 		ObjectType mType;
 	};
 }

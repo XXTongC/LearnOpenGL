@@ -88,6 +88,37 @@ namespace GLframework
 		void projectObject(std::shared_ptr<Object> obj);
 		void setFaceCullingState(std::shared_ptr<GLframework::Material> material);
 	private:
+		// set MVP
+		void setMVPMatrices(std::shared_ptr<Shader> shader, std::shared_ptr<Mesh> mesh, Camera* camera);
+		// set Normal
+		void setNormalMatrix(std::shared_ptr<Shader> shader, std::shared_ptr<Mesh> mesh);
+		// set light attributions
+		void setLightingUniforms(
+			std::shared_ptr<Shader> shader,
+			std::shared_ptr<DirectionalLight> dirLight,
+			std::shared_ptr<SpotLight> spotLight,
+			std::vector<std::shared_ptr<PointLight>> pointLights,
+			std::shared_ptr<AmbientLight> ambient
+		);
+		// set material
+		void setCommonMaterialUniforms(
+			std::shared_ptr<Shader> shader,
+			std::shared_ptr<Material> material,
+			Camera* camera
+		);
+		// set texture of Phong material
+		void setPhongTextures(
+			std::shared_ptr<Shader> shader,
+			std::shared_ptr<Texture> diffuse,
+			std::shared_ptr<Texture> specularMask
+		);
+		// set pointLightShadow
+		void setPointLightShadowUniforms(
+			std::shared_ptr<Shader> shader,
+			std::vector<std::shared_ptr<PointLight>> pointLights
+		);
+		void drawMesh(std::shared_ptr<Mesh> mesh);
+
 		//生成多种不同的shader对象
 		//根据材质类型的不同，挑选选择哪个shader对象
 		std::shared_ptr<Shader> mPhongShader{ nullptr };

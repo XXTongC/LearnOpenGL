@@ -1,22 +1,22 @@
 #include "LogManager.h"
 
-// 初始化静态成员变量
 std::once_flag LogManager::s_onceFlag;
 std::unique_ptr<LogManager> LogManager::s_instance;
 
 LogManager& LogManager::getInstance() {
-    // 确保初始化代码只执行一次
+    // Make sure initInstance called once
     std::call_once(s_onceFlag, &LogManager::initInstance);
     return *s_instance;
 }
 
 void LogManager::initInstance() {
-    // 创建LogManager实例
+    // Create LogManager instance
     s_instance = std::unique_ptr<LogManager>(new LogManager());
+    //s_instance = std::make_unique<LogManager>();
 }
 
 LogManager::LogManager() : m_minLevel(Level::debug) {
-    // 创建Logger实例
+    // Create Logger instance
     m_logger = std::make_unique<Logger>();
     loggerMessge(*m_logger, "LOGGER STARTED");
 }

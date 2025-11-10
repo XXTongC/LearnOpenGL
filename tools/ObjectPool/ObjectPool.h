@@ -140,6 +140,7 @@
 #include <memory>
 #include <atomic>
 #include <cmath>
+#include "../Logger/LogManager.h"
 
 template<typename T, typename Allocator = std::allocator<T>>
 class ObjectPool
@@ -326,8 +327,11 @@ ObjectPool<T, Allocator>::~ObjectPool()
     // Check if there are any outstanding objects
     size_t outstanding = m_outstandingObjects.load();
     if (outstanding > 0) {
-        std::cout << "Warning: ObjectPool destroyed with " << outstanding
-            << " outstanding objects that have not been returned to the pool.\n";
+        const std::string message = "Warning: ObjectPool destroyed with " +
+            std::to_string(outstanding) + 
+            " outstanding objects that have not been returned to the pool.\n";
+        std::cerr << message;
+        LogWarning(message);
     }
 
     // Calculate how many objects should be in the pool (if all objects were returned)
