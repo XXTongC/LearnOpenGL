@@ -171,6 +171,7 @@
     <ClCompile Include="phongMaterial.cpp" />
     <ClCompile Include="pointLight.cpp" />
     <ClCompile Include="renderer.cpp" />
+    <ClCompile Include="renderer\Bloom\Bloom.cpp" />
     <ClCompile Include="scene.cpp" />
     <ClCompile Include="screenMaterial.cpp" />
     <ClCompile Include="shader.cpp" />
@@ -231,6 +232,7 @@
     <ClInclude Include="phongMaterial.h" />
     <ClInclude Include="pointLight.h" />
     <ClInclude Include="renderer.h" />
+    <ClInclude Include="renderer\Bloom\Bloom.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="screenMaterial.h" />

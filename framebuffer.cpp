@@ -1,7 +1,26 @@
 #include "framebuffer.h"
 using namespace GLframework;
 
+std::shared_ptr<Framebuffer> Framebuffer::createHDRBloomFbo(unsigned width, unsigned height)
+{
+	std::shared_ptr<Framebuffer> fb = std::make_shared<Framebuffer>();
+	unsigned int fbo;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
+	auto colorAttachment = Texture::createHDRTexture(width, height, 0);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment->getTexture(), 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	fb->setFBO(fbo);
+	fb->setColorAttachment(colorAttachment);
+	fb->setWidth(width);
+	fb->setHeight(height);
+
+	return fb;
+}
 
 std::shared_ptr<Framebuffer> Framebuffer::createHDRFbo(unsigned width, unsigned height)
 {
