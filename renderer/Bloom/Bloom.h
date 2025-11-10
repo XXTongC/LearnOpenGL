@@ -1,17 +1,27 @@
 #pragma once
 #include "../../core.h"
 #include "../../framebuffer.h"
+#include "../../geometry.h"
+#include "../../shader.h"
 namespace GLframework
 {
 	class Bloom
 	{
 	private:
-		std::vector<std::shared_ptr<Framebuffer>> mDownSamples{};
-		std::vector<std::shared_ptr<Framebuffer>> mUpSamples{};
 		int mWidth{ 0 };
 		int mHeight{ 0 };
 		// 下采样图片数量
 		int mMipLevels{ 0 };
+		float mThreshold{ 0.0f };
+		std::shared_ptr<Shader> mExtractBrightShader{ nullptr };
+		std::shared_ptr<Geometry> mQuad{ nullptr };
+		std::vector<std::shared_ptr<Framebuffer>> mDownSamples{};
+		std::vector<std::shared_ptr<Framebuffer>> mUpSamples{};
+		
+	private:
+		void extractBright(std::shared_ptr<Framebuffer> src, std::shared_ptr<Framebuffer> dst);
+		
+
 	public:
 		Bloom(int width,int height, int min_Resolution = 32);
 		~Bloom();

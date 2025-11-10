@@ -1,5 +1,29 @@
 #include "framebuffer.h"
+
+#include "renderer/Bloom/Bloom.h"
 using namespace GLframework;
+
+void Bloom::extractBright(std::shared_ptr<Framebuffer> src, std::shared_ptr<Framebuffer> dst)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, dst->getFBO());
+	glViewport(0, 0, dst->getWidth(), dst->getHeight());
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	mExtractBrightShader->begin();
+	{
+		auto srcTex = src->getColorAttachment();
+		srcTex->setUnit(0);
+		srcTex->Bind();
+		mExtractBrightShader->setInt("srcTex", 0);
+		mExtractBrightShader->setFloat("threshold", mThreshold);
+
+		glBindVertexArray(mQuad->getVao());
+		glDrawElements(GL_TRIANGLES, mQuad->getIndicesCount(), GL_UNSIGNED_INT, 0);
+
+	}
+	mExtractBrightShader->end();
+}
+
 
 std::shared_ptr<Framebuffer> Framebuffer::createHDRBloomFbo(unsigned width, unsigned height)
 {

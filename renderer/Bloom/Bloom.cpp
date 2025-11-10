@@ -25,7 +25,8 @@ Bloom::Bloom(int width,int height, int min_Resolution)
 		h *= 2;
 	}
 
-
+	mExtractBrightShader = std::make_shared<Shader>("shaders/bloom/extractBright.vert", "shaders/bloom/extractBright.frag");
+	mQuad = Geometry::createScreenPlane(mExtractBrightShader);
 }
 
 Bloom::~Bloom()
