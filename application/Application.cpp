@@ -4,8 +4,8 @@
 #include <iostream>
 #include "tools/Logger/LogManager.h"
 
-//¼¸¸ö¾²Ì¬º¯ÊıµÄÊµÏÖ
-//³õÊ¼»¯¾²Ì¬º¯ÊıµÄÊµÏÖ
+//å‡ ä¸ªé™æ€å‡½æ•°çš„å®ç°
+//åˆå§‹åŒ–é™æ€å‡½æ•°çš„å®ç°
 GL_APPLICATION::Application* GL_APPLICATION::Application::mInstance = nullptr;
 
 void GL_APPLICATION::Application::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
@@ -19,22 +19,22 @@ void GL_APPLICATION::Application::scrollCallback(GLFWwindow* window, double xoff
 }
 
 
-//´°¿Ú´óĞ¡¾²Ì¬º¯ÊıÊµÏÖ
+//çª—å£å¤§å°é™æ€å‡½æ•°å®ç°
 void GL_APPLICATION::Application::framebufferSizecallback(GLFWwindow* window, int width, int height)
 {
 	//std::cout << "Resize as" << width <<":" << height << std::endl;
 	Application* self = static_cast<Application*>(glfwGetWindowUserPointer(window));
+	self->mWidth = width;
+	self->mHeight = height;
 	if(self->mResizeCallback!=nullptr)
 	{
 		self->mResizeCallback(width, height);
-		self->mWidth = width;
-		self->mHeight = height;
 	}
 	
 	/*if(Application::getInstance()->mResizeCallback!=nullptr)
 		Application::getInstance()->mResizeCallback(width, height);*/
 }
-//¼üÅÌÏìÓ¦¾²Ì¬º¯ÊıÊµÏÖ
+//é”®ç›˜å“åº”é™æ€å‡½æ•°å®ç°
 void GL_APPLICATION::Application::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	std::cout << "KeyboardCallback" << std::endl;
@@ -43,7 +43,7 @@ void GL_APPLICATION::Application::keyCallback(GLFWwindow* window, int key, int s
 		self->mKeyboardCallback(key, action, mods);
 }
 
-//Êó±êÏìÓ¦¾²Ì¬º¯ÊıÊµÏÖ
+//é¼ æ ‡å“åº”é™æ€å‡½æ•°å®ç°
 void GL_APPLICATION::Application::mouseCallback(GLFWwindow* window, int button, int action, int mods)
 {
 	std::cout << "mouseCallback" << std::endl;
@@ -52,7 +52,7 @@ void GL_APPLICATION::Application::mouseCallback(GLFWwindow* window, int button, 
 		self->mMouseCallback(button, action, mods);
 }
 
-//Î»ÖÃÏìÓ¦¾²Ì¬º¯ÊıÊµÏÖ
+//ä½ç½®å“åº”é™æ€å‡½æ•°å®ç°
 void GL_APPLICATION::Application::cursorCallback(GLFWwindow* window, double xpos, double ypos)
 {
 	//std::cout << "cursorCallback" << std::endl;
@@ -114,11 +114,11 @@ bool GL_APPLICATION::Application::init(const int& width, const int& height)
 		LogError("Failed to initialize GLAD");
 		return false;
 	}
-	//´°¿Ú´óĞ¡±ä»¯ÏìÓ¦
+	//çª—å£å¤§å°å˜åŒ–å“åº”
 
 	glfwSetFramebufferSizeCallback(mWindow, framebufferSizecallback);
-	glfwSetWindowUserPointer(mWindow, this);	//½«´ËÊ±µÄthisÖ¸Õë´æµ½mWindow¶ÔÏóÀï
-	//¼üÅÌÏìÓ¦
+	glfwSetWindowUserPointer(mWindow, this);	//å°†æ­¤æ—¶çš„thisæŒ‡é’ˆå­˜åˆ°mWindowå¯¹è±¡é‡Œ
+	//é”®ç›˜å“åº”
 	glfwSetKeyCallback(mWindow, keyCallback);
 	glfwSetMouseButtonCallback(mWindow, mouseCallback);
 	glfwSetCursorPosCallback(mWindow, cursorCallback);
@@ -134,7 +134,7 @@ bool GL_APPLICATION::Application::update()
 
 	return true;
 }
-void GL_APPLICATION::Application::destory()
+void GL_APPLICATION::Application::destroy()
 {
 	glfwTerminate();
 }

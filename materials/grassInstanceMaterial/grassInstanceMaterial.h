@@ -2,7 +2,7 @@
 
 #include <memory>
 #include "../material.h"
-#include "../texture.h"
+#include "../../framework/texture.h"
 
 namespace GLframework
 {
@@ -20,6 +20,7 @@ namespace GLframework
 			setMaterialType(MaterialType::GrassInstanceMaterial);
 		}
 		~GrassInstanceMaterial();
+		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder) override;
 		void setUVScale(float value);
 		void setBrightness(float value);
 		void setWindScale(float value);

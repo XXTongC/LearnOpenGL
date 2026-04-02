@@ -2,8 +2,8 @@
 
 #include <deque>
 
-#include "../../../orthographiccamera.h"
-#include "../../../perspectivecamera.h"
+#include "../../../camera/orthographiccamera.h"
+#include "../../../camera/perspectivecamera.h"
 #include "../../../tools/tools.h"
 
 using namespace GLframework;
@@ -89,7 +89,7 @@ glm::mat4 DirectionalLightCSMShadow::getLightMatrix(Camera* camera, glm::vec3 li
     minZ = boxCenter.z - boxSize.z * 0.5f;
     maxZ = boxCenter.z + boxSize.z * 0.5f;
 
-    // ¶îÍâµÄZÖáµ÷Õû£¬È·±£²¶×½µ½¸ü¶àµÄÒõÓ°Í¶ÉäÕß
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È·ï¿½ï¿½ï¿½ï¿½×½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó°Í¶ï¿½ï¿½ï¿½ï¿½
     float zRange = maxZ - minZ;
     minZ -= zRange * 0.1f;
     maxZ += zRange * 0.1f;
@@ -102,28 +102,28 @@ glm::mat4 DirectionalLightCSMShadow::getLightMatrix(Camera* camera, glm::vec3 li
     return lightProjectionMatrix * lightViewMatrix;
     */
 
-    //4 ÓÅ»¯ÒõÓ°±ß½ç¿ò¼ÆËã
-    const float zMult = 10.0f; // Z·½ÏòµÄ»ù´¡³ËÊý
-    const float xyMult = 1.2f; // XY·½ÏòµÄ»ù´¡³ËÊý
-    const float stabilityFactor = 0.99f; // ÎÈ¶¨ÐÔÒò×Ó
-    const int historyLength = 10; // ÀúÊ·¼ÇÂ¼³¤¶È
-    const float lightAngleInfluence = 0.2f; // ¹âÔ´½Ç¶ÈÓ°ÏìÒò×Ó
+    //4 ï¿½Å»ï¿½ï¿½ï¿½Ó°ï¿½ß½ï¿½ï¿½ï¿½ï¿½ï¿½
+    const float zMult = 10.0f; // Zï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    const float xyMult = 1.2f; // XYï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    const float stabilityFactor = 0.99f; // ï¿½È¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    const int historyLength = 10; // ï¿½ï¿½Ê·ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½
+    const float lightAngleInfluence = 0.2f; // ï¿½ï¿½Ô´ï¿½Ç¶ï¿½Ó°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-    // ¼ÆËãµ±Ç°±ß½ç¿òµÄÖÐÐÄºÍ³ß´ç
+    // ï¿½ï¿½ï¿½ãµ±Ç°ï¿½ß½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄºÍ³ß´ï¿½
     glm::vec3 boxCenter = glm::vec3((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, (minZ + maxZ) * 0.5f);
     glm::vec3 boxSize = glm::vec3(maxX - minX, maxY - minY, maxZ - minZ);
 
-    // ¸ù¾Ý¹âÔ´·½Ïò¶¯Ì¬µ÷Õû³ËÊý
+    // ï¿½ï¿½ï¿½Ý¹ï¿½Ô´ï¿½ï¿½ï¿½ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     glm::vec3 lightDirAbs = glm::abs(lightDir);
     float dynamicXYMult = xyMult * (1.0f + glm::dot(lightDirAbs, glm::vec3(1.0f, 1.0f, 0.0f)) * lightAngleInfluence);
     float dynamicZMult = zMult * (1.0f + lightDirAbs.z * lightAngleInfluence);
 
-    // Ó¦ÓÃ¶¯Ì¬³ËÊý
+    // Ó¦ï¿½Ã¶ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½
     boxSize.x *= dynamicXYMult;
     boxSize.y *= dynamicXYMult;
     boxSize.z *= dynamicZMult;
 
-    // Ê¹ÓÃÀúÊ·¼ÇÂ¼À´Æ½»¬±ß½ç¿ò´óÐ¡µÄ±ä»¯
+    // Ê¹ï¿½ï¿½ï¿½ï¿½Ê·ï¿½ï¿½Â¼ï¿½ï¿½Æ½ï¿½ï¿½ï¿½ß½ï¿½ï¿½ï¿½Ð¡ï¿½Ä±ä»¯
     static std::deque<glm::vec3> sizeHistory;
     sizeHistory.push_back(boxSize);
     if (sizeHistory.size() > historyLength) {
@@ -136,10 +136,10 @@ glm::mat4 DirectionalLightCSMShadow::getLightMatrix(Camera* camera, glm::vec3 li
     }
     averageSize /= sizeHistory.size();
 
-    // Ó¦ÓÃÎÈ¶¨ÐÔÒò×Ó
+    // Ó¦ï¿½ï¿½ï¿½È¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     boxSize = glm::mix(averageSize, boxSize, stabilityFactor);
 
-    // ¸üÐÂ±ß½ç¿ò
+    // ï¿½ï¿½ï¿½Â±ß½ï¿½ï¿½
     minX = boxCenter.x - boxSize.x * 0.5f;
     maxX = boxCenter.x + boxSize.x * 0.5f;
     minY = boxCenter.y - boxSize.y * 0.5f;
@@ -147,14 +147,14 @@ glm::mat4 DirectionalLightCSMShadow::getLightMatrix(Camera* camera, glm::vec3 li
     minZ = boxCenter.z - boxSize.z * 0.5f;
     maxZ = boxCenter.z + boxSize.z * 0.5f;
 
-    // ×ÔÊÊÓ¦Z·¶Î§µ÷Õû
-    float sceneScale = glm::length(boxSize); // Ê¹ÓÃ±ß½ç¿ò´óÐ¡×÷Îª³¡¾°³ß¶ÈµÄ¹À¼Æ
-    float zRangeExtension = sceneScale * 0.1f; // ¸ù¾Ý³¡¾°³ß¶È¶¯Ì¬µ÷ÕûZ·¶Î§À©Õ¹
+    // ï¿½ï¿½ï¿½ï¿½Ó¦Zï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½
+    float sceneScale = glm::length(boxSize); // Ê¹ï¿½Ã±ß½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ß¶ÈµÄ¹ï¿½ï¿½ï¿½
+    float zRangeExtension = sceneScale * 0.1f; // ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½ï¿½ß¶È¶ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½Î§ï¿½ï¿½Õ¹
     minZ -= zRangeExtension;
     maxZ += zRangeExtension;
 
-    // Ó¦ÓÃ"Îü¸½µ½ÎÆËØ"¼¼ÊõÒÔ¼õÉÙÒõÓ°¶¶¶¯
-    const float texelSize = (maxX - minX) / 1024.0f; // ¼ÙÉèÒõÓ°ÌùÍ¼·Ö±æÂÊÎª1024x1024
+    // Ó¦ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½Ó°ï¿½ï¿½ï¿½ï¿½
+    const float texelSize = (maxX - minX) / 1024.0f; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó°ï¿½ï¿½Í¼ï¿½Ö±ï¿½ï¿½ï¿½Îª1024x1024
     minX = std::floor(minX / texelSize) * texelSize;
     maxX = std::ceil(maxX / texelSize) * texelSize;
     minY = std::floor(minY / texelSize) * texelSize;
@@ -166,11 +166,11 @@ glm::mat4 DirectionalLightCSMShadow::getLightMatrix(Camera* camera, glm::vec3 li
 
     return lightProjectionMatrix * lightViewMatrix;
     /*
-	//4 µ÷Õû(°üÎ§ºÐÒÔÍâµÄÎïÌå£¬Ò²ÄÜ¹»Ó°Ïìµ½ÆäÄÚ²¿ÎïÌåµÄÒõÓ°ÕÚµ²Ð§¹û£©
+	//4 ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å£¬Ò²ï¿½Ü¹ï¿½Ó°ï¿½ìµ½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó°ï¿½Úµï¿½Ð§ï¿½ï¿½ï¿½ï¿½
     maxZ *= 10;
     minZ *= 10;
 
-    //5 ¼ÆËãµ±Ç°¹âÔ´µÄÍ¶Ó°¾ØÕó
+    //5 ï¿½ï¿½ï¿½ãµ±Ç°ï¿½ï¿½Ô´ï¿½ï¿½Í¶Ó°ï¿½ï¿½ï¿½ï¿½
     auto lightProjectionMatrix = glm::ortho(minX, maxX, minY, maxY, -maxZ, -minZ);
 
     return lightProjectionMatrix * lightViewMatrix;

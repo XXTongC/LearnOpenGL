@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include "../../material.h"
-#include "../../texture.h"
+#include "../material.h"
+#include "../../framework/texture.h"
 namespace GLframework
 {
 	class PhongShadowMaterial : public Material

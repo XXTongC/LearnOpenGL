@@ -9,7 +9,9 @@ namespace GLframework
 	public:
 		Light()
 			:Object()
-		{}
+		{
+			setType(ObjectType::Light);
+		}
 		~Light() 
 		{
 			std::cout << "light destroy" << std::endl;

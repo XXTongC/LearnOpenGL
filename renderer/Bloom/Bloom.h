@@ -1,8 +1,8 @@
 #pragma once
 #include "../../core.h"
-#include "../../framebuffer.h"
-#include "../../geometry.h"
-#include "../../shader.h"
+#include "../../framebuffer/framebuffer.h"
+#include "../../framework/geometry.h"
+#include "../../framework/shader.h"
 namespace GLframework
 {
 	class Bloom
@@ -10,7 +10,7 @@ namespace GLframework
 	private:
 		int mWidth{ 0 };
 		int mHeight{ 0 };
-		// ÏÂ²ÉÑùÍ¼Æ¬ÊýÁ¿
+		// ï¿½Â²ï¿½ï¿½ï¿½Í¼Æ¬ï¿½ï¿½ï¿½ï¿½
 		int mMipLevels{ 0 };
 		float mThreshold{ 0.0f };
 		std::shared_ptr<Shader> mExtractBrightShader{ nullptr };

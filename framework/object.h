@@ -1,5 +1,6 @@
 #pragma once
 #include "core.h"
+#include <string>
 
 namespace GLframework
 {
@@ -36,12 +37,12 @@ namespace GLframework
 
 		void setPosition(glm::vec3 pos);
 		glm::vec3 getPosition() const;
-		//ÔöÁ¿Ðý×ª
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ª
 		void rotateX(float angle);
 		void rotateY(float angle);
 		void rotateZ(float angle);
 
-		//ÉèÖÃÐý×ª½Ç
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
 		void setAngleX(float angle);
 		void setAngleY(float angle);
 		void setAngleZ(float angle);
@@ -51,6 +52,10 @@ namespace GLframework
 		float getAngleZ() const;
 
 		void setScale(glm::vec3 scale);
+		glm::vec3 getScale() const;
+
+		void setName(const std::string& name);
+		std::string getName() const;
 
 		glm::mat4 getModelMatrix() const;
 		glm::vec3 getDirection() const;
@@ -61,6 +66,7 @@ namespace GLframework
 		float mAngleY{ 0.0f };
 		float mAngleZ{ 0.0f };
 		glm::vec3 mScale{ 1.0f };
+		std::string mName{};
 		std::vector<std::shared_ptr<Object>>	mChildren;
 		std::shared_ptr<Object>					mParent = nullptr;
 		

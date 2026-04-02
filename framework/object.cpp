@@ -37,18 +37,23 @@ glm::mat4 Object::getModelMatrix() const
 		parentModleMatrix = mParent->getModelMatrix();
 	}
 
-	//Ë³Ðò£ºËõ·Å -> Ðý×ª -> Æ½ÒÆ
+	//Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ -> ï¿½ï¿½×ª -> Æ½ï¿½ï¿½
 	glm::mat4 transform{ 1.0f };
 
 	transform = glm::scale(transform, mScale);
 
-	//Ðý×ªË³Ðò£ºpitch yaw roll
+	//ï¿½ï¿½×ªË³ï¿½ï¿½pitch yaw roll
 	transform = glm::rotate(transform, glm::radians(mAngleX), glm::vec3(1.0f, 0.0f, 0.0f));
 	transform = glm::rotate(transform, glm::radians(mAngleY), glm::vec3(0.0f, 1.0f, 0.0f));
 	transform = glm::rotate(transform, glm::radians(mAngleZ), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	transform = parentModleMatrix * glm::translate(glm::mat4(1.0f),mPosition) * transform;
 	return transform;
+}
+
+glm::vec3 Object::getScale() const
+{
+	return mScale;
 }
 
 void Object::rotateX(float angle)
@@ -76,18 +81,28 @@ void Object::setScale(glm::vec3 scale)
 	mScale = scale;
 }
 
+void Object::setName(const std::string& name)
+{
+	mName = name;
+}
+
+std::string Object::getName() const
+{
+	return mName;
+}
+
 void Object::addChild(std::shared_ptr<Object> obj)
 {
-	// 1. ¼ì²éÊÇ·ñÔø¾­¼ÓÈë¹ýÕâ¸öº¢×Ó
+	// 1. ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if(std::find(mChildren.begin(), mChildren.end(), obj) !=mChildren.end())
 	{
 		std::cout << "obj has been added in this Object. \n";
 		return;
 	}
 
-	// 2. ¼ÓÈëº¢×Ó
+	// 2. ï¿½ï¿½ï¿½ëº¢ï¿½ï¿½
 	mChildren.push_back(obj);
-	// 3. ¸æËßÐÂ¼ÓÈëµÄº¢×ÓËûµÄ¸¸Ç×ÊÇË­
+	// 3. ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Äºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½Ë­
 	obj->mParent = this->getShared();
 }
 

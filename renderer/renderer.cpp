@@ -15,7 +15,7 @@
 #include "materials/phongNormalMaterial/phongNormalMaterial.h"
 #include "materials/phongShadowMaterial/phongShadowMaterial.h"
 #include "light/shadow/directionalLightShadow/directionalLightShadow.h"
-#include "../perspectivecamera.h"
+#include "../camera/perspectivecamera.h"
 #include "light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
 #include "materials/phongCSMShadowMaterial/phongCSMShadowMaterial.h"
@@ -30,6 +30,38 @@
 
 using namespace GLframework;
 
+Renderer::Renderer()
+{
+	initializeShaders();
+}
+
+std::shared_ptr<Shader> Renderer::createShader(const char* vertexPath, const char* fragmentPath)
+{
+	return std::make_shared<Shader>(vertexPath, fragmentPath);
+}
+
+void Renderer::initializeShaders()
+{
+	mPhongShader = createShader("shaders/phong/phong_V2.vert", "shaders/phong/phong_V2.frag");
+	mWhiteShader = createShader("shaders/white/white.vert", "shaders/white/white.frag");
+	mDepthShader = createShader("shaders/depth/depth.vert", "shaders/depth/depth.frag");
+	mOpacityMaskShader = createShader("shaders/opacityMask/phongOpacityMask.vert", "shaders/opacityMask/phongOpacityMask.frag");
+	mScreenShader = createShader("shaders/screen/screen.vert", "shaders/screen/screen.frag");
+	mCubeShader = createShader("shaders/cube/cube.vert", "shaders/cube/cube.frag");
+	mPhongEnvShader = createShader("shaders/phongEnv/phongEnv.vert", "shaders/phongEnv/phongEnv_V2.frag");
+	mCubeSphereShader = createShader("shaders/cube/cube.vert", "shaders/cube/cubeSphere.frag");
+	mPhongEnvSphereShader = createShader("shaders/phongEnv/phongEnv.vert", "shaders/phongEnv/phongEnvSphere.frag");
+	mPhongInstanceShader = createShader("shaders/phongInstance/phongInstance.vert", "shaders/phongInstance/phongInstance.frag");
+	mGrassInstanceShader = createShader("shaders/grassInstance/grassInstance.vert", "shaders/grassInstance/grassInstance.frag");
+	mPhongNormalShader = createShader("shaders/phongNormal/phongNormal_V2.vert", "shaders/phongNormal/phongNormal_V2.frag");
+	mPhongParallaxShader = createShader("shaders/phongParallax/phongParallax_V2.vert", "shaders/phongParallax/phongParallax_V2.frag");
+	mShadowShader = createShader("shaders/shadow/shadow.vert", "shaders/shadow/shadow.frag");
+	mPhongShadowShader = createShader("shaders/phong/phongShadow.vert", "shaders/phong/phongShadow.frag");
+	mPhongCSMShadowShader = createShader("shaders/phongCSMShadow/phongCSMShadow.vert", "shaders/phongCSMShadow/phongCSMShadow.frag");
+	mPhongPointShadowShader = createShader("shaders/phongPointShadow/phongPointShadow.vert", "shaders/phongPointShadow/phongPointShadow.frag");
+	mShadowDistanceShader = createShader("shaders/shadowDistance/shadowDistance.vert", "shaders/shadowDistance/shadowDistance.frag");
+}
+
 void Renderer::setMVPMatrices(std::shared_ptr<Shader> shader, std::shared_ptr<Mesh> mesh, Camera* camera)
 {
 	shader->setMat4("modelMatrix", mesh->getModelMatrix());
@@ -42,12 +74,12 @@ void Renderer::setNormalMatrix(std::shared_ptr<Shader> shader, std::shared_ptr<M
 	shader->setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(mesh->getModelMatrix()))));
 }
 
-// 设置所有光源参数
+// 璁剧疆鎵€鏈夊厜婧愬弬鏁?
 void Renderer::setLightingUniforms(
 	std::shared_ptr<Shader> shader,
 	std::shared_ptr<DirectionalLight> dirLight,
 	std::shared_ptr<SpotLight> spotLight,
-	std::vector<std::shared_ptr<PointLight>> pointLights,
+	const std::vector<std::shared_ptr<PointLight>>& pointLights,
 	std::shared_ptr<AmbientLight> ambient
 )
 {
@@ -84,7 +116,7 @@ void Renderer::setLightingUniforms(
 	shader->setVector3("ambientColor", ambient->getColor());
 }
 
-// 设置通用材质参数
+// 璁剧疆閫氱敤鏉愯川鍙傛暟
 void Renderer::setCommonMaterialUniforms(
 	std::shared_ptr<Shader> shader,
 	std::shared_ptr<Material> material,
@@ -97,7 +129,7 @@ void Renderer::setCommonMaterialUniforms(
 	shader->setVector3("cameraPosition", camera->mPosition);
 }
 
-// 设置 Phong 材质的纹理
+// 璁剧疆 Phong 鏉愯川鐨勭汗鐞?
 void Renderer::setPhongTextures(std::shared_ptr<Shader> shader, std::shared_ptr<Texture> diffuse, std::shared_ptr<Texture> specularMask)
 {
 	shader->setInt("samplerGrass", diffuse->getUnit());
@@ -107,10 +139,10 @@ void Renderer::setPhongTextures(std::shared_ptr<Shader> shader, std::shared_ptr<
 	specularMask->Bind();
 }
 
-// 设置点光源阴影参数
+// 璁剧疆鐐瑰厜婧愰槾褰卞弬鏁?
 void Renderer::setPointLightShadowUniforms(
 	std::shared_ptr<Shader> shader,
-	std::vector<std::shared_ptr<PointLight>> pointLights
+	const std::vector<std::shared_ptr<PointLight>>& pointLights
 )
 {
 	for (int i = 0; i < pointLights.size(); i++)
@@ -131,7 +163,7 @@ void Renderer::setPointLightShadowUniforms(
 	shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
 }
 
-// 绘制网格（处理普通和实例化网格）
+// 缁樺埗缃戞牸锛堝鐞嗘櫘閫氬拰瀹炰緥鍖栫綉鏍硷級
 void Renderer::drawMesh(std::shared_ptr<Mesh> mesh)
 {
 	auto geometry = mesh->getGeometry();
@@ -151,7 +183,7 @@ void Renderer::drawMesh(std::shared_ptr<Mesh> mesh)
 }
 
 
-void Renderer::renderShadowMap(Camera* camera, const std::vector<std::shared_ptr<Mesh>>& meshes, std::shared_ptr<DirectionalLight> dirLight, std::vector<std::shared_ptr<GLframework::PointLight>> pointLights )
+void Renderer::renderShadowMap(Camera* camera, const std::vector<std::shared_ptr<Mesh>>& meshes, std::shared_ptr<DirectionalLight> dirLight, const std::vector<std::shared_ptr<GLframework::PointLight>>& pointLights)
 {
 	renderDirShadowMap(camera, mOpacityObjects, dirLight);
 	renderPointShadowMap(camera, mOpacityObjects, pointLights);
@@ -249,7 +281,7 @@ void Renderer::setPolygonOffsetState(std::shared_ptr<Material> material)
 	if (material->getPolygonOffsetState())
 	{
 		glEnable(material->getPolygonOffsetType());
-		// Factor��ʾ���б�ʵı�����unit��ʾ��Ⱦ��ȵ���Сϸ��ֵ�ı�����Ŀ�����ڽ��zFighting����
+		// Factor锟斤拷示锟斤拷锟叫憋拷实谋锟斤拷锟斤拷锟絬nit锟斤拷示锟斤拷染锟斤拷鹊锟斤拷锟叫∠革拷锟街碉拷谋锟斤拷锟斤拷锟侥匡拷锟斤拷锟斤拷诮锟斤拷zFighting锟斤拷锟斤拷
 		glPolygonOffset(material->getFactor(), material->getUnit());
 	}
 	else
@@ -337,14 +369,14 @@ void Renderer::render(
 	Camera* camera,
 	std::shared_ptr<DirectionalLight> dirLight,
 	std::shared_ptr<SpotLight> spotLight,
-	std::vector<std::shared_ptr<PointLight>> pointLights,
+	const std::vector<std::shared_ptr<PointLight>>& pointLights,
 	std::shared_ptr<AmbientLight> ambient,
 	unsigned int fbo
 )
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	// 1. 设置当前帧绘制的时候，opengl的必要状态机参数
+	// 1. 璁剧疆褰撳墠甯х粯鍒剁殑鏃跺€欙紝opengl鐨勫繀瑕佺姸鎬佹満鍙傛暟
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glDepthMask(GL_TRUE);
@@ -352,20 +384,20 @@ void Renderer::render(
 	glDisable(GL_POLYGON_OFFSET_FILL);
 	glDisable(GL_POLYGON_OFFSET_LINE);
 
-	// 开启测试、设置基本写入状态，打开模板测试写入
+	// 寮€鍚祴璇曘€佽缃熀鏈啓鍏ョ姸鎬侊紝鎵撳紑妯℃澘娴嬭瘯鍐欏叆
 	glEnable(GL_STENCIL_TEST);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	glStencilMask(0xff); //保证了模板缓冲可以被清理
+	glStencilMask(0xff); //淇濊瘉浜嗘ā鏉跨紦鍐插彲浠ヨ娓呯悊
 
-	// 默认颜色混合
+	// 榛樿棰滆壊娣峰悎
 	glDisable(GL_BLEND);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
-	// 2. 清理画布 
+	// 2. 娓呯悊鐢诲竷 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	// 清空两个队列
+	// 娓呯┖涓や釜闃熷垪
 	mOpacityObjects.clear();
 	mTransparentObjects.clear();
 
@@ -373,14 +405,14 @@ void Renderer::render(
 
 	std::sort(mTransparentObjects.begin(), mTransparentObjects.end(), [camera](const std::shared_ptr<Mesh>& A,const std::shared_ptr<Mesh>& B)
 		{
-			//	1. 计算a的相机系的Z
+			//	1. 璁＄畻a鐨勭浉鏈虹郴鐨刏
 			auto viewMatrix = camera->getViewMatrix();
 
 			auto modelMatrixA = A->getModelMatrix();
 			auto worldPositionA = modelMatrixA * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 			auto cameraPositionA = viewMatrix * worldPositionA;
 
-			//2 计算b的相机系的Z
+			//2 璁＄畻b鐨勭浉鏈虹郴鐨刏
 			auto modelMatrixB = B->getModelMatrix();
 			auto worldPositionB = modelMatrixB * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 			auto cameraPositionB = viewMatrix * worldPositionB;
@@ -391,7 +423,7 @@ void Renderer::render(
 	//	render shadowmap
 	renderShadowMap(camera,mOpacityObjects, dirLight,pointLights);
 
-	// 3. 渲染两个队列
+	// 3. 娓叉煋涓や釜闃熷垪
 	for(auto& t : mOpacityObjects)
 	{
 		renderObject(t, camera, dirLight, spotLight, pointLights, ambient);
@@ -409,18 +441,18 @@ void Renderer::renderObject(
 	Camera* camera,
 	std::shared_ptr<DirectionalLight> dirLight,
 	std::shared_ptr<SpotLight> spotLight,
-	std::vector<std::shared_ptr<PointLight>> pointLights,
+	const std::vector<std::shared_ptr<PointLight>>& pointLights,
 	std::shared_ptr<AmbientLight> ambient
 )
 {
-	//判断是Mesh还是Object，如果是Mesh需要渲染
+	//鍒ゆ柇鏄疢esh杩樻槸Object锛屽鏋滄槸Mesh闇€瑕佹覆鏌?
 	if (object->getType() == ObjectType::Mesh||object->getType() == ObjectType::InstancedMesh)
 	{
 		auto mesh = std::static_pointer_cast<Mesh>(object);
 		std::shared_ptr<Geometry> geometry = mesh->getGeometry();
 
 		std::shared_ptr<Material> material = nullptr;
-		//考察是否拥有全局材质
+		//鑰冨療鏄惁鎷ユ湁鍏ㄥ眬鏉愯川
 		if(mGlobalMaterial!=nullptr)
 		{
 			material = mGlobalMaterial;
@@ -431,7 +463,7 @@ void Renderer::renderObject(
 
 		
 
-		//设置渲染状态
+		//璁剧疆娓叉煋鐘舵€?
 		setDepthState(material);
 		setPolygonOffsetState(material);
 		setStencilState(material);
@@ -462,7 +494,7 @@ void Renderer::renderObject(
 				//std::shared_ptr<DirectionalLightShadow> dirShadow = std::static_pointer_cast<DirectionalLightShadow>(dirLight->getShadow());
 				//if (phongMat->mDiffuse == nullptr)
 				//	std::cout << "null\n";
-				//��������Ĭ��͸����--------
+				//锟斤拷锟斤拷锟斤拷锟斤拷默锟斤拷透锟斤拷锟斤拷--------
 				//GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 
 
@@ -472,7 +504,7 @@ void Renderer::renderObject(
 				//GL_CALL(shader->setInt("samplerGrass", phongMat->mDiffuse->getUnit()));
 				//phongMat->mDiffuse->Bind();
 
-				//	mask��ͼ
+				//	mask锟斤拷图
 				//GL_CALL(shader->setInt("MaskSampler", 1));
 				//phongMat->mSpecularMask->Bind();
 				///*
@@ -493,26 +525,26 @@ void Renderer::renderObject(
 				//shader->setFloat("diskTightness", dirShadow->mDiskTightness);
 				//shader->setFloat("pcfRadius", dirShadow->mPcfRadius);
 				//*/
-				//	������������������Ԫ���йҹ�
-				//	mvp�仯����
+				//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷元锟斤拷锟叫挂癸拷
+				//	mvp锟戒化锟斤拷锟斤拷
 				//shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				//shader->setMat4("viewMatrix", camera->getViewMatrix());
 				//shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//���߾�����£�����ת�����з��ߵı仯����
+				//锟斤拷锟竭撅拷锟斤拷锟斤拷拢锟斤拷锟斤拷锟阶拷锟斤拷锟斤拷蟹锟斤拷叩谋浠拷锟斤拷锟?
 				//shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
-				//	spotlight��Դ��������
+				//	spotlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				//shader->setVector3("spotLight.position", spotLight->getPosition());
 				//shader->setVector3("spotLight.color", spotLight->getColor());
 				//shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 				//shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				//shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				//shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				//	dirlight��Դ��������
+				//	dirlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				//shader->setVector3("directionalLight.color", dirLight->getColor());
 				//shader->setVector3("directionalLight.direction", dirLight->getDirection());
 				//shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 				//shader->setFloat("directionalLight.intensity", dirLight->getIntensity());
-				//	pointlight��Դ��������
+				//	pointlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				//std::cout << pointLights.size()<<std::endl;
 				//for (int i = 0; i < pointLights.size(); i++)
 				//{
@@ -535,7 +567,7 @@ void Renderer::renderObject(
 				//shader->setFloat("shiness", phongMat->mShiness);
 				//shader->setFloat("speed", 0.5);
 
-				//	�����Ϣ����
+				//	锟斤拷锟斤拷锟较拷锟斤拷锟?
 				//shader->setVector3("cameraPosition", camera->mPosition);
 				//if (phongMat->mDiffuse == nullptr)
 				//	std::cout << "null\n";
@@ -574,43 +606,43 @@ void Renderer::renderObject(
 
 				if (opacityMat->mDiffuse == nullptr)
 					std::cout << "null\n";
-				//��������Ĭ��͸����--------
+				//锟斤拷锟斤拷锟斤拷锟斤拷默锟斤拷透锟斤拷锟斤拷--------
 				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 
 
 				//-----------------------
 
-				//	����shader�Ĳ�����Ϊ0�Ų�����
-				//	diffuse��ͼ
+				//	锟斤拷锟斤拷shader锟侥诧拷锟斤拷锟斤拷为0锟脚诧拷锟斤拷锟斤拷
+				//	diffuse锟斤拷图
 				GL_CALL(shader->setInt("samplerGrass", 0));
 
-				//	�������������Ԫ�ҹ�
+				//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟皆拷夜锟?
 				opacityMat->mDiffuse->Bind();
 
-				//	mask��ͼ
+				//	mask锟斤拷图
 				GL_CALL(shader->setInt("opacityMaskSampler", 1));
 				opacityMat->mOpacityrMask->Bind();
 
-				//	������������������Ԫ���йҹ�
-				//	mvp�仯����
+				//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷元锟斤拷锟叫挂癸拷
+				//	mvp锟戒化锟斤拷锟斤拷
 				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//���߾�����£�����ת�����з��ߵı仯����
+				//锟斤拷锟竭撅拷锟斤拷锟斤拷拢锟斤拷锟斤拷锟阶拷锟斤拷锟斤拷蟹锟斤拷叩谋浠拷锟斤拷锟?
 				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
-				//	spotlight��Դ��������
+				//	spotlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				//	dirlight��Դ��������
+				//	dirlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				shader->setVector3("directionalLight.color", dirLight->getColor());
 				shader->setVector3("directionalLight.direction", dirLight->getDirection());
 				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 
-				//	pointlight��Դ��������
+				//	pointlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				//std::cout << pointLights.size()<<std::endl;
 				for (int i = 0; i < pointLights.size(); i++)
 				{
@@ -633,7 +665,7 @@ void Renderer::renderObject(
 				shader->setFloat("shiness", opacityMat->mShiness);
 				shader->setFloat("speed", 0.5);
 
-				//	�����Ϣ����
+				//	锟斤拷锟斤拷锟较拷锟斤拷锟?
 				shader->setVector3("cameraPosition", camera->mPosition);
 				if (opacityMat->mDiffuse == nullptr)
 					std::cout << "null\n";
@@ -682,44 +714,44 @@ void Renderer::renderObject(
 
 			if (phongMat->mDiffuse == nullptr)
 				std::cout << "null diffuse\n";
-			//��������Ĭ��͸����--------
+			//锟斤拷锟斤拷锟斤拷锟斤拷默锟斤拷透锟斤拷锟斤拷--------
 			GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 			//-----------------------
 
-			//	����shader�Ĳ�����Ϊ0�Ų�����
-			//	diffuse��ͼ
+			//	锟斤拷锟斤拷shader锟侥诧拷锟斤拷锟斤拷为0锟脚诧拷锟斤拷锟斤拷
+			//	diffuse锟斤拷图
 			GL_CALL(shader->setInt("samplerGrass", 0));
-			//	�������������Ԫ�ҹ�
+			//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟皆拷夜锟?
 			phongMat->mDiffuse->Bind();
 
-			//	mask��ͼ
+			//	mask锟斤拷图
 			GL_CALL(shader->setInt("MaskSampler", 1));
 			phongMat->mSpecularMask->Bind();
 
-			//	cube��ͼ
+			//	cube锟斤拷图
 			GL_CALL(shader->setInt("envSampler", 2));
 			phongMat->mEnv->Bind();
 
-			//	������������������Ԫ���йҹ�
-			//	mvp�仯����
+			//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷元锟斤拷锟叫挂癸拷
+			//	mvp锟戒化锟斤拷锟斤拷
 			shader->setMat4("modelMatrix", mesh->getModelMatrix());
 			shader->setMat4("viewMatrix", camera->getViewMatrix());
 			shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-			//���߾�����£�����ת�����з��ߵı仯����
+			//锟斤拷锟竭撅拷锟斤拷锟斤拷拢锟斤拷锟斤拷锟阶拷锟斤拷锟斤拷蟹锟斤拷叩谋浠拷锟斤拷锟?
 			shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
-			//	spotlight��Դ��������
+			//	spotlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 			shader->setVector3("spotLight.position", spotLight->getPosition());
 			shader->setVector3("spotLight.color", spotLight->getColor());
 			shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 			shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 			shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 			shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-			//	dirlight��Դ��������
+			//	dirlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 			shader->setVector3("directionalLight.color", dirLight->getColor());
 			shader->setVector3("directionalLight.direction", dirLight->getDirection());
 			shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 
-			//	pointlight��Դ��������
+			//	pointlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 			//std::cout << pointLights.size()<<std::endl;
 			for (int i = 0; i < pointLights.size(); i++)
 			{
@@ -742,7 +774,7 @@ void Renderer::renderObject(
 			shader->setFloat("shiness", phongMat->mShiness);
 			shader->setFloat("speed", 0.5);
 
-			//	�����Ϣ����
+			//	锟斤拷锟斤拷锟较拷锟斤拷锟?
 			shader->setVector3("cameraPosition", camera->mPosition);
 
 		}
@@ -753,44 +785,44 @@ void Renderer::renderObject(
 
 				if (phongMat->mDiffuse == nullptr)
 					std::cout << "null diffuse\n";
-				//��������Ĭ��͸����--------
+				//锟斤拷锟斤拷锟斤拷锟斤拷默锟斤拷透锟斤拷锟斤拷--------
 				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 				//-----------------------
 
-				//	����shader�Ĳ�����Ϊ0�Ų�����
-				//	diffuse��ͼ
+				//	锟斤拷锟斤拷shader锟侥诧拷锟斤拷锟斤拷为0锟脚诧拷锟斤拷锟斤拷
+				//	diffuse锟斤拷图
 				GL_CALL(shader->setInt("samplerGrass", 0));
-				//	�������������Ԫ�ҹ�
+				//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟皆拷夜锟?
 				phongMat->mDiffuse->Bind();
 
-				//	mask��ͼ
+				//	mask锟斤拷图
 				GL_CALL(shader->setInt("MaskSampler", 1));
 				phongMat->mSpecularMask->Bind();
 		
-				//	cube��ͼ
+				//	cube锟斤拷图
 				GL_CALL(shader->setInt("envSampler", 2));
 				phongMat->mEnv->Bind();
 
-				//	������������������Ԫ���йҹ�
-				//	mvp�仯����
+				//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷元锟斤拷锟叫挂癸拷
+				//	mvp锟戒化锟斤拷锟斤拷
 				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//���߾�����£�����ת�����з��ߵı仯����
+				//锟斤拷锟竭撅拷锟斤拷锟斤拷拢锟斤拷锟斤拷锟阶拷锟斤拷锟斤拷蟹锟斤拷叩谋浠拷锟斤拷锟?
 				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
-				//	spotlight��Դ��������
+				//	spotlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				//	dirlight��Դ��������
+				//	dirlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				shader->setVector3("directionalLight.color", dirLight->getColor());
 				shader->setVector3("directionalLight.direction", dirLight->getDirection());
 				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 
-				//	pointlight��Դ��������
+				//	pointlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				//std::cout << pointLights.size()<<std::endl;
 				for (int i = 0; i < pointLights.size(); i++)
 				{
@@ -813,7 +845,7 @@ void Renderer::renderObject(
 				shader->setFloat("shiness", phongMat->mShiness);
 				shader->setFloat("speed", 0.5);
 
-				//	�����Ϣ����
+				//	锟斤拷锟斤拷锟较拷锟斤拷锟?
 				shader->setVector3("cameraPosition", camera->mPosition);
 
 			}
@@ -824,7 +856,7 @@ void Renderer::renderObject(
 				std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
 				if (phongMat->mDiffuse == nullptr)
 					std::cout << "null\n";
-				//��������Ĭ��͸����--------
+				//锟斤拷锟斤拷锟斤拷锟斤拷默锟斤拷透锟斤拷锟斤拷--------
 				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 
 
@@ -832,37 +864,37 @@ void Renderer::renderObject(
 
 
 
-				//	����shader�Ĳ�����Ϊ0�Ų�����
-				//	diffuse��ͼ
+				//	锟斤拷锟斤拷shader锟侥诧拷锟斤拷锟斤拷为0锟脚诧拷锟斤拷锟斤拷
+				//	diffuse锟斤拷图
 				GL_CALL(shader->setInt("samplerGrass", 0));
 
-				//	�������������Ԫ�ҹ�
+				//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟皆拷夜锟?
 				phongMat->mDiffuse->Bind();
 
-				//	mask��ͼ
+				//	mask锟斤拷图
 				GL_CALL(shader->setInt("MaskSampler", 1));
 				phongMat->mSpecularMask->Bind();
 
-				//	������������������Ԫ���йҹ�
-				//	mvp变换矩阵
+				//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷元锟斤拷锟叫挂癸拷
+				//	mvp鍙樻崲鐭╅樀
 				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//计算并传输法线矩阵 实例绘制中只能在GPU端进行计算
+				//璁＄畻骞朵紶杈撴硶绾跨煩闃?瀹炰緥缁樺埗涓彧鑳藉湪GPU绔繘琛岃绠?
 				//shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
-				//	spotlight数据传入
+				//	spotlight鏁版嵁浼犲叆
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				//	dirlight数据传入
+				//	dirlight鏁版嵁浼犲叆
 				shader->setVector3("directionalLight.color", dirLight->getColor());
 				shader->setVector3("directionalLight.direction", dirLight->getDirection());
 				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 
-				//	pointlight数据传入
+				//	pointlight鏁版嵁浼犲叆
 				//std::cout << pointLights.size()<<std::endl;
 				for (int i = 0; i < pointLights.size(); i++)
 				{
@@ -885,10 +917,10 @@ void Renderer::renderObject(
 				shader->setFloat("shiness", phongMat->mShiness);
 				shader->setFloat("speed", 0.5);
 
-				//	�����Ϣ����
+				//	锟斤拷锟斤拷锟较拷锟斤拷锟?
 				shader->setVector3("cameraPosition", camera->mPosition);
 
-				//����uniform���;���任����
+				//锟斤拷锟斤拷uniform锟斤拷锟酵撅拷锟斤拷浠伙拷锟斤拷锟?
 				if(im->getMatricesUpdateState())
 				{
 					shader->setMat4Array("matrices",im->mInstanceMatrices.data(),im->getInstanceCount());
@@ -921,48 +953,48 @@ void Renderer::renderObject(
 				shader->setFloat("cloudUVScale", instance_material->getCloudUVScale());
 				shader->setFloat("cloudSpeed", instance_material->getCloudSpeed());
 				shader->setFloat("cloudLerp", instance_material->getCloudLerp());
-				//设置透明度--------
+				//璁剧疆閫忔槑搴?-------
 				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 				//-----------------------
 
-				//	����shader�Ĳ�����Ϊ0�Ų�����
-				//	diffuse贴图绑定1
+				//	锟斤拷锟斤拷shader锟侥诧拷锟斤拷锟斤拷为0锟脚诧拷锟斤拷锟斤拷
+				//	diffuse璐村浘缁戝畾1
 				GL_CALL(shader->setInt("samplerGrass", 0));
 				instance_material->mDiffuse->Bind();
 
-				//	specularMask绑定
+				//	specularMask缁戝畾
 				GL_CALL(shader->setInt("MaskSampler", 1));
 				instance_material->mSpecularMask->Bind();
 
-				//	opacityMask绑定
+				//	opacityMask缁戝畾
 				GL_CALL(shader->setInt("opacityMask", 2));
 				instance_material->mOpacityMask->Bind();
 
-				//	couldMask绑定
+				//	couldMask缁戝畾
 				GL_CALL(shader->setInt("cloudMask", 3));
 				instance_material->mCloudMask->Bind();
-				//	������������������Ԫ���йҹ�
-				//	mvp矩阵变换
+				//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷元锟斤拷锟叫挂癸拷
+				//	mvp鐭╅樀鍙樻崲
 				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//���߾�����£�����ת�����з��ߵı仯����
+				//锟斤拷锟竭撅拷锟斤拷锟斤拷拢锟斤拷锟斤拷锟阶拷锟斤拷锟斤拷蟹锟斤拷叩谋浠拷锟斤拷锟?
 				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
-				//	spotlight��Դ��������
+				//	spotlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				//	dirlight��Դ��������
+				//	dirlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				shader->setVector3("directionalLight.color", dirLight->getColor());
 				shader->setVector3("directionalLight.direction", dirLight->getDirection());
 				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 				
 
 
-				//	pointlight��Դ��������
+				//	pointlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				//std::cout << pointLights.size()<<std::endl;
 				for (int i = 0; i < pointLights.size(); i++)
 				{
@@ -985,7 +1017,7 @@ void Renderer::renderObject(
 				shader->setFloat("shiness", instance_material->mShiness);
 				shader->setFloat("speed", 0.5);
 
-				//	�����Ϣ����
+				//	锟斤拷锟斤拷锟较拷锟斤拷锟?
 				shader->setVector3("cameraPosition", camera->mPosition);
 
 				//	matrix update as uniform way : 1, attribute way : 0
@@ -1006,7 +1038,7 @@ void Renderer::renderObject(
 			{
 				//std::shared_ptr<PhongNormalMaterial> phongMat = std::static_pointer_cast<PhongNormalMaterial>(material);
 
-				////��������Ĭ��͸����--------
+				////锟斤拷锟斤拷锟斤拷锟斤拷默锟斤拷透锟斤拷锟斤拷--------
 				//GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 
 
@@ -1088,7 +1120,7 @@ void Renderer::renderObject(
 			{
 				std::shared_ptr<PhongParallaxMaterial> phongMat = std::static_pointer_cast<PhongParallaxMaterial>(material);
 
-				//��������Ĭ��͸����--------
+				//锟斤拷锟斤拷锟斤拷锟斤拷默锟斤拷透锟斤拷锟斤拷--------
 				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 
 
@@ -1161,7 +1193,7 @@ void Renderer::renderObject(
 				std::shared_ptr<DirectionalLightCSMShadow> dirCSMShadow = std::static_pointer_cast<DirectionalLightCSMShadow>(dirLight->getShadow());
 				if (phongMat->mDiffuse == nullptr)
 					std::cout << "null\n";
-				//��������Ĭ��͸����--------
+				//锟斤拷锟斤拷锟斤拷锟斤拷默锟斤拷透锟斤拷锟斤拷--------
 				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 
 
@@ -1171,7 +1203,7 @@ void Renderer::renderObject(
 				GL_CALL(shader->setInt("samplerGrass", phongMat->mDiffuse->getUnit()));
 				phongMat->mDiffuse->Bind();
 
-				//	mask��ͼ
+				//	mask锟斤拷图
 				GL_CALL(shader->setInt("MaskSampler", 1));
 				phongMat->mSpecularMask->Bind();
 
@@ -1202,26 +1234,26 @@ void Renderer::renderObject(
 				shader->setFloat("diskTightness", dirCSMShadow->mDiskTightness);
 				shader->setFloat("pcfRadius", dirCSMShadow->mPcfRadius);
 
-				//	������������������Ԫ���йҹ�
-				//	mvp�仯����
+				//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷元锟斤拷锟叫挂癸拷
+				//	mvp锟戒化锟斤拷锟斤拷
 				shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				shader->setMat4("viewMatrix", camera->getViewMatrix());
 				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//���߾�����£�����ת�����з��ߵı仯����
+				//锟斤拷锟竭撅拷锟斤拷锟斤拷拢锟斤拷锟斤拷锟阶拷锟斤拷锟斤拷蟹锟斤拷叩谋浠拷锟斤拷锟?
 				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
-				//	spotlight��Դ��������
+				//	spotlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				shader->setVector3("spotLight.position", spotLight->getPosition());
 				shader->setVector3("spotLight.color", spotLight->getColor());
 				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				//	dirlight��Դ��������
+				//	dirlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				shader->setVector3("directionalLight.color", dirLight->getColor());
 				shader->setVector3("directionalLight.direction", dirLight->getDirection());
 				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 				shader->setFloat("directionalLight.intensity", dirLight->getIntensity());
-				//	pointlight��Դ��������
+				//	pointlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				//std::cout << pointLights.size()<<std::endl;
 				for (int i = 0; i < pointLights.size(); i++)
 				{
@@ -1244,7 +1276,7 @@ void Renderer::renderObject(
 				shader->setFloat("shiness", phongMat->mShiness);
 				shader->setFloat("speed", 0.5);
 
-				//	�����Ϣ����
+				//	锟斤拷锟斤拷锟较拷锟斤拷锟?
 				shader->setVector3("cameraPosition", camera->mPosition);
 				if (phongMat->mDiffuse == nullptr)
 					std::cout << "null\n";
@@ -1258,7 +1290,7 @@ void Renderer::renderObject(
 
 				//if (phongMat->mDiffuse == nullptr)
 				//	std::cout << "null\n";
-				////��������Ĭ��͸����--------
+				////锟斤拷锟斤拷锟斤拷锟斤拷默锟斤拷透锟斤拷锟斤拷--------
 				//GL_CALL(shader->setFloat("opacity", material->getOpacity()));
 
 
@@ -1268,11 +1300,11 @@ void Renderer::renderObject(
 				//GL_CALL(shader->setInt("samplerGrass", phongMat->mDiffuse->getUnit()));
 				//phongMat->mDiffuse->Bind();
 
-				////	mask��ͼ
+				////	mask锟斤拷图
 				//GL_CALL(shader->setInt("MaskSampler", 1));
 				//phongMat->mSpecularMask->Bind();
 				//
-				//GL_CALL(shader->setInt("pointShadowMaps", 2));  // 使用纹理单元2
+				//GL_CALL(shader->setInt("pointShadowMaps", 2));  // 浣跨敤绾圭悊鍗曞厓2
 				//PointLightShadow::getSharedDepthTexture()->setUnit(2);
 				//PointLightShadow::getSharedDepthTexture()->Bind();
 
@@ -1300,26 +1332,26 @@ void Renderer::renderObject(
 				//shader->setFloat("diskTightness", dirShadow->mDiskTightness);
 				//shader->setFloat("pcfRadius", dirShadow->mPcfRadius);
 				//
-				////	������������������Ԫ���йҹ�
-				////	mvp�仯����
+				////	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷元锟斤拷锟叫挂癸拷
+				////	mvp锟戒化锟斤拷锟斤拷
 				//shader->setMat4("modelMatrix", mesh->getModelMatrix());
 				//shader->setMat4("viewMatrix", camera->getViewMatrix());
 				//shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				////���߾�����£�����ת�����з��ߵı仯����
+				////锟斤拷锟竭撅拷锟斤拷锟斤拷拢锟斤拷锟斤拷锟阶拷锟斤拷锟斤拷蟹锟斤拷叩谋浠拷锟斤拷锟?
 				//shader->setMat3("normalMatrix", glm::mat(glm::transpose(glm::inverse(mesh->getModelMatrix()))));
-				////	spotlight��Դ��������
+				////	spotlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				//shader->setVector3("spotLight.position", spotLight->getPosition());
 				//shader->setVector3("spotLight.color", spotLight->getColor());
 				//shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
 				//shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
 				//shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
 				//shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				////	dirlight��Դ��������
+				////	dirlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				//shader->setVector3("directionalLight.color", dirLight->getColor());
 				//shader->setVector3("directionalLight.direction", dirLight->getDirection());
 				//shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
 				//shader->setFloat("directionalLight.intensity", dirLight->getIntensity());
-				////	pointlight��Դ��������
+				////	pointlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
 				////std::cout << pointLights.size()<<std::endl;
 				//for (int i = 0; i < pointLights.size(); i++)
 				//{
@@ -1341,14 +1373,14 @@ void Renderer::renderObject(
 
 				//}
 				//shader->setInt("debugShadowMap", 1);
-				//shader->setInt("debugLightIndex", 0); // 要调试的点光源索引
+				//shader->setInt("debugLightIndex", 0); // 瑕佽皟璇曠殑鐐瑰厜婧愮储寮?
 
 				//shader->setVector3("ambientColor", ambient->getColor());
 				//shader->setFloat("time", glfwGetTime());
 				//shader->setFloat("shiness", phongMat->mShiness);
 				//shader->setFloat("speed", 0.5);
 
-				////	�����Ϣ����
+				////	锟斤拷锟斤拷锟较拷锟斤拷锟?
 				//shader->setVector3("cameraPosition", camera->mPosition);
 				//if (phongMat->mDiffuse == nullptr)
 				//	std::cout << "null\n";
@@ -1404,9 +1436,9 @@ void Renderer::renderObject(
 			std::cout << "wrong\n";
 			break;
 		}
-		//// 3. ��vao
+		//// 3. 锟斤拷vao
 		//glBindVertexArray(geometry->getVao());
-		//// 4. 选择geometry的绘画方式（单例绘画/实力绘画）
+		//// 4. 閫夋嫨geometry鐨勭粯鐢绘柟寮忥紙鍗曚緥缁樼敾/瀹炲姏缁樼敾锛?
 		////glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		//if(object->getType()==ObjectType::Mesh)
 		//	glDrawElements(GL_TRIANGLES, geometry->getIndicesCount(), GL_UNSIGNED_INT, static_cast<void*>(nullptr));
@@ -1504,7 +1536,7 @@ void Renderer::renderDirShadowMap(
 void Renderer::renderPointShadowMap(
 	Camera* camera,
 	const std::vector<std::shared_ptr<Mesh>>& meshes,
-	std::vector<std::shared_ptr<PointLight>> pointLights
+	const std::vector<std::shared_ptr<PointLight>>& pointLights
 )
 {
 	bool isPostProcessPass = true;
@@ -1533,7 +1565,7 @@ void Renderer::renderPointShadowMap(
 	int width = depthTexture->getWidth();
 	int height = depthTexture->getHeight();
 
-	// 创建并绑定临时FBO
+	// 鍒涘缓骞剁粦瀹氫复鏃禙BO
 	GLuint tempFBO;
 	glGenFramebuffers(1, &tempFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, tempFBO);
@@ -1551,18 +1583,18 @@ void Renderer::renderPointShadowMap(
 		const auto& pointShadow = std::static_pointer_cast<PointLightShadow>(pointLight->getShadow());
 		pointShadow->setShadowMapIndex(i);
 		
-		// 渲染六个面的深度贴图
+		// 娓叉煋鍏釜闈㈢殑娣卞害璐村浘
 		for (unsigned int face = 0; face < 6; ++face)
 		{
 			int layerIndex = pointShadow->getShadowMapIndex() * 6 + face;
 			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture->getTexture(), 0, layerIndex);
-			// 检查 FBO 状态
+			// 妫€鏌?FBO 鐘舵€?
 			//std::cerr << layerIndex << std::endl;
 
 
 			glClear(GL_DEPTH_BUFFER_BIT);
 
-			// 设置光源视图和投影矩阵
+			// 璁剧疆鍏夋簮瑙嗗浘鍜屾姇褰辩煩闃?
 			glm::mat4 shadowProj = std::static_pointer_cast<PerspectiveCamera>(pointShadow->mCamera)->getProjectionMatrix();
 			glm::mat4 shadowView = lookAt(pointLight->getPosition(),
 			                              pointLight->getPosition() + Tools::getCubemapFaceDirection(face),

@@ -1,6 +1,6 @@
 #pragma once
 #include "../core.h"
-#include "../object.h"
+#include "../framework/object.h"
 
 namespace GLframework
 {

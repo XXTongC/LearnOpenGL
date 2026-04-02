@@ -6,7 +6,7 @@
 extern Logger logger;
 
 
-class GLFWwindow;
+struct GLFWwindow;
 
 using KeyboardCallback = void(*) (int key, int action, int mods);
 using ResizeCallback = void(*) (int width, int height);
@@ -20,6 +20,10 @@ namespace GL_APPLICATION
 	{
 	public:
 		~Application();
+		Application(const Application&) = delete;
+		Application& operator=(const Application&) = delete;
+		Application(Application&&) = delete;
+		Application& operator=(Application&&) = delete;
 		void test();
 		void setKeyboardCallback(KeyboardCallback callback) { mKeyboardCallback = callback; }
 		void setResizeCallback(ResizeCallback callback) { mResizeCallback = callback; }
@@ -34,7 +38,8 @@ namespace GL_APPLICATION
 
 		bool init(const int& width = 800, const int& height = 600);
 		bool update();
-		void destory();
+		void destroy();
+		void destory() { destroy(); }
 
 
 	private:

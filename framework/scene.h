@@ -6,7 +6,10 @@ namespace GLframework
 	class Scene : public Object
 	{
 	public:
-		Scene(){}
+		Scene()
+		{
+			setType(ObjectType::Scene);
+		}
 		~Scene(){}
 	};
 

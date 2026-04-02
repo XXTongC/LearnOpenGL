@@ -1,5 +1,5 @@
 #include "pointLightShadow.h"
-#include "../perspectivecamera.h"
+#include "../../../camera/perspectivecamera.h"
 using namespace GLframework;
 std::shared_ptr<Texture> PointLightShadow::mSharedDepthTexture = nullptr;
 

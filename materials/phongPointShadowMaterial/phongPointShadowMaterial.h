@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include "../../material.h"
-#include "../../texture.h"
+#include "../material.h"
+#include "../../framework/texture.h"
 namespace GLframework
 {
 	class PhongPointShadowMaterial : public Material
@@ -16,6 +16,7 @@ namespace GLframework
 			setMaterialType(MaterialType::PhongPointShadowMaterial);
 		}
 		~PhongPointShadowMaterial();
+		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder) override;
 
 
 	public:

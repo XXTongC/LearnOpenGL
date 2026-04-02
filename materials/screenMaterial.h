@@ -12,6 +12,7 @@ namespace GLframework
 			setMaterialType(MaterialType::ScreenMaterial);
 		}
 		~ScreenMaterial(){}
+		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder) override;
 	
 	public:
 		std::shared_ptr<Texture> mScreenTexture{ nullptr };

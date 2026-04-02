@@ -15,38 +15,18 @@ namespace GLframework
 	class Renderer
 	{
 	public:
-		Renderer()
-		{
-			mPhongShader =  std::make_shared<Shader>("shaders/phong/phong_V2.vert","shaders/phong/phong_V2.frag");
-			mWhiteShader =  std::make_shared<Shader>("shaders/white/white.vert","shaders/white/white.frag");
-			mDepthShader = std::make_shared<Shader>("shaders/depth/depth.vert", "shaders/depth/depth.frag");
-			mOpacityMaskShader = std::make_shared<Shader>("shaders/opacityMask/phongOpacityMask.vert", "shaders/opacityMask/phongOpacityMask.frag");
-			mScreenShader = std::make_shared<Shader>("shaders/screen/screen.vert", "shaders/screen/screen.frag");
-			mCubeShader = std::make_shared<Shader>("shaders/cube/cube.vert", "shaders/cube/cube.frag");
-			mPhongEnvShader = std::make_shared<Shader>("shaders/phongEnv/phongEnv.vert", "shaders/phongEnv/phongEnv_V2.frag");
-			mCubeSphereShader = std::make_shared<Shader>("shaders/cube/cube.vert", "shaders/cube/cubeSphere.frag");
-			mPhongEnvSphereShader = std::make_shared<Shader>("shaders/phongEnv/phongEnv.vert", "shaders/phongEnv/phongEnvSphere.frag");
-			mPhongInstanceShader = std::make_shared<Shader>("shaders/phongInstance/phongInstance.vert", "shaders/phongInstance/phongInstance.frag");
-			mGrassInstanceShader = std::make_shared<Shader>("shaders/grassInstance/grassInstance.vert", "shaders/grassInstance/grassInstance.frag");
-			mPhongNormalShader = std::make_shared<Shader>("shaders/phongNormal/phongNormal_V2.vert", "shaders/phongNormal/phongNormal_V2.frag");
-			mPhongParallaxShader = std::make_shared<Shader>("shaders/phongParallax/phongParallax_V2.vert", "shaders/phongParallax/phongParallax_V2.frag");
-			mShadowShader = std::make_shared<Shader>("shaders/shadow/shadow.vert", "shaders/shadow/shadow.frag");
-			mPhongShadowShader = std::make_shared<Shader>("shaders/phong/phongShadow.vert", "shaders/phong/phongShadow.frag");
-			mPhongCSMShadowShader = std::make_shared<Shader>("shaders/phongCSMShadow/phongCSMShadow.vert", "shaders/phongCSMShadow/phongCSMShadow.frag");
-			mPhongPointShadowShader = std::make_shared<Shader>("shaders/phongPointShadow/phongPointShadow.vert", "shaders/phongPointShadow/phongPointShadow.frag");
-			mShadowDistanceShader = std::make_shared<Shader>("shaders/shadowDistance/shadowDistance.vert", "shaders/shadowDistance/shadowDistance.frag");
-		}
-		~Renderer(){}
+		Renderer();
+		~Renderer() = default;
 		std::shared_ptr<Shader> getShader(MaterialType type);
-		//äÖÈ¾¹¦ÄÜº¯Êı
-		//1. Ã¿´Îµ÷ÓÃäÖÈ¾Ò»Ö¡
+		//æ¸²æŸ“åŠŸèƒ½å‡½æ•°
+		//1. æ¯æ¬¡è°ƒç”¨æ¸²æŸ“ä¸€å¸§
 		
 		void render(
 			std::shared_ptr < GLframework::Scene> scene,
 			Camera* camera,
 			std::shared_ptr < GLframework::DirectionalLight> dirLight,
 			std::shared_ptr < GLframework::SpotLight> spotLight,
-			std::vector<std::shared_ptr<GLframework::PointLight>> pointLights,
+			const std::vector<std::shared_ptr<GLframework::PointLight>>& pointLights,
 			std::shared_ptr <GLframework::AmbientLight> ambient,
 			unsigned int fbo = 0
 		);
@@ -55,21 +35,21 @@ namespace GLframework
 	public:
 		std::shared_ptr<Material> mGlobalMaterial{nullptr};
 	private:
-		//¸ù¾İMaterialÀàĞÍ²»Í¬£¬ÌôÑ¡²»Í¬µÄshader
+		//æ ¹æ®Materialç±»å‹ä¸åŒï¼ŒæŒ‘é€‰ä¸åŒçš„shader
 		std::shared_ptr<Shader> pickShader(MaterialType type);
 		void renderObject(
 			std::shared_ptr<Object> object,
 			Camera* camera,
 			std::shared_ptr < GLframework::DirectionalLight> dirLight,
 			std::shared_ptr < GLframework::SpotLight> spotLight,
-			std::vector<std::shared_ptr<GLframework::PointLight>> pointLights,
+			const std::vector<std::shared_ptr<GLframework::PointLight>>& pointLights,
 			std::shared_ptr <GLframework::AmbientLight> ambient
 		);
 		void renderShadowMap(
 			Camera* camera,
 			const std::vector<std::shared_ptr<Mesh>>& meshes,
 			std::shared_ptr<DirectionalLight> dirLight,
-			std::vector<std::shared_ptr<GLframework::PointLight>> pointLights
+			const std::vector<std::shared_ptr<GLframework::PointLight>>& pointLights
 		);
 		void renderDirShadowMap(
 			Camera* camera,
@@ -79,7 +59,7 @@ namespace GLframework
 		void renderPointShadowMap(
 			Camera* camera, 
 			const std::vector<std::shared_ptr<Mesh>>& meshes,
-			std::vector<std::shared_ptr<GLframework::PointLight>> pointLights
+			const std::vector<std::shared_ptr<GLframework::PointLight>>& pointLights
 		);
 		void setDepthState(std::shared_ptr<GLframework::Material> material);
 		void setPolygonOffsetState(std::shared_ptr<GLframework::Material> material);
@@ -87,7 +67,7 @@ namespace GLframework
 		void setColorBlendState(std::shared_ptr<GLframework::Material> material);
 		void projectObject(std::shared_ptr<Object> obj);
 		void setFaceCullingState(std::shared_ptr<GLframework::Material> material);
-	private:
+private:
 		// set MVP
 		void setMVPMatrices(std::shared_ptr<Shader> shader, std::shared_ptr<Mesh> mesh, Camera* camera);
 		// set Normal
@@ -97,7 +77,7 @@ namespace GLframework
 			std::shared_ptr<Shader> shader,
 			std::shared_ptr<DirectionalLight> dirLight,
 			std::shared_ptr<SpotLight> spotLight,
-			std::vector<std::shared_ptr<PointLight>> pointLights,
+			const std::vector<std::shared_ptr<PointLight>>& pointLights,
 			std::shared_ptr<AmbientLight> ambient
 		);
 		// set material
@@ -115,12 +95,14 @@ namespace GLframework
 		// set pointLightShadow
 		void setPointLightShadowUniforms(
 			std::shared_ptr<Shader> shader,
-			std::vector<std::shared_ptr<PointLight>> pointLights
+			const std::vector<std::shared_ptr<PointLight>>& pointLights
 		);
+		void initializeShaders();
+		std::shared_ptr<Shader> createShader(const char* vertexPath, const char* fragmentPath);
 		void drawMesh(std::shared_ptr<Mesh> mesh);
 
-		//Éú³É¶àÖÖ²»Í¬µÄshader¶ÔÏó
-		//¸ù¾İ²ÄÖÊÀàĞÍµÄ²»Í¬£¬ÌôÑ¡Ñ¡ÔñÄÄ¸öshader¶ÔÏó
+		//ç”Ÿæˆå¤šç§ä¸åŒçš„shaderå¯¹è±¡
+		//æ ¹æ®æè´¨ç±»å‹çš„ä¸åŒï¼ŒæŒ‘é€‰é€‰æ‹©å“ªä¸ªshaderå¯¹è±¡
 		std::shared_ptr<Shader> mPhongShader{ nullptr };
 		std::shared_ptr<Shader> mWhiteShader{ nullptr };
 		std::shared_ptr<Shader> mDepthShader{ nullptr };
@@ -140,8 +122,8 @@ namespace GLframework
 		std::shared_ptr<Shader> mPhongPointShadowShader{ nullptr };
 		std::shared_ptr<Shader> mShadowDistanceShader{ nullptr };
 		
-		//²»Í¸Ã÷¶ÓÁĞÓëÍ¸Ã÷¶ÓÁĞ
-		//ops: Ã¿Ò»Ö¡»æÖÆÇ°ĞèÒªÇå¿ÕÁ½¸ö¶ÓÁĞ
+		//ä¸é€æ˜é˜Ÿåˆ—ä¸é€æ˜é˜Ÿåˆ—
+		//ops: æ¯ä¸€å¸§ç»˜åˆ¶å‰éœ€è¦æ¸…ç©ºä¸¤ä¸ªé˜Ÿåˆ—
 		std::vector<std::shared_ptr<Mesh>> mOpacityObjects;
 		std::vector<std::shared_ptr<Mesh>> mTransparentObjects;
 

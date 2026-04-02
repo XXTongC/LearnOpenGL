@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="资源文件">
@@ -276,73 +276,73 @@
     <ClCompile Include="main.cpp">
       <Filter>cppfile</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Users\asus\Downloads\glad\src\glad.c">
+    <ClCompile Include="third_party\src\glad.c">
       <Filter>cppfile</Filter>
     </ClCompile>
-    <ClCompile Include="OldTestCode.cpp">
+    <ClCompile Include="legacy\OldTestCode.cpp">
       <Filter>cppfile\OldTestCode</Filter>
     </ClCompile>
-    <ClCompile Include="shader.cpp">
+    <ClCompile Include="framework\shader.cpp">
       <Filter>cppfile\GLframework</Filter>
     </ClCompile>
-    <ClCompile Include="Application.cpp">
+    <ClCompile Include="application\Application.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
-    <ClCompile Include="texture.cpp">
+    <ClCompile Include="framework\texture.cpp">
       <Filter>cppfile\GLframework</Filter>
     </ClCompile>
-    <ClCompile Include="camera.cpp">
+    <ClCompile Include="camera\camera.cpp">
       <Filter>cppfile\Application\camera</Filter>
     </ClCompile>
-    <ClCompile Include="orthographiccamera.cpp">
+    <ClCompile Include="camera\orthographiccamera.cpp">
       <Filter>cppfile\Application\camera</Filter>
     </ClCompile>
-    <ClCompile Include="perspectivecamera.cpp">
+    <ClCompile Include="camera\perspectivecamera.cpp">
       <Filter>cppfile\Application\camera</Filter>
     </ClCompile>
-    <ClCompile Include="cameracontrol.cpp">
+    <ClCompile Include="camera\cameracontrol.cpp">
       <Filter>cppfile\Application\camera</Filter>
     </ClCompile>
-    <ClCompile Include="trackBallCameraControl.cpp">
+    <ClCompile Include="camera\trackBallCameraControl.cpp">
       <Filter>cppfile\Application\camera</Filter>
     </ClCompile>
-    <ClCompile Include="gamecameracontrol.cpp">
+    <ClCompile Include="camera\gamecameracontrol.cpp">
       <Filter>cppfile\Application\camera</Filter>
     </ClCompile>
-    <ClCompile Include="geometry.cpp">
+    <ClCompile Include="framework\geometry.cpp">
       <Filter>cppfile\GLframework</Filter>
     </ClCompile>
-    <ClCompile Include="GL_ERROR_FIND.cpp">
+    <ClCompile Include="wrapper\GL_ERROR_FIND.cpp">
       <Filter>cppfile\wrapper</Filter>
     </ClCompile>
-    <ClCompile Include="object.cpp">
+    <ClCompile Include="framework\object.cpp">
       <Filter>cppfile\GLframework</Filter>
     </ClCompile>
-    <ClCompile Include="material.cpp">
+    <ClCompile Include="materials\material.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
-    <ClCompile Include="phongMaterial.cpp">
+    <ClCompile Include="materials\phongMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
-    <ClCompile Include="light.cpp">
+    <ClCompile Include="light\light.cpp">
       <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
-    <ClCompile Include="directionalLight.cpp">
+    <ClCompile Include="light\directionalLight.cpp">
       <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
-    <ClCompile Include="ambientLight.cpp">
+    <ClCompile Include="light\ambientLight.cpp">
       <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
-    <ClCompile Include="renderer.cpp">
+    <ClCompile Include="renderer\renderer.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="whiteMaterial.cpp">
+    <ClCompile Include="materials\whiteMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
-    <ClCompile Include="pointLight.cpp">
+    <ClCompile Include="light\pointLight.cpp">
       <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
-    <ClCompile Include="spotLight.cpp">
+    <ClCompile Include="light\spotLight.cpp">
       <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
     <ClCompile Include="third_party\imgui\imgui.cpp">
@@ -366,40 +366,40 @@
     <ClCompile Include="third_party\imgui\imgui_widgets.cpp">
       <Filter>third_party\include\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="scene.cpp">
+    <ClCompile Include="framework\scene.cpp">
       <Filter>cppfile\GLframework</Filter>
     </ClCompile>
-    <ClCompile Include="assimpLoader.cpp">
+    <ClCompile Include="application\assimpLoader.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
-    <ClCompile Include="depthMaterial.cpp">
+    <ClCompile Include="materials\depthMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
-    <ClCompile Include="opacityMaskMatetial.cpp">
+    <ClCompile Include="materials\opacityMaskMatetial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
-    <ClCompile Include="screenMaterial.cpp">
+    <ClCompile Include="materials\screenMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
     <ClCompile Include="third_party\glm\detail\glm.cpp">
       <Filter>third_party\glm\detail</Filter>
     </ClCompile>
-    <ClCompile Include="framebuffer.cpp">
+    <ClCompile Include="framebuffer\framebuffer.cpp">
       <Filter>cppfile\GLframework\framebuffer</Filter>
     </ClCompile>
-    <ClCompile Include="cubeMaterial.cpp">
+    <ClCompile Include="materials\cubeMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
-    <ClCompile Include="phongEnvMaterial.cpp">
+    <ClCompile Include="materials\phongEnvMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
-    <ClCompile Include="cubeSphereMaterial.cpp">
+    <ClCompile Include="materials\cubeSphereMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
-    <ClCompile Include="phongEnvSphereMaterial.cpp">
+    <ClCompile Include="materials\phongEnvSphereMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
-    <ClCompile Include="phongInstanceMaterial.cpp">
+    <ClCompile Include="materials\phongInstanceMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
     <ClCompile Include="mesh\mesh.cpp">
@@ -408,10 +408,10 @@
     <ClCompile Include="mesh\instancedMesh.cpp">
       <Filter>cppfile\GLframework\mesh</Filter>
     </ClCompile>
-    <ClCompile Include="assimpInstanceLoader.cpp">
+    <ClCompile Include="application\assimpInstanceLoader.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
-    <ClCompile Include="grassInstanceMaterial.cpp">
+    <ClCompile Include="materials\grassInstanceMaterial\grassInstanceMaterial.cpp">
       <Filter>cppfile\GLframework\material\grassInstanceMaterial</Filter>
     </ClCompile>
     <ClCompile Include="materials\phongParallaxMaterial\phongParallaxMaterial.cpp">
@@ -450,78 +450,81 @@
     <ClCompile Include="tools\Logger\LogManager.cpp">
       <Filter>cppfile\GLframework\tools\Logger</Filter>
     </ClCompile>
+    <ClCompile Include="tools\sceneSetup\SceneSetup.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\Bloom\Bloom.cpp">
       <Filter>cppfile\GLframework\renderer\Bloom</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="OldTestCode.h">
+    <ClInclude Include="legacy\OldTestCode.h">
       <Filter>include\OldTestCode</Filter>
     </ClInclude>
-    <ClInclude Include="shader.h">
+    <ClInclude Include="framework\shader.h">
       <Filter>include\GLframework</Filter>
     </ClInclude>
-    <ClInclude Include="Application.h">
+    <ClInclude Include="application\Application.h">
       <Filter>include\Application</Filter>
     </ClInclude>
-    <ClInclude Include="texture.h">
+    <ClInclude Include="framework\texture.h">
       <Filter>include\GLframework</Filter>
     </ClInclude>
-    <ClInclude Include="camera.h">
+    <ClInclude Include="camera\camera.h">
       <Filter>include\Application\camera</Filter>
     </ClInclude>
-    <ClInclude Include="orthographiccamera.h">
+    <ClInclude Include="camera\orthographiccamera.h">
       <Filter>include\Application\camera</Filter>
     </ClInclude>
-    <ClInclude Include="perspectivecamera.h">
+    <ClInclude Include="camera\perspectivecamera.h">
       <Filter>include\Application\camera</Filter>
     </ClInclude>
-    <ClInclude Include="cameracontrol.h">
+    <ClInclude Include="camera\cameracontrol.h">
       <Filter>include\Application\camera</Filter>
     </ClInclude>
-    <ClInclude Include="trackBallCameraControl.h">
+    <ClInclude Include="camera\trackBallCameraControl.h">
       <Filter>include\Application\camera</Filter>
     </ClInclude>
-    <ClInclude Include="gamecameracontrol.h">
+    <ClInclude Include="camera\gamecameracontrol.h">
       <Filter>include\Application\camera</Filter>
     </ClInclude>
-    <ClInclude Include="geometry.h">
+    <ClInclude Include="framework\geometry.h">
       <Filter>include\GLframework</Filter>
     </ClInclude>
-    <ClInclude Include="GL_ERROR_FIND.h">
+    <ClInclude Include="wrapper\GL_ERROR_FIND.h">
       <Filter>include\wrapper</Filter>
     </ClInclude>
     <ClInclude Include="core.h">
       <Filter>include\wrapper</Filter>
     </ClInclude>
-    <ClInclude Include="object.h">
+    <ClInclude Include="framework\object.h">
       <Filter>include\GLframework</Filter>
     </ClInclude>
-    <ClInclude Include="material.h">
+    <ClInclude Include="materials\material.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
-    <ClInclude Include="phongMaterial.h">
+    <ClInclude Include="materials\phongMaterial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
-    <ClInclude Include="light.h">
+    <ClInclude Include="light\light.h">
       <Filter>include\GLframework\light</Filter>
     </ClInclude>
-    <ClInclude Include="directionalLight.h">
+    <ClInclude Include="light\directionalLight.h">
       <Filter>include\GLframework\light</Filter>
     </ClInclude>
-    <ClInclude Include="ambientLight.h">
+    <ClInclude Include="light\ambientLight.h">
       <Filter>include\GLframework\light</Filter>
     </ClInclude>
-    <ClInclude Include="renderer.h">
+    <ClInclude Include="renderer\renderer.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
-    <ClInclude Include="whiteMaterial.h">
+    <ClInclude Include="materials\whiteMaterial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
-    <ClInclude Include="pointLight.h">
+    <ClInclude Include="light\pointLight.h">
       <Filter>include\GLframework\light</Filter>
     </ClInclude>
-    <ClInclude Include="spotLight.h">
+    <ClInclude Include="light\spotLight.h">
       <Filter>include\GLframework\light</Filter>
     </ClInclude>
     <ClInclude Include="third_party\imgui\imconfig.h">
@@ -551,7 +554,7 @@
     <ClInclude Include="third_party\imgui\imstb_truetype.h">
       <Filter>third_party\include\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="scene.h">
+    <ClInclude Include="framework\scene.h">
       <Filter>include\GLframework</Filter>
     </ClInclude>
     <ClInclude Include="third_party\assimp\ZipArchiveIOSystem.h">
@@ -797,16 +800,16 @@
     <ClInclude Include="third_party\assimp\Compiler\pushpack1.h">
       <Filter>third_party\include\assimp\complier</Filter>
     </ClInclude>
-    <ClInclude Include="assimpLoader.h">
+    <ClInclude Include="application\assimpLoader.h">
       <Filter>include\Application</Filter>
     </ClInclude>
-    <ClInclude Include="depthMaterial.h">
+    <ClInclude Include="materials\depthMaterial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
-    <ClInclude Include="opacityMaskMatetial.h">
+    <ClInclude Include="materials\opacityMaskMatetial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
-    <ClInclude Include="screenMaterial.h">
+    <ClInclude Include="materials\screenMaterial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
     <ClInclude Include="third_party\glad\glad.h">
@@ -1613,28 +1616,28 @@
     <ClInclude Include="third_party\glm\simd\vector_relational.h">
       <Filter>third_party\glm\simd</Filter>
     </ClInclude>
-    <ClInclude Include="stb_image.h">
+    <ClInclude Include="third_party\stb_image\stb_image.h">
       <Filter>third_party\stb_image</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>third_party\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="framebuffer.h">
+    <ClInclude Include="framebuffer\framebuffer.h">
       <Filter>include\GLframework\framebuffer</Filter>
     </ClInclude>
-    <ClInclude Include="cubeMaterial.h">
+    <ClInclude Include="materials\cubeMaterial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
-    <ClInclude Include="phongEnvMaterial.h">
+    <ClInclude Include="materials\phongEnvMaterial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
-    <ClInclude Include="cubeSphereMaterial.h">
+    <ClInclude Include="materials\cubeSphereMaterial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
-    <ClInclude Include="phongEnvSphereMaterial.h">
+    <ClInclude Include="materials\phongEnvSphereMaterial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
-    <ClInclude Include="phongInstanceMaterial.h">
+    <ClInclude Include="materials\phongInstanceMaterial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
     <ClInclude Include="mesh\mesh.h">
@@ -1643,10 +1646,10 @@
     <ClInclude Include="mesh\instancedMesh.h">
       <Filter>include\GLframework\mesh</Filter>
     </ClInclude>
-    <ClInclude Include="assimpInstanceLoader.h">
+    <ClInclude Include="application\assimpInstanceLoader.h">
       <Filter>include\Application</Filter>
     </ClInclude>
-    <ClInclude Include="grassInstanceMaterial\grassInstanceMaterial.h">
+    <ClInclude Include="materials\grassInstanceMaterial\grassInstanceMaterial.h">
       <Filter>include\GLframework\material\grassInstanceMaterial</Filter>
     </ClInclude>
     <ClInclude Include="materials\phongParallaxMaterial\phongParallaxMaterial.h">
@@ -1687,6 +1690,9 @@
     </ClInclude>
     <ClInclude Include="tools\Logger\LogManager.h">
       <Filter>include\GLframework\tools\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\sceneSetup\SceneSetup.h">
+      <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\ObjectPool\ObjectPool.h">
       <Filter>include\GLframework\tools\ObjectPool</Filter>

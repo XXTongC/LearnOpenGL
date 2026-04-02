@@ -1,7 +1,7 @@
 #pragma once
 #include "../../core.h"
-#include "../../framebuffer.h"
-#include "../../camera.h"
+#include "../../framebuffer/framebuffer.h"
+#include "../../camera/camera.h"
 
 namespace GLframework
 {

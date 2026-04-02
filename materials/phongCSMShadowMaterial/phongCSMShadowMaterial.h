@@ -1,6 +1,6 @@
 #pragma once
-#include "../../material.h"
-#include "../../texture.h"
+#include "../material.h"
+#include "../../framework/texture.h"
 
 namespace GLframework
 {
@@ -15,6 +15,7 @@ namespace GLframework
 		}
 
 		~PhongCSMShadowMaterial() override{}
+		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder) override;
 
 
 	public:

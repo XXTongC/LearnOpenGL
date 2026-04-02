@@ -1,6 +1,11 @@
 #pragma once
 #include "core.h"
 
+namespace GL_EDITOR
+{
+	class PropertyBuilder;
+}
+
 namespace GLframework
 {
 	enum class MaterialType
@@ -35,6 +40,7 @@ namespace GLframework
 	public:
 		Material(){}
 		virtual ~Material(){}
+		virtual void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder);
 		MaterialType getMaterialType() const;
 		void setMaterialType(MaterialType type);
 		void setDepthTest(bool value);

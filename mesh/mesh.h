@@ -1,7 +1,7 @@
 #pragma once
-#include "../object.h"
-#include "../geometry.h"
-#include "../material.h"
+#include "../framework/object.h"
+#include "../framework/geometry.h"
+#include "../materials/material.h"
 
 namespace GLframework
 {

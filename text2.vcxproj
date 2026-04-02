@@ -54,10 +54,8 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Label="Shared">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings"></ImportGroup>
+  <ImportGroup Label="Shared"></ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -77,6 +75,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)third_party;$(ProjectDir)application;$(ProjectDir)camera;$(ProjectDir)framework;$(ProjectDir)framebuffer;$(ProjectDir)light;$(ProjectDir)materials;$(ProjectDir)renderer;$(ProjectDir)wrapper;$(ProjectDir)legacy;$(ProjectDir)third_party\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -91,6 +90,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)third_party;$(ProjectDir)application;$(ProjectDir)camera;$(ProjectDir)framework;$(ProjectDir)framebuffer;$(ProjectDir)light;$(ProjectDir)materials;$(ProjectDir)renderer;$(ProjectDir)wrapper;$(ProjectDir)legacy;$(ProjectDir)third_party\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)third_party;$(ProjectDir)application;$(ProjectDir)camera;$(ProjectDir)framework;$(ProjectDir)framebuffer;$(ProjectDir)light;$(ProjectDir)materials;$(ProjectDir)renderer;$(ProjectDir)wrapper;$(ProjectDir)legacy;$(ProjectDir)third_party\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -123,6 +123,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)third_party;$(ProjectDir)application;$(ProjectDir)camera;$(ProjectDir)framework;$(ProjectDir)framebuffer;$(ProjectDir)light;$(ProjectDir)materials;$(ProjectDir)renderer;$(ProjectDir)wrapper;$(ProjectDir)legacy;$(ProjectDir)third_party\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,27 +133,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Users\asus\Downloads\glad\src\glad.c" />
-    <ClCompile Include="ambientLight.cpp" />
-    <ClCompile Include="Application.cpp" />
-    <ClCompile Include="assimpInstanceLoader.cpp" />
-    <ClCompile Include="assimpLoader.cpp" />
-    <ClCompile Include="camera.cpp" />
-    <ClCompile Include="cameracontrol.cpp" />
-    <ClCompile Include="cubeMaterial.cpp" />
-    <ClCompile Include="cubeSphereMaterial.cpp" />
-    <ClCompile Include="depthMaterial.cpp" />
-    <ClCompile Include="directionalLight.cpp" />
-    <ClCompile Include="framebuffer.cpp" />
-    <ClCompile Include="gamecameracontrol.cpp" />
-    <ClCompile Include="geometry.cpp" />
-    <ClCompile Include="grassInstanceMaterial.cpp" />
-    <ClCompile Include="light.cpp" />
+    <ClCompile Include="third_party\src\glad.c" />
+    <ClCompile Include="light\ambientLight.cpp" />
+    <ClCompile Include="application\Application.cpp" />
+    <ClCompile Include="application\assimpInstanceLoader.cpp" />
+    <ClCompile Include="application\assimpLoader.cpp" />
+    <ClCompile Include="camera\camera.cpp" />
+    <ClCompile Include="camera\cameracontrol.cpp" />
+    <ClCompile Include="materials\cubeMaterial.cpp" />
+    <ClCompile Include="materials\cubeSphereMaterial.cpp" />
+    <ClCompile Include="materials\depthMaterial.cpp" />
+    <ClCompile Include="light\directionalLight.cpp" />
+    <ClCompile Include="framebuffer\framebuffer.cpp" />
+    <ClCompile Include="camera\gamecameracontrol.cpp" />
+    <ClCompile Include="framework\geometry.cpp" />
+    <ClCompile Include="materials\grassInstanceMaterial\grassInstanceMaterial.cpp" />
+    <ClCompile Include="light\light.cpp" />
     <ClCompile Include="light\shadow\directionalLightCSMShadow\directionalLightCSMShadow.cpp" />
     <ClCompile Include="light\shadow\directionalLightShadow\directionalLightShadow.cpp" />
     <ClCompile Include="light\shadow\pointLightShadow\pointLightShadow.cpp" />
     <ClCompile Include="light\shadow\shadow.cpp" />
-    <ClCompile Include="material.cpp" />
+    <ClCompile Include="materials\material.cpp" />
     <ClCompile Include="materials\phongCSMShadowMaterial\phongCSMShadowMaterial.cpp" />
     <ClCompile Include="materials\phongNormalMaterial\phongNormalMaterial.cpp" />
     <ClCompile Include="materials\phongParallaxMaterial\phongParallaxMaterial.cpp" />
@@ -160,25 +161,25 @@
     <ClCompile Include="materials\phongShadowMaterial\phongShadowMaterial.cpp" />
     <ClCompile Include="mesh\instancedMesh.cpp" />
     <ClCompile Include="mesh\mesh.cpp" />
-    <ClCompile Include="object.cpp" />
-    <ClCompile Include="OldTestCode.cpp" />
-    <ClCompile Include="opacityMaskMatetial.cpp" />
-    <ClCompile Include="orthographiccamera.cpp" />
-    <ClCompile Include="perspectivecamera.cpp" />
-    <ClCompile Include="phongEnvMaterial.cpp" />
-    <ClCompile Include="phongEnvSphereMaterial.cpp" />
-    <ClCompile Include="phongInstanceMaterial.cpp" />
-    <ClCompile Include="phongMaterial.cpp" />
-    <ClCompile Include="pointLight.cpp" />
-    <ClCompile Include="renderer.cpp" />
+    <ClCompile Include="framework\object.cpp" />
+    <ClCompile Include="legacy\OldTestCode.cpp" />
+    <ClCompile Include="materials\opacityMaskMatetial.cpp" />
+    <ClCompile Include="camera\orthographiccamera.cpp" />
+    <ClCompile Include="camera\perspectivecamera.cpp" />
+    <ClCompile Include="materials\phongEnvMaterial.cpp" />
+    <ClCompile Include="materials\phongEnvSphereMaterial.cpp" />
+    <ClCompile Include="materials\phongInstanceMaterial.cpp" />
+    <ClCompile Include="materials\phongMaterial.cpp" />
+    <ClCompile Include="light\pointLight.cpp" />
+    <ClCompile Include="renderer\renderer.cpp" />
     <ClCompile Include="renderer\Bloom\Bloom.cpp" />
-    <ClCompile Include="scene.cpp" />
-    <ClCompile Include="screenMaterial.cpp" />
-    <ClCompile Include="shader.cpp" />
+    <ClCompile Include="framework\scene.cpp" />
+    <ClCompile Include="materials\screenMaterial.cpp" />
+    <ClCompile Include="framework\shader.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="GL_ERROR_FIND.cpp" />
-    <ClCompile Include="spotLight.cpp" />
-    <ClCompile Include="texture.cpp" />
+    <ClCompile Include="wrapper\GL_ERROR_FIND.cpp" />
+    <ClCompile Include="light\spotLight.cpp" />
+    <ClCompile Include="framework\texture.cpp" />
     <ClCompile Include="third_party\glm\detail\glm.cpp" />
     <ClCompile Include="third_party\imgui\imgui.cpp" />
     <ClCompile Include="third_party\imgui\imgui_demo.cpp" />
@@ -187,33 +188,35 @@
     <ClCompile Include="third_party\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="third_party\imgui\imgui_tables.cpp" />
     <ClCompile Include="third_party\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="tools\editor\EditorPanels.cpp" />
     <ClCompile Include="tools\Logger\Logger.cpp" />
     <ClCompile Include="tools\Logger\LogManager.cpp" />
+    <ClCompile Include="tools\sceneSetup\SceneSetup.cpp" />
     <ClCompile Include="tools\tools.cpp" />
-    <ClCompile Include="trackBallCameraControl.cpp" />
-    <ClCompile Include="whiteMaterial.cpp" />
+    <ClCompile Include="camera\trackBallCameraControl.cpp" />
+    <ClCompile Include="materials\whiteMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ambientLight.h" />
-    <ClInclude Include="assimpInstanceLoader.h" />
-    <ClInclude Include="assimpLoader.h" />
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="cameracontrol.h" />
+    <ClInclude Include="light\ambientLight.h" />
+    <ClInclude Include="application\assimpInstanceLoader.h" />
+    <ClInclude Include="application\assimpLoader.h" />
+    <ClInclude Include="camera\camera.h" />
+    <ClInclude Include="camera\cameracontrol.h" />
     <ClInclude Include="core.h" />
-    <ClInclude Include="cubeMaterial.h" />
-    <ClInclude Include="cubeSphereMaterial.h" />
-    <ClInclude Include="depthMaterial.h" />
-    <ClInclude Include="directionalLight.h" />
-    <ClInclude Include="framebuffer.h" />
-    <ClInclude Include="gamecameracontrol.h" />
-    <ClInclude Include="geometry.h" />
-    <ClInclude Include="grassInstanceMaterial\grassInstanceMaterial.h" />
-    <ClInclude Include="light.h" />
+    <ClInclude Include="materials\cubeMaterial.h" />
+    <ClInclude Include="materials\cubeSphereMaterial.h" />
+    <ClInclude Include="materials\depthMaterial.h" />
+    <ClInclude Include="light\directionalLight.h" />
+    <ClInclude Include="framebuffer\framebuffer.h" />
+    <ClInclude Include="camera\gamecameracontrol.h" />
+    <ClInclude Include="framework\geometry.h" />
+    <ClInclude Include="materials\grassInstanceMaterial\grassInstanceMaterial.h" />
+    <ClInclude Include="light\light.h" />
     <ClInclude Include="light\shadow\directionalLightCSMShadow\directionalLightCSMShadow.h" />
     <ClInclude Include="light\shadow\directionalLightShadow\directionalLightShadow.h" />
     <ClInclude Include="light\shadow\pointLightShadow\pointLightShadow.h" />
     <ClInclude Include="light\shadow\shadow.h" />
-    <ClInclude Include="material.h" />
+    <ClInclude Include="materials\material.h" />
     <ClInclude Include="materials\phongCSMShadowMaterial\phongCSMShadowMaterial.h" />
     <ClInclude Include="materials\phongNormalMaterial\phongNormalMaterial.h" />
     <ClInclude Include="materials\phongParallaxMaterial\phongParallaxMaterial.h" />
@@ -221,27 +224,27 @@
     <ClInclude Include="materials\phongShadowMaterial\phongShadowMaterial.h" />
     <ClInclude Include="mesh\instancedMesh.h" />
     <ClInclude Include="mesh\mesh.h" />
-    <ClInclude Include="object.h" />
-    <ClInclude Include="OldTestCode.h" />
-    <ClInclude Include="opacityMaskMatetial.h" />
-    <ClInclude Include="orthographiccamera.h" />
-    <ClInclude Include="perspectivecamera.h" />
-    <ClInclude Include="phongEnvMaterial.h" />
-    <ClInclude Include="phongEnvSphereMaterial.h" />
-    <ClInclude Include="phongInstanceMaterial.h" />
-    <ClInclude Include="phongMaterial.h" />
-    <ClInclude Include="pointLight.h" />
-    <ClInclude Include="renderer.h" />
+    <ClInclude Include="framework\object.h" />
+    <ClInclude Include="legacy\OldTestCode.h" />
+    <ClInclude Include="materials\opacityMaskMatetial.h" />
+    <ClInclude Include="camera\orthographiccamera.h" />
+    <ClInclude Include="camera\perspectivecamera.h" />
+    <ClInclude Include="materials\phongEnvMaterial.h" />
+    <ClInclude Include="materials\phongEnvSphereMaterial.h" />
+    <ClInclude Include="materials\phongInstanceMaterial.h" />
+    <ClInclude Include="materials\phongMaterial.h" />
+    <ClInclude Include="light\pointLight.h" />
+    <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="renderer\Bloom\Bloom.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="scene.h" />
-    <ClInclude Include="screenMaterial.h" />
-    <ClInclude Include="shader.h" />
-    <ClInclude Include="GL_ERROR_FIND.h" />
-    <ClInclude Include="Application.h" />
-    <ClInclude Include="spotLight.h" />
-    <ClInclude Include="stb_image.h" />
-    <ClInclude Include="texture.h" />
+    <ClInclude Include="framework\scene.h" />
+    <ClInclude Include="materials\screenMaterial.h" />
+    <ClInclude Include="framework\shader.h" />
+    <ClInclude Include="wrapper\GL_ERROR_FIND.h" />
+    <ClInclude Include="application\Application.h" />
+    <ClInclude Include="light\spotLight.h" />
+    <ClInclude Include="third_party\stb_image\stb_image.h" />
+    <ClInclude Include="framework\texture.h" />
     <ClInclude Include="third_party\assimp\aabb.h" />
     <ClInclude Include="third_party\assimp\ai_assert.h" />
     <ClInclude Include="third_party\assimp\anim.h" />
@@ -600,13 +603,15 @@
     <ClInclude Include="third_party\imgui\imstb_rectpack.h" />
     <ClInclude Include="third_party\imgui\imstb_textedit.h" />
     <ClInclude Include="third_party\imgui\imstb_truetype.h" />
+    <ClInclude Include="tools\editor\EditorPanels.h" />
     <ClInclude Include="tools\Logger\Logger.h" />
     <ClInclude Include="tools\Logger\LogManager.h" />
+    <ClInclude Include="tools\sceneSetup\SceneSetup.h" />
     <ClInclude Include="tools\ObjectPool\ObjectPool.h" />
     <ClInclude Include="tools\ScreenShot.h" />
     <ClInclude Include="tools\tools.h" />
-    <ClInclude Include="trackBallCameraControl.h" />
-    <ClInclude Include="whiteMaterial.h" />
+    <ClInclude Include="camera\trackBallCameraControl.h" />
+    <ClInclude Include="materials\whiteMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cubeSphere.frag" />
@@ -876,6 +881,5 @@
     </Object>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets"></ImportGroup>
 </Project>

@@ -1,0 +1,395 @@
+# 已完成事项记录
+
+## 2026-04-02
+
+### 已完成
+
+1. 创建了重构工作记录文件 `worked.md`，用于持续登记每次已完成的重构动作。
+2. 盘点了当前项目的主要入口和核心模块，重点查看了：
+   - `main.cpp`
+   - `Application.h`
+   - `Application.cpp`
+   - `renderer.h`
+   - `renderer.cpp`
+3. 识别出当前第一批高优先级问题：
+   - `main.cpp` 体量较大，承载了过多全局状态和启动流程细节。
+   - `Renderer` 的构造逻辑直接写在头文件中，包含大量 shader 初始化细节，职责暴露过多。
+   - `Renderer` 中多个接口对 `pointLights` 采用按值传递，存在不必要的复制。
+4. 选定第一轮重构切口：
+   - 先整理 `Renderer` 的初始化边界。
+   - 将 shader 初始化从 `renderer.h` 中挪出，收敛到 `renderer.cpp`。
+   - 将 `Renderer` 相关接口中的 `pointLights` 改为按 `const&` 传递。
+5. 为了让后续补丁能够稳定应用，将 `renderer.h` 和 `renderer.cpp` 转换为了 UTF-8 编码。
+6. 完成第一轮 `Renderer` 结构重构：
+   - 将 `Renderer` 构造函数从头文件移出，改为在 `renderer.cpp` 中定义。
+   - 新增 `initializeShaders()`，集中管理 shader 初始化逻辑。
+   - 新增 `createShader()`，统一 shader 创建入口。
+   - 将多个 `pointLights` 参数由按值传递改为按 `const&` 传递，减少不必要复制。
+   - 保持 `Renderer` 的外部使用方式不变，属于低风险结构整理。
+7. 完成第二轮 `main.cpp` 入口收敛：
+   - 新增 `initializeApplication()`，统一处理窗口初始化、OpenGL 初始状态、相机准备、场景准备和 ImGui 初始化。
+   - 新增 `runFrame()`，统一收纳每帧更新和两段渲染 pass。
+   - 新增 `printOpenGLCapabilities()`，将显卡能力打印从 `main()` 中抽离。
+   - 删除了未实现且具有误导性的 `render()` 前向声明。
+   - `main()` 现在只保留“初始化 -> 主循环 -> 退出”三段主职责。
+8. 进行了构建验证：
+   - 使用 Visual Studio 2022 自带的 `MSBuild.exe` 构建 `text2.sln`。
+   - 构建结果：成功，`0` error，存在若干历史遗留 warning。
+9. 为了继续稳定补丁流程，将 `Application.h` 和 `Application.cpp` 转换为了 UTF-8 编码。
+10. 完成第三轮 `Application` 生命周期与接口清理：
+   - 将 `GLFWwindow` 前向声明从 `class` 改为 `struct`，与 GLFW 头文件保持一致。
+   - 为 `Application` 显式禁用了拷贝与移动，强化 singleton 边界。
+   - 将正确接口名统一为 `destroy()`，保留 `destory()` 作为兼容转发。
+   - 在窗口尺寸回调中，无论是否注册 resize callback，都更新 `mWidth` / `mHeight`。
+   - 将 `main.cpp` 中的退出调用同步改为 `GL_APP->destroy()`。
+11. 完成第二次构建验证：
+   - 构建结果：成功，`0` error。
+   - 与本轮修改直接相关的 `GLFWwindow` 类型声明 warning 已消除。
+   - 当前剩余警告已显著收敛，增量构建只剩 `3` 个 warning。
+12. 完成第四轮 `main.cpp` 运行时上下文收拢：
+   - 新增 `AppRuntimeContext`，集中承载核心运行时对象。
+   - 首批纳入上下文的内容包括：
+     - `renderer`
+     - `sceneOffScreen`
+     - `sceneInScreen`
+     - `ambientLight`
+     - `framebufferMultisample`
+     - `framebufferResolve`
+     - `grassMaterial`
+     - `camera`
+     - `cameracontrol`
+     - `clearColor`
+     - `dirLight`
+     - `spotLight`
+     - `pointLights`
+     - `movePlane`
+     - `textD`
+     - `ScreenMat`
+     - `skyBoxMesh`
+     - `meshPointLight`
+   - 采用“上下文 + 同名引用别名”的过渡式方案，在不大面积改写函数体的前提下先收拢所有权。
+13. 补充了运行时退出清理：
+   - 新增 `cleanupRuntime()`。
+   - 在主循环结束后显式释放 `cameracontrol` 和 `camera` 两个裸指针。
+   - 这一步修复了退出时明显的生命周期遗漏。
+14. 完成第三次构建验证：
+   - 构建结果：成功，`0` error，仍为 `3` 个 warning。
+15. 完成第五轮 `prepare()` 分阶段拆分：
+   - 新增 `prepareRenderResources()`，集中处理：
+     - `renderer`
+     - `sceneInScreen`
+     - `sceneOffScreen`
+     - `framebufferMultisample`
+     - `framebufferResolve`
+     - `PointLightShadow` 共享深度纹理初始化
+   - 新增 `prepareScreenPass()`，集中处理屏幕输出 quad 和 `ScreenMaterial` 初始化。
+   - 新增 `prepareLights()`，集中处理：
+     - `spotLight`
+     - `dirLight`
+     - `ambientLight`
+     - `pointLights`
+   - `prepare()` 现在已经从“单块大函数”变成“资源初始化 -> 场景对象构建 -> 屏幕 pass -> 灯光初始化”的更清晰流程。
+16. 完成第四次构建验证：
+   - 构建结果：成功，`0` error，仍保持 `3` 个 warning。
+17. 完成第六轮场景对象构建拆分：
+   - 新增 `prepareRoomScene()`。
+   - 将当前真正生效的房间/地面/盒子场景构建逻辑从 `prepare()` 中抽离出去。
+   - 本轮迁移的主要对象包括：
+     - 六面房间地面/墙面 plane
+     - `textD`
+     - 当前启用的 box 测试对象
+   - 保留了原有实验性注释区块不动，避免误删历史参考代码。
+18. 完成第五次构建验证：
+   - 构建结果：成功，`0` error，仍为 `3` 个 warning。
+
+19. 完成第七轮历史实验代码收口：
+   - 新增 [LegacyExperimentRunner.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\legacyExperiments\LegacyExperimentRunner.h)，将历史实验逻辑整理为可复用的实验管理器。
+   - 当前已收口的实验入口包括：
+     - `enableSolarSystem`
+     - `enableGrassField`
+     - `enableEnvironmentSphere`
+     - `enableCsmPlane`
+     - `enableBackpackModel`
+     - `enableShadowPreview`
+     - `enableOrbitingPointLight`
+   - 为避免重复挂载场景对象，实验管理器为多数组装型实验补充了启用态保护。
+   - 同时补齐了实验管理头文件缺失的依赖引用，并修正了逐帧轨道点光源更新里的浮点窄化问题。
+20. 完成第八轮 `main.cpp` 实验主流程接线：
+   - 引入 `LegacyExperimentRunner` 到主程序入口。
+   - 在 `AppRuntimeContext` 中新增 `csmShadowMaterial`，把实验运行所需对象继续收拢进统一上下文。
+   - 新增：
+     - `makeLegacyExperimentContext()`
+     - `prepareLegacyExperiments()`
+     - `updateLegacyExperiments()`
+   - 将 `runFrame()` 中原本分散的 `rotatePlant()` / `rotateLight()` 替换为统一的 `updateLegacyExperiments()`。
+   - 将 `prepare()` 中大段历史实验注释替换为一个集中实验配置点；现在只需要在 `prepareLegacyExperiments()` 中启用少量函数调用，就能重新打开对应实验。
+   - 清理了已失效的历史全局状态与相关入口，包括：
+     - 太阳系实验的 `roundFor*` / `speed`
+     - 旧的 `mat2`
+     - `rotatePlant()`
+     - `rotateLight()`
+     - 未再使用的 `parallaxMat` 全局
+21. 完成第六次构建验证：
+   - 构建结果：成功，`0` error，仍为 `3` 个 warning。
+   - 说明新的实验管理器接线已通过真实工程构建验证，可继续作为后续重构基础。
+22. 完成第九轮材质 Inspector 系统最小版落地：
+   - 新增 [MaterialInspector.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialInspector.h)，建立了声明式可编辑属性系统。
+   - 新系统当前支持的属性类型包括：
+     - `float`
+     - `bool`
+     - `vec3`
+     - `color3`
+     - 只读文本信息
+     - 分节标题
+   - `UI` 端现在不再直接依赖具体材质类字段，而是通过 `PropertyBuilder` 消费材质声明的属性描述。
+23. 完成第十轮材质类可编辑属性接线：
+   - 为 [material.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\material.h) / [material.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\material.cpp) 新增统一入口 `visitEditableProperties(...)`。
+   - `Material` 基类已统一暴露通用渲染状态：
+     - `Depth Test`
+     - `Depth Write`
+     - `Blend`
+     - `Face Culling`
+     - `Opacity`
+     - `Polygon Offset Factor`
+     - `Polygon Offset Unit`
+   - 第一批接入自动 Inspector 的具体材质包括：
+     - [phongMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\phongMaterial.cpp)
+     - [grassInstanceMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\grassInstanceMaterial.cpp)
+     - [phongCSMShadowMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\phongCSMShadowMaterial\phongCSMShadowMaterial.cpp)
+     - [phongPointShadowMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\phongPointShadowMaterial\phongPointShadowMaterial.cpp)
+     - [screenMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\screenMaterial.cpp)
+   - 这些材质现在都能声明自己的参数范围与纹理槽信息，而不需要在 `main.cpp` 手写对应控件。
+24. 完成第十一轮场景材质自动收集与展示：
+   - 在 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 中新增场景材质递归收集逻辑。
+   - 当前会自动遍历 `sceneOffScreen` 与 `sceneInScreen`，收集去重后的材质实例，并在新的 `materials` 面板中自动生成 inspector。
+   - 这意味着后续只要某个实验场景把材质挂进 `Mesh` / `InstancedMesh`，就会自动出现在材质面板里，不再需要每次换实验都重写一套 `ImGui`。
+25. 完成第七次构建验证：
+   - 首次完整 `Build` 时发现 `GrassInstanceMaterial` 的实现文件实际由根目录 [grassInstanceMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\grassInstanceMaterial.cpp) 参与编译，而不是子目录副本；已修正并重新接通实现。
+   - 修复后增量 `Build` 成功，结果为 `0` error、`0` warning。
+   - 随后执行完整 `Rebuild`，结果为 `0` error；当前工程仍存在一批历史 warning，完整重建统计为 `45` 个 warning，本轮未新增构建错误。
+26. 完成第十二轮选择状态基础设施接入：
+   - 为 [object.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\object.h) / [object.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\object.cpp) 补充了对象编辑器所需的基础能力：
+     - `getScale()`
+     - `setName()`
+     - `getName()`
+   - 将 [scene.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\scene.h) 的 `Scene` 默认类型显式设为 `Scene`，让场景根节点能被 hierarchy 正确识别。
+   - 为了后续补丁和重构稳定性，还将相关对象文件统一转换为了 UTF-8 编码。
+27. 完成第十三轮 hierarchy + selection 编辑器流转落地：
+   - 在 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 中新增 `EditorSelectionContext`，正式引入“当前选中对象”这一中间状态。
+   - 新增层级面板与选择面板相关逻辑：
+     - `renderHierarchyPanel()`
+     - `renderSelectionInspectorPanel()`
+     - `renderObjectHierarchyNode()`
+     - `ensureSelectionIsInitialized()`
+     - `getSelectedObject()`
+   - 原先基于“遍历全部材质”的面板已替换为真正的 `hierarchy -> selection -> inspector` 数据流。
+   - Inspector 现在会针对当前选中对象显示：
+     - 名称
+     - 类型
+     - 子节点数量
+     - 本地 Position / Rotation / Scale
+     - 若选中项是 `Mesh`，则自动显示其材质 inspector
+28. 完成第十四轮场景命名补强：
+   - 为当前主场景中的关键对象补充了可读名称，提升 hierarchy 可用性。
+   - 当前已命名的核心节点包括：
+     - `World Scene`
+     - `Screen Scene`
+     - `SkyBox`
+     - `Floor`
+     - `Ceiling`
+     - `Front Wall`
+     - `Back Wall`
+     - `Left Wall`
+     - `Right Wall`
+     - `Center Box`
+     - `Screen Quad`
+29. 完成第八次构建验证：
+   - 使用 VS2022 MSBuild 对当前工程再次执行真实 `Build`。
+   - 构建结果：成功，`0` error。
+   - 当前增量构建统计为 `25` 个 warning；本轮选择机制改造未引入新的构建错误。
+30. 完成第十五轮多目标 selection 上下文扩展：
+   - 将 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 中的选择状态从“仅支持 `Object`”扩展为统一支持：
+     - `Object`
+     - `Camera`
+     - `Shadow`
+   - 新增了显式选择入口：
+     - `selectObject(...)`
+     - `selectCamera(...)`
+     - `selectShadow(...)`
+   - 这一步让 hierarchy 和 inspector 不再局限于场景网格对象，而是能覆盖更完整的运行时编辑目标。
+31. 完成第十六轮 Light / Camera / Shadow hierarchy 接线：
+   - 在 hierarchy 面板中新增了 `Lights` 和 `Cameras` 分组。
+   - 灯光节点现在支持层级展开，当前每个 `Light` 下可继续选择：
+     - 对应 `Shadow`
+     - 若存在，则对应 `Shadow Camera`
+   - 同时在 [light.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\light.h) 中将 `Light` 的默认对象类型显式设为 `Light`，避免在选择系统中被误识别为普通 `Object`。
+   - 在场景初始化阶段为当前运行中的光照对象补充了可读名称，包括：
+     - `Directional Light`
+     - `Spot Light`
+     - `Point Light 0`
+     - `Point Light 1`
+32. 完成第十七轮 Light / Camera / Shadow Inspector 落地：
+   - 当前 `inspector` 会根据选中目标类型自动分流：
+     - 选中 `Object`：显示基础 Transform
+     - 选中 `Light`：在 Transform 基础上继续显示灯光参数
+     - 选中 `Camera`：显示相机参数
+     - 选中 `Shadow`：显示阴影参数
+   - 当前已接入的编辑项包括：
+     - `Light`
+       - 颜色
+       - 强度
+       - 高光强度
+       - `PointLight` 衰减系数
+       - `SpotLight` 内外角
+     - `Camera`
+       - 位置
+       - `Up`
+       - `Right`
+       - `Near` / `Far`
+       - `PerspectiveCamera` 的 `Fovy` / `Aspect`
+       - `OrthographicCamera` 的 `Left` / `Right` / `Top` / `Bottom`
+     - `Shadow`
+       - `Bias`
+       - `PCF Radius`
+       - `Disk Tightness`
+       - `Light Size`
+       - 阴影贴图尺寸
+       - `DirectionalLightCSMShadow` 的 cascade layer 数
+       - `PointLightShadow` 的 shadow map index
+33. 完成第九次构建验证：
+   - 针对 `Light / Camera / Shadow` selection inspector 接线后再次执行真实 `Build`。
+   - 构建结果：成功，`0` error。
+   - 当前增量构建结果维持为 `25` 个 warning，本轮未新增构建错误。
+34. 完成第十八轮选中对象场景高亮基础设施：
+   - 为 [object.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\object.h) / [object.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\object.cpp) 新增 `removeChild(...)`，允许编辑器运行时对象在父节点之间安全重挂。
+   - 在 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 中新增了选中高亮所需的运行时对象：
+     - `selectionOutlineMesh`
+     - `selectionOutlineMaterial`
+   - 当前 outline 使用现有 `WhiteMaterial` 路线，不改写原始业务材质状态。
+35. 完成第十九轮 hierarchy 选中高亮同步：
+   - 新增 `updateSelectionOutline()` 与 `hideSelectionOutline()`。
+   - 当前每帧会根据 `selectedObject` 自动同步 outline 外壳：
+     - 几何体跟随当前选中 `Mesh`
+     - 本地 `Position / Rotation / Scale` 同步
+     - 外壳缩放为原对象的 `1.06x`
+     - 若切换到其他父节点，会自动从旧父节点移除并挂到新父节点下
+   - 为了避免影响层级结构浏览，编辑器辅助对象会被 `hierarchy` 自动过滤，不会显示为正常场景节点。
+   - 当前高亮策略为：
+     - 仅对当前选中的 `Mesh` / `InstancedMesh` 生效
+     - 非网格目标（如 `Light` / `Camera` / `Shadow`）暂不绘制 outline
+36. 完成第二十轮 outline 渲染策略接线：
+   - outline 材质当前采用“白色外壳”方案：
+     - `WhiteMaterial`
+     - 关闭深度写入
+     - 开启面剔除
+     - 剔除正面 `GL_FRONT`
+     - 以透明队列方式参与主渲染，避免进入阴影贴图渲染列表
+   - 这条路线不依赖修改原 mesh 材质的 stencil 设定，落地更稳，也更适合作为第一版可视反馈。
+37. 完成第十次构建验证：
+   - 针对选中对象 outline 高亮接线后再次执行真实 `Build`。
+   - 构建结果：成功，`0` error。
+   - 当前增量构建结果仍为 `25` 个 warning，本轮未新增构建错误。
+38. 完成第二十一轮 outline 反馈修正：
+   - 根据实际观察，将 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 中的 outline 放大量从 `1.06x` 收窄为 `1.02x`，降低了边框侵入感。
+   - 同时调整了 outline 材质状态：
+     - 关闭颜色混合
+     - 关闭深度测试
+     - 保留正面剔除
+     - 显式设置 stencil `NOTEQUAL` 规则
+   - 这一步的目标是让轮廓更细、更像真正的边缘描边，而不是明显的“第二层外壳”。
+39. 完成第二十二轮 stencil outline 渲染通道接入：
+   - 在 [renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer.h) / [renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer.cpp) 中新增了 selection outline 专用渲染接口：
+     - `setSelectionOutlineMeshes(...)`
+     - `renderSelectionOutline(...)`
+   - 当前 outline 流程已从原先的“仅靠放大外壳直接参与主场景渲染”升级为：
+     1. 用选中 mesh 本体写入 stencil
+     2. 再绘制放大后的白色 outline mesh
+     3. 通过 `GL_NOTEQUAL` 仅保留外轮廓
+   - 这一步专门修复了“单独面片整面发白”的问题，因为现在面片内部会被 stencil 遮掉，只留下边缘区域。
+40. 完成第二十三轮 outline 辅助对象解耦：
+   - `selectionOutlineMesh` 不再作为普通场景子节点参与常规投影队列，而是作为 selection 专用对象交给 renderer 的 outline pass。
+   - 这减少了 outline 对主场景层级与常规渲染排序的干扰，也避免了它以普通对象身份再次进入场景收集流程。
+41. 完成第十一次构建验证：
+   - 针对 outline 缩小与 stencil 化修正后再次执行真实 `Build`。
+   - 构建结果：成功，`0` error。
+   - 当前增量构建仍为 `25` 个 warning，本轮未新增构建错误。
+42. 完成第二十四轮选中描边分支回退：
+   - 按当前重构目标重新对齐方向，撤销了“选中后外轮廓描边”这一条支线实现，避免继续在偏实验性的高亮方案上投入。
+   - 已从 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 中移除：
+     - `selectionOutlineMesh`
+     - `selectionOutlineMaterial`
+     - `updateSelectionOutline()`
+     - `hideSelectionOutline()`
+     - 与 outline 专用过滤相关的辅助逻辑
+   - 已从 [renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer.h) / [renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer.cpp) 中移除 selection outline 专用渲染接口与通道。
+   - 已同步撤回为 outline 专门加入的对象树辅助接口，恢复 [object.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\object.h) / [object.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\object.cpp) 的主线状态。
+43. 完成第十二次构建验证：
+   - 在回退选中描边分支后再次执行真实 `Build`。
+   - 构建结果：成功，`0` error。
+   - 当前增量构建结果仍为 `25` 个 warning，说明本次回退已回到稳定主线。
+44. 完成第二十五轮编辑器模块拆分：
+   - 新增 [tools/editor/EditorPanels.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorPanels.h) 与 [tools/editor/EditorPanels.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorPanels.cpp)，把 `hierarchy / selection / inspector` 的状态与面板渲染从 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 中抽离出来。
+   - 新模块当前统一承接了：
+     - 选中状态 `SelectionContext`
+     - hierarchy 树绘制
+     - object / light / camera / shadow inspector
+   - [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 现在只保留 `makeEditorPanelContext()` 与 `renderIMGUI()` 中的高层调度，不再直接承载大段编辑器实现细节。
+   - 同步更新了 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj)，让 `tools/editor` 模块进入工程编译列表。
+45. 完成第十三次构建验证：
+   - 针对编辑器模块拆分后再次执行真实 `Build`。
+   - 构建结果：成功，`0` error。
+   - 当前增量构建结果为 `3` 个 warning，主要来自：
+     - `APIENTRY` 宏重定义
+     - `main.cpp` 中既有的 `size_t -> int`
+     - `double -> float`
+   - 说明这轮拆分已经在不新增构建错误的前提下稳定落地。
+46. 完成第二十六轮物理目录重组：
+   - 按 VS 中既有的模块分类，对 [text2-refactor](C:\Code\CodeOfC++\OpenGL_test\text2-refactor) 的物理文件夹进行了重新组织，新增并落地了这些目录：
+     - [application](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application)
+     - [camera](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\camera)
+     - [framework](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\framework)
+     - [framebuffer](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\framebuffer)
+     - [legacy](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\legacy)
+     - [wrapper](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\wrapper)
+   - 同时将原本散落在根目录的实现/头文件迁入了更对应的模块目录，例如：
+     - `Application / assimp*` 迁入 [application](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application)
+     - `camera / cameracontrol / perspective / orthographic / trackball` 迁入 [camera](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\camera)
+     - `object / scene / geometry / shader / texture` 迁入 [framework](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\framework)
+     - `framebuffer` 迁入 [framebuffer](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\framebuffer)
+     - 根目录灯光与材质实现分别收拢进 [light](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\light) 与 [materials](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials)
+     - `GL_ERROR_FIND` 迁入 [wrapper](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\wrapper)
+     - `OldTestCode` 迁入 [legacy](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\legacy)
+   - 将 `grassInstanceMaterial` 的重复实现收敛为单一来源，最终保留 [materials/grassInstanceMaterial/grassInstanceMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\grassInstanceMaterial\grassInstanceMaterial.cpp) 作为唯一有效实现。
+   - 将工程内原本指向用户下载目录的 `glad.c` 外部路径收回为仓库内的 [third_party/src/glad.c](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\third_party\src\glad.c)，消除了对 `Downloads` 目录的隐式依赖。
+47. 完成第十四次构建验证：
+   - 针对整轮物理目录重组、`vcxproj / filters` 路径更新、以及受影响 `#include` 修正后再次执行真实 `Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 说明本轮不仅完成了目录与工程结构对齐，也顺带把此前增量构建里残留的一批 warning 清到了当前这次构建结果的 `0/0` 状态。
+48. 完成第二十七轮场景装配模块拆分：
+   - 新增 [tools/sceneSetup/SceneSetup.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.h) 与 [tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，把默认场景的装配流程从 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 中抽离成独立模块。
+   - 新模块当前统一承接了这些职责：
+     - 渲染资源初始化
+     - SkyBox 准备
+     - 房间场景对象构建
+     - 屏幕 pass 准备
+     - 默认灯光装配
+   - [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 现在通过 `makeSceneSetupContext()` 组装上下文，并以 `GL_SCENE::prepareDefaultScene(...)` 触发场景准备，主流程职责进一步收敛。
+   - 同步更新了 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `SceneSetup` 模块纳入工程与 VS 视图分类。
+49. 完成第十五次构建验证：
+   - 针对场景装配模块拆分后再次执行真实 `Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 说明默认场景准备逻辑已经在不引入新的耦合和构建噪音的前提下稳定迁出。
+
+### 当前状态
+
+- 重构文档：`work.md` 已存在。
+- 工作记录：`worked.md` 已建立。
+- 第一轮实际代码重构：已完成。
+- 第二轮入口收敛：已完成。
+- 第三轮 `Application` 清理：已完成。
+- 第四轮运行时上下文收拢：已完成。
+- 第五轮 `prepare()` 分阶段拆分：已完成。
+- 第六轮场景对象构建拆分：已完成。
+- 当前工程可成功构建。
+- 当前剩余明显问题：`main.cpp` 中仍保留大量历史实验注释区块，阅读噪音较大。
+- 下一步建议目标：继续清理 `main.cpp` 的结构噪音，优先把实验性代码标记成单独的 legacy 区段，或者继续抽出 UI/调试面板逻辑。

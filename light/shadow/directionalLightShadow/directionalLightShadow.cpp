@@ -1,5 +1,5 @@
 #include "directionalLightShadow.h"
-#include "../../../orthographiccamera.h"
+#include "../../../camera/orthographiccamera.h"
 using namespace GLframework;
 
 
