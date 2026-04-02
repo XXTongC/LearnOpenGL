@@ -379,6 +379,10 @@
    - 针对场景装配模块拆分后再次执行真实 `Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 说明默认场景准备逻辑已经在不引入新的耦合和构建噪音的前提下稳定迁出。
+50. 完成第一轮 GitHub 分支发布：
+   - 为 [text2-refactor](C:\Code\CodeOfC++\OpenGL_test\text2-refactor) 配置了指向 `https://github.com/XXTongC/LearnOpenGL.git` 的远程，并保留本地 `master` 不受影响。
+   - 将当前重构成果提交到新分支 `codex/text2-refactor` 并成功推送到 GitHub。
+   - 本次发布未覆盖 `master`，后续可以继续在该分支上独立推进重构。
 
 ### 当前状态
 
