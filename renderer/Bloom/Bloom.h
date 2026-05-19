@@ -25,5 +25,21 @@ namespace GLframework
 			const std::shared_ptr<Framebuffer>& src,
 			const std::shared_ptr<Framebuffer>& dst
 		) const;
+		void blurPingPong(
+			const std::shared_ptr<Framebuffer>& src,
+			const std::shared_ptr<Framebuffer>& ping,
+			const std::shared_ptr<Framebuffer>& pong,
+			int iterations = 6
+		) const;
+
+	private:
+		void drawTextureToTarget(
+			const std::shared_ptr<Texture>& source,
+			const std::shared_ptr<Framebuffer>& target,
+			bool horizontal
+		) const;
+
+	private:
+		std::shared_ptr<Shader> mBlurShader{ nullptr };
 	};
 }

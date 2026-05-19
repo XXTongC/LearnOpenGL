@@ -108,3 +108,19 @@ void PostProcessPass::extractBloomBright(
 
 	bloom->extractBright(src, dst);
 }
+
+void PostProcessPass::blurBloom(
+	const std::shared_ptr<Bloom>& bloom,
+	const std::shared_ptr<Framebuffer>& src,
+	const std::shared_ptr<Framebuffer>& ping,
+	const std::shared_ptr<Framebuffer>& pong,
+	int iterations
+) const
+{
+	if (bloom == nullptr)
+	{
+		return;
+	}
+
+	bloom->blurPingPong(src, ping, pong, iterations);
+}

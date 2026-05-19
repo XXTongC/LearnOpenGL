@@ -26,6 +26,7 @@ Bloom::Bloom(int width,int height, int min_Resolution)
 	}
 
 	mExtractBrightShader = std::make_shared<Shader>("shaders/bloom/extractBright.vert", "shaders/bloom/extractBright.frag");
+	mBlurShader = std::make_shared<Shader>("shaders/bloom/blur.vert", "shaders/bloom/blur.frag");
 	mQuad = Geometry::createScreenPlane(mExtractBrightShader);
 }
 
@@ -63,5 +64,55 @@ void Bloom::extractBright(
 	glBindVertexArray(0);
 
 	mExtractBrightShader->end();
+}
+
+void Bloom::blurPingPong(
+	const std::shared_ptr<Framebuffer>& src,
+	const std::shared_ptr<Framebuffer>& ping,
+	const std::shared_ptr<Framebuffer>& pong,
+	int iterations
+) const
+{
+	if (src == nullptr || ping == nullptr || pong == nullptr || iterations <= 0)
+	{
+		return;
+	}
+
+	std::shared_ptr<Texture> source = src->getColorAttachment();
+	for (int i = 0; i < iterations; ++i)
+	{
+		const bool horizontal = (i % 2) == 0;
+		const auto& target = horizontal ? ping : pong;
+		drawTextureToTarget(source, target, horizontal);
+		source = target->getColorAttachment();
+	}
+}
+
+void Bloom::drawTextureToTarget(
+	const std::shared_ptr<Texture>& source,
+	const std::shared_ptr<Framebuffer>& target,
+	bool horizontal
+) const
+{
+	if (source == nullptr || target == nullptr || mBlurShader == nullptr || mQuad == nullptr)
+	{
+		return;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, target->getFBO());
+	glViewport(0, 0, target->getWidth(), target->getHeight());
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	mBlurShader->begin();
+	source->setUnit(0);
+	source->Bind();
+	mBlurShader->setInt("srcTex", 0);
+	mBlurShader->setInt("horizontal", horizontal ? 1 : 0);
+
+	glBindVertexArray(mQuad->getVao());
+	glDrawElements(GL_TRIANGLES, mQuad->getIndicesCount(), GL_UNSIGNED_INT, nullptr);
+	glBindVertexArray(0);
+
+	mBlurShader->end();
 }
 

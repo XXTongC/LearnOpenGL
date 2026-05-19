@@ -706,3 +706,15 @@ Bloom 的第一段后处理链已接入运行时，但暂时不改变最终屏�
 - `runFrame()` 在 MSAA resolve 之后、screen composite 之前执行 bright extraction：resolved HDR color -> bloom bright target。
 
 这一步只生成 bloom bright 中间结果，不做 blur/composite。这样可以先验证 Bloom shader、目标 framebuffer 和 pass 调度链路，再在后续步骤中接 blur ping-pong 与最终合成，避免一次性改变最终画面输出。
+
+### 2026-05-20 Bloom blur ping-pong 接入
+
+Bloom 的 blur 中间链路已接入运行时，但仍暂不合成回最终屏幕输出：
+
+- 新增 `shaders/bloom/blur.vert` 与 `shaders/bloom/blur.frag`，实现 separable Gaussian blur。
+- `FrameRenderTargets` 新增 `bloomPing` / `bloomPong` 两个 HDR framebuffer，用于 blur ping-pong。
+- `Bloom` 新增 `blurPingPong(...)` 与内部 `drawTextureToTarget(...)`，负责在 bright target、ping、pong 之间迭代模糊。
+- `PostProcessPass` 新增 `blurBloom(...)`，统一调度 Bloom blur。
+- `runFrame()` 在 bright extraction 后执行 blur ping-pong，但 screen composite 仍只使用 resolved HDR color。
+
+这一步验证了 Bloom blur shader、ping-pong framebuffer 与 pass 调度链路。后续只需要增加 composite shader / screen shader 输入，将 blurred bloom texture 与 HDR color 合成，再进入 tone mapping。

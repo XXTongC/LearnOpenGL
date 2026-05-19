@@ -31,5 +31,13 @@ namespace GLframework
 			const std::shared_ptr<Framebuffer>& src,
 			const std::shared_ptr<Framebuffer>& dst
 		) const;
+
+		void blurBloom(
+			const std::shared_ptr<Bloom>& bloom,
+			const std::shared_ptr<Framebuffer>& src,
+			const std::shared_ptr<Framebuffer>& ping,
+			const std::shared_ptr<Framebuffer>& pong,
+			int iterations = 6
+		) const;
 	};
 }

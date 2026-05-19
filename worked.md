@@ -674,6 +674,17 @@
    - 针对 Bloom bright extraction 接入后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
+113. 完成第五十七轮 Bloom blur ping-pong 接入：
+   - 新增 [shaders/bloom/blur.vert](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\bloom\blur.vert) 与 [shaders/bloom/blur.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\bloom\blur.frag)，实现 separable Gaussian blur。
+   - 更新 [renderer/FrameRenderTargets.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\FrameRenderTargets.h) 与 [renderer/FrameRenderTargets.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\FrameRenderTargets.cpp)，新增 `bloomPing` / `bloomPong` HDR framebuffer 与 getter。
+   - 更新 [renderer/Bloom/Bloom.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\Bloom\Bloom.h) 与 [renderer/Bloom/Bloom.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\Bloom\Bloom.cpp)，新增 `blurPingPong(...)` 和内部 `drawTextureToTarget(...)`。
+   - 更新 [renderer/PostProcessPass.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessPass.h) 与 [renderer/PostProcessPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessPass.cpp)，新增 `blurBloom(...)` 调度入口。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，在 bright extraction 后执行 blur ping-pong；最终 screen composite 暂时仍只使用 resolved HDR color。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 Bloom blur 中间链路和后续 composite 边界。
+114. 完成第四十七次构建与运行时 smoke 验证：
+   - 针对 Bloom blur ping-pong 接入后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -696,5 +707,6 @@
 - 当前 `ScreenMaterial` 已从 `MaterialBinder` 中移除，screen composite shader 绑定只归 `PostProcessPass` 管理。
 - 当前 Bloom 亮度提取实现已从 framebuffer 层移回 renderer/Bloom，framebuffer 不再反向依赖 Bloom。
 - 当前 Bloom bright extraction 已接入运行时，resolved HDR color 会提取到 `FrameRenderTargets` 管理的 bloom bright target。
-- 当前剩余明显问题：Bloom blur / composite 仍未完成，tone mapping 选项仍写在 screen shader 内，`FrameRenderTargets` 还没有 resize/recreate、Bloom ping-pong target、IBL capture target 和 BRDF LUT 管理。
-- 下一步建议目标：继续扩展 `Bloom` / `PostProcessPass` 承接 blur ping-pong 与最终 composite，或者扩展 `FrameRenderTargets` 管理 PBR / IBL 所需的 HDR 与环境贴图目标。
+- 当前 Bloom blur ping-pong 已接入运行时，bright target 会经过 `bloomPing` / `bloomPong` 迭代模糊，但暂不合成回最终画面。
+- 当前剩余明显问题：Bloom composite 仍未完成，tone mapping 选项仍写在 screen shader 内，`FrameRenderTargets` 还没有 resize/recreate、IBL capture target 和 BRDF LUT 管理。
+- 下一步建议目标：把 blurred bloom texture 与 resolved HDR color 合成进 screen composite，或者扩展 `FrameRenderTargets` 管理 PBR / IBL 所需的 HDR 与环境贴图目标。

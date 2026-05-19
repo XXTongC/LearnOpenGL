@@ -10,11 +10,17 @@ void FrameRenderTargets::initialize(unsigned int width, unsigned int height, uns
 	mMultisample = Framebuffer::createMultiSampleFbo(width, height, samples);
 	mResolved = Framebuffer::createHDRFbo(width, height);
 	mBloomBright = Framebuffer::createHDRBloomFbo(width, height);
+	mBloomPing = Framebuffer::createHDRBloomFbo(width, height);
+	mBloomPong = Framebuffer::createHDRBloomFbo(width, height);
 }
 
 bool FrameRenderTargets::isInitialized() const
 {
-	return mMultisample != nullptr && mResolved != nullptr && mBloomBright != nullptr;
+	return mMultisample != nullptr
+		&& mResolved != nullptr
+		&& mBloomBright != nullptr
+		&& mBloomPing != nullptr
+		&& mBloomPong != nullptr;
 }
 
 unsigned int FrameRenderTargets::getSceneFbo() const
@@ -50,6 +56,16 @@ const std::shared_ptr<Framebuffer>& FrameRenderTargets::getResolved() const
 const std::shared_ptr<Framebuffer>& FrameRenderTargets::getBloomBright() const
 {
 	return mBloomBright;
+}
+
+const std::shared_ptr<Framebuffer>& FrameRenderTargets::getBloomPing() const
+{
+	return mBloomPing;
+}
+
+const std::shared_ptr<Framebuffer>& FrameRenderTargets::getBloomPong() const
+{
+	return mBloomPong;
 }
 
 std::shared_ptr<Texture> FrameRenderTargets::getResolvedColorAttachment() const

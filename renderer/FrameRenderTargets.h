@@ -20,6 +20,8 @@ namespace GLframework
 		const std::shared_ptr<Framebuffer>& getMultisample() const;
 		const std::shared_ptr<Framebuffer>& getResolved() const;
 		const std::shared_ptr<Framebuffer>& getBloomBright() const;
+		const std::shared_ptr<Framebuffer>& getBloomPing() const;
+		const std::shared_ptr<Framebuffer>& getBloomPong() const;
 		std::shared_ptr<Texture> getResolvedColorAttachment() const;
 		std::shared_ptr<Texture> getBloomBrightColorAttachment() const;
 
@@ -30,5 +32,7 @@ namespace GLframework
 		std::shared_ptr<Framebuffer> mMultisample{ nullptr };
 		std::shared_ptr<Framebuffer> mResolved{ nullptr };
 		std::shared_ptr<Framebuffer> mBloomBright{ nullptr };
+		std::shared_ptr<Framebuffer> mBloomPing{ nullptr };
+		std::shared_ptr<Framebuffer> mBloomPong{ nullptr };
 	};
 }
