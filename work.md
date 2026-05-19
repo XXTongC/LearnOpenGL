@@ -587,3 +587,14 @@ PBR 材质已开始消费统一的 shadow resource：
 - `Renderer` 删除了这三个旧 case 和对应具体材质 include，当前 fallback 只剩 instanced mesh 相关材质。
 
 这一步继续减少 `Renderer` 对具体材质类型的直接依赖。下一步建议迁移 `PhongInstanceMaterial` 与 `GrassInstanceMaterial`，但这两个分支还包含 instance matrix 更新策略和草地材质运行时参数，应该单独处理，避免把行为差异在迁移时混掉。
+
+### 2026-05-20 Instanced 材质绑定迁移
+
+`Renderer::renderObject()` 中最后两个具体材质分支已迁入 `MaterialBinder`：
+
+- `PhongInstanceMaterial` 的 diffuse、specular mask、MVP、通用光照、shininess 和 `matricesUpdateState` 上传集中到 `MaterialBinder`。
+- `GrassInstanceMaterial` 的草地、风、云、透明 mask 参数，以及 instance matrix attribute 更新逻辑集中到 `MaterialBinder`。
+- 新增 `setInstanceMatrixUniforms(...)` helper，统一维护 uniform matrix path 与 attribute matrix path 的 shader 开关。
+- `Renderer` 删除了具体材质 include、旧 switch 和失效的历史绘制注释块，现在主路径只负责应用 render state、选择 shader、调用 binder、draw mesh。
+
+这一步完成了材质绑定从 `Renderer` 主流程中的整体剥离。后续重点应该转向更高层的 pass 边界：把当前 frame 流程拆成更明确的 shadow / scene / postprocess 阶段，为 PBR + IBL + 后处理组合提供稳定结构。

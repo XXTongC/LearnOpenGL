@@ -3,10 +3,6 @@
 #include "RenderState.h"
 #include <iostream>
 #include <memory>
-#include <string>
-#include "phongInstanceMaterial.h"
-#include "materials/grassInstanceMaterial/grassInstanceMaterial.h"
-#include "light/shadow/pointLightShadow/pointLightShadow.h"
 #include "../mesh/instancedMesh.h"
 #include <algorithm>
 
@@ -153,7 +149,6 @@ void Renderer::renderObject(
 	if (object->getType() == ObjectType::Mesh||object->getType() == ObjectType::InstancedMesh)
 	{
 		auto mesh = std::static_pointer_cast<Mesh>(object);
-		std::shared_ptr<Geometry> geometry = mesh->getGeometry();
 
 		std::shared_ptr<Material> material = nullptr;
 		//鑰冨療鏄惁鎷ユ湁鍏ㄥ眬鏉愯川
@@ -174,209 +169,9 @@ void Renderer::renderObject(
 
 		if (!MaterialBinder::bind(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient))
 		{
-			switch (material->getMaterialType())
-			{
-		case MaterialType::PhongInstanceMaterial:
-			{
-				std::shared_ptr<PhongInstanceMaterial> phongMat = std::static_pointer_cast<PhongInstanceMaterial>(material);
-				std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
-				if (phongMat->mDiffuse == nullptr)
-					std::cout << "null\n";
-				//锟斤拷锟斤拷锟斤拷锟斤拷默锟斤拷透锟斤拷锟斤拷--------
-				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
-
-
-				//-----------------------
-
-
-
-				//	锟斤拷锟斤拷shader锟侥诧拷锟斤拷锟斤拷为0锟脚诧拷锟斤拷锟斤拷
-				//	diffuse锟斤拷图
-				GL_CALL(shader->setInt("samplerGrass", 0));
-
-				//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟皆拷夜锟?
-				phongMat->mDiffuse->Bind();
-
-				//	mask锟斤拷图
-				GL_CALL(shader->setInt("MaskSampler", 1));
-				phongMat->mSpecularMask->Bind();
-
-				//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷元锟斤拷锟叫挂癸拷
-				//	mvp鍙樻崲鐭╅樀
-				shader->setMat4("modelMatrix", mesh->getModelMatrix());
-				shader->setMat4("viewMatrix", camera->getViewMatrix());
-				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//璁＄畻骞朵紶杈撴硶绾跨煩闃?瀹炰緥缁樺埗涓彧鑳藉湪GPU绔繘琛岃绠?
-				//shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
-				//	spotlight鏁版嵁浼犲叆
-				shader->setVector3("spotLight.position", spotLight->getPosition());
-				shader->setVector3("spotLight.color", spotLight->getColor());
-				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
-				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
-				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
-				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				//	dirlight鏁版嵁浼犲叆
-				shader->setVector3("directionalLight.color", dirLight->getColor());
-				shader->setVector3("directionalLight.direction", dirLight->getDirection());
-				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
-
-				//	pointlight鏁版嵁浼犲叆
-				//std::cout << pointLights.size()<<std::endl;
-				for (int i = 0; i < pointLights.size(); i++)
-				{
-					auto& pointLight = pointLights[i];
-					std::string baseName = "pointLights[";
-					baseName.append(std::to_string(i));
-					baseName.append("]");
-					shader->setVector3(baseName + ".color", pointLight->getColor());
-					shader->setVector3(baseName + ".position", pointLight->getPosition());
-					shader->setFloat(baseName + ".specularIntensity", pointLight->getSpecularIntensity());
-					shader->setFloat(baseName + ".k2", pointLight->getK2());
-					shader->setFloat(baseName + ".k1", pointLight->getK1());
-					shader->setFloat(baseName + ".k0", pointLight->getK0());
-					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
-
-				}
-
-				shader->setVector3("ambientColor", ambient->getColor());
-				shader->setFloat("time", static_cast<float>(glfwGetTime()));
-				shader->setFloat("shiness", phongMat->mShiness);
-				shader->setFloat("speed", 0.5);
-
-				//	锟斤拷锟斤拷锟较拷锟斤拷锟?
-				shader->setVector3("cameraPosition", camera->mPosition);
-
-				//锟斤拷锟斤拷uniform锟斤拷锟酵撅拷锟斤拷浠伙拷锟斤拷锟?
-				if(im->getMatricesUpdateState())
-				{
-					shader->setMat4Array("matrices",im->mInstanceMatrices.data(),im->getInstanceCount());
-					shader->setInt("matricesUpdateState", 1);
-					//std::cout << "The matrix update as UNIFORM way" << std::endl;
-				}else
-				{
-					shader->setInt("matricesUpdateState", 0);
-					//std::cout << "The matrix update as ATTRIBUTE way" << std::endl;
-				}
-			}
-			break;
-		case MaterialType::GrassInstanceMaterial:
-		{
-				std::shared_ptr<GrassInstanceMaterial> instance_material = std::static_pointer_cast<GrassInstanceMaterial>(material);
-				std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
-
-				//im->sortMatrix(camera->getViewMatrix());
-				im->updateMatrices();
-
-				//grass texture attribute
-				shader->setFloat("uvScale", instance_material->getUVScale());
-				shader->setFloat("brightness", instance_material->getBrightness());
-				shader->setFloat("windScale", instance_material->getWindScale());
-				shader->setFloat("phaseScale", instance_material->getPhaseScale());
-				shader->setVector3("windDirection", instance_material->getWindDirection());
-				//cloud texture attribute
-				shader->setVector3("cloudWhiteColor", instance_material->getCloudWhiteColor());
-				shader->setVector3("cloudBlackColor", instance_material->getCloudBlackColor());
-				shader->setFloat("cloudUVScale", instance_material->getCloudUVScale());
-				shader->setFloat("cloudSpeed", instance_material->getCloudSpeed());
-				shader->setFloat("cloudLerp", instance_material->getCloudLerp());
-				//璁剧疆閫忔槑搴?-------
-				GL_CALL(shader->setFloat("opacity", material->getOpacity()));
-				//-----------------------
-
-				//	锟斤拷锟斤拷shader锟侥诧拷锟斤拷锟斤拷为0锟脚诧拷锟斤拷锟斤拷
-				//	diffuse璐村浘缁戝畾1
-				GL_CALL(shader->setInt("samplerGrass", 0));
-				instance_material->mDiffuse->Bind();
-
-				//	specularMask缁戝畾
-				GL_CALL(shader->setInt("MaskSampler", 1));
-				instance_material->mSpecularMask->Bind();
-
-				//	opacityMask缁戝畾
-				GL_CALL(shader->setInt("opacityMask", 2));
-				instance_material->mOpacityMask->Bind();
-
-				//	couldMask缁戝畾
-				GL_CALL(shader->setInt("cloudMask", 3));
-				instance_material->mCloudMask->Bind();
-				//	锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷元锟斤拷锟叫挂癸拷
-				//	mvp鐭╅樀鍙樻崲
-				shader->setMat4("modelMatrix", mesh->getModelMatrix());
-				shader->setMat4("viewMatrix", camera->getViewMatrix());
-				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				//锟斤拷锟竭撅拷锟斤拷锟斤拷拢锟斤拷锟斤拷锟阶拷锟斤拷锟斤拷蟹锟斤拷叩谋浠拷锟斤拷锟?
-				shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(mesh->getModelMatrix()))));
-				//	spotlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
-				shader->setVector3("spotLight.position", spotLight->getPosition());
-				shader->setVector3("spotLight.color", spotLight->getColor());
-				shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
-				shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
-				shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
-				shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-				//	dirlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
-				shader->setVector3("directionalLight.color", dirLight->getColor());
-				shader->setVector3("directionalLight.direction", dirLight->getDirection());
-				shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
-				
-
-
-				//	pointlight锟斤拷源锟斤拷锟斤拷锟斤拷锟斤拷
-				//std::cout << pointLights.size()<<std::endl;
-				for (int i = 0; i < pointLights.size(); i++)
-				{
-					auto& pointLight = pointLights[i];
-					std::string baseName = "pointLights[";
-					baseName.append(std::to_string(i));
-					baseName.append("]");
-					shader->setVector3(baseName + ".color", pointLight->getColor());
-					shader->setVector3(baseName + ".position", pointLight->getPosition());
-					shader->setFloat(baseName + ".specularIntensity", pointLight->getSpecularIntensity());
-					shader->setFloat(baseName + ".k2", pointLight->getK2());
-					shader->setFloat(baseName + ".k1", pointLight->getK1());
-					shader->setFloat(baseName + ".k0", pointLight->getK0());
-					shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
-
-				}
-
-				shader->setVector3("ambientColor", ambient->getColor());
-				shader->setFloat("time", static_cast<float>(glfwGetTime()));
-				shader->setFloat("shiness", instance_material->mShiness);
-				shader->setFloat("speed", 0.5);
-
-				//	锟斤拷锟斤拷锟较拷锟斤拷锟?
-				shader->setVector3("cameraPosition", camera->mPosition);
-
-				//	matrix update as uniform way : 1, attribute way : 0
-				if (im->getMatricesUpdateState())
-				{
-					shader->setMat4Array("matrices", im->mInstanceMatrices.data(), im->getInstanceCount());
-					shader->setInt("matricesUpdateState", 1);
-					//std::cout << "The matrix update as UNIFORM way" << std::endl;
-				}
-				else
-				{
-					shader->setInt("matricesUpdateState", 0);
-					//std::cout << "The matrix update as ATTRIBUTE way" << std::endl;
-				}
-		}
-			break;
-		default:
 			std::cout << "wrong\n";
-			break;
-			}
 		}
-		//// 3. 锟斤拷vao
-		//glBindVertexArray(geometry->getVao());
-		//// 4. 閫夋嫨geometry鐨勭粯鐢绘柟寮忥紙鍗曚緥缁樼敾/瀹炲姏缁樼敾锛?
-		////glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		//if(object->getType()==ObjectType::Mesh)
-		//	glDrawElements(GL_TRIANGLES, geometry->getIndicesCount(), GL_UNSIGNED_INT, static_cast<void*>(nullptr));
-		//else
-		//{
-		//	std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
-		//	glDrawElementsInstanced(GL_TRIANGLES, geometry->getIndicesCount(), GL_UNSIGNED_INT, 0, im->getInstanceCount());
-		//}
-		//GL_CALL(glBindVertexArray(0));
+
 		drawMesh(mesh);
 		shader->end();
 	}

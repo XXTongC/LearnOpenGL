@@ -561,6 +561,17 @@
 90. 完成第三十五次构建验证：
    - 针对 Opacity / Env 材质绑定迁移后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
+91. 完成第四十六轮 instanced 材质绑定迁移：
+   - 更新 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，新增 `PhongInstanceMaterial` 与 `GrassInstanceMaterial` 的绑定分支。
+   - 新增 `setInstanceMatrixUniforms(...)`，统一维护 `matrices` uniform 上传和 `matricesUpdateState` shader 开关。
+   - `PhongInstanceMaterial` 的 diffuse、specular mask、MVP、通用光照、shininess 和 instance matrix 状态上传已迁入 `MaterialBinder`。
+   - `GrassInstanceMaterial` 的草地参数、风参数、云参数、透明 mask / cloud mask 绑定、`updateMatrices()` 和 instance matrix 状态上传已迁入 `MaterialBinder`。
+   - 更新 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，删除最后两个具体材质旧 case、相关 include、未使用的 `geometry` 临时变量和失效的历史绘制注释块。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录材质绑定整体剥离完成后的下一步 pass 拆分方向。
+92. 完成第三十六次构建与运行时 smoke 验证：
+   - 针对 instanced 材质迁移后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -573,5 +584,6 @@
 - 第五轮 `prepare()` 分阶段拆分：已完成。
 - 第六轮场景对象构建拆分：已完成。
 - 当前工程可成功构建。
-- 当前剩余明显问题：`Renderer::renderObject()` 仍保留 `PhongInstanceMaterial` 与 `GrassInstanceMaterial` 两个旧材质分支，主渲染分支尚未完全清空。
-- 下一步建议目标：迁移 `PhongInstanceMaterial` 与 `GrassInstanceMaterial`，或者人工观察 PBR preview 的 shadow / normal map 方向，进一步验证 PBR 渲染路径。
+- 当前 `Renderer::renderObject()` 已不再保留具体材质旧分支，材质绑定整体收敛到 `MaterialBinder`。
+- 当前剩余明显问题：`MaterialBinder` 已变大，下一步需要拆更高层的 render pass 边界，避免后续 PBR / IBL / postprocess 继续集中到 `Renderer` 或单一 binder。
+- 下一步建议目标：拆分主 frame 渲染流程，建立 `SceneRenderPass` / `PostProcess` 边界，或者人工观察 PBR preview 的 shadow / normal map 方向，进一步验证 PBR 渲染路径。

@@ -7,9 +7,11 @@
 #include "materials/depthMaterial.h"
 #include "materials/opacityMaskMatetial.h"
 #include "materials/pbrMaterial/PBRMaterial.h"
+#include "materials/grassInstanceMaterial/grassInstanceMaterial.h"
 #include "materials/phongCSMShadowMaterial/phongCSMShadowMaterial.h"
 #include "materials/phongEnvMaterial.h"
 #include "materials/phongEnvSphereMaterial.h"
+#include "materials/phongInstanceMaterial.h"
 #include "materials/phongMaterial.h"
 #include "materials/phongNormalMaterial/phongNormalMaterial.h"
 #include "materials/phongParallaxMaterial/phongParallaxMaterial.h"
@@ -18,6 +20,7 @@
 #include "materials/screenMaterial.h"
 #include "materials/whiteMaterial.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
+#include "mesh/instancedMesh.h"
 #include "renderer/ShadowResourceBinder.h"
 
 using namespace GLframework;
@@ -108,6 +111,18 @@ namespace
 
 		shader->setInt(samplerName, texture->getUnit());
 		texture->Bind();
+	}
+
+	void setInstanceMatrixUniforms(const std::shared_ptr<Shader>& shader, const std::shared_ptr<InstancedMesh>& mesh)
+	{
+		if (mesh->getMatricesUpdateState())
+		{
+			shader->setMat4Array("matrices", mesh->mInstanceMatrices.data(), mesh->getInstanceCount());
+			shader->setInt("matricesUpdateState", 1);
+			return;
+		}
+
+		shader->setInt("matricesUpdateState", 0);
 	}
 
 	void bindWhiteMaterial(
@@ -240,6 +255,66 @@ namespace
 		setNormalMatrix(shader, mesh);
 		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
 		shader->setFloat("shiness", phongMat->mShiness);
+	}
+
+	void bindPhongInstanceMaterial(
+		const std::shared_ptr<Shader>& shader,
+		const std::shared_ptr<Material>& material,
+		const std::shared_ptr<Mesh>& mesh,
+		Camera* camera,
+		const std::shared_ptr<DirectionalLight>& dirLight,
+		const std::shared_ptr<SpotLight>& spotLight,
+		const std::vector<std::shared_ptr<PointLight>>& pointLights,
+		const std::shared_ptr<AmbientLight>& ambient
+	)
+	{
+		std::shared_ptr<PhongInstanceMaterial> phongMat = std::static_pointer_cast<PhongInstanceMaterial>(material);
+		std::shared_ptr<InstancedMesh> instancedMesh = std::static_pointer_cast<InstancedMesh>(mesh);
+
+		setCommonMaterialUniforms(shader, material, camera);
+		setPhongTextures(shader, phongMat->mDiffuse, phongMat->mSpecularMask);
+		setMVPMatrices(shader, mesh, camera);
+		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		shader->setFloat("shiness", phongMat->mShiness);
+		setInstanceMatrixUniforms(shader, instancedMesh);
+	}
+
+	void bindGrassInstanceMaterial(
+		const std::shared_ptr<Shader>& shader,
+		const std::shared_ptr<Material>& material,
+		const std::shared_ptr<Mesh>& mesh,
+		Camera* camera,
+		const std::shared_ptr<DirectionalLight>& dirLight,
+		const std::shared_ptr<SpotLight>& spotLight,
+		const std::vector<std::shared_ptr<PointLight>>& pointLights,
+		const std::shared_ptr<AmbientLight>& ambient
+	)
+	{
+		std::shared_ptr<GrassInstanceMaterial> grassMat = std::static_pointer_cast<GrassInstanceMaterial>(material);
+		std::shared_ptr<InstancedMesh> instancedMesh = std::static_pointer_cast<InstancedMesh>(mesh);
+
+		instancedMesh->updateMatrices();
+
+		setCommonMaterialUniforms(shader, material, camera);
+		shader->setFloat("uvScale", grassMat->getUVScale());
+		shader->setFloat("brightness", grassMat->getBrightness());
+		shader->setFloat("windScale", grassMat->getWindScale());
+		shader->setFloat("phaseScale", grassMat->getPhaseScale());
+		shader->setVector3("windDirection", grassMat->getWindDirection());
+		shader->setVector3("cloudWhiteColor", grassMat->getCloudWhiteColor());
+		shader->setVector3("cloudBlackColor", grassMat->getCloudBlackColor());
+		shader->setFloat("cloudUVScale", grassMat->getCloudUVScale());
+		shader->setFloat("cloudSpeed", grassMat->getCloudSpeed());
+		shader->setFloat("cloudLerp", grassMat->getCloudLerp());
+		bindTexture(shader, "samplerGrass", grassMat->mDiffuse);
+		bindTexture(shader, "MaskSampler", grassMat->mSpecularMask);
+		bindTexture(shader, "opacityMask", grassMat->mOpacityMask);
+		bindTexture(shader, "cloudMask", grassMat->mCloudMask);
+		setMVPMatrices(shader, mesh, camera);
+		setNormalMatrix(shader, mesh);
+		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		shader->setFloat("shiness", grassMat->mShiness);
+		setInstanceMatrixUniforms(shader, instancedMesh);
 	}
 
 	void bindPhongMaterial(
@@ -450,6 +525,12 @@ bool MaterialBinder::bind(
 		return true;
 	case MaterialType::PhongEnvSphereMaterial:
 		bindPhongEnvSphereMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		return true;
+	case MaterialType::PhongInstanceMaterial:
+		bindPhongInstanceMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		return true;
+	case MaterialType::GrassInstanceMaterial:
+		bindGrassInstanceMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
 		return true;
 	case MaterialType::PhongMaterial:
 		bindPhongMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
