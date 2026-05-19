@@ -577,3 +577,13 @@ PBR 材质已开始消费统一的 shadow resource：
 - 顺手移除了未使用的 `ScreenShot.h` include，并把旧分支中的 `glfwGetTime()` 显式转成 `float`，使本轮构建回到 `0` warning。
 
 这一步继续压缩 Renderer 主流程。后续如果继续迁移 Opacity / Env / Instance，`Renderer::renderObject()` 将更接近只负责材质分发失败时的 legacy fallback。
+
+### 2026-05-20 Opacity / Env 材质绑定迁移
+
+`Renderer::renderObject()` 中的 Opacity 与环境反射类材质分支已迁入 `MaterialBinder`：
+
+- `OpacityMaskMaterial` 的 diffuse、opacity mask、MVP、normal matrix、通用光照和 shininess 上传集中到 `MaterialBinder`。
+- `PhongEnvMaterial` 与 `PhongEnvSphereMaterial` 的 diffuse、specular mask、environment sampler、矩阵和光照上传集中到 `MaterialBinder`。
+- `Renderer` 删除了这三个旧 case 和对应具体材质 include，当前 fallback 只剩 instanced mesh 相关材质。
+
+这一步继续减少 `Renderer` 对具体材质类型的直接依赖。下一步建议迁移 `PhongInstanceMaterial` 与 `GrassInstanceMaterial`，但这两个分支还包含 instance matrix 更新策略和草地材质运行时参数，应该单独处理，避免把行为差异在迁移时混掉。

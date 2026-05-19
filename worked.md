@@ -552,6 +552,15 @@
 88. 完成第三十四次构建验证：
    - 针对简单材质迁移和 warning 清理后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
+89. 完成第四十五轮 Opacity / Env 材质绑定迁移：
+   - 更新 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，新增 `OpacityMaskMaterial`、`PhongEnvMaterial`、`PhongEnvSphereMaterial` 的绑定分支。
+   - `OpacityMaskMaterial` 的 diffuse、opacity mask、MVP、normal matrix、通用光照和 shininess 上传已迁入 `MaterialBinder`。
+   - `PhongEnvMaterial` 与 `PhongEnvSphereMaterial` 的 diffuse、specular mask、environment sampler、矩阵和光照上传已迁入 `MaterialBinder`。
+   - 更新 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，删除上述三个旧 case 和不再需要的具体材质 include。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录本轮迁移和剩余 instanced 材质边界。
+90. 完成第三十五次构建验证：
+   - 针对 Opacity / Env 材质绑定迁移后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
 
 ### 当前状态
 
@@ -564,5 +573,5 @@
 - 第五轮 `prepare()` 分阶段拆分：已完成。
 - 第六轮场景对象构建拆分：已完成。
 - 当前工程可成功构建。
-- 当前剩余明显问题：`Renderer::renderObject()` 仍保留 Opacity / Env / Instance / GrassInstance 等旧材质分支，主渲染分支尚未完全清空。
-- 下一步建议目标：人工观察 PBR preview 的 shadow / normal map 方向，或继续迁移 Opacity / Env / Instance 等旧材质，进一步清空 `Renderer::renderObject()`。
+- 当前剩余明显问题：`Renderer::renderObject()` 仍保留 `PhongInstanceMaterial` 与 `GrassInstanceMaterial` 两个旧材质分支，主渲染分支尚未完全清空。
+- 下一步建议目标：迁移 `PhongInstanceMaterial` 与 `GrassInstanceMaterial`，或者人工观察 PBR preview 的 shadow / normal map 方向，进一步验证 PBR 渲染路径。

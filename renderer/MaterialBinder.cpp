@@ -5,8 +5,11 @@
 #include "materials/cubeMaterial.h"
 #include "materials/cubeSphereMaterial.h"
 #include "materials/depthMaterial.h"
+#include "materials/opacityMaskMatetial.h"
 #include "materials/pbrMaterial/PBRMaterial.h"
 #include "materials/phongCSMShadowMaterial/phongCSMShadowMaterial.h"
+#include "materials/phongEnvMaterial.h"
+#include "materials/phongEnvSphereMaterial.h"
 #include "materials/phongMaterial.h"
 #include "materials/phongNormalMaterial/phongNormalMaterial.h"
 #include "materials/phongParallaxMaterial/phongParallaxMaterial.h"
@@ -171,6 +174,72 @@ namespace
 		cubeMat->mDiffuse->setUnit(0);
 		cubeMat->mDiffuse->Bind();
 		cubeMat->mDiffuse->setUnit(2);
+	}
+
+	void bindOpacityMaskMaterial(
+		const std::shared_ptr<Shader>& shader,
+		const std::shared_ptr<Material>& material,
+		const std::shared_ptr<Mesh>& mesh,
+		Camera* camera,
+		const std::shared_ptr<DirectionalLight>& dirLight,
+		const std::shared_ptr<SpotLight>& spotLight,
+		const std::vector<std::shared_ptr<PointLight>>& pointLights,
+		const std::shared_ptr<AmbientLight>& ambient
+	)
+	{
+		std::shared_ptr<OpacityMaskMaterial> opacityMat = std::static_pointer_cast<OpacityMaskMaterial>(material);
+
+		setCommonMaterialUniforms(shader, material, camera);
+		bindTexture(shader, "samplerGrass", opacityMat->mDiffuse);
+		bindTexture(shader, "opacityMaskSampler", opacityMat->mOpacityrMask);
+		setMVPMatrices(shader, mesh, camera);
+		setNormalMatrix(shader, mesh);
+		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		shader->setFloat("shiness", opacityMat->mShiness);
+	}
+
+	void bindPhongEnvMaterial(
+		const std::shared_ptr<Shader>& shader,
+		const std::shared_ptr<Material>& material,
+		const std::shared_ptr<Mesh>& mesh,
+		Camera* camera,
+		const std::shared_ptr<DirectionalLight>& dirLight,
+		const std::shared_ptr<SpotLight>& spotLight,
+		const std::vector<std::shared_ptr<PointLight>>& pointLights,
+		const std::shared_ptr<AmbientLight>& ambient
+	)
+	{
+		std::shared_ptr<PhongEnvMaterial> phongMat = std::static_pointer_cast<PhongEnvMaterial>(material);
+
+		setCommonMaterialUniforms(shader, material, camera);
+		setPhongTextures(shader, phongMat->mDiffuse, phongMat->mSpecularMask);
+		bindTexture(shader, "envSampler", phongMat->mEnv);
+		setMVPMatrices(shader, mesh, camera);
+		setNormalMatrix(shader, mesh);
+		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		shader->setFloat("shiness", phongMat->mShiness);
+	}
+
+	void bindPhongEnvSphereMaterial(
+		const std::shared_ptr<Shader>& shader,
+		const std::shared_ptr<Material>& material,
+		const std::shared_ptr<Mesh>& mesh,
+		Camera* camera,
+		const std::shared_ptr<DirectionalLight>& dirLight,
+		const std::shared_ptr<SpotLight>& spotLight,
+		const std::vector<std::shared_ptr<PointLight>>& pointLights,
+		const std::shared_ptr<AmbientLight>& ambient
+	)
+	{
+		std::shared_ptr<PhongEnvSphereMaterial> phongMat = std::static_pointer_cast<PhongEnvSphereMaterial>(material);
+
+		setCommonMaterialUniforms(shader, material, camera);
+		setPhongTextures(shader, phongMat->mDiffuse, phongMat->mSpecularMask);
+		bindTexture(shader, "envSampler", phongMat->mEnv);
+		setMVPMatrices(shader, mesh, camera);
+		setNormalMatrix(shader, mesh);
+		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		shader->setFloat("shiness", phongMat->mShiness);
 	}
 
 	void bindPhongMaterial(
@@ -372,6 +441,15 @@ bool MaterialBinder::bind(
 		return true;
 	case MaterialType::CubeSphereMaterial:
 		bindCubeSphereMaterial(shader, material, mesh, camera);
+		return true;
+	case MaterialType::OpacityMaskMaterial:
+		bindOpacityMaskMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		return true;
+	case MaterialType::PhongEnvMaterial:
+		bindPhongEnvMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		return true;
+	case MaterialType::PhongEnvSphereMaterial:
+		bindPhongEnvSphereMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
 		return true;
 	case MaterialType::PhongMaterial:
 		bindPhongMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
