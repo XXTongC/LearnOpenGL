@@ -31,10 +31,10 @@
 
 #include "depthMaterial.h"
 #include "material.h"
-#include "framebuffer.h"
 #include "scene.h"
 #include <chrono>
 #include "renderer.h"
+#include "renderer/FrameRenderTargets.h"
 #include "renderer/PostProcessPass.h"
 #include "pointLight.h"
 //imgui thirdparty
@@ -105,8 +105,7 @@ struct AppRuntimeContext
 	std::shared_ptr<GLframework::Scene> sceneInScreen{ nullptr };
 	std::shared_ptr<GLframework::Mesh> meshPointLight{ nullptr };
 	std::shared_ptr<GLframework::AmbientLight> ambientLight{ nullptr };
-	std::shared_ptr<GLframework::Framebuffer> framebufferMultisample{ nullptr };
-	std::shared_ptr<GLframework::Framebuffer> framebufferResolve{ nullptr };
+	GLframework::FrameRenderTargets frameRenderTargets{};
 	std::shared_ptr<GLframework::GrassInstanceMaterial> grassMaterial{ nullptr };
 	std::shared_ptr<GLframework::Mesh> skyBoxMesh{ nullptr };
 	std::shared_ptr<GLframework::Mesh> movePlane{ nullptr };
@@ -130,8 +129,7 @@ auto& sceneOffScreen = gAppRuntime.sceneOffScreen;
 auto& sceneInScreen = gAppRuntime.sceneInScreen;
 auto& meshPointLight = gAppRuntime.meshPointLight;
 auto& ambientLight = gAppRuntime.ambientLight;
-auto& framebufferMultisample = gAppRuntime.framebufferMultisample;
-auto& framebufferResolve = gAppRuntime.framebufferResolve;
+auto& frameRenderTargets = gAppRuntime.frameRenderTargets;
 auto& grassMaterial = gAppRuntime.grassMaterial;
 auto& skyBoxMesh = gAppRuntime.skyBoxMesh;
 auto& movePlane = gAppRuntime.movePlane;
@@ -200,8 +198,8 @@ void runFrame()
 	//moveit();
 
 	// pass 1: off-screen color attachment
-	renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights, ambientLight, framebufferMultisample->getFBO());
-	postProcessPass.resolveMultisample(framebufferMultisample, framebufferResolve);
+	renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights, ambientLight, frameRenderTargets.getSceneFbo());
+	postProcessPass.resolveMultisample(frameRenderTargets.getMultisample(), frameRenderTargets.getResolved());
 
 	// pass 2: on-screen color attachment
 	renderer->render(sceneInScreen, camera, dirLight, spotLight, pointLights, ambientLight);
@@ -244,8 +242,7 @@ GL_SCENE::SetupContext makeSceneSetupContext()
 		renderer,
 		sceneOffScreen,
 		sceneInScreen,
-		framebufferMultisample,
-		framebufferResolve,
+		frameRenderTargets,
 		skyBoxMesh,
 		textD,
 		ScreenMat,

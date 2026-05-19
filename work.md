@@ -648,7 +648,18 @@ MSAA resolve 已从 `Renderer` 中拆出，作为后处理边界的第一步：
 
 - 新增 `PostProcessPass`，当前负责 `resolveMultisample(...)`，把 multisample framebuffer blit 到 resolve framebuffer。
 - `Renderer` 删除 `msaaResolve(...)`，避免继续把后处理工具函数堆在主渲染编排器里。
-- `runFrame()` 现在通过 `postProcessPass.resolveMultisample(framebufferMultisample, framebufferResolve)` 执行 resolve。
+- `runFrame()` 现在通过 `frameRenderTargets` 取出 multisample / resolved target，再交给 `postProcessPass.resolveMultisample(...)` 执行 resolve。
 - `text2.vcxproj` 与 `text2.vcxproj.filters` 已收录新的 postprocess pass 文件，保持 VS 工程结构一致。
 
 这一步只是建立边界，不试图一次性完成完整后处理系统。后续可以继续把 screen composite、tone mapping、Bloom 和 HDR render target 管理迁入 `PostProcessPass` 或独立 render target orchestration 层，为 PBR / IBL 输出路径提供稳定承接点。
+
+### 2026-05-20 FrameRenderTargets 初步拆分
+
+主颜色渲染目标已从 `main.cpp` / `SceneSetup` 的散落字段中收拢到 `FrameRenderTargets`：
+
+- 新增 `FrameRenderTargets`，当前统一创建和持有 multisample scene framebuffer 与 resolved HDR framebuffer。
+- `SceneSetup` 不再直接暴露 `framebufferMultisample` / `framebufferResolve` 两个引用，而是通过 `frameRenderTargets.initialize(...)` 准备主帧目标。
+- screen pass 的 `ScreenMaterial::mScreenTexture` 现在来自 `frameRenderTargets.getResolvedColorAttachment()`。
+- `runFrame()` 通过 `frameRenderTargets.getSceneFbo()` 渲染 world scene，并通过 `PostProcessPass` resolve 到 resolved HDR target。
+
+这一步把 PBR 后续必需的 render target orchestration 起点独立出来。当前类还只管理主 scene target，后续可以继续扩展 HDR scene color、Bloom ping-pong target、depth target、IBL capture target 与 resize/recreate 策略。

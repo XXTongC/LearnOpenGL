@@ -363,6 +363,9 @@
     <ClCompile Include="renderer\FrameRenderState.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\FrameRenderTargets.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\PostProcessPass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -576,6 +579,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\FrameRenderState.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\FrameRenderTargets.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PostProcessPass.h">

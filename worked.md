@@ -624,6 +624,16 @@
    - 针对 `PostProcessPass` 拆分后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
+103. 完成第五十二轮 `FrameRenderTargets` 初步拆分：
+   - 新增 [renderer/FrameRenderTargets.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\FrameRenderTargets.h) 与 [renderer/FrameRenderTargets.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\FrameRenderTargets.cpp)，统一持有 multisample scene framebuffer 与 resolved HDR framebuffer。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，移除 `framebufferMultisample` / `framebufferResolve` 运行时字段，改为通过 `frameRenderTargets.getSceneFbo()` 和 `frameRenderTargets.getMultisample()` / `getResolved()` 驱动渲染与 resolve。
+   - 更新 [tools/sceneSetup/SceneSetup.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.h) 与 [tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，由 `FrameRenderTargets` 负责初始化主帧目标，并把 resolved color attachment 接到 `ScreenMaterial`。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `FrameRenderTargets` 纳入 VS 工程和 Renderer 分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 render target orchestration 对 PBR / IBL 输出路径的意义。
+104. 完成第四十二次构建与运行时 smoke 验证：
+   - 针对 `FrameRenderTargets` 拆分后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -641,5 +651,6 @@
 - 当前 render queue 构建已从 `Renderer` 拆出，后续可扩展 PBR / IBL 所需的队列类别。
 - 当前 frame GL state 已从 `Renderer` 拆出，`Renderer` 进一步收敛为 frame state / render queue / shadow pass / scene pass 编排器。
 - 当前 postprocess 边界已开始建立，MSAA resolve 已从 `Renderer` 移入 `PostProcessPass`。
-- 当前剩余明显问题：Bloom / tone mapping / render target orchestration 仍未 pass 化，PBR / IBL 后续需要更稳定的 frame graph 雏形。
-- 下一步建议目标：扩展 `PostProcessPass` 承接 screen resolve / tone mapping / Bloom，或者优先建立 render target orchestration，为 PBR / IBL 输出路径做准备。
+- 当前主颜色 render target orchestration 已开始建立，multisample scene target 与 resolved HDR target 已收拢到 `FrameRenderTargets`。
+- 当前剩余明显问题：Bloom / tone mapping 仍未 pass 化，`FrameRenderTargets` 还没有 resize/recreate、Bloom ping-pong target、IBL capture target 和 BRDF LUT 管理。
+- 下一步建议目标：扩展 `PostProcessPass` 承接 screen composite / tone mapping / Bloom，或者继续扩展 `FrameRenderTargets` 管理 PBR / IBL 所需的 HDR 与环境贴图目标。

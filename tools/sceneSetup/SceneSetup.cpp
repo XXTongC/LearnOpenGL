@@ -16,8 +16,7 @@ namespace
 		context.sceneInScreen->setName("Screen Scene");
 		context.sceneOffScreen->setName("World Scene");
 
-		context.framebufferMultisample = GLframework::Framebuffer::createMultiSampleFbo(context.width, context.height, 4);
-		context.framebufferResolve = GLframework::Framebuffer::createHDRFbo(context.width, context.height);
+		context.frameRenderTargets.initialize(context.width, context.height, 4);
 
 		GLframework::PointLightShadow::initializeSharedDepthTexture(1024, 1024, 2);
 	}
@@ -113,7 +112,7 @@ namespace
 	void prepareScreenPass(GL_SCENE::SetupContext& context)
 	{
 		context.screenMaterial = std::make_shared<GLframework::ScreenMaterial>();
-		context.screenMaterial->mScreenTexture = context.framebufferResolve->getColorAttachment();
+		context.screenMaterial->mScreenTexture = context.frameRenderTargets.getResolvedColorAttachment();
 		auto geo = GLframework::Geometry::createScreenPlane(context.renderer->getShader(context.screenMaterial->getMaterialType()));
 		auto mesh = std::make_shared<GLframework::Mesh>(geo, context.screenMaterial);
 		mesh->setName("Screen Quad");

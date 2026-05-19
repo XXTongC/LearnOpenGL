@@ -173,6 +173,7 @@
     <ClCompile Include="materials\pbrMaterial\PBRMaterial.cpp" />
     <ClCompile Include="light\pointLight.cpp" />
     <ClCompile Include="renderer\FrameRenderState.cpp" />
+    <ClCompile Include="renderer\FrameRenderTargets.cpp" />
     <ClCompile Include="renderer\MaterialBinder.cpp" />
     <ClCompile Include="renderer\PostProcessPass.cpp" />
     <ClCompile Include="renderer\RenderQueue.cpp" />
@@ -247,6 +248,7 @@
     <ClInclude Include="materials\pbrMaterial\PBRMaterial.h" />
     <ClInclude Include="light\pointLight.h" />
     <ClInclude Include="renderer\FrameRenderState.h" />
+    <ClInclude Include="renderer\FrameRenderTargets.h" />
     <ClInclude Include="renderer\MaterialBinder.h" />
     <ClInclude Include="renderer\PostProcessPass.h" />
     <ClInclude Include="renderer\RenderQueue.h" />

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../../framebuffer/framebuffer.h"
 #include "../../framework/scene.h"
 #include "../../light/ambientLight.h"
 #include "../../light/directionalLight.h"
@@ -8,6 +7,7 @@
 #include "../../light/spotLight.h"
 #include "../../materials/screenMaterial.h"
 #include "../../mesh/mesh.h"
+#include "../../renderer/FrameRenderTargets.h"
 #include "../../renderer/renderer.h"
 
 namespace GL_SCENE
@@ -17,8 +17,7 @@ namespace GL_SCENE
 		std::shared_ptr<GLframework::Renderer>& renderer;
 		std::shared_ptr<GLframework::Scene>& sceneOffScreen;
 		std::shared_ptr<GLframework::Scene>& sceneInScreen;
-		std::shared_ptr<GLframework::Framebuffer>& framebufferMultisample;
-		std::shared_ptr<GLframework::Framebuffer>& framebufferResolve;
+		GLframework::FrameRenderTargets& frameRenderTargets;
 		std::shared_ptr<GLframework::Mesh>& skyBoxMesh;
 		std::shared_ptr<GLframework::Mesh>& textD;
 		std::shared_ptr<GLframework::ScreenMaterial>& screenMaterial;
