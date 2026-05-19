@@ -5,6 +5,7 @@
 #include "framebuffer.h"
 #include "camera.h"
 #include "shader.h"
+#include "FrameRenderState.h"
 #include "RenderQueue.h"
 #include "SceneRenderPass.h"
 #include "ShadowRenderer.h"
@@ -40,6 +41,7 @@ namespace GLframework
 		std::shared_ptr<Material> mGlobalMaterial{nullptr};
 private:
 		ShaderLibrary mShaderLibrary{};
+		FrameRenderState mFrameRenderState{};
 		RenderQueue mRenderQueue{};
 		ShadowRenderer mShadowRenderer{};
 		SceneRenderPass mSceneRenderPass{};

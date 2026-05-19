@@ -604,6 +604,16 @@
    - 针对 `RenderQueue` 拆分后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
+99. 完成第五十轮 `FrameRenderState` 拆分：
+   - 新增 [renderer/FrameRenderState.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\FrameRenderState.h) 与 [renderer/FrameRenderState.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\FrameRenderState.cpp)，承接每帧开始时的 framebuffer 绑定、depth / stencil / blend / polygon offset 状态准备和 clear。
+   - 更新 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，主 `render(...)` 开头改为调用 `mFrameRenderState.begin(fbo)`。
+   - 更新 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h)，新增 `FrameRenderState` 成员。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `FrameRenderState` 纳入 VS 工程和 Renderer 分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 frame state 边界对后续 PBR / IBL render target 和 pass 管理的意义。
+100. 完成第四十次构建与运行时 smoke 验证：
+   - 针对 `FrameRenderState` 拆分后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -619,5 +629,6 @@
 - 当前 `Renderer::renderObject()` 已不再保留具体材质旧分支，材质绑定整体收敛到 `MaterialBinder`。
 - 当前 `Renderer` 已具备 shadow pass 与 scene pass 两个明确调度边界。
 - 当前 render queue 构建已从 `Renderer` 拆出，后续可扩展 PBR / IBL 所需的队列类别。
-- 当前剩余明显问题：frame GL state 和 postprocess 边界仍在 `Renderer` 或外部流程中，PBR / IBL 后续需要更稳定的 frame graph 雏形。
-- 下一步建议目标：抽出 frame state，或建立 postprocess pass 边界，然后继续人工观察 PBR preview 的 shadow / normal map 方向。
+- 当前 frame GL state 已从 `Renderer` 拆出，`Renderer` 进一步收敛为 frame state / render queue / shadow pass / scene pass 编排器。
+- 当前剩余明显问题：postprocess 边界和 render target 管理仍在 `Renderer` 或外部流程中，PBR / IBL 后续需要更稳定的 frame graph 雏形。
+- 下一步建议目标：建立 postprocess pass 边界，或者继续人工观察 PBR preview 的 shadow / normal map 方向。

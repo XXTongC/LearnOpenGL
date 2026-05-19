@@ -172,6 +172,7 @@
     <ClCompile Include="materials\phongMaterial.cpp" />
     <ClCompile Include="materials\pbrMaterial\PBRMaterial.cpp" />
     <ClCompile Include="light\pointLight.cpp" />
+    <ClCompile Include="renderer\FrameRenderState.cpp" />
     <ClCompile Include="renderer\MaterialBinder.cpp" />
     <ClCompile Include="renderer\RenderQueue.cpp" />
     <ClCompile Include="renderer\RenderState.cpp" />
@@ -244,6 +245,7 @@
     <ClInclude Include="materials\phongMaterial.h" />
     <ClInclude Include="materials\pbrMaterial\PBRMaterial.h" />
     <ClInclude Include="light\pointLight.h" />
+    <ClInclude Include="renderer\FrameRenderState.h" />
     <ClInclude Include="renderer\MaterialBinder.h" />
     <ClInclude Include="renderer\RenderQueue.h" />
     <ClInclude Include="renderer\RenderState.h" />

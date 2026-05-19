@@ -630,3 +630,14 @@ opaque / transparent 队列构建已从 `Renderer` 中拆出：
 - `Renderer` 删除队列成员和 `projectObject(...)`，职责进一步收敛为 frame state 与 pass 编排。
 
 这一步让渲染队列成为独立概念。后续 PBR / IBL 如果需要区分 forward opaque、transparent、skybox、probe capture 或特定材质队列，可以在 `RenderQueue` 扩展，而不是继续修改 `Renderer` 主流程。
+
+### 2026-05-20 FrameRenderState 拆分
+
+每帧开始时的固定 GL 状态准备已从 `Renderer` 中拆出：
+
+- 新增 `FrameRenderState`，负责绑定目标 framebuffer、设置 depth / stencil / blend / polygon offset 初始状态，并清理 color / depth / stencil buffer。
+- `Renderer::render(...)` 现在通过 `mFrameRenderState.begin(fbo)` 进入一帧，不再直接维护这组 GL 状态细节。
+- `setClearColor(...)` 和 `msaaResolve(...)` 暂时保留在 `Renderer`，因为它们仍是外部使用的渲染工具接口。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已收录新的 frame state 文件。
+
+这一步让 frame state 成为独立边界。后续可以继续把 postprocess pass 或 render target 管理拆出来，使 PBR / IBL 的 render target、prepass、environment capture 不再和主 `Renderer` 入口耦合。
