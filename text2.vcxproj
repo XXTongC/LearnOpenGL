@@ -645,6 +645,7 @@
     <ClInclude Include="materials\whiteMaterial.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="config\environment_profile.example.ini" />
     <None Include="cubeSphere.frag" />
     <None Include="cubeSphere.vert" />
     <None Include="fbx\bag\backpack.mtl" />

@@ -16,7 +16,8 @@ namespace
 {
 	void drawEnvironmentControls(
 		const std::shared_ptr<GLframework::Renderer>& renderer,
-		GLframework::EnvironmentProfile* profile
+		GLframework::EnvironmentProfile* profile,
+		const std::string* profilePath
 	)
 	{
 		if (!profile)
@@ -27,6 +28,8 @@ namespace
 		static std::array<char, 512> hdrPathBuffer{};
 		static std::string lastPath{};
 		static std::string lastPrecomputeStatus{};
+		static std::string lastConfigStatus{};
+		const std::string configPath = profilePath ? *profilePath : GLframework::EnvironmentProfileStorage::defaultPath();
 		if (lastPath != profile->hdrEquirectangularPath)
 		{
 			hdrPathBuffer.fill('\0');
@@ -36,6 +39,8 @@ namespace
 
 		if (ImGui::CollapsingHeader("Environment / IBL", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+			ImGui::TextWrapped("Profile File: %s", configPath.c_str());
+
 			if (ImGui::InputText("HDR Path", hdrPathBuffer.data(), hdrPathBuffer.size()))
 			{
 				profile->hdrEquirectangularPath = hdrPathBuffer.data();
@@ -51,6 +56,31 @@ namespace
 			ImGui::Checkbox("Precompute On Prepare", &profile->precomputeOnPrepare);
 			const bool ready = renderer && renderer->getEnvironmentRenderTargets().hasPrecomputedEnvironment();
 			ImGui::Text("IBL Ready: %s", ready ? "Yes" : "No");
+
+			if (ImGui::Button("Save Environment Profile"))
+			{
+				lastConfigStatus = GLframework::EnvironmentProfileStorage::saveToFile(configPath, *profile)
+					? "Environment profile saved."
+					: "Environment profile save failed.";
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Reload Environment Profile"))
+			{
+				if (GLframework::EnvironmentProfileStorage::loadFromFile(configPath, *profile))
+				{
+					lastPath.clear();
+					lastConfigStatus = "Environment profile reloaded.";
+				}
+				else
+				{
+					lastConfigStatus = "Environment profile reload failed.";
+				}
+			}
+
+			if (!lastConfigStatus.empty())
+			{
+				ImGui::TextWrapped("%s", lastConfigStatus.c_str());
+			}
 
 			const bool canPrecompute = renderer != nullptr && profile->hasHdrSource();
 			if (!canPrecompute)
@@ -123,7 +153,7 @@ void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
 		ImGui::SliderFloat("Exposure", &context.screenMaterial->mSettings.exposure, 0.0f, 4.0f);
 	}
 
-	drawEnvironmentControls(context.renderer, context.environmentProfile);
+	drawEnvironmentControls(context.renderer, context.environmentProfile, context.environmentProfilePath);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 

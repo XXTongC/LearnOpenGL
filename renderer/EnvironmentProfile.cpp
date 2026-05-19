@@ -1,6 +1,11 @@
 #include "EnvironmentProfile.h"
 
+#include <algorithm>
+#include <cctype>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 
 #include "stb_image.h"
 
@@ -36,6 +41,66 @@ namespace
 		}
 
 		return GL_RGB16F;
+	}
+
+	std::string trim(std::string value)
+	{
+		auto isSpace = [](unsigned char ch)
+		{
+			return std::isspace(ch) != 0;
+		};
+
+		value.erase(value.begin(), std::find_if(value.begin(), value.end(), [isSpace](char ch)
+		{
+			return !isSpace(static_cast<unsigned char>(ch));
+		}));
+		value.erase(std::find_if(value.rbegin(), value.rend(), [isSpace](char ch)
+		{
+			return !isSpace(static_cast<unsigned char>(ch));
+		}).base(), value.end());
+		return value;
+	}
+
+	bool parseUnsigned(const std::string& value, unsigned int& output)
+	{
+		try
+		{
+			size_t parsedCharacters{ 0 };
+			const auto parsed = std::stoul(value, &parsedCharacters);
+			if (parsedCharacters != value.size())
+			{
+				return false;
+			}
+
+			output = static_cast<unsigned int>(parsed);
+			return true;
+		}
+		catch (...)
+		{
+			return false;
+		}
+	}
+
+	bool parseBool(std::string value, bool& output)
+	{
+		std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch)
+		{
+			return static_cast<char>(std::tolower(ch));
+		});
+
+		if (value == "1" || value == "true" || value == "yes" || value == "on")
+		{
+			output = true;
+			return true;
+		}
+
+		if (value == "0" || value == "false" || value == "no" || value == "off")
+		{
+			output = false;
+			return true;
+		}
+
+		return false;
 	}
 }
 
@@ -96,4 +161,92 @@ std::shared_ptr<Texture> EnvironmentTextureLoader::loadHdrEquirectangular(const 
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	return texture;
+}
+
+std::string EnvironmentProfileStorage::defaultPath()
+{
+	return "config/environment_profile.local.ini";
+}
+
+bool EnvironmentProfileStorage::loadFromFile(const std::string& path, EnvironmentProfile& profile)
+{
+	std::ifstream input(path);
+	if (!input)
+	{
+		return false;
+	}
+
+	EnvironmentProfile loadedProfile = profile;
+	std::string line{};
+	while (std::getline(input, line))
+	{
+		line = trim(line);
+		if (line.empty() || line[0] == '#' || line[0] == ';' || line[0] == '[')
+		{
+			continue;
+		}
+
+		const auto separator = line.find('=');
+		if (separator == std::string::npos)
+		{
+			continue;
+		}
+
+		const auto key = trim(line.substr(0, separator));
+		const auto value = trim(line.substr(separator + 1));
+		if (key == "hdrEquirectangularPath")
+		{
+			loadedProfile.hdrEquirectangularPath = value;
+			continue;
+		}
+
+		if (key == "hdrTextureUnit")
+		{
+			unsigned int parsedUnit{ loadedProfile.hdrTextureUnit };
+			if (parseUnsigned(value, parsedUnit))
+			{
+				loadedProfile.hdrTextureUnit = parsedUnit;
+			}
+			continue;
+		}
+
+		if (key == "precomputeOnPrepare")
+		{
+			bool parsedPrecompute{ loadedProfile.precomputeOnPrepare };
+			if (parseBool(value, parsedPrecompute))
+			{
+				loadedProfile.precomputeOnPrepare = parsedPrecompute;
+			}
+		}
+	}
+
+	profile = loadedProfile;
+	return true;
+}
+
+bool EnvironmentProfileStorage::saveToFile(const std::string& path, const EnvironmentProfile& profile)
+{
+	const std::filesystem::path filePath{ path };
+	const auto parentPath = filePath.parent_path();
+	if (!parentPath.empty())
+	{
+		std::error_code error{};
+		std::filesystem::create_directories(parentPath, error);
+		if (error)
+		{
+			return false;
+		}
+	}
+
+	std::ofstream output(path, std::ios::trunc);
+	if (!output)
+	{
+		return false;
+	}
+
+	output << "# Local environment profile for PBR / IBL experiments\n";
+	output << "hdrEquirectangularPath=" << profile.hdrEquirectangularPath << '\n';
+	output << "hdrTextureUnit=" << profile.hdrTextureUnit << '\n';
+	output << "precomputeOnPrepare=" << (profile.precomputeOnPrepare ? 1 : 0) << '\n';
+	return true;
 }

@@ -100,6 +100,9 @@
     <Filter Include="资源文件\Texture">
       <UniqueIdentifier>{9b5a1236-5787-4bf4-8b8c-af569dcd3464}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\config">
+      <UniqueIdentifier>{e27d3570-90c2-4d2a-bf2c-6720e8f53e1c}</UniqueIdentifier>
+    </Filter>
     <Filter Include="资源文件\fbx\textures">
       <UniqueIdentifier>{01c1c1e6-4687-4b51-8d4b-f85eb5299fb4}</UniqueIdentifier>
     </Filter>
@@ -1807,6 +1810,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="config\environment_profile.example.ini">
+      <Filter>资源文件\config</Filter>
+    </None>
     <None Include="third_party\imgui\imgui.natstepfilter">
       <Filter>third_party\include\imgui</Filter>
     </None>

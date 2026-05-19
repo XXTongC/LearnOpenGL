@@ -74,6 +74,7 @@ bool initializeApplication();
 void runFrame();
 void printOpenGLCapabilities();
 void cleanupRuntime();
+void loadEnvironmentProfile();
 GL_EXPERIMENTS::RuntimeContext makeLegacyExperimentContext();
 GL_SCENE::SetupContext makeSceneSetupContext();
 GL_EDITOR::DebugControllerContext makeDebugControllerContext();
@@ -118,6 +119,7 @@ struct AppRuntimeContext
 	std::shared_ptr<GLframework::PhongCSMShadowMaterial> csmShadowMaterial{ nullptr };
 	GLframework::PostProcessPass postProcessPass{};
 	GLframework::EnvironmentProfile environmentProfile{};
+	std::string environmentProfilePath{ GLframework::EnvironmentProfileStorage::defaultPath() };
 	Camera* camera{ nullptr };
 	CameraControl* cameracontrol{ nullptr };
 	glm::vec3 clearColor{};
@@ -145,6 +147,7 @@ auto& ScreenMat = gAppRuntime.screenMaterial;
 auto& csmShadowMaterial = gAppRuntime.csmShadowMaterial;
 auto& postProcessPass = gAppRuntime.postProcessPass;
 auto& environmentProfile = gAppRuntime.environmentProfile;
+auto& environmentProfilePath = gAppRuntime.environmentProfilePath;
 Camera*& camera = gAppRuntime.camera;
 CameraControl*& cameracontrol = gAppRuntime.cameracontrol;
 glm::vec3& clearColor = gAppRuntime.clearColor;
@@ -191,6 +194,7 @@ bool initializeApplication()
 	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 
 	prepareCamera();
+	loadEnvironmentProfile();
 	prepare();
 	initIMGUI();
 	printOpenGLCapabilities();
@@ -297,6 +301,7 @@ GL_EDITOR::DebugControllerContext makeDebugControllerContext()
 		ScreenMat,
 		renderer,
 		&environmentProfile,
+		&environmentProfilePath,
 		&m_time
 	};
 }
@@ -328,6 +333,17 @@ void updateLegacyExperiments()
 {
 	auto context = makeLegacyExperimentContext();
 	gLegacyExperiments.update(context);
+}
+
+void loadEnvironmentProfile()
+{
+	if (GLframework::EnvironmentProfileStorage::loadFromFile(environmentProfilePath, environmentProfile))
+	{
+		LogInfo("Environment profile loaded from " + environmentProfilePath);
+		return;
+	}
+
+	LogInfo("Environment profile config not found, using defaults: " + environmentProfilePath);
 }
 
 GL_EDITOR::EditorPanelContext makeEditorPanelContext()

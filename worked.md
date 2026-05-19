@@ -768,6 +768,18 @@
    - 针对 `EnvironmentProfile` UI 入口后执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+129. 完成第六十五轮 `EnvironmentProfile` 持久化入口：
+   - 更新 [renderer/EnvironmentProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.h) 与 [renderer/EnvironmentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.cpp)，新增 `EnvironmentProfileStorage`，支持读取和写入 key-value 格式的 environment profile。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，在 `prepare()` 前加载 `config/environment_profile.local.ini`，让 HDR path 和 `precomputeOnPrepare` 能驱动 scene setup。
+   - 更新 [tools/editor/DebugControllerPanel.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.h) 与 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，在 `Environment / IBL` 区域新增 profile 文件路径显示、Save 和 Reload 操作。
+   - 新增 [config/environment_profile.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\environment_profile.example.ini)，记录可提交的 profile 字段示例。
+   - 更新 [.gitignore](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\.gitignore)，忽略 `config/*.local.ini`，避免本地 HDR 路径和 UI 保存结果污染提交。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 example profile 纳入 VS 工程资源分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 EnvironmentProfile 持久化策略和下一步完整 IBL 验证方向。
+130. 完成第五十五次构建与运行时 smoke 验证：
+   - 针对 `EnvironmentProfile` 持久化入口后执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning；`EnvironmentProfile.obj` 重新编译并参与链接。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，在缺省没有 `config/environment_profile.local.ini` 时仍正常使用默认 profile；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -797,5 +809,6 @@
 - 当前 IBL 预计算流程已拆到 `IBLPrecomputePass`，并可通过 `EnvironmentProfile` 在 scene setup 阶段加载 HDR environment、创建 capture cube / BRDF quad 并触发预计算。
 - 当前 PBR shader 已支持直接光 + 可选 IBL 组合，`MaterialBinder` 会在 PBR 材质启用 IBL 且 environment ready 时绑定 irradiance / prefilter / BRDF LUT。
 - 当前 `EnvironmentProfile` 已接入 DebugControllerPanel UI，可在运行时编辑 HDR path / texture unit、切换 prepare 预计算，并手动触发 IBL precompute。
+- 当前 `EnvironmentProfile` 已支持 `config/environment_profile.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/environment_profile.example.ini` 作为字段示例。
 - 当前剩余明显问题：`PostProcessSettings` 仍挂在 `ScreenMaterial` 上，尚未提升到 runtime / renderer 级别；工程内还没有默认 HDR environment 资源；PBR IBL 效果尚未用真实 HDR 资源验证；`FrameRenderTargets` 还没有 resize/recreate。
-- 下一步建议目标：引入或指定一份默认 HDR environment 资源用于实际验证 IBL 预计算和 PBR IBL 效果，或者先实现 `EnvironmentProfile` 的持久化保存 / 加载。
+- 下一步建议目标：引入或指定一份真实 HDR environment，验证 local profile 加载、启动预计算、PBR 材质启用 IBL 和最终画面效果的完整链路。

@@ -803,3 +803,15 @@ PBR shader path 已能消费 IBL 资源，但默认仍关闭：
 - 默认 profile 仍不配置 HDR path，也不自动预计算，所以当前启动路径和原画面保持稳定。
 
 这一步把 environment 切换从代码路径推进到 UI / profile 路径。后续应优先补一份默认 HDR environment 或 profile 持久化机制，用真实 HDR 资源验证 PBR IBL 效果，而不是只验证默认关闭路径。
+
+### 2026-05-20 EnvironmentProfile 持久化入口
+
+`EnvironmentProfile` 已支持本地配置保存 / 加载：
+
+- 新增 `EnvironmentProfileStorage`，负责读取和写入简单 key-value 格式的 environment profile。
+- 默认运行时配置路径为 `config/environment_profile.local.ini`，并通过 `.gitignore` 忽略，避免用户在 UI 中保存本地 HDR 路径后污染 Git 提交。
+- 仓库新增 `config/environment_profile.example.ini`，作为可提交的字段示例和默认格式说明。
+- 启动流程在 `prepare()` 前尝试加载 local profile，因此 `precomputeOnPrepare` 和 HDR path 可以从配置驱动 scene setup。
+- `DebugControllerPanel` 的 `Environment / IBL` 区域新增 Save / Reload 操作，可以在运行时保存或重新读取 environment profile。
+
+这一步让 PBR / IBL environment 从“运行时手动输入”推进到“可持久化实验配置”。下一步应使用真实 HDR 文件验证从 local profile 加载、启动预计算、PBR 材质启用 IBL 的完整效果链路。

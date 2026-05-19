@@ -21,4 +21,12 @@ namespace GLframework
 	public:
 		static std::shared_ptr<Texture> loadHdrEquirectangular(const EnvironmentProfile& profile);
 	};
+
+	class EnvironmentProfileStorage
+	{
+	public:
+		static std::string defaultPath();
+		static bool loadFromFile(const std::string& path, EnvironmentProfile& profile);
+		static bool saveToFile(const std::string& path, const EnvironmentProfile& profile);
+	};
 }
