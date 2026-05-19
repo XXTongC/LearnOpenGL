@@ -790,6 +790,18 @@
    - 针对 `PostProcessSettings` runtime 提升后执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+133. 完成第六十七轮 `FrameRenderTargets` resize 生命周期：
+   - 更新 [renderer/FrameRenderTargets.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\FrameRenderTargets.h) 与 [renderer/FrameRenderTargets.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\FrameRenderTargets.cpp)，新增 `resize(width, height)`，在窗口尺寸变化时重建 multisample scene target、resolved HDR target、Bloom bright / ping / pong targets。
+   - `FrameRenderTargets::initialize(...)` 增加 0 尺寸保护，避免窗口最小化时创建非法 framebuffer。
+   - `FrameRenderTargets` 新增 resolved depth-stencil attachment 和 Bloom pong color attachment getter，减少外部代码穿透到底层 framebuffer。
+   - 更新 [tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，初始 screen pass 通过统一 getter 绑定 resolved color、resolved depth-stencil 和 Bloom pong texture。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，新增 `refreshPostProcessInputTextures()`，并让 `OnResize(...)` 更新全局尺寸、viewport、perspective camera aspect、frame render targets 和 screen material texture 输入。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 resize 生命周期接入和后续 camera/runtime 模块收敛方向。
+134. 完成第五十七次构建、启动 smoke 与 resize smoke 验证：
+   - 针对 `FrameRenderTargets` resize 生命周期后执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+   - 通过 Win32 按进程枚举找到 `MyFirstWindow` 并执行两次 `SetWindowPos`，stdout 出现两次 `OnResize` 和旧 texture 删除输出；错误关键字扫描为空，说明 resize 回调与 framebuffer 重建路径已被实际触发。
 
 ### 当前状态
 
@@ -820,5 +832,6 @@
 - 当前 PBR shader 已支持直接光 + 可选 IBL 组合，`MaterialBinder` 会在 PBR 材质启用 IBL 且 environment ready 时绑定 irradiance / prefilter / BRDF LUT。
 - 当前 `EnvironmentProfile` 已接入 DebugControllerPanel UI，可在运行时编辑 HDR path / texture unit、切换 prepare 预计算，并手动触发 IBL precompute。
 - 当前 `EnvironmentProfile` 已支持 `config/environment_profile.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/environment_profile.example.ini` 作为字段示例。
-- 当前剩余明显问题：工程内还没有默认 HDR environment 资源；PBR IBL 效果尚未用真实 HDR 资源验证；`PostProcessSettings` 还没有持久化 profile；`FrameRenderTargets` 还没有 resize/recreate。
+- 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
+- 当前剩余明显问题：工程内还没有默认 HDR environment 资源；PBR IBL 效果尚未用真实 HDR 资源验证；`PostProcessSettings` 还没有持久化 profile；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
 - 下一步建议目标：引入或指定一份真实 HDR environment，验证 local profile 加载、启动预计算、PBR 材质启用 IBL 和最终画面效果的完整链路。

@@ -63,7 +63,7 @@ int GLframework::PointLightShadow::MAX_POINT_LIGHTS = 2;
 void OnScroll(double offset);
 void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow* window);
-void OnResize(int width, int height);
+void OnResize(int newWidth, int newHeight);
 void OnKeyboardCallback(int key, int action, int mods);
 void OnMouseCallback(int button, int action, int mods);
 void OnCursor(double xpos, double ypos);
@@ -76,6 +76,7 @@ void runFrame();
 void printOpenGLCapabilities();
 void cleanupRuntime();
 void loadEnvironmentProfile();
+void refreshPostProcessInputTextures();
 GL_EXPERIMENTS::RuntimeContext makeLegacyExperimentContext();
 GL_SCENE::SetupContext makeSceneSetupContext();
 GL_EDITOR::DebugControllerContext makeDebugControllerContext();
@@ -350,6 +351,18 @@ void loadEnvironmentProfile()
 	LogInfo("Environment profile config not found, using defaults: " + environmentProfilePath);
 }
 
+void refreshPostProcessInputTextures()
+{
+	if (ScreenMat == nullptr)
+	{
+		return;
+	}
+
+	ScreenMat->mScreenTexture = frameRenderTargets.getResolvedColorAttachment();
+	ScreenMat->mDepthStencilTexture = frameRenderTargets.getResolvedDepthStencilAttachment();
+	ScreenMat->mBloomTexture = frameRenderTargets.getBloomPongColorAttachment();
+}
+
 GL_EDITOR::EditorPanelContext makeEditorPanelContext()
 {
 	GL_EDITOR::EditorPanelContext context{};
@@ -443,9 +456,27 @@ void OnScroll(double offset)
 	cameracontrol->onScroll(static_cast<float>(offset));
 }
 
-void OnResize(int width, int height)
+void OnResize(int newWidth, int newHeight)
 {
-	GL_CALL(glViewport(0, 0, width, height));
+	if (newWidth <= 0 || newHeight <= 0)
+	{
+		return;
+	}
+
+	width = newWidth;
+	height = newHeight;
+	GL_CALL(glViewport(0, 0, newWidth, newHeight));
+
+	if (auto perspectiveCamera = dynamic_cast<PerspectiveCamera*>(camera))
+	{
+		perspectiveCamera->mAspect = static_cast<float>(newWidth) / static_cast<float>(newHeight);
+	}
+
+	if (frameRenderTargets.resize(static_cast<unsigned int>(newWidth), static_cast<unsigned int>(newHeight)))
+	{
+		refreshPostProcessInputTextures();
+	}
+
 #ifdef _DEBUG
 	std::cout << "OnResize" << std::endl;
 #endif

@@ -827,3 +827,15 @@ PBR shader path 已能消费 IBL 资源，但默认仍关闭：
 - `DebugControllerPanel` 新增 `Post Process` 控制区，直接编辑 runtime-level settings。
 
 这一步把后处理从“材质属性”恢复为“渲染管线配置”。PBR 输出进入 HDR -> Bloom -> tone mapping 时，后续可以继续把这些设置持久化为 profile 或迁移到更明确的 renderer/runtime settings 模块，而不需要依赖一个 screen quad 材质对象。
+
+### 2026-05-20 FrameRenderTargets Resize 生命周期
+
+主帧渲染目标已支持窗口 resize 后重建：
+
+- `FrameRenderTargets` 新增 `resize(width, height)`，复用当前 MSAA samples，重建 multisample scene target、resolved HDR target、Bloom bright/ping/pong targets。
+- `FrameRenderTargets::initialize(...)` 对 0 尺寸做保护，避免最小化窗口时创建非法 framebuffer。
+- `FrameRenderTargets` 新增 resolved depth-stencil、Bloom pong color attachment getter，避免调用方继续穿透到具体 framebuffer。
+- `OnResize(...)` 现在会更新全局尺寸、viewport、perspective camera aspect，并在 framebuffer 重建后刷新 `ScreenMaterial` 的 screen/depth/bloom texture 输入。
+- `SceneSetup` 初始 screen pass 也改为通过统一 getter 绑定 resolved color、resolved depth-stencil 和 Bloom pong texture。
+
+这一步修复了 HDR / Bloom render target 只在启动时创建的问题。后续调整窗口尺寸时，PBR 输出链路仍会进入匹配当前 framebuffer 尺寸的 HDR、Bloom 和 tone mapping 目标；后续还可以继续把 camera resize 行为从 `main.cpp` 收敛到独立 camera/runtime 模块。

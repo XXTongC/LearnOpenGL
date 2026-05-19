@@ -10,6 +10,7 @@ namespace GLframework
 	{
 	public:
 		void initialize(unsigned int width, unsigned int height, unsigned int samples = 4);
+		bool resize(unsigned int width, unsigned int height);
 
 		bool isInitialized() const;
 		unsigned int getSceneFbo() const;
@@ -23,7 +24,9 @@ namespace GLframework
 		const std::shared_ptr<Framebuffer>& getBloomPing() const;
 		const std::shared_ptr<Framebuffer>& getBloomPong() const;
 		std::shared_ptr<Texture> getResolvedColorAttachment() const;
+		std::shared_ptr<Texture> getResolvedDepthStencilAttachment() const;
 		std::shared_ptr<Texture> getBloomBrightColorAttachment() const;
+		std::shared_ptr<Texture> getBloomPongColorAttachment() const;
 
 	private:
 		unsigned int mWidth{ 0 };
