@@ -10,8 +10,8 @@ namespace GLframework
 	struct EnvironmentProfile;
 	class Mesh;
 	class PointLight;
+	struct PostProcessSettings;
 	class Renderer;
-	class ScreenMaterial;
 }
 
 namespace GL_EDITOR
@@ -21,7 +21,7 @@ namespace GL_EDITOR
 		std::shared_ptr<GLframework::DirectionalLight> directionalLight{ nullptr };
 		std::vector<std::shared_ptr<GLframework::PointLight>>* pointLights{ nullptr };
 		std::shared_ptr<GLframework::Mesh> textObject{ nullptr };
-		std::shared_ptr<GLframework::ScreenMaterial> screenMaterial{ nullptr };
+		GLframework::PostProcessSettings* postProcessSettings{ nullptr };
 		std::shared_ptr<GLframework::Renderer> renderer{ nullptr };
 		GLframework::EnvironmentProfile* environmentProfile{ nullptr };
 		const std::string* environmentProfilePath{ nullptr };

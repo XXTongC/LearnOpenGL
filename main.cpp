@@ -38,6 +38,7 @@
 #include "renderer/EnvironmentProfile.h"
 #include "renderer/FrameRenderTargets.h"
 #include "renderer/PostProcessPass.h"
+#include "renderer/PostProcessSettings.h"
 #include "pointLight.h"
 //imgui thirdparty
 #include "assimpInstanceLoader.h"
@@ -118,6 +119,7 @@ struct AppRuntimeContext
 	std::shared_ptr<GLframework::ScreenMaterial> screenMaterial{ nullptr };
 	std::shared_ptr<GLframework::PhongCSMShadowMaterial> csmShadowMaterial{ nullptr };
 	GLframework::PostProcessPass postProcessPass{};
+	GLframework::PostProcessSettings postProcessSettings{};
 	GLframework::EnvironmentProfile environmentProfile{};
 	std::string environmentProfilePath{ GLframework::EnvironmentProfileStorage::defaultPath() };
 	Camera* camera{ nullptr };
@@ -146,6 +148,7 @@ auto& textD = gAppRuntime.textD;
 auto& ScreenMat = gAppRuntime.screenMaterial;
 auto& csmShadowMaterial = gAppRuntime.csmShadowMaterial;
 auto& postProcessPass = gAppRuntime.postProcessPass;
+auto& postProcessSettings = gAppRuntime.postProcessSettings;
 auto& environmentProfile = gAppRuntime.environmentProfile;
 auto& environmentProfilePath = gAppRuntime.environmentProfilePath;
 Camera*& camera = gAppRuntime.camera;
@@ -212,20 +215,20 @@ void runFrame()
 	// pass 1: off-screen color attachment
 	renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights, ambientLight, frameRenderTargets.getSceneFbo());
 	postProcessPass.resolveMultisample(frameRenderTargets.getMultisample(), frameRenderTargets.getResolved());
-	if (ScreenMat != nullptr && ScreenMat->mSettings.bloomEnabled)
+	if (postProcessSettings.bloomEnabled)
 	{
 		postProcessPass.extractBloomBright(
 			bloom,
 			frameRenderTargets.getResolved(),
 			frameRenderTargets.getBloomBright(),
-			ScreenMat->mSettings.bloomThreshold
+			postProcessSettings.bloomThreshold
 		);
 		postProcessPass.blurBloom(
 			bloom,
 			frameRenderTargets.getBloomBright(),
 			frameRenderTargets.getBloomPing(),
 			frameRenderTargets.getBloomPong(),
-			ScreenMat->mSettings.bloomIterations
+			postProcessSettings.bloomIterations
 		);
 	}
 
@@ -233,6 +236,7 @@ void runFrame()
 	postProcessPass.renderScreenComposite(
 		screenQuad,
 		renderer->getShader(GLframework::MaterialType::ScreenMaterial),
+		postProcessSettings,
 		static_cast<unsigned int>(GL_APP->getWidth()),
 		static_cast<unsigned int>(GL_APP->getHeight())
 	);
@@ -298,7 +302,7 @@ GL_EDITOR::DebugControllerContext makeDebugControllerContext()
 		dirLight,
 		&pointLights,
 		textD,
-		ScreenMat,
+		&postProcessSettings,
 		renderer,
 		&environmentProfile,
 		&environmentProfilePath,

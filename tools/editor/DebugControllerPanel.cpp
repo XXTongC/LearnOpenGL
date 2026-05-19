@@ -8,8 +8,8 @@
 #include "../../light/directionalLight.h"
 #include "../../light/pointLight.h"
 #include "../../light/shadow/shadow.h"
-#include "../../materials/screenMaterial.h"
 #include "../../mesh/mesh.h"
+#include "../../renderer/PostProcessSettings.h"
 #include "../../third_party/imgui/imgui.h"
 
 namespace
@@ -107,6 +107,32 @@ namespace
 			}
 		}
 	}
+
+	void drawPostProcessControls(GLframework::PostProcessSettings* settings)
+	{
+		if (!settings)
+		{
+			return;
+		}
+
+		if (ImGui::CollapsingHeader("Post Process", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::SliderFloat("Exposure", &settings->exposure, 0.0f, 4.0f);
+
+			int toneMappingMode = static_cast<int>(settings->toneMappingMode);
+			if (ImGui::SliderInt("Tone Mapping Mode", &toneMappingMode, 0, 1))
+			{
+				settings->toneMappingMode = toneMappingMode == 1
+					? GLframework::ToneMappingMode::Reinhard
+					: GLframework::ToneMappingMode::Exposure;
+			}
+
+			ImGui::Checkbox("Bloom Enabled", &settings->bloomEnabled);
+			ImGui::SliderFloat("Bloom Threshold", &settings->bloomThreshold, 0.0f, 20.0f);
+			ImGui::SliderFloat("Bloom Intensity", &settings->bloomIntensity, 0.0f, 2.0f);
+			ImGui::SliderInt("Bloom Iterations", &settings->bloomIterations, 0, 20);
+		}
+	}
 }
 
 void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
@@ -148,11 +174,7 @@ void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
 		}
 	}
 
-	if (context.screenMaterial)
-	{
-		ImGui::SliderFloat("Exposure", &context.screenMaterial->mSettings.exposure, 0.0f, 4.0f);
-	}
-
+	drawPostProcessControls(context.postProcessSettings);
 	drawEnvironmentControls(context.renderer, context.environmentProfile, context.environmentProfilePath);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

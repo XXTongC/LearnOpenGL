@@ -815,3 +815,15 @@ PBR shader path 已能消费 IBL 资源，但默认仍关闭：
 - `DebugControllerPanel` 的 `Environment / IBL` 区域新增 Save / Reload 操作，可以在运行时保存或重新读取 environment profile。
 
 这一步让 PBR / IBL environment 从“运行时手动输入”推进到“可持久化实验配置”。下一步应使用真实 HDR 文件验证从 local profile 加载、启动预计算、PBR 材质启用 IBL 的完整效果链路。
+
+### 2026-05-20 PostProcessSettings 提升到 Runtime
+
+后处理参数已从 `ScreenMaterial` 移到 runtime 配置：
+
+- `AppRuntimeContext` 新增 `PostProcessSettings postProcessSettings`，作为 tone mapping 和 Bloom 参数的唯一运行时来源。
+- `runFrame()` 使用 runtime settings 决定是否执行 Bloom extract / blur，并传入 threshold / iterations。
+- `PostProcessPass::renderScreenComposite(...)` 显式接收 `PostProcessSettings`，不再从 `ScreenMaterial` 读取 exposure、tone mapping mode 或 Bloom 参数。
+- `ScreenMaterial` 现在只保留 screen/depth/bloom texture 输入，inspector 中也只展示后处理输入贴图。
+- `DebugControllerPanel` 新增 `Post Process` 控制区，直接编辑 runtime-level settings。
+
+这一步把后处理从“材质属性”恢复为“渲染管线配置”。PBR 输出进入 HDR -> Bloom -> tone mapping 时，后续可以继续把这些设置持久化为 profile 或迁移到更明确的 renderer/runtime settings 模块，而不需要依赖一个 screen quad 材质对象。

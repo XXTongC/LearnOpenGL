@@ -22,6 +22,7 @@ namespace GLframework
 		void renderScreenComposite(
 			const std::shared_ptr<Mesh>& screenQuad,
 			const std::shared_ptr<Shader>& shader,
+			const PostProcessSettings& settings,
 			unsigned int width,
 			unsigned int height,
 			unsigned int targetFbo = 0

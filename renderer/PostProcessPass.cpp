@@ -35,6 +35,7 @@ void PostProcessPass::resolveMultisample(
 void PostProcessPass::renderScreenComposite(
 	const std::shared_ptr<Mesh>& screenQuad,
 	const std::shared_ptr<Shader>& shader,
+	const PostProcessSettings& settings,
 	unsigned int width,
 	unsigned int height,
 	unsigned int targetFbo
@@ -74,10 +75,10 @@ void PostProcessPass::renderScreenComposite(
 	shader->setInt("bloomTextureSampler", 2);
 	shader->setFloat("texWidth", static_cast<float>(width));
 	shader->setFloat("texHeight", static_cast<float>(height));
-	shader->setFloat("exposure", screenMaterial->mSettings.exposure);
-	shader->setInt("toneMappingMode", static_cast<int>(screenMaterial->mSettings.toneMappingMode));
-	shader->setInt("enableBloom", screenMaterial->mSettings.bloomEnabled && screenMaterial->mBloomTexture != nullptr ? 1 : 0);
-	shader->setFloat("bloomIntensity", screenMaterial->mSettings.bloomIntensity);
+	shader->setFloat("exposure", settings.exposure);
+	shader->setInt("toneMappingMode", static_cast<int>(settings.toneMappingMode));
+	shader->setInt("enableBloom", settings.bloomEnabled && screenMaterial->mBloomTexture != nullptr ? 1 : 0);
+	shader->setFloat("bloomIntensity", settings.bloomIntensity);
 
 	screenMaterial->mScreenTexture->setUnit(0);
 	screenMaterial->mScreenTexture->Bind();
