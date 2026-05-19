@@ -84,13 +84,13 @@ bool Renderer::precomputeEnvironment(
 
 bool Renderer::precomputeEnvironment(const EnvironmentProfile& profile)
 {
-	if (!profile.hasHdrSource())
+	if (!profile.hasEnvironmentSource())
 	{
 		return false;
 	}
 
-	auto hdrEnvironment = EnvironmentTextureLoader::loadHdrEquirectangular(profile);
-	if (!hdrEnvironment)
+	auto environment = EnvironmentTextureLoader::loadEquirectangular(profile);
+	if (!environment)
 	{
 		return false;
 	}
@@ -103,7 +103,7 @@ bool Renderer::precomputeEnvironment(const EnvironmentProfile& profile)
 	auto brdfQuad = std::make_shared<Mesh>(brdfQuadGeometry, nullptr);
 	brdfQuad->setName("IBL BRDF LUT Quad");
 
-	return precomputeEnvironment(hdrEnvironment, captureCube, brdfQuad);
+	return precomputeEnvironment(environment, captureCube, brdfQuad);
 }
 
 void Renderer::render(

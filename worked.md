@@ -823,6 +823,19 @@
    - 针对 PBR 线性 HDR 输出修正后执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+139. 完成第七十轮 Procedural HDR Environment 入口：
+   - 更新 [renderer/EnvironmentProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.h) 与 [renderer/EnvironmentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.cpp)，为 `EnvironmentProfile` 新增 procedural environment 开关、分辨率、sky / ground / sun intensity 参数，并支持保存 / 加载这些字段。
+   - 新增 `EnvironmentProfile::hasEnvironmentSource()` 和 `EnvironmentTextureLoader::loadEquirectangular(...)`，统一 HDR 文件加载与 procedural RGB16F equirectangular texture 生成入口。
+   - 更新 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp) 与 [tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，让 IBL precompute 支持 HDR path 或 procedural source 两种来源。
+   - 更新 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，在 `Environment / IBL` UI 中新增 `Use Procedural Environment`、procedural width / height 和 sky / ground / sun intensity 控制。
+   - 更新 [config/environment_profile.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\environment_profile.example.ini)，补充可提交的 procedural profile 字段示例。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 procedural source 作为无外部资源依赖的 IBL 验证入口。
+140. 完成第六十次构建、默认启动 smoke 与 procedural IBL smoke 验证：
+   - 针对 Procedural HDR Environment 入口执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning。
+   - 默认短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+   - 临时创建被 `.gitignore` 覆盖的 [config/environment_profile.local.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\environment_profile.local.ini)，设置 `useProceduralEnvironment=1`、`precomputeOnPrepare=1`、`proceduralWidth=128`、`proceduralHeight=64` 后再次短启动约 `10` 秒；错误关键字扫描为空。
+   - 验证结束后已移除临时 local profile，避免改变用户后续手动运行的默认环境。
 
 ### 当前状态
 
@@ -854,7 +867,8 @@
 - 当前 PBR shader 已输出线性 HDR color，不再在材质 shader 内部执行 tone mapping / gamma，最终显示转换统一交给 screen postprocess。
 - 当前 `EnvironmentProfile` 已接入 DebugControllerPanel UI，可在运行时编辑 HDR path / texture unit、切换 prepare 预计算，并手动触发 IBL precompute。
 - 当前 `EnvironmentProfile` 已支持 `config/environment_profile.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/environment_profile.example.ini` 作为字段示例。
+- 当前 `EnvironmentProfile` 已支持 procedural HDR equirectangular source，可通过 DebugControllerPanel 或 local profile 在无外部 HDR 文件时触发 IBL precompute。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
 - 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例。
-- 当前剩余明显问题：工程内还没有默认 HDR environment 资源；PBR IBL 效果尚未用真实 HDR 资源验证；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
-- 下一步建议目标：引入或指定一份真实 HDR environment，验证 local profile 加载、启动预计算、PBR 材质启用 IBL 和最终画面效果的完整链路。
+- 当前剩余明显问题：PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
+- 下一步建议目标：给 PBR preview / 测试材质提供一键启用 IBL 的实验入口，使用 procedural source 先验证完整链路，再引入真实 HDR environment 做视觉质量确认。

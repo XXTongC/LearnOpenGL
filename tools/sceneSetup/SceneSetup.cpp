@@ -129,9 +129,9 @@ namespace
 			return;
 		}
 
-		if (!context.environmentProfile.hasHdrSource())
+		if (!context.environmentProfile.hasEnvironmentSource())
 		{
-			LogInfo("IBL precompute skipped: no HDR environment path configured");
+			LogInfo("IBL precompute skipped: no HDR or procedural environment source configured");
 			return;
 		}
 

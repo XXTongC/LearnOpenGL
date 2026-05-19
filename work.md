@@ -861,3 +861,15 @@ PBR shader 输出已与统一后处理链路对齐：
 - tone mapping mode、exposure 和 gamma correction 统一由 `shaders/screen/screen.frag` 根据 `PostProcessSettings` 处理。
 
 这一步避免 PBR 结果在 scene pass 和 screen pass 中被重复 tone mapping / gamma。后续验证 IBL 时，PBR direct light、IBL ambient、Bloom 和最终 tone mapping 会处在同一条 HDR 输出链路上，调参结果也更可预测。
+
+### 2026-05-20 Procedural HDR Environment 入口
+
+IBL 预计算现在不再强依赖外部 `.hdr/.exr` 文件：
+
+- `EnvironmentProfile` 新增 procedural environment 开关、分辨率、sky / ground / sun intensity 参数。
+- `EnvironmentTextureLoader` 新增 `loadEquirectangular(...)` 统一入口；当 profile 启用 procedural source 时，运行时生成 RGB16F equirectangular texture，否则继续加载 HDR 文件。
+- `Renderer::precomputeEnvironment(const EnvironmentProfile&)` 和 `SceneSetup` 改为检查 `hasEnvironmentSource()`，HDR 文件和 procedural source 都能触发同一套 IBL precompute pass。
+- `DebugControllerPanel` 的 `Environment / IBL` 区域新增 procedural 参数 UI，可在不改代码、不引入外部资源的情况下手动触发 IBL 预计算。
+- `config/environment_profile.example.ini` 记录 procedural 字段，后续本地 `config/environment_profile.local.ini` 可直接保存这一类测试环境。
+
+这一步的目的不是替代真实 HDR environment，而是提供一条可提交、可复现、无资源授权和体积问题的 IBL 验证路径。后续应在 PBR preview 材质上默认打开 `Use IBL` 或提供一键测试 profile，用 procedural source 先验证完整链路，再切换到真实 HDR 资源做视觉质量确认。

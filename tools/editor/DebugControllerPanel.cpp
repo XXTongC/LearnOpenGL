@@ -53,6 +53,28 @@ namespace
 				profile->hdrTextureUnit = static_cast<unsigned int>(unit);
 			}
 
+			ImGui::Checkbox("Use Procedural Environment", &profile->useProceduralEnvironment);
+			if (profile->useProceduralEnvironment)
+			{
+				ImGui::TextWrapped("Procedural environment is generated at precompute time.");
+
+				int proceduralWidth = static_cast<int>(profile->proceduralWidth);
+				if (ImGui::SliderInt("Procedural Width", &proceduralWidth, 64, 2048))
+				{
+					profile->proceduralWidth = static_cast<unsigned int>(proceduralWidth);
+				}
+
+				int proceduralHeight = static_cast<int>(profile->proceduralHeight);
+				if (ImGui::SliderInt("Procedural Height", &proceduralHeight, 32, 1024))
+				{
+					profile->proceduralHeight = static_cast<unsigned int>(proceduralHeight);
+				}
+
+				ImGui::SliderFloat("Procedural Sky Intensity", &profile->proceduralSkyIntensity, 0.0f, 10.0f);
+				ImGui::SliderFloat("Procedural Ground Intensity", &profile->proceduralGroundIntensity, 0.0f, 2.0f);
+				ImGui::SliderFloat("Procedural Sun Intensity", &profile->proceduralSunIntensity, 0.0f, 20.0f);
+			}
+
 			ImGui::Checkbox("Precompute On Prepare", &profile->precomputeOnPrepare);
 			const bool ready = renderer && renderer->getEnvironmentRenderTargets().hasPrecomputedEnvironment();
 			ImGui::Text("IBL Ready: %s", ready ? "Yes" : "No");
@@ -82,7 +104,7 @@ namespace
 				ImGui::TextWrapped("%s", lastConfigStatus.c_str());
 			}
 
-			const bool canPrecompute = renderer != nullptr && profile->hasHdrSource();
+			const bool canPrecompute = renderer != nullptr && profile->hasEnvironmentSource();
 			if (!canPrecompute)
 			{
 				ImGui::BeginDisabled();
@@ -98,7 +120,7 @@ namespace
 			if (!canPrecompute)
 			{
 				ImGui::EndDisabled();
-				ImGui::TextWrapped("Set an HDR equirectangular texture path before precomputing.");
+				ImGui::TextWrapped("Set an HDR path or enable procedural environment before precomputing.");
 			}
 
 			if (!lastPrecomputeStatus.empty())
