@@ -482,3 +482,16 @@
 - 对显式 tangent 构造函数增加 `aTangent` attribute guard，避免 shader 不需要 tangent 时触发无效 attribute 绑定。
 
 这一步让 `pbr.vert` 可以安全依赖 `aTangent`，但仍不能替代真实资产验证。后续应选择一个带 normal map 的模型进行运行时检查，确认导入路径、程序生成几何和 shader 的 TBN 方向一致。
+
+### 2026-05-20 Geometry attribute guard
+
+Geometry 的 attribute 绑定已进一步收敛：
+
+- 新增统一的 `bindFloatAttribute(...)`，当 shader 未使用某个 attribute 时跳过 VBO 绑定，避免无效 location 触发 OpenGL 错误。
+- PBR shader 不再依赖 `aColor`，因此没有 vertex color 的导入模型不会被 vertex color 乘成黑色。
+- position / uv / normal / color / tangent 的绑定路径开始统一，后续可以继续把 Geometry 构造逻辑拆成 `VertexArrayBuilder` 或 `GeometryBufferBuilder`。
+
+下一步建议：
+
+1. 做一次运行时 PBR sample：创建一个 `PBRMaterial` mesh，确认 shader 编译、attribute 绑定、direct lighting 和 normal map 路径能正常跑通。
+2. 如果运行时验证通过，再开始拆 `ShadowRenderer`，把 shadow pass 从 Renderer 主流程中迁出。

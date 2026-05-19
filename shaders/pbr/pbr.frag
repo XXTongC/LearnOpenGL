@@ -22,7 +22,6 @@ struct PointLight
 };
 
 in vec2 uv;
-in vec4 color;
 in vec3 normal;
 in vec3 worldPosition;
 in mat3 TBN;
@@ -123,7 +122,6 @@ void main()
 	{
 		albedo = pow(texture(albedoMap, uv).rgb, vec3(2.2));
 	}
-	albedo *= color.rgb;
 
 	float metallic = clamp(pbrMetallic, 0.0, 1.0);
 	if (useMetallicMap == 1)

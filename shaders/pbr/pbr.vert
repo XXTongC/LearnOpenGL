@@ -1,7 +1,6 @@
 #version 460 core
 
 in vec3 aPos;
-in vec4 aColor;
 in vec2 aUV;
 in vec3 aNormal;
 in vec3 aTangent;
@@ -12,7 +11,6 @@ uniform mat4 projectionMatrix;
 uniform mat3 normalMatrix;
 
 out vec2 uv;
-out vec4 color;
 out vec3 normal;
 out vec3 worldPosition;
 out mat3 TBN;
@@ -26,6 +24,5 @@ void main()
 	vec3 bitangent = normalize(cross(normal, tangent));
 	TBN = mat3(tangent, bitangent, normal);
 	uv = aUV;
-	color = aColor;
 	gl_Position = projectionMatrix * viewMatrix * world;
 }

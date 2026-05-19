@@ -110,18 +110,23 @@ namespace
 		return tangents;
 	}
 
-	void bindTangentAttribute(GLuint& tangentVbo, GLint tangentLocation, const std::vector<float>& tangents)
+	void bindFloatAttribute(GLuint& vbo, GLint location, GLint componentCount, const void* data, GLsizeiptr byteSize)
 	{
-		if (tangentLocation == -1 || tangents.empty())
+		if (location == -1 || data == nullptr || byteSize <= 0)
 		{
 			return;
 		}
 
-		glGenBuffers(1, &tangentVbo);
-		glBindBuffer(GL_ARRAY_BUFFER, tangentVbo);
-		glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(float), tangents.data(), GL_STATIC_DRAW);
-		glEnableVertexAttribArray(static_cast<GLuint>(tangentLocation));
-		glVertexAttribPointer(static_cast<GLuint>(tangentLocation), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glGenBuffers(1, &vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, byteSize, data, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(static_cast<GLuint>(location));
+		glVertexAttribPointer(static_cast<GLuint>(location), componentCount, GL_FLOAT, GL_FALSE, componentCount * sizeof(float), (void*)0);
+	}
+
+	void bindTangentAttribute(GLuint& tangentVbo, GLint tangentLocation, const std::vector<float>& tangents)
+	{
+		bindFloatAttribute(tangentVbo, tangentLocation, 3, tangents.data(), static_cast<GLsizeiptr>(tangents.size() * sizeof(float)));
 	}
 }
 
@@ -142,32 +147,17 @@ Geometry::Geometry(
     mShader = shader;
     mIndicesCount = static_cast<GLsizei>(indices.size());
 
-    GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
-    GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
-    GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+    GLint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
+    GLint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
+    GLint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
     GLint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
 
     glGenVertexArrays(1, &mVao);
     glBindVertexArray(mVao);
 
-    glGenBuffers(1, &mPosVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, mPosVbo);
-    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(float), positions.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(positionLocation);
-    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-    glGenBuffers(1, &mUvVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, mUvVbo);
-    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(float), uvs.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(uvLocation);
-    glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-
-
-    glGenBuffers(1, &mNormalVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, mNormalVbo);
-    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(normalLocation);
-    glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    bindFloatAttribute(mPosVbo, positionLocation, 3, positions.data(), static_cast<GLsizeiptr>(positions.size() * sizeof(float)));
+    bindFloatAttribute(mUvVbo, uvLocation, 2, uvs.data(), static_cast<GLsizeiptr>(uvs.size() * sizeof(float)));
+    bindFloatAttribute(mNormalVbo, normalLocation, 3, normals.data(), static_cast<GLsizeiptr>(normals.size() * sizeof(float)));
 
     bindTangentAttribute(mTangentVbo, tangentLocation, tangents);
 
@@ -319,46 +309,23 @@ std::shared_ptr<Geometry> Geometry::createPlane(std::shared_ptr<GLframework::Sha
 
     GLuint& ebo = geometry->mEbo,& vao =geometry->mVao,& colorVbo = geometry->mColorVbo,& uvVbo = geometry->mUvVbo,& posVbo = geometry->mPosVbo,& normalVbo = geometry->mNormalVbo,&tangentVbo = geometry->mTangentVbo;
 
-	GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
-    GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
-    GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
-    GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
-    GLuint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
+	GLint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
+    GLint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
+    GLint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
+    GLint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+    GLint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
 
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    glGenBuffers(1, &posVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, posVbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(positionLocation);
-    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    bindFloatAttribute(posVbo, positionLocation, 3, positions, sizeof(positions));
+    bindFloatAttribute(uvVbo, uvLocation, 2, uvs, sizeof(uvs));
 
-    glGenBuffers(1, &uvVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(uvs), uvs, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(uvLocation);
-    glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    bindFloatAttribute(colorVbo, colorLocation, 4, colors, sizeof(colors));
 
-    glGenBuffers(1, &colorVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(colorLocation);
-    glVertexAttribPointer(colorLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    bindFloatAttribute(normalVbo, normalLocation, 3, normals, sizeof(normals));
 
-    glGenBuffers(1, &normalVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, normalVbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(normalLocation);
-    glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-    if (tangentLocation != -1) {
-        glGenBuffers(1, &tangentVbo);
-        glBindBuffer(GL_ARRAY_BUFFER, tangentVbo);
-        glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(float), tangents.data(), GL_STATIC_DRAW);
-        glEnableVertexAttribArray(tangentLocation);
-        glVertexAttribPointer(tangentLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    }
+    bindTangentAttribute(tangentVbo, tangentLocation, tangents);
 
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
@@ -610,45 +577,22 @@ std::shared_ptr<Geometry> Geometry::createBox(std::shared_ptr<GLframework::Shade
     }
 
     GLuint& vao = geometry->mVao,&posVbo = geometry->mPosVbo,&uvVbo = geometry->mUvVbo,&colorVbo = geometry->mColorVbo,&ebo = geometry->mEbo,&normalvbo = geometry->mNormalVbo,&tangentVbo = geometry->mTangentVbo;
-    GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
-    GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
-    GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
-    GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
-    GLuint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
+    GLint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
+    GLint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
+    GLint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
+    GLint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+    GLint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
 
 	glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-	glGenBuffers(1, &posVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, posVbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(position), position, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(positionLocation);
-    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	bindFloatAttribute(posVbo, positionLocation, 3, position, sizeof(position));
+    bindFloatAttribute(uvVbo, uvLocation, 2, uvs, sizeof(uvs));
 
-    glGenBuffers(1, &uvVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(uvs), uvs, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(uvLocation);
-    glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    bindFloatAttribute(colorVbo, colorLocation, 4, colors, sizeof(colors));
 
-    glGenBuffers(1, &colorVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(colorLocation);
-    glVertexAttribPointer(colorLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-
-    glGenBuffers(1, &normalvbo);
-    glBindBuffer(GL_ARRAY_BUFFER, normalvbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(normalLocation);
-    glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    if (tangentLocation != -1) {
-        glGenBuffers(1, &tangentVbo);
-        glBindBuffer(GL_ARRAY_BUFFER, tangentVbo);
-        glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(float), tangents.data(), GL_STATIC_DRAW);
-        glEnableVertexAttribArray(tangentLocation);
-        glVertexAttribPointer(tangentLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    }
+    bindFloatAttribute(normalvbo, normalLocation, 3, normals, sizeof(normals));
+    bindTangentAttribute(tangentVbo, tangentLocation, tangents);
 
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
@@ -793,46 +737,23 @@ std::shared_ptr<Geometry> Geometry::createSphere(std::shared_ptr< GLframework::S
 
 
     GLuint& vao = geometry->mVao, &posVbo = geometry->mPosVbo, &uvVbo = geometry->mUvVbo, &colorVob = geometry->mColorVbo, &ebo = geometry->mEbo,&normalVbo = geometry->mNormalVbo,&tangentVbo = geometry->mTangentVbo;
-    GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
-    GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
-    GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
-    GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
-    GLuint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
+    GLint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
+    GLint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
+    GLint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
+    GLint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+    GLint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
 
 	glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    glGenBuffers(1, &posVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, posVbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(positionLocation);
-    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    bindFloatAttribute(posVbo, positionLocation, 3, vertices.data(), static_cast<GLsizeiptr>(vertices.size() * sizeof(float)));
+    bindFloatAttribute(uvVbo, uvLocation, 2, uvs.data(), static_cast<GLsizeiptr>(uvs.size() * sizeof(float)));
 
-    glGenBuffers(1, &uvVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
-    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(float), uvs.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(uvLocation);
-    glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    bindFloatAttribute(colorVob, colorLocation, 4, colors.data(), static_cast<GLsizeiptr>(colors.size() * sizeof(float)));
 
-    glGenBuffers(1, &colorVob);
-    glBindBuffer(GL_ARRAY_BUFFER, colorVob);
-    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(colorLocation);
-    glVertexAttribPointer(colorLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    bindFloatAttribute(normalVbo, normalLocation, 3, normals.data(), static_cast<GLsizeiptr>(normals.size() * sizeof(float)));
 
-    glGenBuffers(1, &normalVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, normalVbo);
-    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(normalLocation);
-    glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-    if (tangentLocation != -1) {
-        glGenBuffers(1, &tangentVbo);
-        glBindBuffer(GL_ARRAY_BUFFER, tangentVbo);
-        glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(float), tangents.data(), GL_STATIC_DRAW);
-        glEnableVertexAttribArray(tangentLocation);
-        glVertexAttribPointer(tangentLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    }
+    bindTangentAttribute(tangentVbo, tangentLocation, tangents);
 
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
@@ -855,33 +776,18 @@ Geometry::Geometry(
     mShader = shader;
     mIndicesCount = static_cast<GLsizei>(indices.size());
    
-    GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
-    GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
-    GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+    GLint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
+    GLint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
+    GLint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
     GLint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
 
 
     glGenVertexArrays(1, &mVao);
     glBindVertexArray(mVao);
 
-    glGenBuffers(1, &mPosVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, mPosVbo);
-    glBufferData(GL_ARRAY_BUFFER, positions.size()*sizeof(float), positions.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(positionLocation);
-    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-    glGenBuffers(1, &mUvVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, mUvVbo);
-    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(float), uvs.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(uvLocation);
-    glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-
-
-    glGenBuffers(1, &mNormalVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, mNormalVbo);
-    glBufferData(GL_ARRAY_BUFFER, normals.size()*sizeof(float),normals.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(normalLocation);
-    glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    bindFloatAttribute(mPosVbo, positionLocation, 3, positions.data(), static_cast<GLsizeiptr>(positions.size() * sizeof(float)));
+    bindFloatAttribute(mUvVbo, uvLocation, 2, uvs.data(), static_cast<GLsizeiptr>(uvs.size() * sizeof(float)));
+    bindFloatAttribute(mNormalVbo, normalLocation, 3, normals.data(), static_cast<GLsizeiptr>(normals.size() * sizeof(float)));
 
     const std::vector<float> tangents = buildTangents(positions, normals, uvs, indices);
     bindTangentAttribute(mTangentVbo, tangentLocation, tangents);
@@ -922,24 +828,14 @@ std::shared_ptr<Geometry> Geometry::createScreenPlane(std::shared_ptr<GLframewor
     };
     // ����vao vbo��
     GLuint& posVbo = geometry->mPosVbo, & uvVbo = geometry->mUvVbo,&ebo = geometry->mEbo,&vao = geometry->mVao;
-    GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
-    GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
+    GLint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
+    GLint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
 
     glGenVertexArrays(1, &geometry->mVao);
     glBindVertexArray(vao);
 
-	glGenBuffers(1, &posVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, posVbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(positionLocation);
-    glVertexAttribPointer(positionLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-
-
-    glGenBuffers(1, &uvVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, uvVbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(uvs), uvs, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(uvLocation);
-    glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	bindFloatAttribute(posVbo, positionLocation, 2, positions, sizeof(positions));
+    bindFloatAttribute(uvVbo, uvLocation, 2, uvs, sizeof(uvs));
 
 
     glGenBuffers(1, &ebo);
@@ -962,39 +858,20 @@ Geometry::Geometry(
     mShader = shader;
     mIndicesCount = static_cast<GLsizei>(indices.size());
 
-    GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
-    GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
-    GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
-    GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
+    GLint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
+    GLint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
+    GLint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+    GLint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
     GLint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
 
     glGenVertexArrays(1, &mVao);
     glBindVertexArray(mVao);
 
-    glGenBuffers(1, &mColorVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, mColorVbo);
-    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(colorLocation);
-    glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    bindFloatAttribute(mColorVbo, colorLocation, 3, colors.data(), static_cast<GLsizeiptr>(colors.size() * sizeof(float)));
 
-    glGenBuffers(1, &mPosVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, mPosVbo);
-    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(float), positions.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(positionLocation);
-    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-    glGenBuffers(1, &mUvVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, mUvVbo);
-    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(float), uvs.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(uvLocation);
-    glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-
-
-    glGenBuffers(1, &mNormalVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, mNormalVbo);
-    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(normalLocation);
-    glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    bindFloatAttribute(mPosVbo, positionLocation, 3, positions.data(), static_cast<GLsizeiptr>(positions.size() * sizeof(float)));
+    bindFloatAttribute(mUvVbo, uvLocation, 2, uvs.data(), static_cast<GLsizeiptr>(uvs.size() * sizeof(float)));
+    bindFloatAttribute(mNormalVbo, normalLocation, 3, normals.data(), static_cast<GLsizeiptr>(normals.size() * sizeof(float)));
 
     const std::vector<float> tangents = buildTangents(positions, normals, uvs, indices);
     bindTangentAttribute(mTangentVbo, tangentLocation, tangents);

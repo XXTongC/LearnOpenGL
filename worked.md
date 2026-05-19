@@ -477,6 +477,13 @@
    - 针对 Geometry tangent fallback 补强后执行真实 `Debug|x64 Build`。
    - 初次构建成功但暴露 `4` 个 `size_t -> GLsizei` warning，随后对 `mIndicesCount` 赋值增加显式 `static_cast<GLsizei>`。
    - 再次构建结果：成功，`0` error，`0` warning。
+73. 完成第三十七轮 Geometry attribute guard 收敛：
+   - 更新 [framework/geometry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\framework\geometry.cpp)，新增统一的 `bindFloatAttribute(...)`，对 shader 未使用的 attribute location 进行 guard。
+   - 将 position、uv、normal、color、tangent 等 VBO attribute 绑定逐步收敛到统一 helper，避免 shader 优化掉 attribute 后仍执行无效绑定。
+   - 更新 [shaders/pbr/pbr.vert](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr.vert) 与 [shaders/pbr/pbr.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr.frag)，移除 PBR shader 对 `aColor` 的依赖，避免无 vertex color 的导入模型被乘黑。
+74. 完成第二十七次构建验证：
+   - 针对 Geometry attribute guard 与 PBR shader 去 vertex color 依赖后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
 
 ### 当前状态
 
