@@ -179,6 +179,7 @@
     <ClCompile Include="renderer\IBLPrecomputePass.cpp" />
     <ClCompile Include="renderer\MaterialBinder.cpp" />
     <ClCompile Include="renderer\PostProcessPass.cpp" />
+    <ClCompile Include="renderer\PostProcessSettings.cpp" />
     <ClCompile Include="renderer\RenderQueue.cpp" />
     <ClCompile Include="renderer\RenderState.cpp" />
     <ClCompile Include="renderer\renderer.cpp" />
@@ -646,6 +647,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="config\environment_profile.example.ini" />
+    <None Include="config\postprocess_settings.example.ini" />
     <None Include="cubeSphere.frag" />
     <None Include="cubeSphere.vert" />
     <None Include="fbx\bag\backpack.mtl" />

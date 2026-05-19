@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace GLframework
 {
 	enum class ToneMappingMode
@@ -17,5 +19,13 @@ namespace GLframework
 		float bloomThreshold{ 1.0f };
 		float bloomIntensity{ 0.04f };
 		int bloomIterations{ 6 };
+	};
+
+	class PostProcessSettingsStorage
+	{
+	public:
+		static std::string defaultPath();
+		static bool loadFromFile(const std::string& path, PostProcessSettings& settings);
+		static bool saveToFile(const std::string& path, const PostProcessSettings& settings);
 	};
 }

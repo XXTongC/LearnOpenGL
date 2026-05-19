@@ -108,15 +108,21 @@ namespace
 		}
 	}
 
-	void drawPostProcessControls(GLframework::PostProcessSettings* settings)
+	void drawPostProcessControls(
+		GLframework::PostProcessSettings* settings,
+		const std::string* settingsPath
+	)
 	{
 		if (!settings)
 		{
 			return;
 		}
 
+		static std::string lastConfigStatus{};
+		const std::string configPath = settingsPath ? *settingsPath : GLframework::PostProcessSettingsStorage::defaultPath();
 		if (ImGui::CollapsingHeader("Post Process", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+			ImGui::TextWrapped("Profile File: %s", configPath.c_str());
 			ImGui::SliderFloat("Exposure", &settings->exposure, 0.0f, 4.0f);
 
 			int toneMappingMode = static_cast<int>(settings->toneMappingMode);
@@ -131,6 +137,25 @@ namespace
 			ImGui::SliderFloat("Bloom Threshold", &settings->bloomThreshold, 0.0f, 20.0f);
 			ImGui::SliderFloat("Bloom Intensity", &settings->bloomIntensity, 0.0f, 2.0f);
 			ImGui::SliderInt("Bloom Iterations", &settings->bloomIterations, 0, 20);
+
+			if (ImGui::Button("Save Post Process Profile"))
+			{
+				lastConfigStatus = GLframework::PostProcessSettingsStorage::saveToFile(configPath, *settings)
+					? "Post process profile saved."
+					: "Post process profile save failed.";
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Reload Post Process Profile"))
+			{
+				lastConfigStatus = GLframework::PostProcessSettingsStorage::loadFromFile(configPath, *settings)
+					? "Post process profile reloaded."
+					: "Post process profile reload failed.";
+			}
+
+			if (!lastConfigStatus.empty())
+			{
+				ImGui::TextWrapped("%s", lastConfigStatus.c_str());
+			}
 		}
 	}
 }
@@ -174,7 +199,7 @@ void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
 		}
 	}
 
-	drawPostProcessControls(context.postProcessSettings);
+	drawPostProcessControls(context.postProcessSettings, context.postProcessSettingsPath);
 	drawEnvironmentControls(context.renderer, context.environmentProfile, context.environmentProfilePath);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

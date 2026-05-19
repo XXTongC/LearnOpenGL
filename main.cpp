@@ -76,6 +76,7 @@ void runFrame();
 void printOpenGLCapabilities();
 void cleanupRuntime();
 void loadEnvironmentProfile();
+void loadPostProcessSettings();
 void refreshPostProcessInputTextures();
 GL_EXPERIMENTS::RuntimeContext makeLegacyExperimentContext();
 GL_SCENE::SetupContext makeSceneSetupContext();
@@ -121,6 +122,7 @@ struct AppRuntimeContext
 	std::shared_ptr<GLframework::PhongCSMShadowMaterial> csmShadowMaterial{ nullptr };
 	GLframework::PostProcessPass postProcessPass{};
 	GLframework::PostProcessSettings postProcessSettings{};
+	std::string postProcessSettingsPath{ GLframework::PostProcessSettingsStorage::defaultPath() };
 	GLframework::EnvironmentProfile environmentProfile{};
 	std::string environmentProfilePath{ GLframework::EnvironmentProfileStorage::defaultPath() };
 	Camera* camera{ nullptr };
@@ -150,6 +152,7 @@ auto& ScreenMat = gAppRuntime.screenMaterial;
 auto& csmShadowMaterial = gAppRuntime.csmShadowMaterial;
 auto& postProcessPass = gAppRuntime.postProcessPass;
 auto& postProcessSettings = gAppRuntime.postProcessSettings;
+auto& postProcessSettingsPath = gAppRuntime.postProcessSettingsPath;
 auto& environmentProfile = gAppRuntime.environmentProfile;
 auto& environmentProfilePath = gAppRuntime.environmentProfilePath;
 Camera*& camera = gAppRuntime.camera;
@@ -199,6 +202,7 @@ bool initializeApplication()
 
 	prepareCamera();
 	loadEnvironmentProfile();
+	loadPostProcessSettings();
 	prepare();
 	initIMGUI();
 	printOpenGLCapabilities();
@@ -304,6 +308,7 @@ GL_EDITOR::DebugControllerContext makeDebugControllerContext()
 		&pointLights,
 		textD,
 		&postProcessSettings,
+		&postProcessSettingsPath,
 		renderer,
 		&environmentProfile,
 		&environmentProfilePath,
@@ -349,6 +354,17 @@ void loadEnvironmentProfile()
 	}
 
 	LogInfo("Environment profile config not found, using defaults: " + environmentProfilePath);
+}
+
+void loadPostProcessSettings()
+{
+	if (GLframework::PostProcessSettingsStorage::loadFromFile(postProcessSettingsPath, postProcessSettings))
+	{
+		LogInfo("Postprocess settings loaded from " + postProcessSettingsPath);
+		return;
+	}
+
+	LogInfo("Postprocess settings config not found, using defaults: " + postProcessSettingsPath);
 }
 
 void refreshPostProcessInputTextures()

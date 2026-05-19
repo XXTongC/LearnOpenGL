@@ -839,3 +839,15 @@ PBR shader path 已能消费 IBL 资源，但默认仍关闭：
 - `SceneSetup` 初始 screen pass 也改为通过统一 getter 绑定 resolved color、resolved depth-stencil 和 Bloom pong texture。
 
 这一步修复了 HDR / Bloom render target 只在启动时创建的问题。后续调整窗口尺寸时，PBR 输出链路仍会进入匹配当前 framebuffer 尺寸的 HDR、Bloom 和 tone mapping 目标；后续还可以继续把 camera resize 行为从 `main.cpp` 收敛到独立 camera/runtime 模块。
+
+### 2026-05-20 PostProcessSettings 持久化入口
+
+`PostProcessSettings` 已支持本地配置保存 / 加载：
+
+- 新增 `PostProcessSettingsStorage`，负责读取和写入 exposure、tone mapping mode、Bloom 开关、threshold、intensity 和 iterations。
+- 默认运行时配置路径为 `config/postprocess_settings.local.ini`，复用 `config/*.local.ini` ignore 规则，避免本地调参结果污染提交。
+- 仓库新增 `config/postprocess_settings.example.ini`，记录可提交的 postprocess profile 字段示例。
+- 启动流程会在 `prepare()` 前加载 postprocess settings，让 HDR / Bloom / tone mapping 参数从配置驱动运行时。
+- `DebugControllerPanel` 的 `Post Process` 区域新增 profile 文件路径显示、Save 和 Reload 操作。
+
+这一步让后处理参数从“运行时临时调节”推进到“可保存的实验配置”。后续接真实 HDR environment 验证 PBR IBL 时，tone mapping 和 Bloom 参数可以随 profile 保存，不需要每次启动后重新调整。

@@ -22,6 +22,7 @@ namespace GL_EDITOR
 		std::vector<std::shared_ptr<GLframework::PointLight>>* pointLights{ nullptr };
 		std::shared_ptr<GLframework::Mesh> textObject{ nullptr };
 		GLframework::PostProcessSettings* postProcessSettings{ nullptr };
+		const std::string* postProcessSettingsPath{ nullptr };
 		std::shared_ptr<GLframework::Renderer> renderer{ nullptr };
 		GLframework::EnvironmentProfile* environmentProfile{ nullptr };
 		const std::string* environmentProfilePath{ nullptr };

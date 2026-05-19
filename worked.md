@@ -802,6 +802,18 @@
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
    - 通过 Win32 按进程枚举找到 `MyFirstWindow` 并执行两次 `SetWindowPos`，stdout 出现两次 `OnResize` 和旧 texture 删除输出；错误关键字扫描为空，说明 resize 回调与 framebuffer 重建路径已被实际触发。
+135. 完成第六十八轮 `PostProcessSettings` 持久化入口：
+   - 更新 [renderer/PostProcessSettings.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessSettings.h) 并新增 [renderer/PostProcessSettings.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessSettings.cpp)，加入 `PostProcessSettingsStorage`，支持保存和加载 exposure、tone mapping mode、Bloom 开关、threshold、intensity 和 iterations。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，在 `AppRuntimeContext` 中新增 `postProcessSettingsPath`，启动时在 `prepare()` 前尝试加载 `config/postprocess_settings.local.ini`。
+   - 更新 [tools/editor/DebugControllerPanel.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.h) 与 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，在 `Post Process` 控制区新增 profile 文件路径显示、Save 和 Reload 操作。
+   - 新增 [config/postprocess_settings.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\postprocess_settings.example.ini)，记录可提交的后处理配置字段示例。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `PostProcessSettings.cpp` 和 example profile 纳入 VS 工程分类。
+   - `config/postprocess_settings.local.ini` 被既有 `config/*.local.ini` ignore 规则覆盖，不会提交本地调参结果。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录后处理 profile 持久化策略和后续 HDR / IBL 验证方向。
+136. 完成第五十八次构建与运行时 smoke 验证：
+   - 针对 `PostProcessSettings` 持久化入口后执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning；`PostProcessSettings.obj` 已参与链接。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，在缺省没有 `config/postprocess_settings.local.ini` 时仍正常使用默认 settings；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -833,5 +845,6 @@
 - 当前 `EnvironmentProfile` 已接入 DebugControllerPanel UI，可在运行时编辑 HDR path / texture unit、切换 prepare 预计算，并手动触发 IBL precompute。
 - 当前 `EnvironmentProfile` 已支持 `config/environment_profile.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/environment_profile.example.ini` 作为字段示例。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
-- 当前剩余明显问题：工程内还没有默认 HDR environment 资源；PBR IBL 效果尚未用真实 HDR 资源验证；`PostProcessSettings` 还没有持久化 profile；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
+- 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例。
+- 当前剩余明显问题：工程内还没有默认 HDR environment 资源；PBR IBL 效果尚未用真实 HDR 资源验证；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
 - 下一步建议目标：引入或指定一份真实 HDR environment，验证 local profile 加载、启动预计算、PBR 材质启用 IBL 和最终画面效果的完整链路。

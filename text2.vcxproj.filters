@@ -384,6 +384,9 @@
     <ClCompile Include="renderer\PostProcessPass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\PostProcessSettings.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\RenderQueue.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -1811,6 +1814,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="config\environment_profile.example.ini">
+      <Filter>资源文件\config</Filter>
+    </None>
+    <None Include="config\postprocess_settings.example.ini">
       <Filter>资源文件\config</Filter>
     </None>
     <None Include="third_party\imgui\imgui.natstepfilter">
