@@ -873,3 +873,13 @@ IBL 预计算现在不再强依赖外部 `.hdr/.exr` 文件：
 - `config/environment_profile.example.ini` 记录 procedural 字段，后续本地 `config/environment_profile.local.ini` 可直接保存这一类测试环境。
 
 这一步的目的不是替代真实 HDR environment，而是提供一条可提交、可复现、无资源授权和体积问题的 IBL 验证路径。后续应在 PBR preview 材质上默认打开 `Use IBL` 或提供一键测试 profile，用 procedural source 先验证完整链路，再切换到真实 HDR 资源做视觉质量确认。
+
+### 2026-05-20 PBR Preview IBL 实验入口
+
+默认测试场景的 `PBR Preview Sphere` 现在会请求 IBL：
+
+- `preparePBRPreview(...)` 创建的 `PBRMaterial` 默认设置 `mUseIBL=true`。
+- 如果 environment 尚未完成预计算，`MaterialBinder` 仍会根据 `EnvironmentRenderTargets::hasPrecomputedEnvironment()` 在 shader 侧关闭 IBL，因此缺省启动路径保持安全。
+- 当 `EnvironmentProfile` 启用 procedural source 并完成 precompute 后，同一个 preview sphere 会自动进入 IBL 采样路径，不需要再选中材质手动打开 `Use IBL`。
+
+这一步把上一轮 procedural environment 从“可生成 IBL 资源”推进到“默认 PBR 测试对象会消费 IBL 资源”。后续建议把这个 preview setup 进一步提升为可配置的 PBR test scene / material preset，避免把实验场景参数长期写死在 `SceneSetup.cpp` 中。

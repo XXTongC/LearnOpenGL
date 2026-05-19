@@ -96,6 +96,7 @@ namespace
 		pbrMat->mMetallic = 0.2f;
 		pbrMat->mRoughness = 0.35f;
 		pbrMat->mAo = 1.0f;
+		pbrMat->mUseIBL = true;
 		pbrMat->mNormalMap = std::make_shared<GLframework::Texture>("Texture/normal/normal_map.png", 4);
 
 		auto pbrGeo = GLframework::Geometry::createSphere(

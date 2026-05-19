@@ -836,6 +836,17 @@
    - 默认短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
    - 临时创建被 `.gitignore` 覆盖的 [config/environment_profile.local.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\environment_profile.local.ini)，设置 `useProceduralEnvironment=1`、`precomputeOnPrepare=1`、`proceduralWidth=128`、`proceduralHeight=64` 后再次短启动约 `10` 秒；错误关键字扫描为空。
    - 验证结束后已移除临时 local profile，避免改变用户后续手动运行的默认环境。
+141. 完成第七十一轮 PBR Preview IBL 实验入口：
+   - 更新 [tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，让默认 `PBR Preview Sphere` 的 `PBRMaterial` 设置 `mUseIBL=true`。
+   - 该设置只表达 preview 材质希望消费 IBL；如果 environment 尚未预计算完成，`MaterialBinder` 仍会把 shader uniform `useIBL` 设为 `0`，所以缺省无 environment 的启动路径保持安全。
+   - 配合上一轮 procedural environment，用户只需要启用 procedural source 并触发 precompute，即可让默认 PBR 测试球进入 IBL 采样路径。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PBR preview IBL 实验入口和后续 test scene / material preset 方向。
+142. 完成第六十一次构建、默认启动 smoke 与 PBR IBL 绑定 smoke 验证：
+   - 针对 PBR Preview IBL 实验入口执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning。
+   - 默认短启动 `x64\Debug\text2.exe` 约 `6` 秒，在无 environment precompute 时仍未出现 shader / IBL 错误关键字。
+   - 临时创建被 `.gitignore` 覆盖的 [config/environment_profile.local.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\environment_profile.local.ini)，设置 procedural source 与 `precomputeOnPrepare=1` 后短启动约 `10` 秒；错误关键字扫描为空，覆盖了 PBR preview 请求 IBL 且 environment ready 后的绑定路径。
+   - 验证结束后已移除临时 local profile。
 
 ### 当前状态
 
@@ -868,6 +879,7 @@
 - 当前 `EnvironmentProfile` 已接入 DebugControllerPanel UI，可在运行时编辑 HDR path / texture unit、切换 prepare 预计算，并手动触发 IBL precompute。
 - 当前 `EnvironmentProfile` 已支持 `config/environment_profile.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/environment_profile.example.ini` 作为字段示例。
 - 当前 `EnvironmentProfile` 已支持 procedural HDR equirectangular source，可通过 DebugControllerPanel 或 local profile 在无外部 HDR 文件时触发 IBL precompute。
+- 当前默认 `PBR Preview Sphere` 会请求 IBL；environment 未 ready 时 shader 侧自动关闭，environment ready 后可直接验证 PBR IBL 采样链路。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
 - 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例。
 - 当前剩余明显问题：PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
