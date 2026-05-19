@@ -1,28 +1,6 @@
 #include "framebuffer.h"
 
-#include "renderer/Bloom/Bloom.h"
 using namespace GLframework;
-
-void Bloom::extractBright(std::shared_ptr<Framebuffer> src, std::shared_ptr<Framebuffer> dst)
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, dst->getFBO());
-	glViewport(0, 0, dst->getWidth(), dst->getHeight());
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	mExtractBrightShader->begin();
-	{
-		auto srcTex = src->getColorAttachment();
-		srcTex->setUnit(0);
-		srcTex->Bind();
-		mExtractBrightShader->setInt("srcTex", 0);
-		mExtractBrightShader->setFloat("threshold", mThreshold);
-
-		glBindVertexArray(mQuad->getVao());
-		glDrawElements(GL_TRIANGLES, mQuad->getIndicesCount(), GL_UNSIGNED_INT, 0);
-
-	}
-	mExtractBrightShader->end();
-}
 
 
 std::shared_ptr<Framebuffer> Framebuffer::createHDRBloomFbo(unsigned width, unsigned height)
@@ -82,16 +60,16 @@ std::shared_ptr<Framebuffer> Framebuffer::createPointLightShadowFBO(unsigned wid
 	std::cout << fb->mFBO;
 #endif
 
-	// ´´½¨Éî¶ÈÎÆÀíÊý×é
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	fb->mDepthAttachment = Texture::createTexture2DArray(width, height, layerCount, 0, GL_DEPTH_COMPONENT32F);
 
-	// °ó¶¨Éî¶ÈÎÆÀíÊý×éµ½Ö¡»º³å
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½éµ½Ö¡ï¿½ï¿½ï¿½ï¿½
 	glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, fb->mDepthAttachment->getTexture(), 0, 0);
 
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 
-	// ¼ì²éÖ¡»º³åÊÇ·ñÍêÕû
+	// ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
 		std::cerr << "Error: PointLight Shadow Framebuffer is not complete!" << std::endl;
@@ -139,18 +117,18 @@ Framebuffer::Framebuffer(unsigned width, unsigned height)
 	mWidth = width;
 	mHeight = height;
 
-	//	1.Éú³Éfbo¶ÔÏó²¢°ó¶¨
+	//	1.ï¿½ï¿½ï¿½ï¿½fboï¿½ï¿½ï¿½ó²¢°ï¿½
 	glGenFramebuffers(1, &mFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
 
-	//	2.Éú³ÉÑÕÉ«¿Ø¼þ£¬²¢ÇÒ¼ÓÈëfbo
+	//	2.ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¼ï¿½ï¿½ï¿½fbo
 	mColorAttachment = Texture::createColorAttachment(mWidth, mHeight, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mColorAttachment->getTexture(), 0);
-	//	3.Éú³Édepth Stencil¸½¼þ£¬¼ÓÈëfbo
+	//	3.ï¿½ï¿½ï¿½ï¿½depth Stencilï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½fbo
 	mDepthStencilAttachment = Texture::createDepthStencilAttachment(mWidth, mHeight, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, mDepthStencilAttachment->getTexture(), 0);
 
-	//	¼ì²éµ±Ç°¹¹½¨µÄfboÊÇ·ñÍêÕû
+	//	ï¿½ï¿½éµ±Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½fboï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
 		std::cerr << "Error: FrameBuff is not complete! " << std::endl;

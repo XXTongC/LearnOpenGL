@@ -684,3 +684,14 @@ MSAA resolve 已从 `Renderer` 中拆出，作为后处理边界的第一步：
 - 普通 scene pass 不再需要知道 screen composite 的 shader uniform 细节。
 
 这一步完成 screen composite 从 scene material binding 中的脱钩。后续如果要支持多种 postprocess 材质或 tone mapping 配置，应扩展 `PostProcessPass` / postprocess settings，而不是重新把它放回 `SceneRenderPass` 或 `MaterialBinder`。
+
+### 2026-05-20 Bloom 与 Framebuffer 解耦
+
+Bloom 的亮度提取实现已从 framebuffer 层移回 renderer/Bloom：
+
+- `framebuffer.cpp` 删除对 `renderer/Bloom/Bloom.h` 的 include，不再实现 `Bloom::extractBright(...)`。
+- `Bloom::extractBright(...)` 迁入 `renderer/Bloom/Bloom.cpp`，并改为 `const std::shared_ptr<Framebuffer>&` 参数。
+- `Bloom::extractBright(...)` 增加空指针保护、VAO 解绑，并保持当前 extract bright shader 行为不变。
+- `Bloom` 的 mip level 计算增加显式 `static_cast<int>`，避免后续重新编译时出现浮点到整数转换噪音。
+
+这一步清理了 framebuffer 到 renderer/Bloom 的反向依赖。后续接 Bloom 时，可以由 `PostProcessPass` 或独立 Bloom pass 调用 Bloom，而不是让底层 framebuffer 文件承担渲染 pass 行为。

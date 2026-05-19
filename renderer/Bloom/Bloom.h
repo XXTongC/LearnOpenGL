@@ -18,12 +18,12 @@ namespace GLframework
 		std::vector<std::shared_ptr<Framebuffer>> mDownSamples{};
 		std::vector<std::shared_ptr<Framebuffer>> mUpSamples{};
 		
-	private:
-		void extractBright(std::shared_ptr<Framebuffer> src, std::shared_ptr<Framebuffer> dst);
-		
-
 	public:
 		Bloom(int width,int height, int min_Resolution = 32);
 		~Bloom();
+		void extractBright(
+			const std::shared_ptr<Framebuffer>& src,
+			const std::shared_ptr<Framebuffer>& dst
+		) const;
 	};
 }

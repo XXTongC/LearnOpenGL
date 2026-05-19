@@ -653,6 +653,16 @@
    - 针对 `ScreenMaterial` 绑定清理后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
+109. 完成第五十五轮 Bloom 与 framebuffer 解耦：
+   - 更新 [framebuffer/framebuffer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\framebuffer\framebuffer.cpp)，删除 `renderer/Bloom/Bloom.h` include 和 `Bloom::extractBright(...)` 实现。
+   - 更新 [renderer/Bloom/Bloom.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\Bloom\Bloom.cpp)，将 `Bloom::extractBright(...)` 迁回 Bloom 模块，并补充空指针保护与 VAO 解绑。
+   - 更新 [renderer/Bloom/Bloom.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\Bloom\Bloom.h)，将 `extractBright(...)` 暴露为后续 pass 可调用接口，并改用 `const std::shared_ptr<Framebuffer>&` 参数。
+   - `Bloom` 的 mip level 计算增加显式 `static_cast<int>`，避免重新编译时的浮点到整数转换噪音。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 framebuffer 层不再反向依赖 renderer/Bloom。
+110. 完成第四十五次构建与运行时 smoke 验证：
+   - 针对 Bloom 与 framebuffer 解耦后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -673,5 +683,6 @@
 - 当前主颜色 render target orchestration 已开始建立，multisample scene target 与 resolved HDR target 已收拢到 `FrameRenderTargets`。
 - 当前 screen composite 已从普通 `Renderer::render(sceneInScreen, ...)` 路径移入 `PostProcessPass`，screen quad 只保留为 hierarchy / inspector 可见对象。
 - 当前 `ScreenMaterial` 已从 `MaterialBinder` 中移除，screen composite shader 绑定只归 `PostProcessPass` 管理。
-- 当前剩余明显问题：Bloom 仍未 pass 化，tone mapping 选项仍写在 screen shader 内，`FrameRenderTargets` 还没有 resize/recreate、Bloom ping-pong target、IBL capture target 和 BRDF LUT 管理。
-- 下一步建议目标：继续扩展 `PostProcessPass` 承接 Bloom，或者扩展 `FrameRenderTargets` 管理 PBR / IBL 所需的 HDR 与环境贴图目标。
+- 当前 Bloom 亮度提取实现已从 framebuffer 层移回 renderer/Bloom，framebuffer 不再反向依赖 Bloom。
+- 当前剩余明显问题：Bloom 仍未完整 pass 化，tone mapping 选项仍写在 screen shader 内，`FrameRenderTargets` 还没有 resize/recreate、Bloom ping-pong target、IBL capture target 和 BRDF LUT 管理。
+- 下一步建议目标：继续扩展 `PostProcessPass` 承接 Bloom extract / blur / composite，或者扩展 `FrameRenderTargets` 管理 PBR / IBL 所需的 HDR 与环境贴图目标。
