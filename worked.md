@@ -391,6 +391,35 @@
    - 继续基于当前 `codex/text2-refactor` 工作区盘点模块依赖，补充了 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md) 中的模块依赖地图。
    - 按高 / 中 / 低优先级整理了 `main.cpp`、`renderer`、EditorPanels、include 风格、资源生命周期和 legacy 实验入口的后续风险。
    - 补充了分阶段执行 backlog，并明确下一轮 Debug Controller Panel 拆分的验收标准。
+53. 完成第二十八轮 Debug Controller Panel 拆分：
+   - 新增 [tools/editor/DebugControllerPanel.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.h) 与 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，把 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 中 `"controller"` 调试面板迁入独立 editor 模块。
+   - [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 现在通过 `makeDebugControllerContext()` 显式传入调试面板依赖，`renderIMGUI()` 只保留 ImGui frame 生命周期和面板调度。
+   - 同步更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，确保新模块进入 VS 工程。
+54. 完成第十六次构建验证：
+   - 针对 Debug Controller Panel 拆分后执行真实 `Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 同步清理了入口层两个 warning：移除未使用的 `windows.h`，并在滚轮回调处显式处理 `double -> float` 转换。
+55. 完成第二十九轮 Renderer 状态拆分：
+   - 新增 [renderer/RenderState.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RenderState.h) 与 [renderer/RenderState.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RenderState.cpp)，把 depth、polygon offset、stencil、blend、face culling 的 OpenGL 状态应用逻辑从 [renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp) 中迁出。
+   - [renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp) 现在通过 `RenderState::applyMaterialState(*material)` 应用材质通用渲染状态，为后续 PBR 材质绑定和 shader 参数上传拆分留出边界。
+   - 同步更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，确保 `RenderState` 模块进入 VS 工程。
+56. 完成第十七次构建验证：
+   - 针对 Renderer 状态拆分后执行真实 `Build`。
+   - 构建结果：成功，`0` error。
+   - 本次项目文件变更触发多文件重编译，暴露 `22` 个既有 warning，主要集中在 Assimp loader 的有符号/无符号比较与 Renderer 的窄化转换；本轮未继续混入 warning 清理。
+57. 完成第三十轮 ShaderLibrary 拆分：
+   - 新增 [renderer/ShaderLibrary.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShaderLibrary.h) 与 [renderer/ShaderLibrary.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShaderLibrary.cpp)，集中管理 `MaterialType -> Shader` 映射、普通材质 shader 初始化、shadow shader 初始化。
+   - [renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h) 不再保存一长串 shader 成员，改为持有 `ShaderLibrary mShaderLibrary`。
+   - [renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp) 不再负责 shader 创建和 switch 选择；普通渲染通过 `getShader(...)` 间接访问，shadow pass 通过 `ShaderLibrary` 获取专用 shader。
+   - 这一步为后续接入 PBR 渲染路径降低了改动范围：新增 PBR shader 时优先扩展 `ShaderLibrary`，而不是继续扩大 Renderer 主文件。
+58. 完成第十八次构建验证：
+   - 针对 `ShaderLibrary` 拆分后执行真实 `Build`。
+   - 构建结果：成功，`0` error。
+   - warning 数量仍为 `22`，来源与上一轮一致，后续应作为单独清理任务处理。
+59. 完成第十九次构建验证：
+   - 在所有本轮代码与文档变更完成后再次执行增量 `Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 当前可提交状态下工程可以稳定生成 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe)。
 
 ### 当前状态
 

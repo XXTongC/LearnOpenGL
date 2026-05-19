@@ -1,0 +1,26 @@
+#pragma once
+
+#include <map>
+#include <memory>
+
+#include "material.h"
+#include "shader.h"
+
+namespace GLframework
+{
+	class ShaderLibrary
+	{
+	public:
+		void initialize();
+		std::shared_ptr<Shader> get(MaterialType type) const;
+		std::shared_ptr<Shader> getShadowShader() const;
+		std::shared_ptr<Shader> getShadowDistanceShader() const;
+
+	private:
+		std::shared_ptr<Shader> createShader(const char* vertexPath, const char* fragmentPath);
+
+		std::map<MaterialType, std::shared_ptr<Shader>> mMaterialShaders{};
+		std::shared_ptr<Shader> mShadowShader{ nullptr };
+		std::shared_ptr<Shader> mShadowDistanceShader{ nullptr };
+	};
+}

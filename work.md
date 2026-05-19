@@ -394,4 +394,19 @@
 - `tools/editor` 下新增的 debug controller 模块进入 `text2.vcxproj` 和 `text2.vcxproj.filters`。
 - `Debug|x64` 构建通过，且不提交本地 `imgui.ini`。
 
+### 2026-05-20 PBR 前置重构进展
+
+已完成两项直接服务于 PBR 路径的前置拆分：
+
+- Debug Controller Panel 已从 `main.cpp` 移入 `tools/editor/DebugControllerPanel.*`，入口文件不再直接承载调试控件细节。
+- Renderer 的通用 OpenGL 状态应用已移入 `renderer/RenderState.*`，材质状态和具体材质 uniform 绑定开始分离。
+- Shader 初始化与 `MaterialType -> Shader` 映射已移入 `renderer/ShaderLibrary.*`，后续新增 PBR shader 不需要继续把 shader 成员堆进 `Renderer`。
+
+下一步建议改为清理 PBR 接入的核心扩展点：
+
+1. 新增 `PBRMaterial` 的空壳和 `MaterialType::PBRMaterial`，先定义数据模型：albedo、metallic、roughness、ao、normal、emissive 等。
+2. 先不实现完整 PBR 光照公式，只把 PBR material 注册到 `ShaderLibrary`，并准备 `shaders/pbr/pbr.vert` / `pbr.frag` 的最小可编译版本。
+3. 再从 `Renderer::renderObject()` 中拆出 `MaterialBinder`，让 Phong 和 PBR 的 uniform 上传逐步分开。
+4. 之后再处理 IBL 资源：irradiance map、prefilter map、BRDF LUT，这一部分应该独立成 environment lighting 模块。
+
 后续我们可以持续直接修改这份 `work.md`，把抽象讨论逐渐收敛成具体执行计划。

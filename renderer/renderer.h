@@ -5,6 +5,7 @@
 #include "framebuffer.h"
 #include "camera.h"
 #include "shader.h"
+#include "ShaderLibrary.h"
 #include "directionalLight.h"
 #include "ambientLight.h"
 #include "pointLight.h"
@@ -34,9 +35,7 @@ namespace GLframework
 		void msaaResolve(std::shared_ptr<Framebuffer> src, std::shared_ptr<Framebuffer> dst);
 	public:
 		std::shared_ptr<Material> mGlobalMaterial{nullptr};
-	private:
-		//根据Material类型不同，挑选不同的shader
-		std::shared_ptr<Shader> pickShader(MaterialType type);
+private:
 		void renderObject(
 			std::shared_ptr<Object> object,
 			Camera* camera,
@@ -61,12 +60,7 @@ namespace GLframework
 			const std::vector<std::shared_ptr<Mesh>>& meshes,
 			const std::vector<std::shared_ptr<GLframework::PointLight>>& pointLights
 		);
-		void setDepthState(std::shared_ptr<GLframework::Material> material);
-		void setPolygonOffsetState(std::shared_ptr<GLframework::Material> material);
-		void setStencilState(std::shared_ptr<GLframework::Material> material);
-		void setColorBlendState(std::shared_ptr<GLframework::Material> material);
 		void projectObject(std::shared_ptr<Object> obj);
-		void setFaceCullingState(std::shared_ptr<GLframework::Material> material);
 private:
 		// set MVP
 		void setMVPMatrices(std::shared_ptr<Shader> shader, std::shared_ptr<Mesh> mesh, Camera* camera);
@@ -97,30 +91,9 @@ private:
 			std::shared_ptr<Shader> shader,
 			const std::vector<std::shared_ptr<PointLight>>& pointLights
 		);
-		void initializeShaders();
-		std::shared_ptr<Shader> createShader(const char* vertexPath, const char* fragmentPath);
 		void drawMesh(std::shared_ptr<Mesh> mesh);
 
-		//生成多种不同的shader对象
-		//根据材质类型的不同，挑选选择哪个shader对象
-		std::shared_ptr<Shader> mPhongShader{ nullptr };
-		std::shared_ptr<Shader> mWhiteShader{ nullptr };
-		std::shared_ptr<Shader> mDepthShader{ nullptr };
-		std::shared_ptr<Shader> mOpacityMaskShader{ nullptr };
-		std::shared_ptr<Shader> mScreenShader{ nullptr };
-		std::shared_ptr<Shader> mCubeShader{ nullptr };
-		std::shared_ptr<Shader> mPhongEnvShader{ nullptr };
-		std::shared_ptr<Shader> mCubeSphereShader{ nullptr };
-		std::shared_ptr<Shader> mPhongEnvSphereShader{ nullptr };
-		std::shared_ptr<Shader> mPhongInstanceShader{ nullptr };
-		std::shared_ptr<Shader> mGrassInstanceShader{ nullptr };
-		std::shared_ptr<Shader> mPhongNormalShader{ nullptr };
-		std::shared_ptr<Shader> mPhongParallaxShader{ nullptr };
-		std::shared_ptr<Shader> mShadowShader{ nullptr };
-		std::shared_ptr<Shader> mPhongShadowShader{ nullptr };
-		std::shared_ptr<Shader> mPhongCSMShadowShader{ nullptr };
-		std::shared_ptr<Shader> mPhongPointShadowShader{ nullptr };
-		std::shared_ptr<Shader> mShadowDistanceShader{ nullptr };
+		ShaderLibrary mShaderLibrary{};
 		
 		//不透明队列与透明队列
 		//ops: 每一帧绘制前需要清空两个队列

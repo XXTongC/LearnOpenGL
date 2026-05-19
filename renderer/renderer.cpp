@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "RenderState.h"
 #include <iostream>
 #include <memory>
 #include <string>
@@ -32,34 +33,7 @@ using namespace GLframework;
 
 Renderer::Renderer()
 {
-	initializeShaders();
-}
-
-std::shared_ptr<Shader> Renderer::createShader(const char* vertexPath, const char* fragmentPath)
-{
-	return std::make_shared<Shader>(vertexPath, fragmentPath);
-}
-
-void Renderer::initializeShaders()
-{
-	mPhongShader = createShader("shaders/phong/phong_V2.vert", "shaders/phong/phong_V2.frag");
-	mWhiteShader = createShader("shaders/white/white.vert", "shaders/white/white.frag");
-	mDepthShader = createShader("shaders/depth/depth.vert", "shaders/depth/depth.frag");
-	mOpacityMaskShader = createShader("shaders/opacityMask/phongOpacityMask.vert", "shaders/opacityMask/phongOpacityMask.frag");
-	mScreenShader = createShader("shaders/screen/screen.vert", "shaders/screen/screen.frag");
-	mCubeShader = createShader("shaders/cube/cube.vert", "shaders/cube/cube.frag");
-	mPhongEnvShader = createShader("shaders/phongEnv/phongEnv.vert", "shaders/phongEnv/phongEnv_V2.frag");
-	mCubeSphereShader = createShader("shaders/cube/cube.vert", "shaders/cube/cubeSphere.frag");
-	mPhongEnvSphereShader = createShader("shaders/phongEnv/phongEnv.vert", "shaders/phongEnv/phongEnvSphere.frag");
-	mPhongInstanceShader = createShader("shaders/phongInstance/phongInstance.vert", "shaders/phongInstance/phongInstance.frag");
-	mGrassInstanceShader = createShader("shaders/grassInstance/grassInstance.vert", "shaders/grassInstance/grassInstance.frag");
-	mPhongNormalShader = createShader("shaders/phongNormal/phongNormal_V2.vert", "shaders/phongNormal/phongNormal_V2.frag");
-	mPhongParallaxShader = createShader("shaders/phongParallax/phongParallax_V2.vert", "shaders/phongParallax/phongParallax_V2.frag");
-	mShadowShader = createShader("shaders/shadow/shadow.vert", "shaders/shadow/shadow.frag");
-	mPhongShadowShader = createShader("shaders/phong/phongShadow.vert", "shaders/phong/phongShadow.frag");
-	mPhongCSMShadowShader = createShader("shaders/phongCSMShadow/phongCSMShadow.vert", "shaders/phongCSMShadow/phongCSMShadow.frag");
-	mPhongPointShadowShader = createShader("shaders/phongPointShadow/phongPointShadow.vert", "shaders/phongPointShadow/phongPointShadow.frag");
-	mShadowDistanceShader = createShader("shaders/shadowDistance/shadowDistance.vert", "shaders/shadowDistance/shadowDistance.frag");
+	mShaderLibrary.initialize();
 }
 
 void Renderer::setMVPMatrices(std::shared_ptr<Shader> shader, std::shared_ptr<Mesh> mesh, Camera* camera)
@@ -189,20 +163,6 @@ void Renderer::renderShadowMap(Camera* camera, const std::vector<std::shared_ptr
 	renderPointShadowMap(camera, mOpacityObjects, pointLights);
 }
 
-void Renderer::setFaceCullingState(std::shared_ptr<GLframework::Material> material)
-{
-	if(material->getFaceCullingState())
-	{
-		glEnable(GL_CULL_FACE);
-		glFrontFace(material->getFrontFace());
-		glCullFace(material->getCullFace());
-	}else
-	{
-		glDisable(GL_CULL_FACE);
-	}
-}
-
-
 void Renderer::projectObject(std::shared_ptr<Object> obj)
 {
 	if(obj->getType()==ObjectType::Mesh|| obj->getType() == ObjectType::InstancedMesh)
@@ -224,74 +184,6 @@ void Renderer::projectObject(std::shared_ptr<Object> obj)
 }
 
 
-void Renderer::setColorBlendState(std::shared_ptr<GLframework::Material> material)
-{
-	if(material->getColorBlendState())
-	{
-		glEnable(GL_BLEND);
-		glBlendFunc(material->getSFactor(), material->getDFactor());
-
-	}else
-	{
-		glDisable(GL_BLEND);
-	}
-}
-
-
-void Renderer::setStencilState(std::shared_ptr<Material> material)
-{
-	if (material->getStencilState())
-	{
-		glEnable(GL_STENCIL_TEST);
-		glStencilOp(material->getSFail(), material->getZFail(), material->getZPass());
-		glStencilMask(material->getStencilMask());
-		glStencilFunc(material->getStencilFunc(), material->getStencilRef(), material->getStencilFuncMask());
-	}
-	else
-	{
-		glDisable(GL_STENCIL_TEST);
-	}
-}
-
-
-void Renderer::setDepthState(std::shared_ptr<Material> material)
-{
-	if (material->getDepthTest())
-	{
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(material->getDepthFunc());
-	}
-	else
-	{
-		glDisable(GL_DEPTH_TEST);
-	}
-
-	if (material->getDepthWrite())
-	{
-		glDepthMask(GL_TRUE);
-	}
-	else
-	{
-		glDepthMask(GL_FALSE);
-	}
-}
-
-void Renderer::setPolygonOffsetState(std::shared_ptr<Material> material)
-{
-	if (material->getPolygonOffsetState())
-	{
-		glEnable(material->getPolygonOffsetType());
-		// Factor锟斤拷示锟斤拷锟叫憋拷实谋锟斤拷锟斤拷锟絬nit锟斤拷示锟斤拷染锟斤拷鹊锟斤拷锟叫∠革拷锟街碉拷谋锟斤拷锟斤拷锟侥匡拷锟斤拷锟斤拷诮锟斤拷zFighting锟斤拷锟斤拷
-		glPolygonOffset(material->getFactor(), material->getUnit());
-	}
-	else
-	{
-		glDisable(GL_POLYGON_OFFSET_FILL);
-		glDisable(GL_POLYGON_OFFSET_LINE);
-	}
-}
-
-
 void Renderer::setClearColor(glm::vec3 color)
 {
 	glClearColor(color.r, color.g, color.b, 1.0f);
@@ -299,68 +191,7 @@ void Renderer::setClearColor(glm::vec3 color)
 
 std::shared_ptr<Shader> Renderer::getShader(MaterialType type)
 {
-	return pickShader(type);
-}
-
-
-std::shared_ptr<Shader> Renderer::pickShader(MaterialType type)
-{
-	std::shared_ptr<Shader> res{nullptr};
-	switch (type)
-	{
-	case MaterialType::PhongMaterial:
-		res = mPhongShader;
-		break;
-	case MaterialType::WhiteMaterial:
-		res = mWhiteShader;
-		break;
-	case MaterialType::DepthMaterial:
-		res = mDepthShader;
-		break;
-	case MaterialType::OpacityMaskMaterial:
-		res = mOpacityMaskShader;
-		break;
-	case MaterialType::ScreenMaterial:
-		res = mScreenShader;
-		break;
-	case MaterialType::CubeSphereMaterial:
-		res = mCubeSphereShader;
-		break;
-	case MaterialType::CubeMaterial:
-		res = mCubeShader;
-		break;
-	case MaterialType::PhongEnvSphereMaterial:
-		res = mPhongEnvSphereShader;
-		break;
-	case MaterialType::PhongEnvMaterial:
-		res = mPhongEnvShader;
-		break;
-	case MaterialType::PhongInstanceMaterial:
-		res = mPhongInstanceShader;
-		break;
-	case MaterialType::GrassInstanceMaterial:
-		res = mGrassInstanceShader;
-		break;
-	case MaterialType::PhongNormalMaterial:
-		res = mPhongNormalShader;
-		break;
-	case MaterialType::PhongParallaxMaterial:
-		res = mPhongParallaxShader;
-		break;
-	case MaterialType::PhongShadowMaterial:
-		res = mPhongShadowShader;
-		break;
-	case MaterialType::PhongCSMShadowMaterial:
-		res = mPhongCSMShadowShader;
-		break;
-	case MaterialType::PhongPointShadowMaterial:
-		res = mPhongPointShadowShader;
-		break;
-	default:
-		std::cerr << "Unknown material type to pick shader\n";
-		break;
-	}
-	return res;
+	return mShaderLibrary.get(type);
 }
 
 
@@ -463,13 +294,8 @@ void Renderer::renderObject(
 
 		
 
-		//璁剧疆娓叉煋鐘舵€?
-		setDepthState(material);
-		setPolygonOffsetState(material);
-		setStencilState(material);
-		setColorBlendState(material);
-		setFaceCullingState(material);
-		auto shader = pickShader(material->getMaterialType());
+		RenderState::applyMaterialState(*material);
+		auto shader = getShader(material->getMaterialType());
 		shader->begin();
 
 
@@ -1498,6 +1324,7 @@ void Renderer::renderDirShadowMap(
 
 	for (int i = 0; i < csmShadow->getLayerCount(); ++i)
 	{
+		auto shadowShader = mShaderLibrary.getShadowShader();
 		glFramebufferTextureLayer(
 			GL_FRAMEBUFFER,
 			GL_DEPTH_ATTACHMENT,
@@ -1506,12 +1333,12 @@ void Renderer::renderDirShadowMap(
 			i
 		);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		mShadowShader->begin();
-		mShadowShader->setMat4("lightMatrix", lightMatrices[i]);
+		shadowShader->begin();
+		shadowShader->setMat4("lightMatrix", lightMatrices[i]);
 		for (auto& mesh : meshes)
 		{
 			glBindVertexArray(mesh->getGeometry()->getVao());
-			mShadowShader->setMat4("modelMatrix", mesh->getModelMatrix());
+			shadowShader->setMat4("modelMatrix", mesh->getModelMatrix());
 
 			if (mesh->getType() == ObjectType::InstancedMesh)
 			{
@@ -1525,7 +1352,7 @@ void Renderer::renderDirShadowMap(
 			}
 		}
 
-		mShadowShader->end();
+		shadowShader->end();
 
 	}
 
@@ -1582,6 +1409,7 @@ void Renderer::renderPointShadowMap(
 		const auto& pointLight = pointLights[i];
 		const auto& pointShadow = std::static_pointer_cast<PointLightShadow>(pointLight->getShadow());
 		pointShadow->setShadowMapIndex(i);
+		auto shadowDistanceShader = mShaderLibrary.getShadowDistanceShader();
 		
 		// 娓叉煋鍏釜闈㈢殑娣卞害璐村浘
 		for (unsigned int face = 0; face < 6; ++face)
@@ -1599,16 +1427,16 @@ void Renderer::renderPointShadowMap(
 			glm::mat4 shadowView = lookAt(pointLight->getPosition(),
 			                              pointLight->getPosition() + Tools::getCubemapFaceDirection(face),
 			                              Tools::getCubemapFaceUp(face));
-			mShadowDistanceShader->begin();
-			mShadowDistanceShader->setMat4("lightSpaceMatrix", shadowProj * shadowView);
-			mShadowDistanceShader->setVector3("lightPos", pointLight->getPosition());
-			mShadowDistanceShader->setFloat("far_plane", pointShadow->mCamera->mFar);
+			shadowDistanceShader->begin();
+			shadowDistanceShader->setMat4("lightSpaceMatrix", shadowProj * shadowView);
+			shadowDistanceShader->setVector3("lightPos", pointLight->getPosition());
+			shadowDistanceShader->setFloat("far_plane", pointShadow->mCamera->mFar);
 
 			//****text
 			for (auto& mesh : meshes)
 			{
 				glBindVertexArray(mesh->getGeometry()->getVao());
-				mShadowDistanceShader->setMat4("modelMatrix", mesh->getModelMatrix());
+				shadowDistanceShader->setMat4("modelMatrix", mesh->getModelMatrix());
 
 				if (mesh->getType() == ObjectType::InstancedMesh)
 				{
@@ -1624,7 +1452,7 @@ void Renderer::renderPointShadowMap(
 			}
 		
 			
-			mShadowDistanceShader->end();
+			shadowDistanceShader->end();
 	
 		}
 	}

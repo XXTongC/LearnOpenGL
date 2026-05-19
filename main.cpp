@@ -1,6 +1,5 @@
 #include "core.h"
 #include <iostream>
-#include <windows.h>
 #include <memory>
 #include <vector>
 #include <typeinfo>
@@ -47,6 +46,7 @@
 #include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
 #include "tools/Logger/Logger.h"
 #include "tools/Logger/LogManager.h"
+#include "tools/editor/DebugControllerPanel.h"
 #include "tools/editor/EditorPanels.h"
 #include "tools/legacyExperiments/LegacyExperimentRunner.h"
 #include "tools/sceneSetup/SceneSetup.h"
@@ -73,6 +73,7 @@ void printOpenGLCapabilities();
 void cleanupRuntime();
 GL_EXPERIMENTS::RuntimeContext makeLegacyExperimentContext();
 GL_SCENE::SetupContext makeSceneSetupContext();
+GL_EDITOR::DebugControllerContext makeDebugControllerContext();
 void prepareLegacyExperiments();
 void updateLegacyExperiments();
 
@@ -255,6 +256,17 @@ GL_SCENE::SetupContext makeSceneSetupContext()
 	};
 }
 
+GL_EDITOR::DebugControllerContext makeDebugControllerContext()
+{
+	return {
+		dirLight,
+		&pointLights,
+		textD,
+		ScreenMat,
+		&m_time
+	};
+}
+
 void prepare()
 {
 	auto sceneSetupContext = makeSceneSetupContext();
@@ -324,82 +336,12 @@ void renderIMGUI()
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	// 2. setting ImGui UI
-	
-	ImGui::Begin("controller");
-	
-	auto pos = dirLight->getPosition();
-	if(ImGui::SliderFloat("light.x", &pos.x, 0.0f, 50.f, "%.2f"))
-	{
-		dirLight->setPosition(pos);
-	}
-	float rotate = textD->getAngleX();
-	if (ImGui::SliderFloat("Text Rotate:", &rotate, -360, 360))
-	{
-		textD->setAngleX(rotate);
-	}
-	ImGui::SliderFloat("tightness", &dirLight->getShadow()->mDiskTightness, 0.0f, 1.0f,"%.3f");
-	ImGui::SliderFloat("pcfRadius", &dirLight->getShadow()->mPcfRadius, 0.0f, 10.0f, "%.3f");
-	
-	if(ImGui::SliderAngle("angle", &m_time))
-	{
-		const float r = 3.0f;
-		const float x = static_cast<float>(r * glm::sin(m_time));
-		const float z = static_cast<float>(r * glm::cos(m_time));
-		pointLights[0]->setPosition({ x, 3.0f, z });
-	}
-	ImGui::SliderFloat("Exposure", &ScreenMat->mExposure, 0.0f, 1.0f);
-	/*
-	int width = dirLight->getShadow()->mRenderTarget->getWidth();
-	int height = dirLight->getShadow()->mRenderTarget->getHeight();
-	if(ImGui::SliderInt("FBO width:" , &width,1,4096)|| ImGui::SliderInt("FBO height:", &height, 1, 4096))
-	{
-		dirLight->getShadow()->setRenderTargetSize(width, height);
-	}
-	ImGui::SliderFloat("lightSize", &dirLight->getShadow()->mLightSize, 0.0f, 10.0f);
-	float h = movePlane->getPosition().y;
-	if(ImGui::SliderFloat("plane H",&h,1,10))
-	{
-		movePlane->setPosition({ 0.0f,h,0.0f });
-	}
-	*/
-	//ImGui::SliderFloat("Parallax Scale", &parallaxMat->mHeightScale, 0.0f, 1.0f);
-	//ImGui::SliderInt("layerNumber",&parallaxMat->mLayerNum, 1, 10000);
-
-	/*
-	ImGui::Text("Light");
-	ImGui::InputFloat("intencity", dirLight->Control_Intensity(), 0.0f, 100.0f);
-
-	ImGui::Text("MIX");
-	ImGui::SliderFloat("CloudLerp", grassMaterial->Control_CloudLerp(), 0.0f, 1.0f);
-	ImGui::Text("GrassColor");
-	ImGui::SliderFloat("UVScale",grassMaterial->Control_UVScale(),0.0f,100.0f);
-	
-	ImGui::InputFloat("Brightness", grassMaterial->Control_Brightness());
-
-	ImGui::Text("Wind");
-	ImGui::SliderFloat("WindScale", grassMaterial->Control_WindScale(),-0.12f,0.12f);
-	ImGui::InputFloat("PhaseScale", grassMaterial->Control_PhaseScale());
-	ImGui::ColorEdit3("WindDirection",(float*)(grassMaterial->Control_WindDirection()));
-	ImGui::Text("Cloud");
-	ImGui::SliderFloat("CloudScale", grassMaterial->Control_CloudUVScale(), 0.0f, 100.0f);
-	ImGui::SliderFloat("CloudSpeed", grassMaterial->Control_CloudSpeed(), 0.0f, 3.0f);
-	ImGui::ColorEdit3("CloudWhiteColor", (float*)(grassMaterial->Control_CloudWhiteColor()));
-	ImGui::ColorEdit3("CloudBlackColor", (float*)(grassMaterial->Control_CloudBlackColor()));
-	
-
-	ImGui::ColorEdit3("Clear Color",(float *)(&clearColor));
-	*/
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	
-	ImGui::End();
-
+	GL_EDITOR::drawDebugControllerPanel(makeDebugControllerContext());
 	const auto editorContext = makeEditorPanelContext();
 	GL_EDITOR::ensureSelectionIsInitialized(gEditorSelection, sceneOffScreen);
 	GL_EDITOR::drawHierarchyPanel(editorContext, gEditorSelection);
 	GL_EDITOR::drawSelectionInspectorPanel(editorContext, gEditorSelection);
 
-	// 3. ִ��UI��Ⱦ
 	ImGui::Render();
 	int display_w, display_h;
 	glfwGetFramebufferSize(GL_APP->getWindow(), &display_w, &display_h);
@@ -444,7 +386,7 @@ void initIMGUI()
 //�����֣��������ص�����
 void OnScroll(double offset)
 {
-	cameracontrol->onScroll(offset);
+	cameracontrol->onScroll(static_cast<float>(offset));
 }
 
 void OnResize(int width, int height)

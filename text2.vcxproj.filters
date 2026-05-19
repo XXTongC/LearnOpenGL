@@ -453,8 +453,17 @@
     <ClCompile Include="tools\sceneSetup\SceneSetup.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\editor\DebugControllerPanel.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\Bloom\Bloom.cpp">
       <Filter>cppfile\GLframework\renderer\Bloom</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\RenderState.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\ShaderLibrary.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1694,11 +1703,20 @@
     <ClInclude Include="tools\sceneSetup\SceneSetup.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
+    <ClInclude Include="tools\editor\DebugControllerPanel.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
     <ClInclude Include="tools\ObjectPool\ObjectPool.h">
       <Filter>include\GLframework\tools\ObjectPool</Filter>
     </ClInclude>
     <ClInclude Include="renderer\Bloom\Bloom.h">
       <Filter>include\GLframework\renderer\Bloom</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\RenderState.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\ShaderLibrary.h">
+      <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
