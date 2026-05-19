@@ -36,7 +36,6 @@ namespace GLframework
 			unsigned int fbo = 0
 		);
 		void setClearColor(glm::vec3 color);
-		void msaaResolve(std::shared_ptr<Framebuffer> src, std::shared_ptr<Framebuffer> dst);
 	public:
 		std::shared_ptr<Material> mGlobalMaterial{nullptr};
 private:

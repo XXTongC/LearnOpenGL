@@ -35,6 +35,7 @@
 #include "scene.h"
 #include <chrono>
 #include "renderer.h"
+#include "renderer/PostProcessPass.h"
 #include "pointLight.h"
 //imgui thirdparty
 #include "assimpInstanceLoader.h"
@@ -112,6 +113,7 @@ struct AppRuntimeContext
 	std::shared_ptr<GLframework::Mesh> textD{ nullptr };
 	std::shared_ptr<GLframework::ScreenMaterial> screenMaterial{ nullptr };
 	std::shared_ptr<GLframework::PhongCSMShadowMaterial> csmShadowMaterial{ nullptr };
+	GLframework::PostProcessPass postProcessPass{};
 	Camera* camera{ nullptr };
 	CameraControl* cameracontrol{ nullptr };
 	glm::vec3 clearColor{};
@@ -136,6 +138,7 @@ auto& movePlane = gAppRuntime.movePlane;
 auto& textD = gAppRuntime.textD;
 auto& ScreenMat = gAppRuntime.screenMaterial;
 auto& csmShadowMaterial = gAppRuntime.csmShadowMaterial;
+auto& postProcessPass = gAppRuntime.postProcessPass;
 Camera*& camera = gAppRuntime.camera;
 CameraControl*& cameracontrol = gAppRuntime.cameracontrol;
 glm::vec3& clearColor = gAppRuntime.clearColor;
@@ -198,7 +201,7 @@ void runFrame()
 
 	// pass 1: off-screen color attachment
 	renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights, ambientLight, framebufferMultisample->getFBO());
-	renderer->msaaResolve(framebufferMultisample, framebufferResolve);
+	postProcessPass.resolveMultisample(framebufferMultisample, framebufferResolve);
 
 	// pass 2: on-screen color attachment
 	renderer->render(sceneInScreen, camera, dirLight, spotLight, pointLights, ambientLight);

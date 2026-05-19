@@ -614,6 +614,16 @@
    - 针对 `FrameRenderState` 拆分后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
+101. 完成第五十一轮 `PostProcessPass` 初步拆分：
+   - 新增 [renderer/PostProcessPass.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessPass.h) 与 [renderer/PostProcessPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessPass.cpp)，承接 MSAA resolve。
+   - 更新 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp) 与 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h)，移除 `Renderer::msaaResolve(...)`。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，通过 `PostProcessPass::resolveMultisample(...)` 执行 multisample framebuffer 到 resolve framebuffer 的 blit。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `PostProcessPass` 纳入 VS 工程和 Renderer 分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录后处理边界对后续 Bloom / tone mapping / PBR render target 管理的意义。
+102. 完成第四十一次构建与运行时 smoke 验证：
+   - 针对 `PostProcessPass` 拆分后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -630,5 +640,6 @@
 - 当前 `Renderer` 已具备 shadow pass 与 scene pass 两个明确调度边界。
 - 当前 render queue 构建已从 `Renderer` 拆出，后续可扩展 PBR / IBL 所需的队列类别。
 - 当前 frame GL state 已从 `Renderer` 拆出，`Renderer` 进一步收敛为 frame state / render queue / shadow pass / scene pass 编排器。
-- 当前剩余明显问题：postprocess 边界和 render target 管理仍在 `Renderer` 或外部流程中，PBR / IBL 后续需要更稳定的 frame graph 雏形。
-- 下一步建议目标：建立 postprocess pass 边界，或者继续人工观察 PBR preview 的 shadow / normal map 方向。
+- 当前 postprocess 边界已开始建立，MSAA resolve 已从 `Renderer` 移入 `PostProcessPass`。
+- 当前剩余明显问题：Bloom / tone mapping / render target orchestration 仍未 pass 化，PBR / IBL 后续需要更稳定的 frame graph 雏形。
+- 下一步建议目标：扩展 `PostProcessPass` 承接 screen resolve / tone mapping / Bloom，或者优先建立 render target orchestration，为 PBR / IBL 输出路径做准备。

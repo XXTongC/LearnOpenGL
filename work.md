@@ -637,7 +637,18 @@ opaque / transparent 队列构建已从 `Renderer` 中拆出：
 
 - 新增 `FrameRenderState`，负责绑定目标 framebuffer、设置 depth / stencil / blend / polygon offset 初始状态，并清理 color / depth / stencil buffer。
 - `Renderer::render(...)` 现在通过 `mFrameRenderState.begin(fbo)` 进入一帧，不再直接维护这组 GL 状态细节。
-- `setClearColor(...)` 和 `msaaResolve(...)` 暂时保留在 `Renderer`，因为它们仍是外部使用的渲染工具接口。
+- `setClearColor(...)` 暂时保留在 `Renderer`，`msaaResolve(...)` 已在后续 `PostProcessPass` 拆分中移出。
 - `text2.vcxproj` 与 `text2.vcxproj.filters` 已收录新的 frame state 文件。
 
 这一步让 frame state 成为独立边界。后续可以继续把 postprocess pass 或 render target 管理拆出来，使 PBR / IBL 的 render target、prepass、environment capture 不再和主 `Renderer` 入口耦合。
+
+### 2026-05-20 PostProcessPass 初步拆分
+
+MSAA resolve 已从 `Renderer` 中拆出，作为后处理边界的第一步：
+
+- 新增 `PostProcessPass`，当前负责 `resolveMultisample(...)`，把 multisample framebuffer blit 到 resolve framebuffer。
+- `Renderer` 删除 `msaaResolve(...)`，避免继续把后处理工具函数堆在主渲染编排器里。
+- `runFrame()` 现在通过 `postProcessPass.resolveMultisample(framebufferMultisample, framebufferResolve)` 执行 resolve。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已收录新的 postprocess pass 文件，保持 VS 工程结构一致。
+
+这一步只是建立边界，不试图一次性完成完整后处理系统。后续可以继续把 screen composite、tone mapping、Bloom 和 HDR render target 管理迁入 `PostProcessPass` 或独立 render target orchestration 层，为 PBR / IBL 输出路径提供稳定承接点。
