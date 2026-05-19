@@ -469,6 +469,14 @@
    - 针对 PBR normal map 接入后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 当前验证边界不变：MSBuild 不会编译 GLSL，`pbr.vert/.frag` 仍需要运行时 shader 编译或外部 GLSL validator 进一步确认。
+71. 完成第三十六轮 Geometry tangent fallback 补强：
+   - 更新 [framework/geometry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\framework\geometry.cpp)，为没有显式 tangent 输入的通用 `Geometry` 构造函数补充 tangent 自动生成逻辑。
+   - 为显式 tangent 构造函数增加 `aTangent` attribute guard，避免 shader 不使用 tangent 时仍绑定无效 attribute location。
+   - 新增 tangent 退化 fallback：当 UV 退化或切线向量不可用时，根据 normal 生成稳定正交 tangent，降低 PBR normal map 在普通几何上的失效风险。
+72. 完成第二十六次构建验证：
+   - 针对 Geometry tangent fallback 补强后执行真实 `Debug|x64 Build`。
+   - 初次构建成功但暴露 `4` 个 `size_t -> GLsizei` warning，随后对 `mIndicesCount` 赋值增加显式 `static_cast<GLsizei>`。
+   - 再次构建结果：成功，`0` error，`0` warning。
 
 ### 当前状态
 

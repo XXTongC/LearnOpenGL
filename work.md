@@ -470,5 +470,15 @@
 后续需要继续验证的点：
 
 1. 程序生成几何与 Assimp 导入几何的 tangent 数据是否完整、方向是否一致。
-2. PBR shader 当前直接依赖 `aTangent`，如果某些几何没有 tangent 数据，需要在 Geometry 层提供 fallback 或在创建 PBR mesh 时强制生成 tangent。
+2. 通用 `Geometry` 构造函数已补充 tangent fallback，但 Assimp 导入路径是否总能提供正确 UV / normal 仍需要实际模型验证。
 3. PBR 仍缺 IBL，因此材质观感还只是 direct lighting PBR，不是完整生产级 PBR。
+
+### 2026-05-20 Geometry tangent fallback
+
+为降低 PBR normal map 对几何输入的脆弱性，`Geometry` 层已补充 tangent fallback：
+
+- 对没有显式 tangent 输入的通用构造函数，根据 position / uv / index 自动计算 tangent。
+- 当 UV 退化导致 tangent 无法计算时，根据 normal 生成稳定正交 tangent。
+- 对显式 tangent 构造函数增加 `aTangent` attribute guard，避免 shader 不需要 tangent 时触发无效 attribute 绑定。
+
+这一步让 `pbr.vert` 可以安全依赖 `aTangent`，但仍不能替代真实资产验证。后续应选择一个带 normal map 的模型进行运行时检查，确认导入路径、程序生成几何和 shader 的 TBN 方向一致。

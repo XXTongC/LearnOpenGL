@@ -2,6 +2,129 @@
 
 using namespace GLframework;
 
+namespace
+{
+	glm::vec3 readVec3(const std::vector<float>& values, size_t index)
+	{
+		const size_t offset = index * 3;
+		if (offset + 2 >= values.size())
+		{
+			return glm::vec3(0.0f);
+		}
+
+		return { values[offset], values[offset + 1], values[offset + 2] };
+	}
+
+	glm::vec2 readVec2(const std::vector<float>& values, size_t index)
+	{
+		const size_t offset = index * 2;
+		if (offset + 1 >= values.size())
+		{
+			return glm::vec2(0.0f);
+		}
+
+		return { values[offset], values[offset + 1] };
+	}
+
+	glm::vec3 fallbackTangentForNormal(glm::vec3 normal)
+	{
+		if (glm::length(normal) < 0.0001f)
+		{
+			return { 1.0f, 0.0f, 0.0f };
+		}
+
+		normal = glm::normalize(normal);
+		const glm::vec3 helperAxis = glm::abs(normal.y) < 0.999f
+			? glm::vec3(0.0f, 1.0f, 0.0f)
+			: glm::vec3(1.0f, 0.0f, 0.0f);
+		return glm::normalize(glm::cross(helperAxis, normal));
+	}
+
+	std::vector<float> buildTangents(
+		const std::vector<float>& positions,
+		const std::vector<float>& normals,
+		const std::vector<float>& uvs,
+		const std::vector<unsigned int>& indices
+	)
+	{
+		const size_t vertexCount = positions.size() / 3;
+		std::vector<float> tangents(vertexCount * 3, 0.0f);
+
+		for (size_t i = 0; i + 2 < indices.size(); i += 3)
+		{
+			const unsigned int idx0 = indices[i];
+			const unsigned int idx1 = indices[i + 1];
+			const unsigned int idx2 = indices[i + 2];
+			if (idx0 >= vertexCount || idx1 >= vertexCount || idx2 >= vertexCount)
+			{
+				continue;
+			}
+
+			const glm::vec3 pos0 = readVec3(positions, idx0);
+			const glm::vec3 pos1 = readVec3(positions, idx1);
+			const glm::vec3 pos2 = readVec3(positions, idx2);
+			const glm::vec2 uv0 = readVec2(uvs, idx0);
+			const glm::vec2 uv1 = readVec2(uvs, idx1);
+			const glm::vec2 uv2 = readVec2(uvs, idx2);
+
+			const glm::vec3 edge1 = pos1 - pos0;
+			const glm::vec3 edge2 = pos2 - pos0;
+			const glm::vec2 deltaUV1 = uv1 - uv0;
+			const glm::vec2 deltaUV2 = uv2 - uv0;
+			const float determinant = deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y;
+			if (glm::abs(determinant) < 0.0001f)
+			{
+				continue;
+			}
+
+			const float f = 1.0f / determinant;
+			const glm::vec3 tangent = f * (deltaUV2.y * edge1 - deltaUV1.y * edge2);
+			for (const unsigned int index : { idx0, idx1, idx2 })
+			{
+				tangents[index * 3] += tangent.x;
+				tangents[index * 3 + 1] += tangent.y;
+				tangents[index * 3 + 2] += tangent.z;
+			}
+		}
+
+		for (size_t i = 0; i < vertexCount; ++i)
+		{
+			glm::vec3 normal = readVec3(normals, i);
+			glm::vec3 tangent = readVec3(tangents, i);
+			if (glm::length(tangent) < 0.0001f)
+			{
+				tangent = fallbackTangentForNormal(normal);
+			}
+			else
+			{
+				normal = glm::length(normal) < 0.0001f ? glm::vec3(0.0f, 1.0f, 0.0f) : glm::normalize(normal);
+				tangent = tangent - normal * glm::dot(normal, tangent);
+				tangent = glm::length(tangent) < 0.0001f ? fallbackTangentForNormal(normal) : glm::normalize(tangent);
+			}
+
+			tangents[i * 3] = tangent.x;
+			tangents[i * 3 + 1] = tangent.y;
+			tangents[i * 3 + 2] = tangent.z;
+		}
+
+		return tangents;
+	}
+
+	void bindTangentAttribute(GLuint& tangentVbo, GLint tangentLocation, const std::vector<float>& tangents)
+	{
+		if (tangentLocation == -1 || tangents.empty())
+		{
+			return;
+		}
+
+		glGenBuffers(1, &tangentVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, tangentVbo);
+		glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(float), tangents.data(), GL_STATIC_DRAW);
+		glEnableVertexAttribArray(static_cast<GLuint>(tangentLocation));
+		glVertexAttribPointer(static_cast<GLuint>(tangentLocation), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	}
+}
+
 std::shared_ptr<Shader> Geometry::getShader()
 {
     return mShader;
@@ -17,12 +140,12 @@ Geometry::Geometry(
 )
 {
     mShader = shader;
-    mIndicesCount = indices.size();
+    mIndicesCount = static_cast<GLsizei>(indices.size());
 
     GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
     GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
     GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
-    GLuint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
+    GLint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
 
     glGenVertexArrays(1, &mVao);
     glBindVertexArray(mVao);
@@ -46,11 +169,7 @@ Geometry::Geometry(
     glEnableVertexAttribArray(normalLocation);
     glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-    glGenBuffers(1, &mTangentVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, mTangentVbo);
-    glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(float), tangents.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(tangentLocation);
-    glVertexAttribPointer(tangentLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    bindTangentAttribute(mTangentVbo, tangentLocation, tangents);
 
     glGenBuffers(1, &mEbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEbo);
@@ -719,7 +838,7 @@ std::shared_ptr<Geometry> Geometry::createSphere(std::shared_ptr< GLframework::S
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebos.size() * sizeof(int), ebos.data(), GL_STATIC_DRAW);
 
-    geometry->mIndicesCount = ebos.size();
+    geometry->mIndicesCount = static_cast<GLsizei>(ebos.size());
     glBindVertexArray(0);
 	return geometry;
 }
@@ -734,11 +853,12 @@ Geometry::Geometry(
 )
 {
     mShader = shader;
-    mIndicesCount = indices.size();
+    mIndicesCount = static_cast<GLsizei>(indices.size());
    
     GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
     GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
     GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
+    GLint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
 
 
     glGenVertexArrays(1, &mVao);
@@ -762,6 +882,9 @@ Geometry::Geometry(
     glBufferData(GL_ARRAY_BUFFER, normals.size()*sizeof(float),normals.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(normalLocation);
     glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    const std::vector<float> tangents = buildTangents(positions, normals, uvs, indices);
+    bindTangentAttribute(mTangentVbo, tangentLocation, tangents);
 
     glGenBuffers(1, &mEbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEbo);
@@ -837,12 +960,13 @@ Geometry::Geometry(
 )
 {
     mShader = shader;
-    mIndicesCount = indices.size();
+    mIndicesCount = static_cast<GLsizei>(indices.size());
 
     GLuint positionLocation = glGetAttribLocation(shader->getProgram(), "aPos");
     GLuint uvLocation = glGetAttribLocation(shader->getProgram(), "aUV");
     GLuint normalLocation = glGetAttribLocation(shader->getProgram(), "aNormal");
     GLuint colorLocation = glGetAttribLocation(shader->getProgram(), "aColor");
+    GLint tangentLocation = glGetAttribLocation(shader->getProgram(), "aTangent");
 
     glGenVertexArrays(1, &mVao);
     glBindVertexArray(mVao);
@@ -871,6 +995,9 @@ Geometry::Geometry(
     glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(normalLocation);
     glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    const std::vector<float> tangents = buildTangents(positions, normals, uvs, indices);
+    bindTangentAttribute(mTangentVbo, tangentLocation, tangents);
 
     glGenBuffers(1, &mEbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEbo);
