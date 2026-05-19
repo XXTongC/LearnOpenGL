@@ -121,6 +121,43 @@ namespace
 		context.sceneInScreen->addChild(context.screenQuad);
 	}
 
+	void prepareEnvironmentPrecompute(GL_SCENE::SetupContext& context)
+	{
+		if (!context.environmentProfile.precomputeOnPrepare)
+		{
+			return;
+		}
+
+		if (!context.environmentProfile.hasHdrSource())
+		{
+			LogInfo("IBL precompute skipped: no HDR environment path configured");
+			return;
+		}
+
+		auto hdrEnvironment = GLframework::EnvironmentTextureLoader::loadHdrEquirectangular(context.environmentProfile);
+		if (!hdrEnvironment)
+		{
+			LogInfo("IBL precompute skipped: HDR environment load failed");
+			return;
+		}
+
+		auto captureCubeGeometry = GLframework::Geometry::createBox(context.renderer->getIBLCaptureShader(), 2.0f, 2.0f, 2.0f);
+		auto captureCube = std::make_shared<GLframework::Mesh>(captureCubeGeometry, nullptr);
+		captureCube->setName("IBL Capture Cube");
+
+		auto brdfQuadGeometry = GLframework::Geometry::createScreenPlane(context.renderer->getIBLBrdfLutShader());
+		auto brdfQuad = std::make_shared<GLframework::Mesh>(brdfQuadGeometry, nullptr);
+		brdfQuad->setName("IBL BRDF LUT Quad");
+
+		if (context.renderer->precomputeEnvironment(hdrEnvironment, captureCube, brdfQuad))
+		{
+			LogInfo("IBL precompute finished");
+			return;
+		}
+
+		LogInfo("IBL precompute failed");
+	}
+
 	void prepareLights(GL_SCENE::SetupContext& context)
 	{
 		context.spotLight = std::make_shared<GLframework::SpotLight>(30.0f, 60.0f);
@@ -173,5 +210,6 @@ void GL_SCENE::prepareDefaultScene(SetupContext& context)
 	prepareRoomScene(context);
 	preparePBRPreview(context);
 	prepareScreenPass(context);
+	prepareEnvironmentPrecompute(context);
 	prepareLights(context);
 }

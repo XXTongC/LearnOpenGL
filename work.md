@@ -768,3 +768,15 @@ IBL 预计算流程已从资源所有权中拆出：
 - `Renderer` 持有 `IBLPrecomputePass` 并暴露 getter，后续 scene setup 或 runtime profile 可以显式触发 IBL 预计算。
 
 这一步仍不改变 PBR shader 输出，只把 IBL 资源生成流程变成可调用模块。下一步应接入 HDR environment texture 加载和 capture cube / BRDF screen quad 的创建策略，再决定是在启动阶段预计算还是在 environment profile 变化时重新生成。
+
+### 2026-05-20 EnvironmentProfile 可选预计算入口
+
+IBL 预计算已有 runtime 入口，但默认仍关闭，避免在没有 HDR 资源时改变当前画面：
+
+- 新增 `EnvironmentProfile`，记录 HDR equirectangular path、HDR texture unit 和是否在 scene prepare 阶段执行预计算。
+- 新增 `EnvironmentTextureLoader`，使用 `stbi_loadf` 加载 HDR equirectangular texture，并包装为现有 `Texture` 对象。
+- `Renderer` 新增 `precomputeEnvironment(...)`，按 environment capture、irradiance、prefilter、BRDF LUT 的顺序调用 `IBLPrecomputePass`。
+- `SceneSetup` 新增 `prepareEnvironmentPrecompute(...)`，在 profile 启用且配置 HDR path 时创建 capture cube / BRDF LUT quad 并触发预计算。
+- `AppRuntimeContext` 持有 `EnvironmentProfile`，后续 UI 或配置系统可以修改同一份 profile 来重建 IBL 资源。
+
+这一步让 IBL 从“有 pass”推进到“有可配置触发点”。当前项目没有 `.hdr/.exr` 资源，所以默认不启用；后续只需要给 `EnvironmentProfile::hdrEquirectangularPath` 配置有效 HDR 文件并打开 `precomputeOnPrepare`，就可以生成 IBL 贴图。下一步应把 irradiance / prefilter / BRDF LUT 绑定进 `PBRMaterial` 的 shader path。

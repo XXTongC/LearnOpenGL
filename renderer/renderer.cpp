@@ -18,6 +18,16 @@ std::shared_ptr<Shader> Renderer::getShader(MaterialType type)
 	return mShaderLibrary.get(type);
 }
 
+std::shared_ptr<Shader> Renderer::getIBLCaptureShader() const
+{
+	return mShaderLibrary.getEquirectangularToCubemapShader();
+}
+
+std::shared_ptr<Shader> Renderer::getIBLBrdfLutShader() const
+{
+	return mShaderLibrary.getBrdfLutShader();
+}
+
 const EnvironmentRenderTargets& Renderer::getEnvironmentRenderTargets() const
 {
 	return mEnvironmentRenderTargets;
@@ -36,6 +46,30 @@ const IBLPrecomputePass& Renderer::getIBLPrecomputePass() const
 IBLPrecomputePass& Renderer::getIBLPrecomputePass()
 {
 	return mIblPrecomputePass;
+}
+
+bool Renderer::precomputeEnvironment(
+	const std::shared_ptr<Texture>& equirectangularMap,
+	const std::shared_ptr<Mesh>& captureCube,
+	const std::shared_ptr<Mesh>& brdfQuad
+)
+{
+	if (!mIblPrecomputePass.captureEnvironmentMap(equirectangularMap, mEnvironmentRenderTargets, captureCube, mShaderLibrary))
+	{
+		return false;
+	}
+
+	if (!mIblPrecomputePass.computeIrradianceMap(mEnvironmentRenderTargets, captureCube, mShaderLibrary))
+	{
+		return false;
+	}
+
+	if (!mIblPrecomputePass.computePrefilterMap(mEnvironmentRenderTargets, captureCube, mShaderLibrary))
+	{
+		return false;
+	}
+
+	return mIblPrecomputePass.computeBrdfLut(mEnvironmentRenderTargets, brdfQuad, mShaderLibrary);
 }
 
 void Renderer::render(

@@ -35,6 +35,7 @@
 #include <chrono>
 #include "renderer.h"
 #include "renderer/Bloom/Bloom.h"
+#include "renderer/EnvironmentProfile.h"
 #include "renderer/FrameRenderTargets.h"
 #include "renderer/PostProcessPass.h"
 #include "pointLight.h"
@@ -116,6 +117,7 @@ struct AppRuntimeContext
 	std::shared_ptr<GLframework::ScreenMaterial> screenMaterial{ nullptr };
 	std::shared_ptr<GLframework::PhongCSMShadowMaterial> csmShadowMaterial{ nullptr };
 	GLframework::PostProcessPass postProcessPass{};
+	GLframework::EnvironmentProfile environmentProfile{};
 	Camera* camera{ nullptr };
 	CameraControl* cameracontrol{ nullptr };
 	glm::vec3 clearColor{};
@@ -142,6 +144,7 @@ auto& textD = gAppRuntime.textD;
 auto& ScreenMat = gAppRuntime.screenMaterial;
 auto& csmShadowMaterial = gAppRuntime.csmShadowMaterial;
 auto& postProcessPass = gAppRuntime.postProcessPass;
+auto& environmentProfile = gAppRuntime.environmentProfile;
 Camera*& camera = gAppRuntime.camera;
 CameraControl*& cameracontrol = gAppRuntime.cameracontrol;
 glm::vec3& clearColor = gAppRuntime.clearColor;
@@ -280,7 +283,8 @@ GL_SCENE::SetupContext makeSceneSetupContext()
 		pointLights,
 		width,
 		height,
-		TexturePath
+		TexturePath,
+		environmentProfile
 	};
 }
 

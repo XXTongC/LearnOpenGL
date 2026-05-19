@@ -733,6 +733,18 @@
    - 针对 `IBLPrecomputePass` 和 IBL shader 注册后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning；`IBLPrecomputePass.obj` 已参与链接。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+123. 完成第六十二轮 `EnvironmentProfile` 可选预计算入口：
+   - 新增 [renderer/EnvironmentProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.h) 与 [renderer/EnvironmentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.cpp)，记录 HDR equirectangular path、HDR texture unit、是否 prepare 阶段预计算，并提供 `stbi_loadf` HDR texture loader。
+   - 更新 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h) 与 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，新增 IBL capture / BRDF shader getter 和 `precomputeEnvironment(...)` 调度入口。
+   - 更新 [tools/sceneSetup/SceneSetup.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.h) 与 [tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，接入 `EnvironmentProfile`，在 profile 启用且有 HDR path 时创建 capture cube / BRDF quad 并触发 IBL 预计算。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，让 `AppRuntimeContext` 持有 `EnvironmentProfile` 并传入 scene setup。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `EnvironmentProfile` 纳入 VS 工程和 Renderer 分类。
+   - 当前默认 `precomputeOnPrepare=false`，没有配置 HDR 文件时不会改变当前画面或启动路径。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 environment profile 入口和后续 PBR IBL sampler 绑定方向。
+124. 完成第五十二次构建与运行时 smoke 验证：
+   - 针对 `EnvironmentProfile` 可选预计算入口后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning；`EnvironmentProfile.obj` 已参与链接。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -759,6 +771,6 @@
 - 当前 Bloom composite 已接入 screen shader，resolved HDR color 会与 blurred bloom texture 合成后再 tone mapping / gamma。
 - 当前后处理参数已收敛到 `PostProcessSettings`，exposure、tone mapping mode、Bloom 开关、threshold、intensity、iterations 都能通过 screen material inspector 修改。
 - 当前 IBL / environment 资源边界已建立，`EnvironmentRenderTargets` 管理 environment / irradiance / prefilter cubemap、BRDF LUT 和 capture FBO。
-- 当前 IBL 预计算流程已拆到 `IBLPrecomputePass`，但尚未接入 HDR environment texture 加载、capture cube / BRDF quad 创建和实际运行时触发。
-- 当前剩余明显问题：`PostProcessSettings` 仍挂在 `ScreenMaterial` 上，尚未提升到 runtime / renderer 级别；`IBLPrecomputePass` 尚未被 scene setup 调用；`FrameRenderTargets` 还没有 resize/recreate。
-- 下一步建议目标：新增 environment profile / HDR texture loading 入口，并在 scene setup 中创建 capture cube 与 BRDF quad，让 `IBLPrecomputePass` 可以真正生成 IBL 贴图。
+- 当前 IBL 预计算流程已拆到 `IBLPrecomputePass`，并可通过 `EnvironmentProfile` 在 scene setup 阶段加载 HDR environment、创建 capture cube / BRDF quad 并触发预计算。
+- 当前剩余明显问题：`PostProcessSettings` 仍挂在 `ScreenMaterial` 上，尚未提升到 runtime / renderer 级别；`EnvironmentProfile` 还没有 UI / 配置文件入口；PBR shader 尚未采样 irradiance / prefilter / BRDF LUT；`FrameRenderTargets` 还没有 resize/recreate。
+- 下一步建议目标：把 `EnvironmentRenderTargets` 中的 irradiance / prefilter / BRDF LUT 通过 `MaterialBinder` 传给 PBR shader，并让 PBR shader 支持直接光 + 可选 IBL 的组合。

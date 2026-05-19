@@ -363,6 +363,9 @@
     <ClCompile Include="renderer\MaterialBinder.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\EnvironmentProfile.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\EnvironmentRenderTargets.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -585,6 +588,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\MaterialBinder.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\EnvironmentProfile.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\EnvironmentRenderTargets.h">

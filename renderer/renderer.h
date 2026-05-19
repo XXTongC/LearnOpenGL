@@ -25,10 +25,17 @@ namespace GLframework
 		Renderer();
 		~Renderer() = default;
 		std::shared_ptr<Shader> getShader(MaterialType type);
+		std::shared_ptr<Shader> getIBLCaptureShader() const;
+		std::shared_ptr<Shader> getIBLBrdfLutShader() const;
 		const EnvironmentRenderTargets& getEnvironmentRenderTargets() const;
 		EnvironmentRenderTargets& getEnvironmentRenderTargets();
 		const IBLPrecomputePass& getIBLPrecomputePass() const;
 		IBLPrecomputePass& getIBLPrecomputePass();
+		bool precomputeEnvironment(
+			const std::shared_ptr<Texture>& equirectangularMap,
+			const std::shared_ptr<Mesh>& captureCube,
+			const std::shared_ptr<Mesh>& brdfQuad
+		);
 		//渲染功能函数
 		//1. 每次调用渲染一帧
 		

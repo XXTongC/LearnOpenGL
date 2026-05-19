@@ -8,6 +8,7 @@
 #include "../../materials/screenMaterial.h"
 #include "../../mesh/mesh.h"
 #include "../../renderer/Bloom/Bloom.h"
+#include "../../renderer/EnvironmentProfile.h"
 #include "../../renderer/FrameRenderTargets.h"
 #include "../../renderer/renderer.h"
 
@@ -31,6 +32,7 @@ namespace GL_SCENE
 		int width{ 0 };
 		int height{ 0 };
 		const std::string& texturePath;
+		GLframework::EnvironmentProfile& environmentProfile;
 	};
 
 	void prepareDefaultScene(SetupContext& context);
