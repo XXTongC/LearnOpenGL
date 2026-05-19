@@ -674,3 +674,13 @@ MSAA resolve 已从 `Renderer` 中拆出，作为后处理边界的第一步：
 - screen composite 当前负责默认 framebuffer 绑定、viewport、基础后处理 GL state、exposure/tone mapping shader uniform 和 fullscreen quad draw。
 
 这一步让后处理输出成为独立 pass。后续 Bloom、tone mapping 选项、gamma 策略和 HDR/LDR 输出切换可以继续放进 `PostProcessPass`，而不是继续伪装成普通 scene 中的一个 mesh。
+
+### 2026-05-20 ScreenMaterial 绑定清理
+
+`ScreenMaterial` 已从普通 scene 材质绑定路径中移除：
+
+- `MaterialBinder` 删除 `ScreenMaterial` include、`bindScreenMaterial(...)` helper 和 `MaterialType::ScreenMaterial` 分支。
+- `ScreenMaterial` 的 texture / exposure / fullscreen draw 绑定现在只由 `PostProcessPass::renderScreenComposite(...)` 负责。
+- 普通 scene pass 不再需要知道 screen composite 的 shader uniform 细节。
+
+这一步完成 screen composite 从 scene material binding 中的脱钩。后续如果要支持多种 postprocess 材质或 tone mapping 配置，应扩展 `PostProcessPass` / postprocess settings，而不是重新把它放回 `SceneRenderPass` 或 `MaterialBinder`。

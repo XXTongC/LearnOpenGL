@@ -644,6 +644,15 @@
    - 针对 `PostProcessPass` screen composite 拆分后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
+107. 完成第五十四轮 `ScreenMaterial` 绑定清理：
+   - 更新 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，删除 `ScreenMaterial` include、`bindScreenMaterial(...)` helper 和 `MaterialType::ScreenMaterial` 分支。
+   - `ScreenMaterial` 的 screen texture、depth texture、exposure 和 fullscreen draw 相关绑定现在只保留在 `PostProcessPass::renderScreenComposite(...)`。
+   - 普通 scene pass 不再需要知道 screen composite 的 shader uniform 细节。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 screen composite 从 scene material binding 中脱钩。
+108. 完成第四十四次构建与运行时 smoke 验证：
+   - 针对 `ScreenMaterial` 绑定清理后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -663,5 +672,6 @@
 - 当前 postprocess 边界已开始建立，MSAA resolve 已从 `Renderer` 移入 `PostProcessPass`。
 - 当前主颜色 render target orchestration 已开始建立，multisample scene target 与 resolved HDR target 已收拢到 `FrameRenderTargets`。
 - 当前 screen composite 已从普通 `Renderer::render(sceneInScreen, ...)` 路径移入 `PostProcessPass`，screen quad 只保留为 hierarchy / inspector 可见对象。
+- 当前 `ScreenMaterial` 已从 `MaterialBinder` 中移除，screen composite shader 绑定只归 `PostProcessPass` 管理。
 - 当前剩余明显问题：Bloom 仍未 pass 化，tone mapping 选项仍写在 screen shader 内，`FrameRenderTargets` 还没有 resize/recreate、Bloom ping-pong target、IBL capture target 和 BRDF LUT 管理。
 - 下一步建议目标：继续扩展 `PostProcessPass` 承接 Bloom，或者扩展 `FrameRenderTargets` 管理 PBR / IBL 所需的 HDR 与环境贴图目标。

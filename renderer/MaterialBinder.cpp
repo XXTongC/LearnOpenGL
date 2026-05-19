@@ -17,7 +17,6 @@
 #include "materials/phongParallaxMaterial/phongParallaxMaterial.h"
 #include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
 #include "materials/phongShadowMaterial/phongShadowMaterial.h"
-#include "materials/screenMaterial.h"
 #include "materials/whiteMaterial.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
 #include "mesh/instancedMesh.h"
@@ -143,20 +142,6 @@ namespace
 		setMVPMatrices(shader, mesh, camera);
 		shader->setFloat("near", camera->mNear);
 		shader->setFloat("far", camera->mFar);
-	}
-
-	void bindScreenMaterial(
-		const std::shared_ptr<Shader>& shader,
-		const std::shared_ptr<Material>& material
-	)
-	{
-		std::shared_ptr<ScreenMaterial> screenMaterial = std::static_pointer_cast<ScreenMaterial>(material);
-		shader->setInt("screenTextureSampler", 0);
-		shader->setInt("depthTextureSampler", 1);
-		shader->setFloat("texWidth", 1200.0f);
-		shader->setFloat("texHeight", 900.0f);
-		shader->setFloat("exposure", screenMaterial->mExposure);
-		screenMaterial->mScreenTexture->Bind();
 	}
 
 	void bindCubeMaterial(
@@ -507,9 +492,6 @@ bool MaterialBinder::bind(
 		return true;
 	case MaterialType::DepthMaterial:
 		bindDepthMaterial(shader, mesh, camera);
-		return true;
-	case MaterialType::ScreenMaterial:
-		bindScreenMaterial(shader, material);
 		return true;
 	case MaterialType::CubeMaterial:
 		bindCubeMaterial(shader, material, mesh, camera);
