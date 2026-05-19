@@ -14,6 +14,8 @@
 
 namespace GLframework
 {
+	class EnvironmentRenderTargets;
+
 	class SceneRenderPass
 	{
 	public:
@@ -26,7 +28,8 @@ namespace GLframework
 			const std::vector<std::shared_ptr<PointLight>>& pointLights,
 			const std::shared_ptr<AmbientLight>& ambient,
 			const std::shared_ptr<Material>& globalMaterial,
-			const ShaderLibrary& shaderLibrary
+			const ShaderLibrary& shaderLibrary,
+			const EnvironmentRenderTargets* environmentTargets
 		) const;
 
 	private:
@@ -38,7 +41,8 @@ namespace GLframework
 			const std::vector<std::shared_ptr<PointLight>>& pointLights,
 			const std::shared_ptr<AmbientLight>& ambient,
 			const std::shared_ptr<Material>& globalMaterial,
-			const ShaderLibrary& shaderLibrary
+			const ShaderLibrary& shaderLibrary,
+			const EnvironmentRenderTargets* environmentTargets
 		) const;
 
 		void drawMesh(const std::shared_ptr<Mesh>& mesh) const;

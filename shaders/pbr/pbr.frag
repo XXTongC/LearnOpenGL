@@ -58,12 +58,19 @@ uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
 uniform sampler2D emissiveMap;
 uniform sampler2D normalMap;
+uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
+uniform sampler2D brdfLut;
 uniform int useAlbedoMap;
 uniform int useMetallicMap;
 uniform int useRoughnessMap;
 uniform int useAoMap;
 uniform int useEmissiveMap;
 uniform int useNormalMap;
+uniform int useIBL;
+uniform float iblDiffuseStrength;
+uniform float iblSpecularStrength;
+uniform float iblMaxReflectionLod;
 
 float distributionGGX(vec3 n, vec3 h, float roughness)
 {
@@ -93,6 +100,11 @@ float geometrySmith(vec3 n, vec3 v, vec3 l, float roughness)
 vec3 fresnelSchlick(float cosTheta, vec3 f0)
 {
 	return f0 + (1.0 - f0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 f0, float roughness)
+{
+	return f0 + (max(vec3(1.0 - roughness), f0) - f0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
 vec3 calculatePbrLight(vec3 radiance, vec3 l, vec3 n, vec3 v, vec3 albedo, float metallic, float roughness)
@@ -176,6 +188,25 @@ float calculateCsmShadow(vec3 positionWorldSpace, vec3 n, vec3 lightDir)
 	return shadow / 9.0;
 }
 
+vec3 calculateIblAmbient(vec3 n, vec3 v, vec3 albedo, float metallic, float roughness, float ao)
+{
+	vec3 f0 = mix(vec3(0.04), albedo, metallic);
+	float nDotV = max(dot(n, v), 0.0);
+	vec3 fresnel = fresnelSchlickRoughness(nDotV, f0, roughness);
+	vec3 kS = fresnel;
+	vec3 kD = (vec3(1.0) - kS) * (1.0 - metallic);
+
+	vec3 irradiance = texture(irradianceMap, n).rgb;
+	vec3 diffuse = irradiance * albedo;
+
+	vec3 reflection = reflect(-v, n);
+	vec3 prefilteredColor = textureLod(prefilterMap, reflection, roughness * iblMaxReflectionLod).rgb;
+	vec2 brdf = texture(brdfLut, vec2(nDotV, roughness)).rg;
+	vec3 specular = prefilteredColor * (fresnel * brdf.x + brdf.y);
+
+	return (kD * diffuse * iblDiffuseStrength + specular * iblSpecularStrength) * ao;
+}
+
 void main()
 {
 	vec3 n = normalize(normal);
@@ -231,7 +262,13 @@ void main()
 		emissive += texture(emissiveMap, uv).rgb * pbrEmissiveIntensity;
 	}
 
-	color += ambientColor * albedo * ao + emissive;
+	vec3 ambient = ambientColor * albedo * ao;
+	if (useIBL == 1)
+	{
+		ambient = calculateIblAmbient(n, v, albedo, metallic, roughness, ao);
+	}
+
+	color += ambient + emissive;
 	color = color / (color + vec3(1.0));
 	color = pow(color, vec3(1.0 / 2.2));
 	FragColor = vec4(color, opacity);

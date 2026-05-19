@@ -54,6 +54,8 @@ bool Renderer::precomputeEnvironment(
 	const std::shared_ptr<Mesh>& brdfQuad
 )
 {
+	mEnvironmentRenderTargets.setPrecomputedEnvironment(false);
+
 	if (!mIblPrecomputePass.captureEnvironmentMap(equirectangularMap, mEnvironmentRenderTargets, captureCube, mShaderLibrary))
 	{
 		return false;
@@ -69,7 +71,13 @@ bool Renderer::precomputeEnvironment(
 		return false;
 	}
 
-	return mIblPrecomputePass.computeBrdfLut(mEnvironmentRenderTargets, brdfQuad, mShaderLibrary);
+	if (!mIblPrecomputePass.computeBrdfLut(mEnvironmentRenderTargets, brdfQuad, mShaderLibrary))
+	{
+		return false;
+	}
+
+	mEnvironmentRenderTargets.setPrecomputedEnvironment(true);
+	return true;
 }
 
 void Renderer::render(
@@ -97,6 +105,7 @@ void Renderer::render(
 		pointLights,
 		ambient,
 		mGlobalMaterial,
-		mShaderLibrary
+		mShaderLibrary,
+		&mEnvironmentRenderTargets
 	);
 }

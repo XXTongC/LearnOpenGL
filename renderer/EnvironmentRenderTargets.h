@@ -32,6 +32,8 @@ namespace GLframework
 		bool isInitialized() const;
 
 		const EnvironmentRenderTargetSettings& getSettings() const;
+		bool hasPrecomputedEnvironment() const;
+		void setPrecomputedEnvironment(bool value);
 		unsigned int getCaptureFbo() const;
 		unsigned int getCaptureRbo() const;
 		unsigned int getMaxPrefilterMipLevels() const;
@@ -53,6 +55,7 @@ namespace GLframework
 		void releaseCaptureResources();
 
 		EnvironmentRenderTargetSettings mSettings{};
+		bool mHasPrecomputedEnvironment{ false };
 		unsigned int mCaptureFbo{ 0 };
 		unsigned int mCaptureRbo{ 0 };
 		std::shared_ptr<Texture> mEnvironmentMap{ nullptr };

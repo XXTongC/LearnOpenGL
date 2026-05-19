@@ -75,6 +75,7 @@ void EnvironmentRenderTargets::initialize(const EnvironmentRenderTargetSettings&
 	releaseCaptureResources();
 
 	mSettings = settings;
+	mHasPrecomputedEnvironment = false;
 	mEnvironmentMap = createHdrCubemap(mSettings.environmentSize, mSettings.environmentUnit, false);
 	mIrradianceMap = createHdrCubemap(mSettings.irradianceSize, mSettings.irradianceUnit, false);
 	mPrefilterMap = createHdrCubemap(mSettings.prefilterSize, mSettings.prefilterUnit, true);
@@ -104,6 +105,16 @@ bool EnvironmentRenderTargets::isInitialized() const
 const EnvironmentRenderTargetSettings& EnvironmentRenderTargets::getSettings() const
 {
 	return mSettings;
+}
+
+bool EnvironmentRenderTargets::hasPrecomputedEnvironment() const
+{
+	return mHasPrecomputedEnvironment;
+}
+
+void EnvironmentRenderTargets::setPrecomputedEnvironment(bool value)
+{
+	mHasPrecomputedEnvironment = value;
 }
 
 unsigned int EnvironmentRenderTargets::getCaptureFbo() const

@@ -14,6 +14,8 @@
 
 namespace GLframework
 {
+	class EnvironmentRenderTargets;
+
 	class MaterialBinder
 	{
 	public:
@@ -25,7 +27,8 @@ namespace GLframework
 			const std::shared_ptr<DirectionalLight>& dirLight,
 			const std::shared_ptr<SpotLight>& spotLight,
 			const std::vector<std::shared_ptr<PointLight>>& pointLights,
-			const std::shared_ptr<AmbientLight>& ambient
+			const std::shared_ptr<AmbientLight>& ambient,
+			const EnvironmentRenderTargets* environmentTargets
 		);
 	};
 }

@@ -21,6 +21,11 @@ void PBRMaterial::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
 	builder.addColor3("Emissive Color", &mEmissiveColor);
 	builder.addFloat("Emissive Intensity", &mEmissiveIntensity, 0.0f, 20.0f);
 
+	builder.addSection("PBR IBL");
+	builder.addBool("Use IBL", &mUseIBL);
+	builder.addFloat("IBL Diffuse Strength", &mIblDiffuseStrength, 0.0f, 5.0f);
+	builder.addFloat("IBL Specular Strength", &mIblSpecularStrength, 0.0f, 5.0f);
+
 	builder.addText("Albedo Map", [this]() { return GL_EDITOR::describeTexture(mAlbedoMap); });
 	builder.addText("Metallic Map", [this]() { return GL_EDITOR::describeTexture(mMetallicMap); });
 	builder.addText("Roughness Map", [this]() { return GL_EDITOR::describeTexture(mRoughnessMap); });

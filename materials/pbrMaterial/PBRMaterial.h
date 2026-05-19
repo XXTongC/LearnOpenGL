@@ -25,5 +25,8 @@ namespace GLframework
 		float mRoughness{ 0.5f };
 		float mAo{ 1.0f };
 		float mEmissiveIntensity{ 0.0f };
+		bool mUseIBL{ false };
+		float mIblDiffuseStrength{ 1.0f };
+		float mIblSpecularStrength{ 1.0f };
 	};
 }

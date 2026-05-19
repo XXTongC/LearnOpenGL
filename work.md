@@ -780,3 +780,15 @@ IBL 预计算已有 runtime 入口，但默认仍关闭，避免在没有 HDR �
 - `AppRuntimeContext` 持有 `EnvironmentProfile`，后续 UI 或配置系统可以修改同一份 profile 来重建 IBL 资源。
 
 这一步让 IBL 从“有 pass”推进到“有可配置触发点”。当前项目没有 `.hdr/.exr` 资源，所以默认不启用；后续只需要给 `EnvironmentProfile::hdrEquirectangularPath` 配置有效 HDR 文件并打开 `precomputeOnPrepare`，就可以生成 IBL 贴图。下一步应把 irradiance / prefilter / BRDF LUT 绑定进 `PBRMaterial` 的 shader path。
+
+### 2026-05-20 PBR 可选 IBL 绑定路径
+
+PBR shader path 已能消费 IBL 资源，但默认仍关闭：
+
+- `PBRMaterial` 新增 `Use IBL`、`IBL Diffuse Strength`、`IBL Specular Strength` inspector 参数。
+- `EnvironmentRenderTargets` 新增 `hasPrecomputedEnvironment` 状态，只有 `Renderer::precomputeEnvironment(...)` 完整成功后才标记为 ready。
+- `Renderer` 将 `EnvironmentRenderTargets` 传入 `SceneRenderPass`，再由 `MaterialBinder` 在绑定 PBR 材质时决定是否上传 IBL sampler。
+- `MaterialBinder` 只有在 PBR 材质启用 IBL 且 environment 已预计算完成时，才绑定 irradiance cubemap、prefilter cubemap 和 BRDF LUT。
+- `shaders/pbr/pbr.frag` 新增直接光 + 可选 IBL ambient 组合，默认 `useIBL=0` 时保持原 ambient 路径。
+
+这一步完成了 PBR 采样 IBL 资源所需的绑定链路。后续重点是提供 HDR environment 资源、打开 profile 预计算，并在 UI / 配置层控制 `EnvironmentProfile`，让用户不改代码就能切换环境。

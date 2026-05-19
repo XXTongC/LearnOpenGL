@@ -20,6 +20,7 @@
 #include "materials/whiteMaterial.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
 #include "mesh/instancedMesh.h"
+#include "renderer/EnvironmentRenderTargets.h"
 #include "renderer/ShadowResourceBinder.h"
 
 using namespace GLframework;
@@ -378,10 +379,15 @@ namespace
 		const std::shared_ptr<DirectionalLight>& dirLight,
 		const std::shared_ptr<SpotLight>& spotLight,
 		const std::vector<std::shared_ptr<PointLight>>& pointLights,
-		const std::shared_ptr<AmbientLight>& ambient
+		const std::shared_ptr<AmbientLight>& ambient,
+		const EnvironmentRenderTargets* environmentTargets
 	)
 	{
 		std::shared_ptr<PBRMaterial> pbrMat = std::static_pointer_cast<PBRMaterial>(material);
+		const bool useIBL = pbrMat->mUseIBL
+			&& environmentTargets != nullptr
+			&& environmentTargets->isInitialized()
+			&& environmentTargets->hasPrecomputedEnvironment();
 
 		setCommonMaterialUniforms(shader, material, camera);
 		setMVPMatrices(shader, mesh, camera);
@@ -395,6 +401,9 @@ namespace
 		shader->setFloat("pbrAo", pbrMat->mAo);
 		shader->setVector3("pbrEmissiveColor", pbrMat->mEmissiveColor);
 		shader->setFloat("pbrEmissiveIntensity", pbrMat->mEmissiveIntensity);
+		shader->setInt("useIBL", useIBL ? 1 : 0);
+		shader->setFloat("iblDiffuseStrength", pbrMat->mIblDiffuseStrength);
+		shader->setFloat("iblSpecularStrength", pbrMat->mIblSpecularStrength);
 
 		bindOptionalTexture(shader, "albedoMap", "useAlbedoMap", pbrMat->mAlbedoMap);
 		bindOptionalTexture(shader, "metallicMap", "useMetallicMap", pbrMat->mMetallicMap);
@@ -402,6 +411,17 @@ namespace
 		bindOptionalTexture(shader, "aoMap", "useAoMap", pbrMat->mAoMap);
 		bindOptionalTexture(shader, "normalMap", "useNormalMap", pbrMat->mNormalMap);
 		bindOptionalTexture(shader, "emissiveMap", "useEmissiveMap", pbrMat->mEmissiveMap);
+
+		if (!useIBL)
+		{
+			return;
+		}
+
+		const unsigned int maxMipLevels = environmentTargets->getMaxPrefilterMipLevels();
+		shader->setFloat("iblMaxReflectionLod", maxMipLevels > 0 ? static_cast<float>(maxMipLevels - 1) : 0.0f);
+		bindTexture(shader, "irradianceMap", environmentTargets->getIrradianceMap());
+		bindTexture(shader, "prefilterMap", environmentTargets->getPrefilterMap());
+		bindTexture(shader, "brdfLut", environmentTargets->getBrdfLut());
 	}
 
 	void bindPhongShadowMaterial(
@@ -482,7 +502,8 @@ bool MaterialBinder::bind(
 	const std::shared_ptr<DirectionalLight>& dirLight,
 	const std::shared_ptr<SpotLight>& spotLight,
 	const std::vector<std::shared_ptr<PointLight>>& pointLights,
-	const std::shared_ptr<AmbientLight>& ambient
+	const std::shared_ptr<AmbientLight>& ambient,
+	const EnvironmentRenderTargets* environmentTargets
 )
 {
 	switch (material->getMaterialType())
@@ -524,7 +545,7 @@ bool MaterialBinder::bind(
 		bindPhongParallaxMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
 		return true;
 	case MaterialType::PBRMaterial:
-		bindPBRMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		bindPBRMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient, environmentTargets);
 		return true;
 	case MaterialType::PhongShadowMaterial:
 		bindPhongShadowMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);

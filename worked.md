@@ -745,6 +745,18 @@
    - 针对 `EnvironmentProfile` 可选预计算入口后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning；`EnvironmentProfile.obj` 已参与链接。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+125. 完成第六十三轮 PBR 可选 IBL 绑定路径：
+   - 更新 [materials/pbrMaterial/PBRMaterial.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.h) 与 [materials/pbrMaterial/PBRMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.cpp)，新增 `Use IBL`、`IBL Diffuse Strength`、`IBL Specular Strength` 材质参数并暴露到 inspector。
+   - 更新 [renderer/EnvironmentRenderTargets.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentRenderTargets.h) 与 [renderer/EnvironmentRenderTargets.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentRenderTargets.cpp)，增加 `hasPrecomputedEnvironment` 状态，防止 PBR 采样未烘焙完成的 IBL 贴图。
+   - 更新 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，在 `precomputeEnvironment(...)` 完整成功后标记 environment ready，并将 `EnvironmentRenderTargets` 传入 scene pass。
+   - 更新 [renderer/SceneRenderPass.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\SceneRenderPass.h) 与 [renderer/SceneRenderPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\SceneRenderPass.cpp)，把 environment resources 继续传给 `MaterialBinder`。
+   - 更新 [renderer/MaterialBinder.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.h) 与 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，在 PBR 材质启用 IBL 且 environment ready 时绑定 irradiance cubemap、prefilter cubemap 和 BRDF LUT。
+   - 更新 [shaders/pbr/pbr.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr.frag)，新增 `useIBL`、IBL strength、irradiance / prefilter / BRDF LUT sampler 和可选 IBL ambient 计算。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PBR IBL sampler 绑定链路。
+126. 完成第五十三次构建与运行时 smoke 验证：
+   - 针对 PBR 可选 IBL 绑定路径后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -772,5 +784,6 @@
 - 当前后处理参数已收敛到 `PostProcessSettings`，exposure、tone mapping mode、Bloom 开关、threshold、intensity、iterations 都能通过 screen material inspector 修改。
 - 当前 IBL / environment 资源边界已建立，`EnvironmentRenderTargets` 管理 environment / irradiance / prefilter cubemap、BRDF LUT 和 capture FBO。
 - 当前 IBL 预计算流程已拆到 `IBLPrecomputePass`，并可通过 `EnvironmentProfile` 在 scene setup 阶段加载 HDR environment、创建 capture cube / BRDF quad 并触发预计算。
-- 当前剩余明显问题：`PostProcessSettings` 仍挂在 `ScreenMaterial` 上，尚未提升到 runtime / renderer 级别；`EnvironmentProfile` 还没有 UI / 配置文件入口；PBR shader 尚未采样 irradiance / prefilter / BRDF LUT；`FrameRenderTargets` 还没有 resize/recreate。
-- 下一步建议目标：把 `EnvironmentRenderTargets` 中的 irradiance / prefilter / BRDF LUT 通过 `MaterialBinder` 传给 PBR shader，并让 PBR shader 支持直接光 + 可选 IBL 的组合。
+- 当前 PBR shader 已支持直接光 + 可选 IBL 组合，`MaterialBinder` 会在 PBR 材质启用 IBL 且 environment ready 时绑定 irradiance / prefilter / BRDF LUT。
+- 当前剩余明显问题：`PostProcessSettings` 仍挂在 `ScreenMaterial` 上，尚未提升到 runtime / renderer 级别；`EnvironmentProfile` 还没有 UI / 配置文件入口；工程内还没有默认 HDR environment 资源；`FrameRenderTargets` 还没有 resize/recreate。
+- 下一步建议目标：为 `EnvironmentProfile` 增加 UI / 配置入口，或者引入一份默认 HDR environment 资源用于实际验证 IBL 预计算和 PBR IBL 效果。
