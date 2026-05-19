@@ -4,6 +4,8 @@
 
 #include "materials/pbrMaterial/PBRMaterial.h"
 #include "materials/phongMaterial.h"
+#include "materials/phongNormalMaterial/phongNormalMaterial.h"
+#include "materials/phongParallaxMaterial/phongParallaxMaterial.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
 
 using namespace GLframework;
@@ -67,13 +69,16 @@ namespace
 		shader->setVector3("ambientColor", ambient->getColor());
 	}
 
+	void bindTexture(const std::shared_ptr<Shader>& shader, const char* samplerName, const std::shared_ptr<Texture>& texture)
+	{
+		shader->setInt(samplerName, texture->getUnit());
+		texture->Bind();
+	}
+
 	void setPhongTextures(const std::shared_ptr<Shader>& shader, const std::shared_ptr<Texture>& diffuse, const std::shared_ptr<Texture>& specularMask)
 	{
-		shader->setInt("samplerGrass", diffuse->getUnit());
-		diffuse->Bind();
-
-		shader->setInt("MaskSampler", 1);
-		specularMask->Bind();
+		bindTexture(shader, "samplerGrass", diffuse);
+		bindTexture(shader, "MaskSampler", specularMask);
 	}
 
 	void bindOptionalTexture(
@@ -111,6 +116,53 @@ namespace
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
 		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		shader->setFloat("shiness", phongMat->mShiness);
+	}
+
+	void bindPhongNormalMaterial(
+		const std::shared_ptr<Shader>& shader,
+		const std::shared_ptr<Material>& material,
+		const std::shared_ptr<Mesh>& mesh,
+		Camera* camera,
+		const std::shared_ptr<DirectionalLight>& dirLight,
+		const std::shared_ptr<SpotLight>& spotLight,
+		const std::vector<std::shared_ptr<PointLight>>& pointLights,
+		const std::shared_ptr<AmbientLight>& ambient
+	)
+	{
+		std::shared_ptr<PhongNormalMaterial> phongMat = std::static_pointer_cast<PhongNormalMaterial>(material);
+
+		setCommonMaterialUniforms(shader, material, camera);
+		setPhongTextures(shader, phongMat->mDiffuse, phongMat->mSpecularMask);
+		bindTexture(shader, "NormalMapSampler", phongMat->mNormal);
+		setMVPMatrices(shader, mesh, camera);
+		setNormalMatrix(shader, mesh);
+		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		shader->setFloat("shiness", phongMat->mShiness);
+	}
+
+	void bindPhongParallaxMaterial(
+		const std::shared_ptr<Shader>& shader,
+		const std::shared_ptr<Material>& material,
+		const std::shared_ptr<Mesh>& mesh,
+		Camera* camera,
+		const std::shared_ptr<DirectionalLight>& dirLight,
+		const std::shared_ptr<SpotLight>& spotLight,
+		const std::vector<std::shared_ptr<PointLight>>& pointLights,
+		const std::shared_ptr<AmbientLight>& ambient
+	)
+	{
+		std::shared_ptr<PhongParallaxMaterial> phongMat = std::static_pointer_cast<PhongParallaxMaterial>(material);
+
+		setCommonMaterialUniforms(shader, material, camera);
+		setPhongTextures(shader, phongMat->mDiffuse, phongMat->mSpecularMask);
+		bindTexture(shader, "NormalMapSampler", phongMat->mNormal);
+		bindTexture(shader, "ParallaxMapSampler", phongMat->mParallaxMap);
+		setMVPMatrices(shader, mesh, camera);
+		setNormalMatrix(shader, mesh);
+		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		shader->setFloat("heightScale", phongMat->mHeightScale);
+		shader->setInt("layerNum", phongMat->mLayerNum);
 		shader->setFloat("shiness", phongMat->mShiness);
 	}
 
@@ -162,6 +214,12 @@ bool MaterialBinder::bind(
 	{
 	case MaterialType::PhongMaterial:
 		bindPhongMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		return true;
+	case MaterialType::PhongNormalMaterial:
+		bindPhongNormalMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		return true;
+	case MaterialType::PhongParallaxMaterial:
+		bindPhongParallaxMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
 		return true;
 	case MaterialType::PBRMaterial:
 		bindPBRMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);

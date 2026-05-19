@@ -445,3 +445,16 @@
 1. 把 `PhongNormalMaterial` 与 `PhongParallaxMaterial` 迁入 `MaterialBinder`，同时为 tangent/TBN 管线做准备。
 2. 再迁移 `PhongShadowMaterial` 与 point/csm shadow 材质，拆分出 shadow-specific binder 或 `ShadowRenderer`。
 3. 最后迁移 Env / Instance / Grass 等特殊材质，避免一开始被历史特殊分支拖慢主路径重构。
+
+### 2026-05-20 TBN 材质绑定迁移
+
+`PhongNormalMaterial` 与 `PhongParallaxMaterial` 已迁入 `MaterialBinder`：
+
+- normal map 和 parallax map 的 sampler 绑定现在集中在 `MaterialBinder`，Renderer 不再直接认识这两类材质。
+- 这一步把 TBN 相关材质的绑定模式和 PBR 的绑定模式放到同一个模块里，后续可以直接复用 normal/parallax 的经验给 `PBRMaterial` 接入 normal map。
+- 当前仍未改变 shader 的 TBN 计算方式；现有 normal/parallax shader 仍使用 `aTangent`、`aNormal` 和 `TBN` 输出。下一步如果要让 PBR normal map 正式生效，应先统一 PBR vertex shader 的 tangent 输入和 TBN 输出。
+
+下一步建议：
+
+1. 给 `PBRMaterial` 接入 `normalMap` 的 shader 分支，要求 `pbr.vert` 与 normal/parallax shader 一样接收 `aTangent` 并输出 `TBN`。
+2. 再将 `PhongShadowMaterial` / `PhongPointShadowMaterial` / `PhongCSMShadowMaterial` 迁出 Renderer，或者直接规划 `ShadowRenderer`，避免 shadow 特例继续挤在普通材质分支里。

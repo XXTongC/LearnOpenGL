@@ -452,6 +452,14 @@
    - 在整理 `Renderer` 中 `MaterialBinder::bind(...)` 分支缩进后再次执行 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`12` warning。
    - warning 来源仍为 Renderer 旧代码中的 include packing 与窄化转换，未出现新的编译错误。
+67. 完成第三十四轮 TBN 相关材质绑定迁移：
+   - 将 `PhongNormalMaterial` 与 `PhongParallaxMaterial` 的 uniform 上传、贴图绑定、TBN 相关 sampler 绑定从 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp) 迁入 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)。
+   - [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp) 不再直接包含 `phongNormalMaterial.h` 与 `phongParallaxMaterial.h`，Renderer 对具体 normal/parallax 材质的直接依赖减少。
+   - `MaterialBinder` 新增统一的 `bindTexture(...)` helper，普通 Phong、PhongNormal、PhongParallax 统一按 `Texture::getUnit()` 设置 sampler 并绑定纹理，为后续 PBR normal map 贴图槽管理做准备。
+68. 完成第二十四次构建验证：
+   - 针对 TBN 相关材质绑定迁移后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`11` warning。
+   - warning 仍来自 Renderer 旧代码中的 include packing 与窄化转换；由于 normal/parallax 分支迁出，Renderer 旧 warning 数量从上一轮 `12` 个降到 `11` 个。
 
 ### 当前状态
 
