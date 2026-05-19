@@ -23,6 +23,6 @@ namespace GLframework
 		void end();		
 	private:
 		GLuint mProgram{ 0 };
-		void checkShaderErrors(GLuint target, const std::string& type);
+		void checkShaderErrors(GLuint target, const std::string& type, const std::string& context);
 	};
 }

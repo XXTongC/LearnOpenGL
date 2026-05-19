@@ -492,6 +492,16 @@
    - 针对默认场景 PBR preview 接入后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 当前验证仍是 C++ / VS 工程层面；PBR shader 编译和 preview 视觉效果需要后续启动程序确认。
+77. 完成第三十九轮 Shader 运行时诊断补强：
+   - 更新 [framework/shader.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\framework\shader.cpp)，为 shader 文件加载失败增加明确路径输出，避免缺失文件静默进入空源码编译。
+   - 为 shader `#include` 解析增加引号格式检查，格式错误时输出当前 shader 文件路径。
+   - 将 vertex compile、fragment compile、program link 的错误输出改为带阶段和路径上下文，后续验证 PBR / shadow / IBL shader 时更容易定位失败来源。
+   - 更新 [framework/shader.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\framework\shader.h)，同步调整 `checkShaderErrors(...)` 内部接口。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 shader 诊断补强对后续 PBR 路径验证的意义。
+78. 完成第二十九次构建验证：
+   - 使用 Visual Studio 2022 Community 的 MSBuild 完整执行 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`22` warning。
+   - warning 来源为既有代码：Assimp loader 的有符号/无符号比较、Bloom 的 float 到 int 转换、Renderer 旧代码中的 include packing 与窄化转换；本轮 `framework/shader.*` 改动未引入新的编译错误。
 
 ### 当前状态
 
@@ -504,5 +514,5 @@
 - 第五轮 `prepare()` 分阶段拆分：已完成。
 - 第六轮场景对象构建拆分：已完成。
 - 当前工程可成功构建。
-- 当前剩余明显问题：`main.cpp` 中仍保留大量历史实验注释区块，阅读噪音较大。
-- 下一步建议目标：继续清理 `main.cpp` 的结构噪音，优先把实验性代码标记成单独的 legacy 区段，或者继续抽出 UI/调试面板逻辑。
+- 当前剩余明显问题：`Renderer` 仍承担 shadow pass、普通 draw pass 和部分旧材质分支，职责仍偏重。
+- 下一步建议目标：拆出 `ShadowRenderer`，把 shadow map pass 从 `Renderer` 主流程迁出，为 PBR direct lighting、shadow 接入和后续 IBL 留出清晰边界。

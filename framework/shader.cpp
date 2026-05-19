@@ -7,21 +7,31 @@
 std::string GLframework::Shader::loadShader(const std::string& filePath)
 {
 	std::ifstream file(filePath);
+	if (!file.is_open())
+	{
+		std::cout << "Shader Load Error: unable to open file: " << filePath << std::endl;
+		return {};
+	}
+
 	std::stringstream shaderStream;
 	std::string line;
 	while (std::getline(file,line))
 	{
-		//	1 find if there is a "#include"
+		// Resolve local shader includes relative to the current shader file.
 		if(line.find("#include")!=std::string::npos)
 		{
-			//find the path of include
 			auto start = line.find("\"");
 			auto end = line.find_last_of("\"");
+			if (start == std::string::npos || end == std::string::npos || end <= start)
+			{
+				std::cout << "Shader Include Error: invalid include syntax in file: " << filePath << std::endl;
+				continue;
+			}
+
 			std::string includeFile = line.substr(start+1, end - start-1);
 
-			//find current file path
 			auto lastSlashPosition = filePath.find_last_of("/\\");
-			auto folder = filePath.substr(0, lastSlashPosition + 1);
+			auto folder = lastSlashPosition == std::string::npos ? std::string{} : filePath.substr(0, lastSlashPosition + 1);
 			auto totalPath = folder + includeFile;
 
 			shaderStream<<loadShader(totalPath);
@@ -70,7 +80,6 @@ void GLframework::Shader::setMat3(const std::string& name, const glm::mat3 value
 void GLframework::Shader::setVector3(const std::string& name, const float* values)
 {
 	GLuint location = GL_CALL(glGetUniformLocation(mProgram, name.c_str()));
-	//第二个参数表示有几个vec3
 	GL_CALL(glUniform3fv(location, 1,values));
 }
 
@@ -104,7 +113,6 @@ GLuint GLframework::Shader::getProgram() const
 
 GLframework::Shader::Shader(const char* vertexPath, const char* fragmentPath)
 {
-	//声明装入shader代码字符串的两个string
 	std::string vertexCode;
 	std::string fragmentCode;
 
@@ -121,41 +129,31 @@ GLframework::Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	const char* vertexShaderSource = vertexCode.c_str();
 	const char* fragmentShaderSource = fragmentCode.c_str();
 
-	//创建和初始化两个shader
 	GLuint vertexShader{ 0 }, fragmentShader{ 0 };
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	
 
-	//将shader代码（glgf代码）注入shader中
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 
 	
-	//执行shader代码编译
 	glCompileShader(vertexShader);
-	checkShaderErrors(vertexShader, "COMPILE");
-	//检查vertex编译结果
+	checkShaderErrors(vertexShader, "VERTEX_COMPILE", vertexPath);
 	glCompileShader(fragmentShader);
-	checkShaderErrors(fragmentShader, "COMPILE");
+	checkShaderErrors(fragmentShader, "FRAGMENT_COMPILE", fragmentPath);
 
 
-	//创建容器
 	//GLuint program{ 0 };
 	mProgram = glCreateProgram();
-	//将vs与fs放置于容器中
 	glAttachShader(mProgram, vertexShader);
 	glAttachShader(mProgram, fragmentShader);
 
-	//执行容器的链接，最终使得shader程序可运行
 	glLinkProgram(mProgram);
-	//检查链接结果
-	checkShaderErrors(mProgram, "LINK");
+	checkShaderErrors(mProgram, "LINK", std::string(vertexPath) + " + " + fragmentPath);
 
-	//此时vertexShader和fragmentShader已经失去作用，需要销毁
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-	//启用混合模式
 	GL_CALL(glEnable(GL_BLEND));
 }
 
@@ -176,17 +174,17 @@ void GLframework::Shader::end()
 }
 
 
-void GLframework::Shader::checkShaderErrors(GLuint target, const std::string& type)
+void GLframework::Shader::checkShaderErrors(GLuint target, const std::string& type, const std::string& context)
 {
 	int success{ 0 };
-	char infoLog[1024];
-	if(type == "COMPILE")
+	char infoLog[4096]{};
+	if(type == "VERTEX_COMPILE" || type == "FRAGMENT_COMPILE")
 	{
 		glGetShaderiv(target, GL_COMPILE_STATUS, &success);
 		if (!success)
 		{
-			glGetShaderInfoLog(target, 1024, NULL, infoLog);
-			std::cout << "Shader Compile Error("<<type<< "): " << infoLog << std::endl;
+			glGetShaderInfoLog(target, 4096, NULL, infoLog);
+			std::cout << "Shader Compile Error[" << type << "] in " << context << ": " << infoLog << std::endl;
 		}
 	}
 	else if(type=="LINK")
@@ -194,8 +192,8 @@ void GLframework::Shader::checkShaderErrors(GLuint target, const std::string& ty
 		glGetProgramiv(target, GL_LINK_STATUS, &success);
 		if (!success)
 		{
-			glGetProgramInfoLog(target, 1024, NULL, infoLog);
-			std::cout << "Shader Link Error(" << type << "): " << infoLog << std::endl;
+			glGetProgramInfoLog(target, 4096, NULL, infoLog);
+			std::cout << "Shader Link Error in " << context << ": " << infoLog << std::endl;
 		}
 	}
 	else

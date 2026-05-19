@@ -509,3 +509,13 @@ Geometry 的 attribute 绑定已进一步收敛：
 1. PBR shader 在运行时是否编译 / link 成功。
 2. `PBR Preview Sphere` 是否在默认灯光下可见。
 3. normal map 方向是否符合当前 TBN 约定。
+
+### 2026-05-20 Shader 运行时诊断补强
+
+在继续拆 `ShadowRenderer` 前，先补强 shader 运行时诊断：
+
+- `Shader::loadShader(...)` 现在会在 shader 文件无法打开时输出具体路径，避免缺失文件静默变成空 shader source。
+- `#include` 解析会检查引号格式，格式错误时输出当前 shader 文件路径。
+- vertex compile、fragment compile 与 program link 的错误输出现在带具体阶段和 shader 路径组合，方便后续验证 PBR shader、IBL shader、shadow shader 时快速定位问题。
+
+这一步不改变渲染行为，但能降低后续 PBR / shadow / IBL 接入时的调试成本。下一步建议继续拆 `ShadowRenderer`，把 shadow pass 从 `Renderer` 主流程迁出去。
