@@ -484,6 +484,14 @@
 74. 完成第二十七次构建验证：
    - 针对 Geometry attribute guard 与 PBR shader 去 vertex color 依赖后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
+75. 完成第三十八轮默认场景 PBR preview 接入：
+   - 更新 [tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，新增 `preparePBRPreview(...)`。
+   - 默认 world scene 现在会创建一个 `PBR Preview Sphere`，使用 `PBRMaterial`、PBR shader、程序生成 sphere geometry 和 `Texture/normal/normal_map.png` normal map。
+   - 这一步让默认场景实际覆盖 PBR material、PBR shader、TBN geometry attribute 与 `MaterialBinder` 的 PBR normal map 绑定路径，后续启动程序即可做运行时 shader/link/visual 验证。
+76. 完成第二十八次构建验证：
+   - 针对默认场景 PBR preview 接入后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 当前验证仍是 C++ / VS 工程层面；PBR shader 编译和 preview 视觉效果需要后续启动程序确认。
 
 ### 当前状态
 

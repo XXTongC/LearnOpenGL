@@ -2,6 +2,7 @@
 
 #include "../../light/shadow/pointLightShadow/pointLightShadow.h"
 #include "../../materials/cubeSphereMaterial.h"
+#include "../../materials/pbrMaterial/PBRMaterial.h"
 #include "../../materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
 #include "../../tools/Logger/LogManager.h"
 
@@ -88,6 +89,27 @@ namespace
 		context.sceneOffScreen->addChild(boxMeshA);
 	}
 
+	void preparePBRPreview(GL_SCENE::SetupContext& context)
+	{
+		auto pbrMat = std::make_shared<GLframework::PBRMaterial>();
+		pbrMat->mAlbedo = { 0.9f, 0.42f, 0.18f };
+		pbrMat->mMetallic = 0.2f;
+		pbrMat->mRoughness = 0.35f;
+		pbrMat->mAo = 1.0f;
+		pbrMat->mNormalMap = std::make_shared<GLframework::Texture>("Texture/normal/normal_map.png", 4);
+
+		auto pbrGeo = GLframework::Geometry::createSphere(
+			context.renderer->getShader(pbrMat->getMaterialType()),
+			0.75f,
+			48,
+			24
+		);
+		auto pbrMesh = std::make_shared<GLframework::Mesh>(pbrGeo, pbrMat);
+		pbrMesh->setName("PBR Preview Sphere");
+		pbrMesh->setPosition({ 2.2f, -3.9f, 2.0f });
+		context.sceneOffScreen->addChild(pbrMesh);
+	}
+
 	void prepareScreenPass(GL_SCENE::SetupContext& context)
 	{
 		context.screenMaterial = std::make_shared<GLframework::ScreenMaterial>();
@@ -148,6 +170,7 @@ void GL_SCENE::prepareDefaultScene(SetupContext& context)
 	prepareRenderResources(context);
 	prepareSkyBox(context);
 	prepareRoomScene(context);
+	preparePBRPreview(context);
 	prepareScreenPass(context);
 	prepareLights(context);
 }

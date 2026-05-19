@@ -495,3 +495,17 @@ Geometry 的 attribute 绑定已进一步收敛：
 
 1. 做一次运行时 PBR sample：创建一个 `PBRMaterial` mesh，确认 shader 编译、attribute 绑定、direct lighting 和 normal map 路径能正常跑通。
 2. 如果运行时验证通过，再开始拆 `ShadowRenderer`，把 shadow pass 从 Renderer 主流程中迁出。
+
+### 2026-05-20 默认场景 PBR preview
+
+默认场景已接入一个低成本 PBR preview：
+
+- `SceneSetup` 新增 `preparePBRPreview(...)`，在 world scene 中创建 `PBR Preview Sphere`。
+- preview sphere 使用 `PBRMaterial`、PBR shader、程序生成 sphere geometry，以及 `Texture/normal/normal_map.png` 作为 normal map。
+- 这让默认运行路径覆盖 PBR shader、MaterialBinder、TBN attribute 和 normal map 绑定，不再只是存在未使用的 PBR 代码。
+
+后续仍需要真实运行程序确认：
+
+1. PBR shader 在运行时是否编译 / link 成功。
+2. `PBR Preview Sphere` 是否在默认灯光下可见。
+3. normal map 方向是否符合当前 TBN 约定。
