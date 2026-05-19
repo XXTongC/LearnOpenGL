@@ -529,3 +529,14 @@ Shadow map pass 已从 `Renderer` 主实现中拆出：
 - `ShadowRenderer` 内部保留原有状态保存 / viewport 恢复 / instanced mesh 绘制逻辑，并对空 point light 列表增加早退，避免不必要访问 shared depth texture。
 
 这一步的目标不是重写阴影算法，而是建立模块边界。后续可以继续把 shadow 材质 uniform 绑定迁到独立 binder，让 PBR 材质只消费统一的 shadow resources，而不是直接依赖 Renderer 旧分支。
+
+### 2026-05-20 Shadow 材质绑定迁移
+
+Shadow 相关材质的 uniform 上传已从 `Renderer::renderObject()` 迁入 `MaterialBinder`：
+
+- `PhongShadowMaterial` 现在走 `MaterialBinder`，复用通用矩阵、法线矩阵、灯光和 Phong 贴图绑定逻辑。
+- `PhongCSMShadowMaterial` 的 CSM layer、shadow map array、light matrices、PCSS 参数绑定集中到 `MaterialBinder`。
+- `PhongPointShadowMaterial` 的 point shadow texture array、point light far/near、directional fallback matrix 和 debug uniform 也集中到 `MaterialBinder`。
+- `Renderer` 删除了对应旧 case、旧 helper 和具体 shadow material include，职责进一步收敛为选择 shader、应用 render state、调用 binder 和 draw mesh。
+
+这一步让 shadow resource 的消费路径开始从 Renderer 主流程里剥离。后续 PBR 接 shadow 时，应优先复用这一层 shadow 资源绑定思路，而不是在 PBR 分支中重新硬编码 shadow map / light matrix / bias 参数。

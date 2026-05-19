@@ -47,35 +47,6 @@ private:
 		);
 		void projectObject(std::shared_ptr<Object> obj);
 private:
-		// set MVP
-		void setMVPMatrices(std::shared_ptr<Shader> shader, std::shared_ptr<Mesh> mesh, Camera* camera);
-		// set Normal
-		void setNormalMatrix(std::shared_ptr<Shader> shader, std::shared_ptr<Mesh> mesh);
-		// set light attributions
-		void setLightingUniforms(
-			std::shared_ptr<Shader> shader,
-			std::shared_ptr<DirectionalLight> dirLight,
-			std::shared_ptr<SpotLight> spotLight,
-			const std::vector<std::shared_ptr<PointLight>>& pointLights,
-			std::shared_ptr<AmbientLight> ambient
-		);
-		// set material
-		void setCommonMaterialUniforms(
-			std::shared_ptr<Shader> shader,
-			std::shared_ptr<Material> material,
-			Camera* camera
-		);
-		// set texture of Phong material
-		void setPhongTextures(
-			std::shared_ptr<Shader> shader,
-			std::shared_ptr<Texture> diffuse,
-			std::shared_ptr<Texture> specularMask
-		);
-		// set pointLightShadow
-		void setPointLightShadowUniforms(
-			std::shared_ptr<Shader> shader,
-			const std::vector<std::shared_ptr<PointLight>>& pointLights
-		);
 		void drawMesh(std::shared_ptr<Mesh> mesh);
 
 		ShaderLibrary mShaderLibrary{};

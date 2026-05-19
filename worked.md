@@ -512,6 +512,17 @@
    - 首次构建发现 `pointLights.empty()` 早退误放入方向光 shadow 函数，已移动到 point light shadow 函数入口。
    - 再次执行 `Debug|x64 Build`，`ShadowRenderer.obj` 成功编译并参与链接。
    - 构建结果：成功，`0` error，`0` warning。
+81. 完成第四十一轮 shadow 材质绑定迁移：
+   - 更新 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，新增 `PhongShadowMaterial`、`PhongCSMShadowMaterial`、`PhongPointShadowMaterial` 的绑定分支。
+   - `PhongCSMShadowMaterial` 的 CSM layer、shadow map array、light matrices、PCSS 参数绑定已迁入 `MaterialBinder`。
+   - `PhongPointShadowMaterial` 的 point shadow texture array、point light far/near、directional fallback matrix 和 debug uniform 已迁入 `MaterialBinder`。
+   - 更新 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，删除 shadow 材质旧 case、旧 uniform helper 和不再需要的具体 shadow material include。
+   - 更新 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h)，删除已迁移的 uniform helper 声明。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 shadow 材质绑定迁移对后续 PBR shadow 接入的意义。
+82. 完成第三十一次构建验证：
+   - 针对 shadow 材质绑定迁移后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`16` warning。
+   - warning 来源仍为既有代码：Assimp loader 的有符号/无符号比较、Renderer 旧分支中的 include packing 和 `double -> float` 窄化转换；本轮迁移没有引入编译错误。
 
 ### 当前状态
 
@@ -524,5 +535,5 @@
 - 第五轮 `prepare()` 分阶段拆分：已完成。
 - 第六轮场景对象构建拆分：已完成。
 - 当前工程可成功构建。
-- 当前剩余明显问题：shadow 材质 uniform 绑定仍保留在 `Renderer::renderObject()` 的旧材质分支中。
-- 下一步建议目标：继续迁移 `PhongShadowMaterial` / `PhongPointShadowMaterial` / `PhongCSMShadowMaterial` 到独立 binder 或 `MaterialBinder` 扩展，让 PBR 后续复用统一 shadow resource 入口。
+- 当前剩余明显问题：`Renderer::renderObject()` 仍保留 Env / Instance / Opacity / Cube / Screen 等旧材质分支，主渲染分支尚未完全清空。
+- 下一步建议目标：继续迁移 Env / Instance / Opacity 等非 shadow 旧材质，或者开始抽象 PBR 可复用的 `ShadowResources` 输入，避免 PBR shader 接 shadow 时重新硬编码资源绑定。
