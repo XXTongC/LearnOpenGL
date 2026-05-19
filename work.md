@@ -519,3 +519,13 @@ Geometry 的 attribute 绑定已进一步收敛：
 - vertex compile、fragment compile 与 program link 的错误输出现在带具体阶段和 shader 路径组合，方便后续验证 PBR shader、IBL shader、shadow shader 时快速定位问题。
 
 这一步不改变渲染行为，但能降低后续 PBR / shadow / IBL 接入时的调试成本。下一步建议继续拆 `ShadowRenderer`，把 shadow pass 从 `Renderer` 主流程迁出去。
+
+### 2026-05-20 ShadowRenderer 初步拆分
+
+Shadow map pass 已从 `Renderer` 主实现中拆出：
+
+- 新增 `ShadowRenderer`，集中负责 CSM 方向光 shadow map 和 point light shadow map 的绘制。
+- `Renderer::render(...)` 现在只把相机、不透明队列、方向光、点光源和 `ShaderLibrary` 委派给 `ShadowRenderer`，不再直接实现 shadow pass 细节。
+- `ShadowRenderer` 内部保留原有状态保存 / viewport 恢复 / instanced mesh 绘制逻辑，并对空 point light 列表增加早退，避免不必要访问 shared depth texture。
+
+这一步的目标不是重写阴影算法，而是建立模块边界。后续可以继续把 shadow 材质 uniform 绑定迁到独立 binder，让 PBR 材质只消费统一的 shadow resources，而不是直接依赖 Renderer 旧分支。

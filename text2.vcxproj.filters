@@ -348,6 +348,9 @@
     <ClCompile Include="renderer\renderer.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\ShadowRenderer.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\MaterialBinder.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -543,6 +546,9 @@
       <Filter>include\GLframework\light</Filter>
     </ClInclude>
     <ClInclude Include="renderer\renderer.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\ShadowRenderer.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\MaterialBinder.h">

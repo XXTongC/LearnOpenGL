@@ -502,6 +502,16 @@
    - 使用 Visual Studio 2022 Community 的 MSBuild 完整执行 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`22` warning。
    - warning 来源为既有代码：Assimp loader 的有符号/无符号比较、Bloom 的 float 到 int 转换、Renderer 旧代码中的 include packing 与窄化转换；本轮 `framework/shader.*` 改动未引入新的编译错误。
+79. 完成第四十轮 `ShadowRenderer` 初步拆分：
+   - 新增 [renderer/ShadowRenderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShadowRenderer.h) 与 [renderer/ShadowRenderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShadowRenderer.cpp)，承接 CSM 方向光 shadow map 与 point light shadow map 绘制。
+   - 更新 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，移除 `renderShadowMap(...)`、`renderDirShadowMap(...)`、`renderPointShadowMap(...)` 的具体实现，主渲染流程改为委派 `mShadowRenderer.render(...)`。
+   - 更新 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h)，移除 shadow pass 私有函数声明并新增 `ShadowRenderer` 成员。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `ShadowRenderer` 纳入 VS 工程和 Renderer 分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 ShadowRenderer 拆分目的和后续 shadow material binder 方向。
+80. 完成第三十次构建验证：
+   - 首次构建发现 `pointLights.empty()` 早退误放入方向光 shadow 函数，已移动到 point light shadow 函数入口。
+   - 再次执行 `Debug|x64 Build`，`ShadowRenderer.obj` 成功编译并参与链接。
+   - 构建结果：成功，`0` error，`0` warning。
 
 ### 当前状态
 
@@ -514,5 +524,5 @@
 - 第五轮 `prepare()` 分阶段拆分：已完成。
 - 第六轮场景对象构建拆分：已完成。
 - 当前工程可成功构建。
-- 当前剩余明显问题：`Renderer` 仍承担 shadow pass、普通 draw pass 和部分旧材质分支，职责仍偏重。
-- 下一步建议目标：拆出 `ShadowRenderer`，把 shadow map pass 从 `Renderer` 主流程迁出，为 PBR direct lighting、shadow 接入和后续 IBL 留出清晰边界。
+- 当前剩余明显问题：shadow 材质 uniform 绑定仍保留在 `Renderer::renderObject()` 的旧材质分支中。
+- 下一步建议目标：继续迁移 `PhongShadowMaterial` / `PhongPointShadowMaterial` / `PhongCSMShadowMaterial` 到独立 binder 或 `MaterialBinder` 扩展，让 PBR 后续复用统一 shadow resource 入口。

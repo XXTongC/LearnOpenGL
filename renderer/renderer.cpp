@@ -14,7 +14,6 @@
 #include "cubeSphereMaterial.h"
 #include "materials/phongShadowMaterial/phongShadowMaterial.h"
 #include "light/shadow/directionalLightShadow/directionalLightShadow.h"
-#include "../camera/perspectivecamera.h"
 #include "light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
 #include "materials/phongCSMShadowMaterial/phongCSMShadowMaterial.h"
@@ -24,8 +23,6 @@
 #include "cubeMaterial.h"
 #include "screenMaterial.h"
 #include <algorithm>
-
-#include "tools/tools.h"
 
 using namespace GLframework;
 
@@ -154,13 +151,6 @@ void Renderer::drawMesh(std::shared_ptr<Mesh> mesh)
 	glBindVertexArray(0);
 }
 
-
-void Renderer::renderShadowMap(Camera* camera, const std::vector<std::shared_ptr<Mesh>>& meshes, std::shared_ptr<DirectionalLight> dirLight, const std::vector<std::shared_ptr<GLframework::PointLight>>& pointLights)
-{
-	renderDirShadowMap(camera, mOpacityObjects, dirLight);
-	renderPointShadowMap(camera, mOpacityObjects, pointLights);
-}
-
 void Renderer::projectObject(std::shared_ptr<Object> obj)
 {
 	if(obj->getType()==ObjectType::Mesh|| obj->getType() == ObjectType::InstancedMesh)
@@ -250,7 +240,7 @@ void Renderer::render(
 		});
 
 	//	render shadowmap
-	renderShadowMap(camera,mOpacityObjects, dirLight,pointLights);
+	mShadowRenderer.render(camera, mOpacityObjects, dirLight, pointLights, mShaderLibrary);
 
 	// 3. 娓叉煋涓や釜闃熷垪
 	for(auto& t : mOpacityObjects)
@@ -1115,190 +1105,6 @@ void Renderer::renderObject(
 	
 }
 
-
-void Renderer::renderDirShadowMap(
-	Camera* camera,
-	const std::vector<std::shared_ptr<Mesh>>& meshes,
-	std::shared_ptr<DirectionalLight> dirLight
-)
-{
-	//	1. make sure that the current draw is not a postProcessPass draw, if it is, then the render is not performed
-	bool isPostProcessPass = true;
-	for (auto& mesh : meshes)
-	{
-		if (mesh->getMaterial()->getMaterialType() != GLframework::MaterialType::ScreenMaterial)
-		{
-			isPostProcessPass = false;
-			break;
-		}
-	}
-	if (isPostProcessPass) return;
-
-	//	2. save the original state, after drawing shadowmap, to restore the original state
-	GLint preFbo;
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &preFbo);
-
-	GLint preViewPort[4];
-	glGetIntegerv(GL_VIEWPORT, preViewPort);
-
-	//	3. set the state required when ShadowPass is drawn
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-	glDepthMask(GL_TRUE);
-
-
-
-	//	4. The loop renders a shadowMap for each child cone
-	auto csmShadow = std::static_pointer_cast<DirectionalLightCSMShadow>(dirLight->getShadow());
-	glBindFramebuffer(GL_FRAMEBUFFER, csmShadow->mRenderTarget->getFBO());
-
-	std::vector<float> layers;
-	csmShadow->generateCascadeLayers(layers, camera->mNear, camera->mFar);
-	auto lightMatrices = csmShadow->getLightMatrix(camera, dirLight->getDirection(), layers);
-	glViewport(0, 0, csmShadow->mRenderTarget->getWidth(), csmShadow->mRenderTarget->getHeight());
-
-	for (int i = 0; i < csmShadow->getLayerCount(); ++i)
-	{
-		auto shadowShader = mShaderLibrary.getShadowShader();
-		glFramebufferTextureLayer(
-			GL_FRAMEBUFFER,
-			GL_DEPTH_ATTACHMENT,
-			csmShadow->mRenderTarget->getDepthAttachment()->getTexture(),
-			0,
-			i
-		);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		shadowShader->begin();
-		shadowShader->setMat4("lightMatrix", lightMatrices[i]);
-		for (auto& mesh : meshes)
-		{
-			glBindVertexArray(mesh->getGeometry()->getVao());
-			shadowShader->setMat4("modelMatrix", mesh->getModelMatrix());
-
-			if (mesh->getType() == ObjectType::InstancedMesh)
-			{
-				std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
-				glDrawElementsInstanced(GL_TRIANGLES, mesh->getGeometry()->getIndicesCount(), GL_UNSIGNED_INT, nullptr,
-					im->getInstanceCount());
-			}
-			else
-			{
-				glDrawElements(GL_TRIANGLES, mesh->getGeometry()->getIndicesCount(), GL_UNSIGNED_INT, nullptr);
-			}
-		}
-
-		shadowShader->end();
-
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, preFbo);
-	glViewport(preViewPort[0], preViewPort[1], preViewPort[2], preViewPort[3]);
-}
-
-void Renderer::renderPointShadowMap(
-	Camera* camera,
-	const std::vector<std::shared_ptr<Mesh>>& meshes,
-	const std::vector<std::shared_ptr<PointLight>>& pointLights
-)
-{
-	bool isPostProcessPass = true;
-	for (auto& mesh : meshes)
-	{
-		if (mesh->getMaterial()->getMaterialType() != MaterialType::ScreenMaterial)
-		{
-			isPostProcessPass = false;
-			break;
-		}
-	}
-	if (isPostProcessPass) return;
-	// store state
-	GLint preFbo;
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &preFbo);
-	GLint preViewPort[4];
-	glGetIntegerv(GL_VIEWPORT, preViewPort);
-
-	// set render state
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-	glDepthFunc(GL_LESS);
-
-	auto depthTexture = PointLightShadow::getSharedDepthTexture();
-	
-	int width = depthTexture->getWidth();
-	int height = depthTexture->getHeight();
-
-	// 鍒涘缓骞剁粦瀹氫复鏃禙BO
-	GLuint tempFBO;
-	glGenFramebuffers(1, &tempFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, tempFBO);
-	//std::cout << "temp " << tempFBO << std::endl;
-	
-	//glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture->getTexture(), 0, 0);
-	glViewport(0, 0, width, height);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-
-
-	for (size_t i = 0; i < pointLights.size(); ++i)
-	{
-		const auto& pointLight = pointLights[i];
-		const auto& pointShadow = std::static_pointer_cast<PointLightShadow>(pointLight->getShadow());
-		pointShadow->setShadowMapIndex(i);
-		auto shadowDistanceShader = mShaderLibrary.getShadowDistanceShader();
-		
-		// 娓叉煋鍏釜闈㈢殑娣卞害璐村浘
-		for (unsigned int face = 0; face < 6; ++face)
-		{
-			int layerIndex = pointShadow->getShadowMapIndex() * 6 + face;
-			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture->getTexture(), 0, layerIndex);
-			// 妫€鏌?FBO 鐘舵€?
-			//std::cerr << layerIndex << std::endl;
-
-
-			glClear(GL_DEPTH_BUFFER_BIT);
-
-			// 璁剧疆鍏夋簮瑙嗗浘鍜屾姇褰辩煩闃?
-			glm::mat4 shadowProj = std::static_pointer_cast<PerspectiveCamera>(pointShadow->mCamera)->getProjectionMatrix();
-			glm::mat4 shadowView = lookAt(pointLight->getPosition(),
-			                              pointLight->getPosition() + Tools::getCubemapFaceDirection(face),
-			                              Tools::getCubemapFaceUp(face));
-			shadowDistanceShader->begin();
-			shadowDistanceShader->setMat4("lightSpaceMatrix", shadowProj * shadowView);
-			shadowDistanceShader->setVector3("lightPos", pointLight->getPosition());
-			shadowDistanceShader->setFloat("far_plane", pointShadow->mCamera->mFar);
-
-			//****text
-			for (auto& mesh : meshes)
-			{
-				glBindVertexArray(mesh->getGeometry()->getVao());
-				shadowDistanceShader->setMat4("modelMatrix", mesh->getModelMatrix());
-
-				if (mesh->getType() == ObjectType::InstancedMesh)
-				{
-					std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
-					glDrawElementsInstanced(GL_TRIANGLES, mesh->getGeometry()->getIndicesCount(), GL_UNSIGNED_INT,
-					                        nullptr,
-					                        im->getInstanceCount());
-				}
-				else
-				{
-					glDrawElements(GL_TRIANGLES, mesh->getGeometry()->getIndicesCount(), GL_UNSIGNED_INT, nullptr);
-				}
-			}
-		
-			
-			shadowDistanceShader->end();
-	
-		}
-	}
-
-	// delete tempFBO
-	glDeleteFramebuffers(1, &tempFBO);
-
-	// render back last state
-	glBindFramebuffer(GL_FRAMEBUFFER, preFbo);
-	glViewport(preViewPort[0], preViewPort[1], preViewPort[2], preViewPort[3]);
-}
 
 void Renderer::msaaResolve(std::shared_ptr<Framebuffer> src, std::shared_ptr<Framebuffer> dst)
 {

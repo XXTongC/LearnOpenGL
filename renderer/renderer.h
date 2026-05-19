@@ -5,6 +5,7 @@
 #include "framebuffer.h"
 #include "camera.h"
 #include "shader.h"
+#include "ShadowRenderer.h"
 #include "ShaderLibrary.h"
 #include "directionalLight.h"
 #include "ambientLight.h"
@@ -44,22 +45,6 @@ private:
 			const std::vector<std::shared_ptr<GLframework::PointLight>>& pointLights,
 			std::shared_ptr <GLframework::AmbientLight> ambient
 		);
-		void renderShadowMap(
-			Camera* camera,
-			const std::vector<std::shared_ptr<Mesh>>& meshes,
-			std::shared_ptr<DirectionalLight> dirLight,
-			const std::vector<std::shared_ptr<GLframework::PointLight>>& pointLights
-		);
-		void renderDirShadowMap(
-			Camera* camera,
-			const std::vector<std::shared_ptr<Mesh>>& meshes,
-			std::shared_ptr<DirectionalLight> dirLight
-		);
-		void renderPointShadowMap(
-			Camera* camera, 
-			const std::vector<std::shared_ptr<Mesh>>& meshes,
-			const std::vector<std::shared_ptr<GLframework::PointLight>>& pointLights
-		);
 		void projectObject(std::shared_ptr<Object> obj);
 private:
 		// set MVP
@@ -94,6 +79,7 @@ private:
 		void drawMesh(std::shared_ptr<Mesh> mesh);
 
 		ShaderLibrary mShaderLibrary{};
+		ShadowRenderer mShadowRenderer{};
 		
 		//不透明队列与透明队列
 		//ops: 每一帧绘制前需要清空两个队列
