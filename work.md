@@ -566,3 +566,14 @@ PBR 材质已开始消费统一的 shadow resource：
 1. C++ / VS 工程构建已通过。
 2. 本机未找到 `glslangValidator`，无法做离线 GLSL validator 检查。
 3. 短启动程序未输出 `Shader Compile Error` / `Shader Link Error`，说明当前默认运行路径没有触发 PBR shader 编译或链接错误；视觉结果仍需要人工观察窗口确认。
+
+### 2026-05-20 简单材质绑定迁移
+
+`Renderer::renderObject()` 中的简单材质分支继续向 `MaterialBinder` 收敛：
+
+- `WhiteMaterial`、`DepthMaterial`、`ScreenMaterial`、`CubeMaterial`、`CubeSphereMaterial` 已迁入 `MaterialBinder`。
+- `CubeMaterial` / `CubeSphereMaterial` 原本会把 mesh position 同步到 camera position，这个 skybox 行为已在迁移后保留。
+- `Renderer` 删除了对应旧 case 和不再需要的材质 include，当前剩余旧分支主要是 Opacity、Env、Instance、GrassInstance。
+- 顺手移除了未使用的 `ScreenShot.h` include，并把旧分支中的 `glfwGetTime()` 显式转成 `float`，使本轮构建回到 `0` warning。
+
+这一步继续压缩 Renderer 主流程。后续如果继续迁移 Opacity / Env / Instance，`Renderer::renderObject()` 将更接近只负责材质分发失败时的 legacy fallback。

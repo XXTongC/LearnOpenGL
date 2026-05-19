@@ -2,6 +2,9 @@
 
 #include <string>
 
+#include "materials/cubeMaterial.h"
+#include "materials/cubeSphereMaterial.h"
+#include "materials/depthMaterial.h"
 #include "materials/pbrMaterial/PBRMaterial.h"
 #include "materials/phongCSMShadowMaterial/phongCSMShadowMaterial.h"
 #include "materials/phongMaterial.h"
@@ -9,6 +12,8 @@
 #include "materials/phongParallaxMaterial/phongParallaxMaterial.h"
 #include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
 #include "materials/phongShadowMaterial/phongShadowMaterial.h"
+#include "materials/screenMaterial.h"
+#include "materials/whiteMaterial.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
 #include "renderer/ShadowResourceBinder.h"
 
@@ -100,6 +105,72 @@ namespace
 
 		shader->setInt(samplerName, texture->getUnit());
 		texture->Bind();
+	}
+
+	void bindWhiteMaterial(
+		const std::shared_ptr<Shader>& shader,
+		const std::shared_ptr<Mesh>& mesh,
+		Camera* camera
+	)
+	{
+		setMVPMatrices(shader, mesh, camera);
+	}
+
+	void bindDepthMaterial(
+		const std::shared_ptr<Shader>& shader,
+		const std::shared_ptr<Mesh>& mesh,
+		Camera* camera
+	)
+	{
+		setMVPMatrices(shader, mesh, camera);
+		shader->setFloat("near", camera->mNear);
+		shader->setFloat("far", camera->mFar);
+	}
+
+	void bindScreenMaterial(
+		const std::shared_ptr<Shader>& shader,
+		const std::shared_ptr<Material>& material
+	)
+	{
+		std::shared_ptr<ScreenMaterial> screenMaterial = std::static_pointer_cast<ScreenMaterial>(material);
+		shader->setInt("screenTextureSampler", 0);
+		shader->setInt("depthTextureSampler", 1);
+		shader->setFloat("texWidth", 1200.0f);
+		shader->setFloat("texHeight", 900.0f);
+		shader->setFloat("exposure", screenMaterial->mExposure);
+		screenMaterial->mScreenTexture->Bind();
+	}
+
+	void bindCubeMaterial(
+		const std::shared_ptr<Shader>& shader,
+		const std::shared_ptr<Material>& material,
+		const std::shared_ptr<Mesh>& mesh,
+		Camera* camera
+	)
+	{
+		std::shared_ptr<CubeMaterial> cubeMat = std::static_pointer_cast<CubeMaterial>(material);
+		mesh->setPosition(camera->mPosition);
+		setMVPMatrices(shader, mesh, camera);
+		shader->setInt("cubeSampler", 0);
+		cubeMat->mDiffuse->setUnit(0);
+		cubeMat->mDiffuse->Bind();
+		cubeMat->mDiffuse->setUnit(2);
+	}
+
+	void bindCubeSphereMaterial(
+		const std::shared_ptr<Shader>& shader,
+		const std::shared_ptr<Material>& material,
+		const std::shared_ptr<Mesh>& mesh,
+		Camera* camera
+	)
+	{
+		std::shared_ptr<CubeSphereMaterial> cubeMat = std::static_pointer_cast<CubeSphereMaterial>(material);
+		mesh->setPosition(camera->mPosition);
+		setMVPMatrices(shader, mesh, camera);
+		shader->setInt("cubeSampler", 0);
+		cubeMat->mDiffuse->setUnit(0);
+		cubeMat->mDiffuse->Bind();
+		cubeMat->mDiffuse->setUnit(2);
 	}
 
 	void bindPhongMaterial(
@@ -287,6 +358,21 @@ bool MaterialBinder::bind(
 {
 	switch (material->getMaterialType())
 	{
+	case MaterialType::WhiteMaterial:
+		bindWhiteMaterial(shader, mesh, camera);
+		return true;
+	case MaterialType::DepthMaterial:
+		bindDepthMaterial(shader, mesh, camera);
+		return true;
+	case MaterialType::ScreenMaterial:
+		bindScreenMaterial(shader, material);
+		return true;
+	case MaterialType::CubeMaterial:
+		bindCubeMaterial(shader, material, mesh, camera);
+		return true;
+	case MaterialType::CubeSphereMaterial:
+		bindCubeSphereMaterial(shader, material, mesh, camera);
+		return true;
 	case MaterialType::PhongMaterial:
 		bindPhongMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
 		return true;

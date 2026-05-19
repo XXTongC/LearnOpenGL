@@ -4,18 +4,13 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include "../tools/ScreenShot.h"
-#include "whiteMaterial.h"
 #include "opacityMaskMatetial.h"
 #include "phongEnvMaterial.h"
 #include "phongEnvSphereMaterial.h"
 #include "phongInstanceMaterial.h"
 #include "materials/grassInstanceMaterial/grassInstanceMaterial.h"
-#include "cubeSphereMaterial.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
 #include "../mesh/instancedMesh.h"
-#include "cubeMaterial.h"
-#include "screenMaterial.h"
 #include <algorithm>
 
 using namespace GLframework;
@@ -184,24 +179,6 @@ void Renderer::renderObject(
 		{
 			switch (material->getMaterialType())
 			{
-		case MaterialType::WhiteMaterial:
-			{
-				shader->setMat4("modelMatrix", mesh->getModelMatrix());
-				shader->setMat4("viewMatrix", camera->getViewMatrix());
-				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				
-			}
-			break;
-		case MaterialType::DepthMaterial:
-			{
-				shader->setMat4("modelMatrix", mesh->getModelMatrix());
-				shader->setMat4("viewMatrix", camera->getViewMatrix());
-				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				shader->setFloat("near", camera->mNear);
-				shader->setFloat("far", camera->mFar);
-				
-			}
-			break;
 		case MaterialType::OpacityMaskMaterial:
 			{
 				std::shared_ptr<OpacityMaskMaterial> opacityMat = std::static_pointer_cast<OpacityMaskMaterial>(material);
@@ -263,7 +240,7 @@ void Renderer::renderObject(
 				}
 
 				shader->setVector3("ambientColor", ambient->getColor());
-				shader->setFloat("time", glfwGetTime());
+				shader->setFloat("time", static_cast<float>(glfwGetTime()));
 				shader->setFloat("shiness", opacityMat->mShiness);
 				shader->setFloat("speed", 0.5);
 
@@ -271,43 +248,6 @@ void Renderer::renderObject(
 				shader->setVector3("cameraPosition", camera->mPosition);
 				if (opacityMat->mDiffuse == nullptr)
 					std::cout << "null\n";
-			}
-			break;
-		case MaterialType::ScreenMaterial:
-			{
-				std::shared_ptr<ScreenMaterial> screenMaterial = std::static_pointer_cast<ScreenMaterial>(material);
-				shader->setInt("screenTextureSampler", 0);
-				shader->setInt("depthTextureSampler", 1);
-				shader->setFloat("texWidth", 1200);
-				shader->setFloat("texHeight", 900);
-				shader->setFloat("exposure", screenMaterial->mExposure);
-				screenMaterial->mScreenTexture->Bind();
-			}
-			break;
- 		case MaterialType::CubeSphereMaterial:
-			{
-				std::shared_ptr<CubeSphereMaterial> cubeMat = std::static_pointer_cast<CubeSphereMaterial>(material);
-				mesh->setPosition(camera->mPosition);
-				shader->setMat4("modelMatrix", mesh->getModelMatrix());
-				shader->setMat4("viewMatrix", camera->getViewMatrix());
-				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				shader->setInt("cubeSampler", 0);
-				cubeMat->mDiffuse->setUnit(0);
-				cubeMat->mDiffuse->Bind();
-				cubeMat->mDiffuse->setUnit(2);
-			}
-			break;
-		case MaterialType::CubeMaterial:
-			{
-				std::shared_ptr<CubeMaterial> cubeMat = std::static_pointer_cast<CubeMaterial>(material);
-				mesh->setPosition(camera->mPosition);
-				shader->setMat4("modelMatrix", mesh->getModelMatrix());
-				shader->setMat4("viewMatrix", camera->getViewMatrix());
-				shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-				shader->setInt("cubeSampler", 0);
-				cubeMat->mDiffuse->setUnit(0);
-				cubeMat->mDiffuse->Bind();
-				cubeMat->mDiffuse->setUnit(2);
 			}
 			break;
 		case MaterialType::PhongEnvSphereMaterial:
@@ -372,7 +312,7 @@ void Renderer::renderObject(
 			}
 
 			shader->setVector3("ambientColor", ambient->getColor());
-			shader->setFloat("time", glfwGetTime());
+			shader->setFloat("time", static_cast<float>(glfwGetTime()));
 			shader->setFloat("shiness", phongMat->mShiness);
 			shader->setFloat("speed", 0.5);
 
@@ -443,7 +383,7 @@ void Renderer::renderObject(
 				}
 
 				shader->setVector3("ambientColor", ambient->getColor());
-				shader->setFloat("time", glfwGetTime());
+				shader->setFloat("time", static_cast<float>(glfwGetTime()));
 				shader->setFloat("shiness", phongMat->mShiness);
 				shader->setFloat("speed", 0.5);
 
@@ -515,7 +455,7 @@ void Renderer::renderObject(
 				}
 
 				shader->setVector3("ambientColor", ambient->getColor());
-				shader->setFloat("time", glfwGetTime());
+				shader->setFloat("time", static_cast<float>(glfwGetTime()));
 				shader->setFloat("shiness", phongMat->mShiness);
 				shader->setFloat("speed", 0.5);
 
@@ -615,7 +555,7 @@ void Renderer::renderObject(
 				}
 
 				shader->setVector3("ambientColor", ambient->getColor());
-				shader->setFloat("time", glfwGetTime());
+				shader->setFloat("time", static_cast<float>(glfwGetTime()));
 				shader->setFloat("shiness", instance_material->mShiness);
 				shader->setFloat("speed", 0.5);
 

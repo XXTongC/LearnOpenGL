@@ -543,6 +543,15 @@
    - 构建结果：成功，`0` error，`0` warning。
    - 本机未找到 `glslangValidator`，无法做离线 GLSL validator 检查。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 出现既有 `Failed to open logfile.`，未发现与本轮 PBR shader 相关的运行时编译/链接错误。
+87. 完成第四十四轮简单材质绑定迁移：
+   - 更新 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，新增 `WhiteMaterial`、`DepthMaterial`、`ScreenMaterial`、`CubeMaterial`、`CubeSphereMaterial` 的绑定分支。
+   - `CubeMaterial` / `CubeSphereMaterial` 迁移时保留原有 skybox 行为：绑定前将 mesh position 同步到 camera position，并临时把 cube texture unit 设为 `0` 后恢复为 `2`。
+   - 更新 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，删除上述简单材质旧 case 和不再需要的 include。
+   - 移除未使用的 `ScreenShot.h` include，并将剩余旧分支中的 `glfwGetTime()` 显式转换为 `float`，减少构建 warning 噪音。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录简单材质迁移和剩余旧分支边界。
+88. 完成第三十四次构建验证：
+   - 针对简单材质迁移和 warning 清理后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
 
 ### 当前状态
 
@@ -555,5 +564,5 @@
 - 第五轮 `prepare()` 分阶段拆分：已完成。
 - 第六轮场景对象构建拆分：已完成。
 - 当前工程可成功构建。
-- 当前剩余明显问题：`Renderer::renderObject()` 仍保留 Env / Instance / Opacity / Cube / Screen 等旧材质分支，主渲染分支尚未完全清空。
-- 下一步建议目标：人工观察 PBR preview 的 shadow / normal map 方向，或继续迁移 Env / Instance / Opacity 等非 shadow 旧材质，进一步清空 `Renderer::renderObject()`。
+- 当前剩余明显问题：`Renderer::renderObject()` 仍保留 Opacity / Env / Instance / GrassInstance 等旧材质分支，主渲染分支尚未完全清空。
+- 下一步建议目标：人工观察 PBR preview 的 shadow / normal map 方向，或继续迁移 Opacity / Env / Instance 等旧材质，进一步清空 `Renderer::renderObject()`。
