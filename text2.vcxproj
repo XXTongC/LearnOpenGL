@@ -170,6 +170,7 @@
     <ClCompile Include="materials\phongEnvSphereMaterial.cpp" />
     <ClCompile Include="materials\phongInstanceMaterial.cpp" />
     <ClCompile Include="materials\phongMaterial.cpp" />
+    <ClCompile Include="materials\pbrMaterial\PBRMaterial.cpp" />
     <ClCompile Include="light\pointLight.cpp" />
     <ClCompile Include="renderer\RenderState.cpp" />
     <ClCompile Include="renderer\renderer.cpp" />
@@ -236,6 +237,7 @@
     <ClInclude Include="materials\phongEnvSphereMaterial.h" />
     <ClInclude Include="materials\phongInstanceMaterial.h" />
     <ClInclude Include="materials\phongMaterial.h" />
+    <ClInclude Include="materials\pbrMaterial\PBRMaterial.h" />
     <ClInclude Include="light\pointLight.h" />
     <ClInclude Include="renderer\RenderState.h" />
     <ClInclude Include="renderer\renderer.h" />
@@ -637,6 +639,8 @@
     <None Include="shaders\grassInstance\grassInstance.vert" />
     <None Include="shaders\opacityMask\phongOpacityMask.frag" />
     <None Include="shaders\opacityMask\phongOpacityMask.vert" />
+    <None Include="shaders\pbr\pbr.frag" />
+    <None Include="shaders\pbr\pbr.vert" />
     <None Include="shaders\phong.vert" />
     <None Include="shaders\phongCSMShadow\phongCSMShadow.frag" />
     <None Include="shaders\phongCSMShadow\phongCSMShadow.vert" />

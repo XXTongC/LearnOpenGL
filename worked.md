@@ -420,6 +420,25 @@
    - 在所有本轮代码与文档变更完成后再次执行增量 `Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 当前可提交状态下工程可以稳定生成 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe)。
+60. 完成第三十一轮 PBR 材质数据骨架接入：
+   - 新增 [materials/pbrMaterial/PBRMaterial.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.h) 与 [materials/pbrMaterial/PBRMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.cpp)，定义 `PBRMaterial` 的 albedo、metallic、roughness、ao、normal、emissive 等基础数据。
+   - 在 [materials/material.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\material.h) 中新增 `MaterialType::PBRMaterial`。
+   - 在 [tools/inspector/MaterialInspector.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialInspector.h) 中接入 PBR 材质类型名称与声明式属性展示，保持材质 UI 自动生成路径一致。
+61. 完成第三十二轮最小 PBR shader 路径接入：
+   - 新增 [shaders/pbr/pbr.vert](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr.vert) 与 [shaders/pbr/pbr.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr.frag)，提供直接光照版 GGX PBR 基础 shader。
+   - PBR vertex/fragment shader 显式传递并使用 `aColor`，避免几何初始化通过 `glGetAttribLocation("aColor")` 查询时被 shader 优化导致 attribute location 失效。
+   - 在 [renderer/ShaderLibrary.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShaderLibrary.cpp) 中注册 `PBRMaterial -> shaders/pbr/pbr.*` 映射。
+   - 在 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp) 中增加 PBR 材质最小 uniform 上传和可选贴图绑定分支。
+   - 同步更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，确保新材质与 shader 纳入 VS 工程和分类。
+62. 完成第二十次构建验证：
+   - 针对 PBR 材质骨架、PBR shader 路径、工程文件更新后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`22` warning。
+   - 本次 warning 来源仍为既有问题：Assimp loader 的有符号/无符号比较，以及 Renderer 旧代码中的 `double -> float` / `size_t -> int` 窄化转换；PBR 新增 C++ 文件已参与编译并生成 `PBRMaterial.obj`。
+   - 当前验证边界：MSBuild 不会编译 GLSL shader，`shaders/pbr/pbr.*` 的运行时 shader 编译仍需要后续启动程序或引入 GLSL 验证工具确认。
+63. 完成第二十一次增量构建验证：
+   - 在补充 PBR shader 的 `aColor` attribute 保活逻辑后再次执行 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 说明最新工作区在 C++ / VS 工程层面可以稳定增量生成。
 
 ### 当前状态
 

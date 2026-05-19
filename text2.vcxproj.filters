@@ -247,6 +247,15 @@
     <Filter Include="include\GLframework\material\phongPointShadowMaterial">
       <UniqueIdentifier>{fc345c03-05c5-4927-8929-a67ae9484d61}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cppfile\GLframework\material\pbrMaterial">
+      <UniqueIdentifier>{ea84716a-00e1-4560-82c8-5f0c79219180}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLframework\material\pbrMaterial">
+      <UniqueIdentifier>{4bd7f65a-7105-4c2e-8b8d-1d17ca7a3f43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\shaders\pbr">
+      <UniqueIdentifier>{8d8d1a04-f833-4cc0-8561-8f3a0744d986}</UniqueIdentifier>
+    </Filter>
     <Filter Include="include\GLframework\light\shadow\pointLightShadow">
       <UniqueIdentifier>{9629bcbb-2870-4052-a7c0-5d28545e0780}</UniqueIdentifier>
     </Filter>
@@ -323,6 +332,9 @@
     </ClCompile>
     <ClCompile Include="materials\phongMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
+    </ClCompile>
+    <ClCompile Include="materials\pbrMaterial\PBRMaterial.cpp">
+      <Filter>cppfile\GLframework\material\pbrMaterial</Filter>
     </ClCompile>
     <ClCompile Include="light\light.cpp">
       <Filter>cppfile\GLframework\light</Filter>
@@ -514,6 +526,9 @@
     </ClInclude>
     <ClInclude Include="materials\phongMaterial.h">
       <Filter>include\GLframework\material</Filter>
+    </ClInclude>
+    <ClInclude Include="materials\pbrMaterial\PBRMaterial.h">
+      <Filter>include\GLframework\material\pbrMaterial</Filter>
     </ClInclude>
     <ClInclude Include="light\light.h">
       <Filter>include\GLframework\light</Filter>
@@ -2268,6 +2283,12 @@
     </None>
     <None Include="shaders\phong\phong_V2.vert">
       <Filter>资源文件\shaders\phong</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr.frag">
+      <Filter>资源文件\shaders\pbr</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr.vert">
+      <Filter>资源文件\shaders\pbr</Filter>
     </None>
     <None Include="shaders\phong\phongShadow.frag">
       <Filter>资源文件\shaders\phong</Filter>

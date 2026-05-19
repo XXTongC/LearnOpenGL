@@ -183,6 +183,7 @@ namespace GL_EDITOR
 		switch (type)
 		{
 		case GLframework::MaterialType::PhongMaterial: return "PhongMaterial";
+		case GLframework::MaterialType::PBRMaterial: return "PBRMaterial";
 		case GLframework::MaterialType::WhiteMaterial: return "WhiteMaterial";
 		case GLframework::MaterialType::DepthMaterial: return "DepthMaterial";
 		case GLframework::MaterialType::OpacityMaskMaterial: return "OpacityMaskMaterial";

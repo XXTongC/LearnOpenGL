@@ -11,6 +11,7 @@ namespace GLframework
 	enum class MaterialType
 	{
 		PhongMaterial,
+		PBRMaterial,
 		WhiteMaterial,
 		DepthMaterial,
 		OpacityMaskMaterial,

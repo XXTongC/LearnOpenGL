@@ -5,6 +5,7 @@
 void GLframework::ShaderLibrary::initialize()
 {
 	mMaterialShaders[MaterialType::PhongMaterial] = createShader("shaders/phong/phong_V2.vert", "shaders/phong/phong_V2.frag");
+	mMaterialShaders[MaterialType::PBRMaterial] = createShader("shaders/pbr/pbr.vert", "shaders/pbr/pbr.frag");
 	mMaterialShaders[MaterialType::WhiteMaterial] = createShader("shaders/white/white.vert", "shaders/white/white.frag");
 	mMaterialShaders[MaterialType::DepthMaterial] = createShader("shaders/depth/depth.vert", "shaders/depth/depth.frag");
 	mMaterialShaders[MaterialType::OpacityMaskMaterial] = createShader("shaders/opacityMask/phongOpacityMask.vert", "shaders/opacityMask/phongOpacityMask.frag");

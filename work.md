@@ -410,3 +410,24 @@
 4. 之后再处理 IBL 资源：irradiance map、prefilter map、BRDF LUT，这一部分应该独立成 environment lighting 模块。
 
 后续我们可以持续直接修改这份 `work.md`，把抽象讨论逐渐收敛成具体执行计划。
+
+### 2026-05-20 PBR 最小路径接入
+
+本轮开始把 PBR 从“后续计划”推进成真实工程扩展点：
+
+- 已新增 `PBRMaterial`，当前先作为材质数据模型存在，覆盖 albedo、metallic、roughness、ao、normal、emissive 和对应贴图槽。
+- 已新增 `shaders/pbr/pbr.vert` 与 `shaders/pbr/pbr.frag`，当前实现的是直接光照版 GGX PBR，不包含 IBL。
+- 已通过 `ShaderLibrary` 注册 `MaterialType::PBRMaterial`，避免重新把 shader 成员堆回 `Renderer`。
+- 已在 `Renderer::renderObject()` 中增加临时 PBR uniform 上传分支，用于验证材质路径完整；这部分下一步应迁入 `MaterialBinder`，否则 Renderer 仍会继续膨胀。
+
+当前刻意没有实现的内容：
+
+- normal map 还没有真正参与 shading，因为当前几何属性和 shader 管线还没有统一 tangent / bitangent / TBN 输入。
+- IBL 还没有接入，irradiance map、prefilter map、BRDF LUT 应该在后续单独引入 environment lighting 模块。
+- PBR 贴图的 texture unit 分配仍沿用 `Texture` 自身状态，后续资源绑定系统需要统一管理槽位，避免复杂材质间冲突。
+
+下一步建议继续拆 `MaterialBinder`：
+
+1. 先把 Phong 和 PBR 的 uniform 上传从 `Renderer::renderObject()` 中迁出。
+2. 保持 `Renderer` 只负责取 shader、应用状态和 draw call。
+3. 再逐步把 Shadow / Env / Instance 材质绑定迁移出去，最终让新增材质不再直接修改 Renderer 主流程。
