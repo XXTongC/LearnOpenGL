@@ -12,7 +12,7 @@ namespace GLframework
 		int mHeight{ 0 };
 		// �²���ͼƬ����
 		int mMipLevels{ 0 };
-		float mThreshold{ 0.0f };
+		float mThreshold{ 1.0f };
 		std::shared_ptr<Shader> mExtractBrightShader{ nullptr };
 		std::shared_ptr<Geometry> mQuad{ nullptr };
 		std::vector<std::shared_ptr<Framebuffer>> mDownSamples{};

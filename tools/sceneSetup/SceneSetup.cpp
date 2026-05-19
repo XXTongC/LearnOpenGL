@@ -114,6 +114,7 @@ namespace
 	{
 		context.screenMaterial = std::make_shared<GLframework::ScreenMaterial>();
 		context.screenMaterial->mScreenTexture = context.frameRenderTargets.getResolvedColorAttachment();
+		context.screenMaterial->mBloomTexture = context.frameRenderTargets.getBloomPong()->getColorAttachment();
 		auto geo = GLframework::Geometry::createScreenPlane(context.renderer->getShader(context.screenMaterial->getMaterialType()));
 		context.screenQuad = std::make_shared<GLframework::Mesh>(geo, context.screenMaterial);
 		context.screenQuad->setName("Screen Quad");

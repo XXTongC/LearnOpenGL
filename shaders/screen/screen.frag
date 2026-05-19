@@ -8,8 +8,11 @@ in vec2 uv;
 
 uniform sampler2D screenTextureSampler;
 uniform sampler2D depthTextureSampler;
+uniform sampler2D bloomTextureSampler;
 uniform float texWidth;
 uniform float texHeight;
+uniform int enableBloom;
+uniform float bloomIntensity;
 
 // calculate floating point numbers equality accurately
 bool isApproximatelyEqual(float a, float b);
@@ -49,6 +52,10 @@ void main()
     FragColor = vec4(average_color, 1.0f - revealage);
 */
     vec3 color = texture(screenTextureSampler,uv).rgb;
+    if(enableBloom != 0)
+    {
+        color += texture(bloomTextureSampler, uv).rgb * bloomIntensity;
+    }
     color = toneMappingExposure(color);
     // 1 将sRGB转换为RGB
     //color = pow(color,vec3(2.2));

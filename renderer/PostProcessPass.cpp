@@ -71,9 +71,12 @@ void PostProcessPass::renderScreenComposite(
 	shader->begin();
 	shader->setInt("screenTextureSampler", 0);
 	shader->setInt("depthTextureSampler", 1);
+	shader->setInt("bloomTextureSampler", 2);
 	shader->setFloat("texWidth", static_cast<float>(width));
 	shader->setFloat("texHeight", static_cast<float>(height));
 	shader->setFloat("exposure", screenMaterial->mExposure);
+	shader->setInt("enableBloom", screenMaterial->mBloomEnabled && screenMaterial->mBloomTexture != nullptr ? 1 : 0);
+	shader->setFloat("bloomIntensity", screenMaterial->mBloomIntensity);
 
 	screenMaterial->mScreenTexture->setUnit(0);
 	screenMaterial->mScreenTexture->Bind();
@@ -81,6 +84,11 @@ void PostProcessPass::renderScreenComposite(
 	{
 		screenMaterial->mDepthStencilTexture->setUnit(1);
 		screenMaterial->mDepthStencilTexture->Bind();
+	}
+	if (screenMaterial->mBloomTexture != nullptr)
+	{
+		screenMaterial->mBloomTexture->setUnit(2);
+		screenMaterial->mBloomTexture->Bind();
 	}
 
 	auto geometry = screenQuad->getGeometry();

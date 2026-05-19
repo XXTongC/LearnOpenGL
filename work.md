@@ -718,3 +718,15 @@ Bloom 的 blur 中间链路已接入运行时，但仍暂不合成回最终屏�
 - `runFrame()` 在 bright extraction 后执行 blur ping-pong，但 screen composite 仍只使用 resolved HDR color。
 
 这一步验证了 Bloom blur shader、ping-pong framebuffer 与 pass 调度链路。后续只需要增加 composite shader / screen shader 输入，将 blurred bloom texture 与 HDR color 合成，再进入 tone mapping。
+
+### 2026-05-20 Bloom screen composite 接入
+
+Blurred Bloom texture 已合成进最终 screen composite：
+
+- `ScreenMaterial` 新增 `mBloomTexture`、`mBloomIntensity`、`mBloomEnabled`，并暴露到 inspector。
+- `SceneSetup` 将 `FrameRenderTargets::getBloomPong()` 的 color attachment 接入 `ScreenMaterial::mBloomTexture`。
+- `PostProcessPass::renderScreenComposite(...)` 绑定 bloom texture 到 texture unit 2，并上传 `enableBloom` 与 `bloomIntensity`。
+- `shaders/screen/screen.frag` 在 tone mapping 前执行 HDR color + blurred bloom color 合成。
+- `Bloom` bright threshold 默认值从 `0.0` 调整为 `1.0`，避免把全部 HDR 颜色都当成 bloom 源。
+
+这一步完成了当前 Bloom 链路的闭环：resolved HDR color -> bright extraction -> ping-pong blur -> screen composite -> tone mapping / gamma。后续还应继续把 tone mapping 模式、Bloom threshold / iterations / intensity 等参数系统化，并处理 resize/recreate。
