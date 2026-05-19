@@ -523,6 +523,15 @@
    - 针对 shadow 材质绑定迁移后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`16` warning。
    - warning 来源仍为既有代码：Assimp loader 的有符号/无符号比较、Renderer 旧分支中的 include packing 和 `double -> float` 窄化转换；本轮迁移没有引入编译错误。
+83. 完成第四十二轮 `ShadowResourceBinder` 抽象：
+   - 新增 [renderer/ShadowResourceBinder.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShadowResourceBinder.h) 与 [renderer/ShadowResourceBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShadowResourceBinder.cpp)，集中封装 CSM shadow resource、point shadow resource 和 directional fallback shadow 参数绑定。
+   - 更新 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，让 `PhongCSMShadowMaterial` 与 `PhongPointShadowMaterial` 调用 `ShadowResourceBinder`，不再直接维护 cascade layers、shadow map array、light matrices、point light far/near 等资源细节。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `ShadowResourceBinder` 纳入 VS 工程和 Renderer 分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录该抽象对后续 PBR shader 接入 shadow 的意义。
+84. 完成第三十二次构建验证：
+   - 针对 `ShadowResourceBinder` 抽象后执行真实 `Debug|x64 Build`。
+   - `ShadowResourceBinder.obj` 成功编译并参与链接。
+   - 构建结果：成功，`0` error，`0` warning。
 
 ### 当前状态
 
@@ -536,4 +545,4 @@
 - 第六轮场景对象构建拆分：已完成。
 - 当前工程可成功构建。
 - 当前剩余明显问题：`Renderer::renderObject()` 仍保留 Env / Instance / Opacity / Cube / Screen 等旧材质分支，主渲染分支尚未完全清空。
-- 下一步建议目标：继续迁移 Env / Instance / Opacity 等非 shadow 旧材质，或者开始抽象 PBR 可复用的 `ShadowResources` 输入，避免 PBR shader 接 shadow 时重新硬编码资源绑定。
+- 下一步建议目标：让 PBR shader 试接 CSM shadow resource，或者继续迁移 Env / Instance / Opacity 等非 shadow 旧材质，进一步清空 `Renderer::renderObject()`。

@@ -540,3 +540,14 @@ Shadow 相关材质的 uniform 上传已从 `Renderer::renderObject()` 迁入 `M
 - `Renderer` 删除了对应旧 case、旧 helper 和具体 shadow material include，职责进一步收敛为选择 shader、应用 render state、调用 binder 和 draw mesh。
 
 这一步让 shadow resource 的消费路径开始从 Renderer 主流程里剥离。后续 PBR 接 shadow 时，应优先复用这一层 shadow 资源绑定思路，而不是在 PBR 分支中重新硬编码 shadow map / light matrix / bias 参数。
+
+### 2026-05-20 ShadowResourceBinder 抽象
+
+Shadow 资源绑定已从 `MaterialBinder` 中继续抽出为可复用模块：
+
+- 新增 `ShadowResourceBinder`，集中提供 CSM shadow resource、point shadow resource、directional fallback shadow 参数绑定。
+- `MaterialBinder` 的 shadow 材质分支现在只负责材质自身参数、矩阵、通用光照和调用 shadow resource binder。
+- CSM 的 cascade layers、shadow map array、light matrices、PCSS 参数不再直接散落在具体材质绑定函数中。
+- point shadow 的 texture array、point light far/near、debug uniform 也通过同一个模块绑定。
+
+这一步的意义是为 PBR shader 接入 shadow 做准备：PBR 后续不需要复制 Phong shadow 材质分支，只需要在自己的 binding 阶段调用统一的 shadow resource 入口，并在 shader 侧消费对应 uniform。

@@ -175,6 +175,7 @@
     <ClCompile Include="renderer\MaterialBinder.cpp" />
     <ClCompile Include="renderer\RenderState.cpp" />
     <ClCompile Include="renderer\renderer.cpp" />
+    <ClCompile Include="renderer\ShadowResourceBinder.cpp" />
     <ClCompile Include="renderer\ShadowRenderer.cpp" />
     <ClCompile Include="renderer\ShaderLibrary.cpp" />
     <ClCompile Include="renderer\Bloom\Bloom.cpp" />
@@ -244,6 +245,7 @@
     <ClInclude Include="renderer\MaterialBinder.h" />
     <ClInclude Include="renderer\RenderState.h" />
     <ClInclude Include="renderer\renderer.h" />
+    <ClInclude Include="renderer\ShadowResourceBinder.h" />
     <ClInclude Include="renderer\ShadowRenderer.h" />
     <ClInclude Include="renderer\ShaderLibrary.h" />
     <ClInclude Include="renderer\Bloom\Bloom.h" />
