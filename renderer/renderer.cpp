@@ -5,6 +5,7 @@ using namespace GLframework;
 Renderer::Renderer()
 {
 	mShaderLibrary.initialize();
+	mEnvironmentRenderTargets.initialize();
 }
 
 void Renderer::setClearColor(glm::vec3 color)
@@ -17,6 +18,15 @@ std::shared_ptr<Shader> Renderer::getShader(MaterialType type)
 	return mShaderLibrary.get(type);
 }
 
+const EnvironmentRenderTargets& Renderer::getEnvironmentRenderTargets() const
+{
+	return mEnvironmentRenderTargets;
+}
+
+EnvironmentRenderTargets& Renderer::getEnvironmentRenderTargets()
+{
+	return mEnvironmentRenderTargets;
+}
 
 void Renderer::render(
 	std::shared_ptr<Scene> scene,

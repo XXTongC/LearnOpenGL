@@ -744,3 +744,15 @@ Blurred Bloom texture 已合成进最终 screen composite：
 - `shaders/screen/screen.frag` 支持 exposure / Reinhard 两种 tone mapping mode。
 
 这一步让后处理参数变成一个明确配置对象。后续可以把它从 `ScreenMaterial` 进一步提升到 runtime / renderer 级别，或者直接扩展为 UI 可保存的 profile；PBR 输出进入 HDR + tone mapping + Bloom 链路时会更稳定。
+
+### 2026-05-20 EnvironmentRenderTargets 初步接入
+
+IBL / environment 资源边界已建立，但暂不改变 PBR shader 的最终着色结果：
+
+- 新增 `EnvironmentRenderTargets`，集中持有 environment cubemap、irradiance cubemap、prefilter cubemap、BRDF LUT，以及用于生成这些资源的 capture FBO / RBO。
+- 新增 `EnvironmentRenderTargetSettings`，统一记录 cubemap / LUT 尺寸、texture unit 和 prefilter mip 数量。
+- `Renderer` 现在持有 `EnvironmentRenderTargets` 并在构造时初始化，后续 PBR / IBL pass 可以通过明确接口消费这些资源。
+- `EnvironmentRenderTargets` 提供 cubemap face 与 BRDF LUT capture attachment 接口，后续接 equirectangular to cubemap、irradiance convolution、prefilter 和 BRDF integration shader 时不需要再临时散落 FBO 绑定代码。
+- 本轮没有把 IBL sampler 接入 `PBRMaterial` / `MaterialBinder`，避免在资源边界未稳定前直接改变 PBR 视觉输出。
+
+这一步把 PBR 的下一阶段拆成更清晰的顺序：先实现 environment capture / IBL precompute pass，再把 irradiance、prefilter 和 BRDF LUT 作为统一资源传给 PBR 材质绑定。后续不应再把这些 render target 直接塞进 `FrameRenderTargets` 或普通 framebuffer 工具函数里。

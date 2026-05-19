@@ -710,6 +710,17 @@
    - 针对 `PostProcessSettings` 参数收敛后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
+119. 完成第六十轮 `EnvironmentRenderTargets` 初步接入：
+   - 新增 [renderer/EnvironmentRenderTargets.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentRenderTargets.h) 与 [renderer/EnvironmentRenderTargets.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentRenderTargets.cpp)，集中管理 IBL 所需 environment cubemap、irradiance cubemap、prefilter cubemap、BRDF LUT 和 capture FBO / RBO。
+   - 新增 `EnvironmentRenderTargetSettings`，统一记录 IBL 资源尺寸、texture unit 和 prefilter mip 数量。
+   - 更新 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h) 与 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，让 `Renderer` 持有并初始化 `EnvironmentRenderTargets`，同时暴露 getter 给后续 IBL pass 使用。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将新 IBL 资源模块纳入 VS 工程和 Renderer 分类。
+   - 本轮不修改 PBR shader 行为，只建立资源边界，避免把 environment capture / BRDF LUT 生成逻辑继续塞进 `Renderer` 或 framebuffer 层。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 EnvironmentRenderTargets 的职责边界和后续 IBL pass 顺序。
+120. 完成第五十次构建与运行时 smoke 验证：
+   - 针对 `EnvironmentRenderTargets` 初步接入后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning；`EnvironmentRenderTargets.obj` 已参与链接。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -735,5 +746,6 @@
 - 当前 Bloom blur ping-pong 已接入运行时，bright target 会经过 `bloomPing` / `bloomPong` 迭代模糊。
 - 当前 Bloom composite 已接入 screen shader，resolved HDR color 会与 blurred bloom texture 合成后再 tone mapping / gamma。
 - 当前后处理参数已收敛到 `PostProcessSettings`，exposure、tone mapping mode、Bloom 开关、threshold、intensity、iterations 都能通过 screen material inspector 修改。
-- 当前剩余明显问题：`PostProcessSettings` 仍挂在 `ScreenMaterial` 上，尚未提升到 runtime / renderer 级别；`FrameRenderTargets` 还没有 resize/recreate、IBL capture target 和 BRDF LUT 管理。
-- 下一步建议目标：扩展 `FrameRenderTargets` 管理 PBR / IBL 所需环境贴图目标，或者把 `PostProcessSettings` 提升为 runtime 级 profile。
+- 当前 IBL / environment 资源边界已建立，`EnvironmentRenderTargets` 管理 environment / irradiance / prefilter cubemap、BRDF LUT 和 capture FBO。
+- 当前剩余明显问题：`PostProcessSettings` 仍挂在 `ScreenMaterial` 上，尚未提升到 runtime / renderer 级别；`EnvironmentRenderTargets` 还没有实际 environment capture / irradiance / prefilter / BRDF LUT 生成 pass；`FrameRenderTargets` 还没有 resize/recreate。
+- 下一步建议目标：实现 `EnvironmentPass` / `IBLPrecomputePass`，把 environment capture、irradiance convolution、prefilter 和 BRDF LUT 生成从资源管理中继续拆成明确 pass。

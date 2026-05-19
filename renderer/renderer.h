@@ -5,6 +5,7 @@
 #include "framebuffer.h"
 #include "camera.h"
 #include "shader.h"
+#include "EnvironmentRenderTargets.h"
 #include "FrameRenderState.h"
 #include "RenderQueue.h"
 #include "SceneRenderPass.h"
@@ -23,6 +24,8 @@ namespace GLframework
 		Renderer();
 		~Renderer() = default;
 		std::shared_ptr<Shader> getShader(MaterialType type);
+		const EnvironmentRenderTargets& getEnvironmentRenderTargets() const;
+		EnvironmentRenderTargets& getEnvironmentRenderTargets();
 		//渲染功能函数
 		//1. 每次调用渲染一帧
 		
@@ -44,6 +47,7 @@ private:
 		RenderQueue mRenderQueue{};
 		ShadowRenderer mShadowRenderer{};
 		SceneRenderPass mSceneRenderPass{};
+		EnvironmentRenderTargets mEnvironmentRenderTargets{};
 
 	};
 }
