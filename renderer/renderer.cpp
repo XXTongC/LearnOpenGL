@@ -1,10 +1,9 @@
 #include "renderer.h"
+#include "MaterialBinder.h"
 #include "RenderState.h"
 #include <iostream>
 #include <memory>
 #include <string>
-#include "phongMaterial.h"
-#include "materials/pbrMaterial/PBRMaterial.h"
 #include "../tools/ScreenShot.h"
 #include "whiteMaterial.h"
 #include "opacityMaskMatetial.h"
@@ -31,26 +30,6 @@
 #include "tools/tools.h"
 
 using namespace GLframework;
-
-namespace
-{
-	void bindOptionalTexture(
-		const std::shared_ptr<Shader>& shader,
-		const char* samplerName,
-		const char* useFlagName,
-		const std::shared_ptr<Texture>& texture
-	)
-	{
-		shader->setInt(useFlagName, texture != nullptr ? 1 : 0);
-		if (!texture)
-		{
-			return;
-		}
-
-		shader->setInt(samplerName, texture->getUnit());
-		texture->Bind();
-	}
-}
 
 Renderer::Renderer()
 {
@@ -320,44 +299,10 @@ void Renderer::renderObject(
 		shader->begin();
 
 
-		switch (material->getMaterialType())
+		if (!MaterialBinder::bind(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient))
 		{
-		case MaterialType::PhongMaterial:
+			switch (material->getMaterialType())
 			{
-				std::shared_ptr<PhongMaterial> phongMat = std::static_pointer_cast<PhongMaterial>(material);
-
-				setCommonMaterialUniforms(shader, material, camera);
-				setPhongTextures(shader, phongMat->mDiffuse, phongMat->mSpecularMask);
-				setMVPMatrices(shader, mesh, camera);
-				setNormalMatrix(shader, mesh);
-				setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
-
-				shader->setFloat("shiness", phongMat->mShiness);
-			}
-			break;
-		case MaterialType::PBRMaterial:
-			{
-				std::shared_ptr<PBRMaterial> pbrMat = std::static_pointer_cast<PBRMaterial>(material);
-
-				setCommonMaterialUniforms(shader, material, camera);
-				setMVPMatrices(shader, mesh, camera);
-				setNormalMatrix(shader, mesh);
-				setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
-
-				shader->setVector3("pbrAlbedo", pbrMat->mAlbedo);
-				shader->setFloat("pbrMetallic", pbrMat->mMetallic);
-				shader->setFloat("pbrRoughness", pbrMat->mRoughness);
-				shader->setFloat("pbrAo", pbrMat->mAo);
-				shader->setVector3("pbrEmissiveColor", pbrMat->mEmissiveColor);
-				shader->setFloat("pbrEmissiveIntensity", pbrMat->mEmissiveIntensity);
-
-				bindOptionalTexture(shader, "albedoMap", "useAlbedoMap", pbrMat->mAlbedoMap);
-				bindOptionalTexture(shader, "metallicMap", "useMetallicMap", pbrMat->mMetallicMap);
-				bindOptionalTexture(shader, "roughnessMap", "useRoughnessMap", pbrMat->mRoughnessMap);
-				bindOptionalTexture(shader, "aoMap", "useAoMap", pbrMat->mAoMap);
-				bindOptionalTexture(shader, "emissiveMap", "useEmissiveMap", pbrMat->mEmissiveMap);
-			}
-			break;
 		case MaterialType::PhongShadowMaterial:
 			{
 				//std::shared_ptr<PhongShadowMaterial> phongMat = std::static_pointer_cast<PhongShadowMaterial>(material);
@@ -1305,6 +1250,7 @@ void Renderer::renderObject(
 		default:
 			std::cout << "wrong\n";
 			break;
+			}
 		}
 		//// 3. 锟斤拷vao
 		//glBindVertexArray(geometry->getVao());

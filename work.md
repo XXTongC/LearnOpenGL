@@ -431,3 +431,17 @@
 1. 先把 Phong 和 PBR 的 uniform 上传从 `Renderer::renderObject()` 中迁出。
 2. 保持 `Renderer` 只负责取 shader、应用状态和 draw call。
 3. 再逐步把 Shadow / Env / Instance 材质绑定迁移出去，最终让新增材质不再直接修改 Renderer 主流程。
+
+### 2026-05-20 MaterialBinder 初步拆分
+
+`MaterialBinder` 已开始承接材质 uniform 上传职责：
+
+- 当前已迁移 `PhongMaterial` 与 `PBRMaterial`，这两类材质不再直接在 `Renderer::renderObject()` 中展开参数绑定细节。
+- `Renderer` 目前仍保留旧材质 switch，但会先尝试 `MaterialBinder::bind(...)`；这允许我们后续逐类迁移，不需要一次性重写所有历史材质。
+- 这一步对 PBR 路径的意义是：后续扩展 PBR 参数、贴图、IBL 采样或 BRDF LUT 时，主要修改 `PBRMaterial` 与 `MaterialBinder`，而不是继续加重 Renderer 主流程。
+
+后续迁移顺序建议：
+
+1. 把 `PhongNormalMaterial` 与 `PhongParallaxMaterial` 迁入 `MaterialBinder`，同时为 tangent/TBN 管线做准备。
+2. 再迁移 `PhongShadowMaterial` 与 point/csm shadow 材质，拆分出 shadow-specific binder 或 `ShadowRenderer`。
+3. 最后迁移 Env / Instance / Grass 等特殊材质，避免一开始被历史特殊分支拖慢主路径重构。

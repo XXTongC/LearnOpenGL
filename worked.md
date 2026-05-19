@@ -439,6 +439,19 @@
    - 在补充 PBR shader 的 `aColor` attribute 保活逻辑后再次执行 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 说明最新工作区在 C++ / VS 工程层面可以稳定增量生成。
+64. 完成第三十三轮 `MaterialBinder` 初步拆分：
+   - 新增 [renderer/MaterialBinder.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.h) 与 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，建立材质 uniform 上传的独立边界。
+   - 将 `PhongMaterial` 与 `PBRMaterial` 的通用矩阵、法线矩阵、灯光、材质参数和贴图绑定逻辑从 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp) 迁入 `MaterialBinder`。
+   - [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp) 现在优先调用 `MaterialBinder::bind(...)` 处理已迁移材质，未迁移的旧材质仍走原有 switch，降低一次性重构风险。
+   - 同步更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `MaterialBinder` 纳入 VS 工程与 Renderer 分类。
+65. 完成第二十二次构建验证：
+   - 针对 `MaterialBinder` 拆分后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`12` warning。
+   - 本次 warning 均来自重编译后的 Renderer 旧代码，主要是历史 `double -> float`、`size_t -> int` 窄化转换与 include packing 警告；新增 `MaterialBinder.cpp` 成功编译并链接为 `MaterialBinder.obj`。
+66. 完成第二十三次构建验证：
+   - 在整理 `Renderer` 中 `MaterialBinder::bind(...)` 分支缩进后再次执行 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`12` warning。
+   - warning 来源仍为 Renderer 旧代码中的 include packing 与窄化转换，未出现新的编译错误。
 
 ### 当前状态
 
