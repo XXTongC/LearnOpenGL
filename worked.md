@@ -383,6 +383,10 @@
    - 为 [text2-refactor](C:\Code\CodeOfC++\OpenGL_test\text2-refactor) 配置了指向 `https://github.com/XXTongC/LearnOpenGL.git` 的远程，并保留本地 `master` 不受影响。
    - 将当前重构成果提交到新分支 `codex/text2-refactor` 并成功推送到 GitHub。
    - 本次发布未覆盖 `master`，后续可以继续在该分支上独立推进重构。
+51. 完成第一轮全项目重构分析：
+   - 基于当前 `codex/text2-refactor` 分支重新盘点项目结构，明确本轮分析只针对重构版本，不以 `master` 的旧结构为准。
+   - 在 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md) 中补充 `2026-05-20 全项目重构分析（refactor 分支）`，记录当前模块状态、主要耦合热点、后续风险和建议顺序。
+   - 当前判断：下一步最适合继续拆 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 中剩余的 debug controller UI，把它迁入 `tools/editor` 下的独立模块。
 
 ### 当前状态
 

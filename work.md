@@ -246,4 +246,86 @@
 
 ---
 
+## 2026-05-20 全项目重构分析（refactor 分支）
+
+本节只分析 `text2-refactor` 当前状态，也就是 Git 分支 `codex/text2-refactor` 上的重构版本；不把 `master` 的旧根目录布局作为当前事实。
+
+### 当前证据
+
+- 当前分支：`codex/text2-refactor`。
+- 当前 GitHub 远程：`https://github.com/XXTongC/LearnOpenGL.git`，远程分支为 `codex/text2-refactor`。
+- 当前未提交变更：仅有本地 UI 状态文件 `imgui.ini`。
+- 排除 `third_party` 与构建输出后，项目自身约有 `111` 个 `.cpp/.h` 文件。
+- 当前最大的项目源文件：
+  - `renderer/renderer.cpp`：约 `1429` 行。
+  - `framework/geometry.cpp`：约 `720` 行。
+  - `main.cpp`：约 `469` 行。
+  - `tools/editor/EditorPanels.cpp`：约 `396` 行。
+  - `framework/texture.cpp`：约 `391` 行。
+
+### 已经完成的结构改善
+
+- 根目录源码已经按物理目录归类到 `application`、`camera`、`framework`、`framebuffer`、`light`、`materials`、`renderer`、`tools`、`legacy`、`wrapper` 等模块。
+- `main.cpp` 的默认场景装配已经迁入 `tools/sceneSetup`。
+- 编辑器面板已经迁入 `tools/editor`，形成 `hierarchy -> selection -> inspector` 的基础编辑器流。
+- 材质参数 UI 已经开始转为声明式 `MaterialInspector`，新材质可以通过声明属性生成 UI。
+- 历史实验代码已经集中到 `tools/legacyExperiments`，不再继续以内联大段注释的方式堆在主流程里。
+- `glad.c` 已从用户下载目录依赖收回到仓库内 `third_party/src/glad.c`。
+
+### 主要重构风险与后续热点
+
+1. `main.cpp` 仍然承担过多运行期状态。
+
+   当前 `main.cpp` 已经比早期清晰，但仍然保存 `AppRuntimeContext`、全局引用别名、ImGui 控制面板、Camera 创建、回调转发和每帧调度。它现在更像一个临时 composition root，下一步应该把这些职责继续拆成 `Runtime`、`CameraSystem`、`DebugControllerPanel` 或类似模块。
+
+2. `renderer/renderer.cpp` 是当前最大且耦合最高的文件。
+
+   `Renderer` 同时负责 shader 创建、渲染状态切换、材质分发、shadow map 渲染、实例化绘制、MSAA resolve、uniform 设置和具体材质类型转换。这个文件是后续最重要的降耦合对象，但不能一次性重写，应该先拆出低风险子模块：
+   - `RenderState`：depth / stencil / blend / culling / polygon offset。
+   - `ShaderLibrary`：`MaterialType -> Shader` 映射和 shader 初始化。
+   - `ShadowRenderer`：directional / CSM / point shadow pass。
+   - `MaterialBinder`：按材质类型上传 uniform 和贴图。
+
+3. UI 系统已经有声明式起点，但还没有统一到全部可编辑对象。
+
+   `MaterialInspector` 已经是正确方向；但 `Light`、`Camera`、`Shadow` 仍由 `EditorPanels.cpp` 直接手写 ImGui 控件。后续应把它们也改成类似 `visitEditableProperties(...)` 的可检查对象接口，这样 `EditorPanels` 只负责选择对象和调度 inspector。
+
+4. include 路径仍有历史痕迹。
+
+   当前项目能构建，但 `main.cpp`、`renderer.cpp`、`tools/*`、`light/shadow/*` 中同时存在根 include、模块 include 和 `../` 相对 include。目录重组后，建议制定一条规则：项目内部统一从工程 include root 写模块路径，例如 `mesh/instancedMesh.h`、`camera/perspectivecamera.h`，逐步移除跨目录 `../`。
+
+5. 资源生命周期还不是 RAII 风格。
+
+   当前 Camera 和 CameraControl 仍由 `main.cpp` 中裸指针创建和释放；`Application` 仍是 singleton；OpenGL 对象的释放责任分散在各类析构和显式 destroy 中。后续应优先把运行时拥有关系改成 `std::unique_ptr` 或明确 owner 对象，再处理 GPU resource wrapper 的析构一致性。
+
+6. `framework/geometry.cpp` 体量偏大，但风险低于 Renderer。
+
+   `Geometry` 主要是几何生成逻辑，问题更多是文件体量和职责聚合，而不是跨模块耦合。后续可以把 plane / box / sphere / screen plane 的生成迁到 `geometry/GeometryFactory` 或分文件实现，但优先级低于 `Renderer` 和 `main.cpp`。
+
+7. `legacy` 与实验入口需要保持隔离。
+
+   `tools/legacyExperiments/LegacyExperimentRunner.h` 已经把实验入口集中起来，但它是 header-only，包含较多具体资源和材质依赖。后续建议拆出 `.cpp`，让头文件只暴露实验开关 API，减少任何包含该头文件的编译单元被迫接触大量实现依赖。
+
+### 建议的下一批重构顺序
+
+1. 先从 `main.cpp` 拆出 Debug Controller UI。
+
+   这一步风险较低，因为 `hierarchy / inspector` 已经证明 UI 可以从主文件迁出。建议新增 `tools/editor/DebugControllerPanel.h/.cpp`，把当前 `renderIMGUI()` 中的 `"controller"` 窗口迁出去，只保留 ImGui frame 生命周期和 editor panel 调用。
+
+2. 再统一项目内部 include 风格。
+
+   当前构建虽然通过，但 include 写法还不一致。这个清理应该在继续移动更多文件前完成，避免后续每次拆模块都遇到路径噪音。
+
+3. 然后拆 `Renderer` 的状态控制和 shader 管理。
+
+   第一刀不碰渲染行为，只把 `setDepthState`、`setStencilState`、`setColorBlendState`、`setFaceCullingState`、`setPolygonOffsetState` 迁入 `RenderState` 类或命名空间。第二刀再处理 shader 初始化和选择。
+
+4. 最后推进声明式 inspector 扩展。
+
+   把 Light / Camera / Shadow 的可编辑属性也描述成数据，减少 `EditorPanels.cpp` 中的类型判断和手写控件。这个方向会让后续实验环境切换时 UI 维护成本继续下降。
+
+### 当前建议结论
+
+下一步最符合“降耦合”的动作不是继续做可视化效果，而是拆 `renderIMGUI()` 中剩余的 debug controller 面板。它的收益明确、风险可控，也能延续上一轮 `tools/editor` 模块化成果。
+
 后续我们可以持续直接修改这份 `work.md`，把抽象讨论逐渐收敛成具体执行计划。
