@@ -663,3 +663,14 @@ MSAA resolve 已从 `Renderer` 中拆出，作为后处理边界的第一步：
 - `runFrame()` 通过 `frameRenderTargets.getSceneFbo()` 渲染 world scene，并通过 `PostProcessPass` resolve 到 resolved HDR target。
 
 这一步把 PBR 后续必需的 render target orchestration 起点独立出来。当前类还只管理主 scene target，后续可以继续扩展 HDR scene color、Bloom ping-pong target、depth target、IBL capture target 与 resize/recreate 策略。
+
+### 2026-05-20 PostProcessPass screen composite 拆分
+
+屏幕合成已从普通 scene render 路径中移出：
+
+- `PostProcessPass` 新增 `renderScreenComposite(...)`，直接把 resolved HDR color attachment 绘制到目标 framebuffer。
+- `runFrame()` 不再调用 `renderer->render(sceneInScreen, ...)` 执行屏幕输出，避免 screen quad 继续经过 render queue / shadow pass / scene pass。
+- `SceneSetup` 现在显式保留 `screenQuad` 引用，并继续把它挂到 `sceneInScreen`，用于 hierarchy / inspector 可视化，不作为实际绘制入口。
+- screen composite 当前负责默认 framebuffer 绑定、viewport、基础后处理 GL state、exposure/tone mapping shader uniform 和 fullscreen quad draw。
+
+这一步让后处理输出成为独立 pass。后续 Bloom、tone mapping 选项、gamma 策略和 HDR/LDR 输出切换可以继续放进 `PostProcessPass`，而不是继续伪装成普通 scene 中的一个 mesh。

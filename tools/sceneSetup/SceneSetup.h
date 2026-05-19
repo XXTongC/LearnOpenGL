@@ -18,6 +18,7 @@ namespace GL_SCENE
 		std::shared_ptr<GLframework::Scene>& sceneOffScreen;
 		std::shared_ptr<GLframework::Scene>& sceneInScreen;
 		GLframework::FrameRenderTargets& frameRenderTargets;
+		std::shared_ptr<GLframework::Mesh>& screenQuad;
 		std::shared_ptr<GLframework::Mesh>& skyBoxMesh;
 		std::shared_ptr<GLframework::Mesh>& textD;
 		std::shared_ptr<GLframework::ScreenMaterial>& screenMaterial;

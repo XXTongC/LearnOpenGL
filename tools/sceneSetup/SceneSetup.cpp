@@ -114,9 +114,9 @@ namespace
 		context.screenMaterial = std::make_shared<GLframework::ScreenMaterial>();
 		context.screenMaterial->mScreenTexture = context.frameRenderTargets.getResolvedColorAttachment();
 		auto geo = GLframework::Geometry::createScreenPlane(context.renderer->getShader(context.screenMaterial->getMaterialType()));
-		auto mesh = std::make_shared<GLframework::Mesh>(geo, context.screenMaterial);
-		mesh->setName("Screen Quad");
-		context.sceneInScreen->addChild(mesh);
+		context.screenQuad = std::make_shared<GLframework::Mesh>(geo, context.screenMaterial);
+		context.screenQuad->setName("Screen Quad");
+		context.sceneInScreen->addChild(context.screenQuad);
 	}
 
 	void prepareLights(GL_SCENE::SetupContext& context)

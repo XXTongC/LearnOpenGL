@@ -104,6 +104,7 @@ struct AppRuntimeContext
 	std::shared_ptr<GLframework::Scene> sceneOffScreen{ nullptr };
 	std::shared_ptr<GLframework::Scene> sceneInScreen{ nullptr };
 	std::shared_ptr<GLframework::Mesh> meshPointLight{ nullptr };
+	std::shared_ptr<GLframework::Mesh> screenQuad{ nullptr };
 	std::shared_ptr<GLframework::AmbientLight> ambientLight{ nullptr };
 	GLframework::FrameRenderTargets frameRenderTargets{};
 	std::shared_ptr<GLframework::GrassInstanceMaterial> grassMaterial{ nullptr };
@@ -128,6 +129,7 @@ auto& renderer = gAppRuntime.renderer;
 auto& sceneOffScreen = gAppRuntime.sceneOffScreen;
 auto& sceneInScreen = gAppRuntime.sceneInScreen;
 auto& meshPointLight = gAppRuntime.meshPointLight;
+auto& screenQuad = gAppRuntime.screenQuad;
 auto& ambientLight = gAppRuntime.ambientLight;
 auto& frameRenderTargets = gAppRuntime.frameRenderTargets;
 auto& grassMaterial = gAppRuntime.grassMaterial;
@@ -201,8 +203,13 @@ void runFrame()
 	renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights, ambientLight, frameRenderTargets.getSceneFbo());
 	postProcessPass.resolveMultisample(frameRenderTargets.getMultisample(), frameRenderTargets.getResolved());
 
-	// pass 2: on-screen color attachment
-	renderer->render(sceneInScreen, camera, dirLight, spotLight, pointLights, ambientLight);
+	// pass 2: post-process composite to default framebuffer
+	postProcessPass.renderScreenComposite(
+		screenQuad,
+		renderer->getShader(GLframework::MaterialType::ScreenMaterial),
+		static_cast<unsigned int>(GL_APP->getWidth()),
+		static_cast<unsigned int>(GL_APP->getHeight())
+	);
 	renderIMGUI();
 }
 
@@ -243,6 +250,7 @@ GL_SCENE::SetupContext makeSceneSetupContext()
 		sceneOffScreen,
 		sceneInScreen,
 		frameRenderTargets,
+		screenQuad,
 		skyBoxMesh,
 		textD,
 		ScreenMat,

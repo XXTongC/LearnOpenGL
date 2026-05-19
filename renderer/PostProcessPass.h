@@ -2,7 +2,9 @@
 
 #include <memory>
 
+#include "framework/shader.h"
 #include "framebuffer/framebuffer.h"
+#include "mesh/mesh.h"
 
 namespace GLframework
 {
@@ -12,6 +14,14 @@ namespace GLframework
 		void resolveMultisample(
 			const std::shared_ptr<Framebuffer>& src,
 			const std::shared_ptr<Framebuffer>& dst
+		) const;
+
+		void renderScreenComposite(
+			const std::shared_ptr<Mesh>& screenQuad,
+			const std::shared_ptr<Shader>& shader,
+			unsigned int width,
+			unsigned int height,
+			unsigned int targetFbo = 0
 		) const;
 	};
 }

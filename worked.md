@@ -634,6 +634,16 @@
    - 针对 `FrameRenderTargets` 拆分后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
+105. 完成第五十三轮 `PostProcessPass` screen composite 拆分：
+   - 更新 [renderer/PostProcessPass.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessPass.h) 与 [renderer/PostProcessPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessPass.cpp)，新增 `renderScreenComposite(...)`。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，移除 `renderer->render(sceneInScreen, ...)` 的屏幕输出调用，改由 `PostProcessPass` 直接绘制 screen quad 到默认 framebuffer。
+   - 更新 [tools/sceneSetup/SceneSetup.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.h) 与 [tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，显式保留 `screenQuad` 引用，并继续挂到 `sceneInScreen` 供 hierarchy / inspector 使用。
+   - `PostProcessPass` 现在负责 screen composite 的 framebuffer 绑定、viewport、基础后处理 GL state、exposure uniform、texture binding 和 fullscreen quad draw。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 screen composite 迁出普通 scene render path 的意义。
+106. 完成第四十三次构建与运行时 smoke 验证：
+   - 针对 `PostProcessPass` screen composite 拆分后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -652,5 +662,6 @@
 - 当前 frame GL state 已从 `Renderer` 拆出，`Renderer` 进一步收敛为 frame state / render queue / shadow pass / scene pass 编排器。
 - 当前 postprocess 边界已开始建立，MSAA resolve 已从 `Renderer` 移入 `PostProcessPass`。
 - 当前主颜色 render target orchestration 已开始建立，multisample scene target 与 resolved HDR target 已收拢到 `FrameRenderTargets`。
-- 当前剩余明显问题：Bloom / tone mapping 仍未 pass 化，`FrameRenderTargets` 还没有 resize/recreate、Bloom ping-pong target、IBL capture target 和 BRDF LUT 管理。
-- 下一步建议目标：扩展 `PostProcessPass` 承接 screen composite / tone mapping / Bloom，或者继续扩展 `FrameRenderTargets` 管理 PBR / IBL 所需的 HDR 与环境贴图目标。
+- 当前 screen composite 已从普通 `Renderer::render(sceneInScreen, ...)` 路径移入 `PostProcessPass`，screen quad 只保留为 hierarchy / inspector 可见对象。
+- 当前剩余明显问题：Bloom 仍未 pass 化，tone mapping 选项仍写在 screen shader 内，`FrameRenderTargets` 还没有 resize/recreate、Bloom ping-pong target、IBL capture target 和 BRDF LUT 管理。
+- 下一步建议目标：继续扩展 `PostProcessPass` 承接 Bloom，或者扩展 `FrameRenderTargets` 管理 PBR / IBL 所需的 HDR 与环境贴图目标。
