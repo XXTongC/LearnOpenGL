@@ -721,6 +721,18 @@
    - 针对 `EnvironmentRenderTargets` 初步接入后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning；`EnvironmentRenderTargets.obj` 已参与链接。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+121. 完成第六十一轮 `IBLPrecomputePass` 边界建立：
+   - 新增 [renderer/IBLPrecomputePass.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\IBLPrecomputePass.h) 与 [renderer/IBLPrecomputePass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\IBLPrecomputePass.cpp)，把 IBL 预计算流程从 `EnvironmentRenderTargets` 的资源所有权中拆出。
+   - `IBLPrecomputePass` 目前提供 equirectangular HDR texture -> environment cubemap、environment cubemap -> irradiance cubemap、environment cubemap -> prefilter cubemap、BRDF LUT 四个调度入口。
+   - 更新 [renderer/ShaderLibrary.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShaderLibrary.h) 与 [renderer/ShaderLibrary.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShaderLibrary.cpp)，新增 IBL utility shader 注册与 getter。
+   - 新增 [shaders/ibl/capture.vert](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\ibl\capture.vert)、[shaders/ibl/equirectangular_to_cubemap.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\ibl\equirectangular_to_cubemap.frag)、[shaders/ibl/irradiance_convolution.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\ibl\irradiance_convolution.frag)、[shaders/ibl/prefilter.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\ibl\prefilter.frag)、[shaders/ibl/brdf_lut.vert](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\ibl\brdf_lut.vert)、[shaders/ibl/brdf_lut.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\ibl\brdf_lut.frag)，为后续 IBL 烘焙提供 shader 路径。
+   - 更新 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h) 与 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，让 `Renderer` 持有并暴露 `IBLPrecomputePass`。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将新 pass 和 IBL shader 纳入 VS 工程分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 IBL 预计算 pass 与资源层的职责分离。
+122. 完成第五十一次构建与运行时 smoke 验证：
+   - 针对 `IBLPrecomputePass` 和 IBL shader 注册后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning；`IBLPrecomputePass.obj` 已参与链接。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -747,5 +759,6 @@
 - 当前 Bloom composite 已接入 screen shader，resolved HDR color 会与 blurred bloom texture 合成后再 tone mapping / gamma。
 - 当前后处理参数已收敛到 `PostProcessSettings`，exposure、tone mapping mode、Bloom 开关、threshold、intensity、iterations 都能通过 screen material inspector 修改。
 - 当前 IBL / environment 资源边界已建立，`EnvironmentRenderTargets` 管理 environment / irradiance / prefilter cubemap、BRDF LUT 和 capture FBO。
-- 当前剩余明显问题：`PostProcessSettings` 仍挂在 `ScreenMaterial` 上，尚未提升到 runtime / renderer 级别；`EnvironmentRenderTargets` 还没有实际 environment capture / irradiance / prefilter / BRDF LUT 生成 pass；`FrameRenderTargets` 还没有 resize/recreate。
-- 下一步建议目标：实现 `EnvironmentPass` / `IBLPrecomputePass`，把 environment capture、irradiance convolution、prefilter 和 BRDF LUT 生成从资源管理中继续拆成明确 pass。
+- 当前 IBL 预计算流程已拆到 `IBLPrecomputePass`，但尚未接入 HDR environment texture 加载、capture cube / BRDF quad 创建和实际运行时触发。
+- 当前剩余明显问题：`PostProcessSettings` 仍挂在 `ScreenMaterial` 上，尚未提升到 runtime / renderer 级别；`IBLPrecomputePass` 尚未被 scene setup 调用；`FrameRenderTargets` 还没有 resize/recreate。
+- 下一步建议目标：新增 environment profile / HDR texture loading 入口，并在 scene setup 中创建 capture cube 与 BRDF quad，让 `IBLPrecomputePass` 可以真正生成 IBL 贴图。

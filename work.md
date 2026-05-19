@@ -756,3 +756,15 @@ IBL / environment 资源边界已建立，但暂不改变 PBR shader 的最终�
 - 本轮没有把 IBL sampler 接入 `PBRMaterial` / `MaterialBinder`，避免在资源边界未稳定前直接改变 PBR 视觉输出。
 
 这一步把 PBR 的下一阶段拆成更清晰的顺序：先实现 environment capture / IBL precompute pass，再把 irradiance、prefilter 和 BRDF LUT 作为统一资源传给 PBR 材质绑定。后续不应再把这些 render target 直接塞进 `FrameRenderTargets` 或普通 framebuffer 工具函数里。
+
+### 2026-05-20 IBLPrecomputePass 边界建立
+
+IBL 预计算流程已从资源所有权中拆出：
+
+- 新增 `IBLPrecomputePass`，负责调度 equirectangular HDR texture -> environment cubemap、environment cubemap -> irradiance cubemap、environment cubemap -> prefilter cubemap、BRDF LUT 生成。
+- `EnvironmentRenderTargets` 继续只负责资源持有和 capture attachment，不承担具体预计算算法。
+- `ShaderLibrary` 新增 IBL utility shader 注册与 getter，包括 equirectangular to cubemap、irradiance convolution、prefilter 和 BRDF LUT。
+- 新增 `shaders/ibl/*`，为后续实际烘焙 IBL 资源准备 shader 路径。
+- `Renderer` 持有 `IBLPrecomputePass` 并暴露 getter，后续 scene setup 或 runtime profile 可以显式触发 IBL 预计算。
+
+这一步仍不改变 PBR shader 输出，只把 IBL 资源生成流程变成可调用模块。下一步应接入 HDR environment texture 加载和 capture cube / BRDF screen quad 的创建策略，再决定是在启动阶段预计算还是在 environment profile 变化时重新生成。

@@ -28,6 +28,16 @@ EnvironmentRenderTargets& Renderer::getEnvironmentRenderTargets()
 	return mEnvironmentRenderTargets;
 }
 
+const IBLPrecomputePass& Renderer::getIBLPrecomputePass() const
+{
+	return mIblPrecomputePass;
+}
+
+IBLPrecomputePass& Renderer::getIBLPrecomputePass()
+{
+	return mIblPrecomputePass;
+}
+
 void Renderer::render(
 	std::shared_ptr<Scene> scene,
 	Camera* camera,

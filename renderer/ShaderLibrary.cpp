@@ -24,6 +24,10 @@ void GLframework::ShaderLibrary::initialize()
 
 	mShadowShader = createShader("shaders/shadow/shadow.vert", "shaders/shadow/shadow.frag");
 	mShadowDistanceShader = createShader("shaders/shadowDistance/shadowDistance.vert", "shaders/shadowDistance/shadowDistance.frag");
+	mEquirectangularToCubemapShader = createShader("shaders/ibl/capture.vert", "shaders/ibl/equirectangular_to_cubemap.frag");
+	mIrradianceConvolutionShader = createShader("shaders/ibl/capture.vert", "shaders/ibl/irradiance_convolution.frag");
+	mPrefilterShader = createShader("shaders/ibl/capture.vert", "shaders/ibl/prefilter.frag");
+	mBrdfLutShader = createShader("shaders/ibl/brdf_lut.vert", "shaders/ibl/brdf_lut.frag");
 }
 
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::get(MaterialType type) const
@@ -46,6 +50,26 @@ std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getShadowShader
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getShadowDistanceShader() const
 {
 	return mShadowDistanceShader;
+}
+
+std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getEquirectangularToCubemapShader() const
+{
+	return mEquirectangularToCubemapShader;
+}
+
+std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getIrradianceConvolutionShader() const
+{
+	return mIrradianceConvolutionShader;
+}
+
+std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPrefilterShader() const
+{
+	return mPrefilterShader;
+}
+
+std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getBrdfLutShader() const
+{
+	return mBrdfLutShader;
 }
 
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::createShader(const char* vertexPath, const char* fragmentPath)

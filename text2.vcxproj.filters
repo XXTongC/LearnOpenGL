@@ -265,6 +265,9 @@
     <Filter Include="资源文件\shaders\phongPointShadow">
       <UniqueIdentifier>{7b1e2684-2a7e-47d4-aca9-828d98231e5e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\shaders\ibl">
+      <UniqueIdentifier>{b7a56dd2-693b-4b99-a038-a0258b7be65d}</UniqueIdentifier>
+    </Filter>
     <Filter Include="include\GLframework\tools\Logger">
       <UniqueIdentifier>{77cff01e-4a03-413b-87a1-a463d2728216}</UniqueIdentifier>
     </Filter>
@@ -367,6 +370,9 @@
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
     <ClCompile Include="renderer\FrameRenderTargets.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\IBLPrecomputePass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
     <ClCompile Include="renderer\PostProcessPass.cpp">
@@ -588,6 +594,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\FrameRenderTargets.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\IBLPrecomputePass.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PostProcessPass.h">
@@ -2346,6 +2355,24 @@
     </None>
     <None Include="shaders\pbr\pbr.vert">
       <Filter>资源文件\shaders\pbr</Filter>
+    </None>
+    <None Include="shaders\ibl\capture.vert">
+      <Filter>资源文件\shaders\ibl</Filter>
+    </None>
+    <None Include="shaders\ibl\equirectangular_to_cubemap.frag">
+      <Filter>资源文件\shaders\ibl</Filter>
+    </None>
+    <None Include="shaders\ibl\irradiance_convolution.frag">
+      <Filter>资源文件\shaders\ibl</Filter>
+    </None>
+    <None Include="shaders\ibl\prefilter.frag">
+      <Filter>资源文件\shaders\ibl</Filter>
+    </None>
+    <None Include="shaders\ibl\brdf_lut.vert">
+      <Filter>资源文件\shaders\ibl</Filter>
+    </None>
+    <None Include="shaders\ibl\brdf_lut.frag">
+      <Filter>资源文件\shaders\ibl</Filter>
     </None>
     <None Include="shaders\phong\phongShadow.frag">
       <Filter>资源文件\shaders\phong</Filter>

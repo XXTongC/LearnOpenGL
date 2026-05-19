@@ -7,6 +7,7 @@
 #include "shader.h"
 #include "EnvironmentRenderTargets.h"
 #include "FrameRenderState.h"
+#include "IBLPrecomputePass.h"
 #include "RenderQueue.h"
 #include "SceneRenderPass.h"
 #include "ShadowRenderer.h"
@@ -26,6 +27,8 @@ namespace GLframework
 		std::shared_ptr<Shader> getShader(MaterialType type);
 		const EnvironmentRenderTargets& getEnvironmentRenderTargets() const;
 		EnvironmentRenderTargets& getEnvironmentRenderTargets();
+		const IBLPrecomputePass& getIBLPrecomputePass() const;
+		IBLPrecomputePass& getIBLPrecomputePass();
 		//渲染功能函数
 		//1. 每次调用渲染一帧
 		
@@ -48,6 +51,7 @@ private:
 		ShadowRenderer mShadowRenderer{};
 		SceneRenderPass mSceneRenderPass{};
 		EnvironmentRenderTargets mEnvironmentRenderTargets{};
+		IBLPrecomputePass mIblPrecomputePass{};
 
 	};
 }

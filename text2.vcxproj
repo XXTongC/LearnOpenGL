@@ -175,6 +175,7 @@
     <ClCompile Include="renderer\EnvironmentRenderTargets.cpp" />
     <ClCompile Include="renderer\FrameRenderState.cpp" />
     <ClCompile Include="renderer\FrameRenderTargets.cpp" />
+    <ClCompile Include="renderer\IBLPrecomputePass.cpp" />
     <ClCompile Include="renderer\MaterialBinder.cpp" />
     <ClCompile Include="renderer\PostProcessPass.cpp" />
     <ClCompile Include="renderer\RenderQueue.cpp" />
@@ -251,6 +252,7 @@
     <ClInclude Include="renderer\EnvironmentRenderTargets.h" />
     <ClInclude Include="renderer\FrameRenderState.h" />
     <ClInclude Include="renderer\FrameRenderTargets.h" />
+    <ClInclude Include="renderer\IBLPrecomputePass.h" />
     <ClInclude Include="renderer\MaterialBinder.h" />
     <ClInclude Include="renderer\PostProcessPass.h" />
     <ClInclude Include="renderer\PostProcessSettings.h" />
@@ -656,6 +658,12 @@
     <None Include="shaders\fragment.glsl" />
     <None Include="shaders\grassInstance\grassInstance.frag" />
     <None Include="shaders\grassInstance\grassInstance.vert" />
+    <None Include="shaders\ibl\brdf_lut.frag" />
+    <None Include="shaders\ibl\brdf_lut.vert" />
+    <None Include="shaders\ibl\capture.vert" />
+    <None Include="shaders\ibl\equirectangular_to_cubemap.frag" />
+    <None Include="shaders\ibl\irradiance_convolution.frag" />
+    <None Include="shaders\ibl\prefilter.frag" />
     <None Include="shaders\opacityMask\phongOpacityMask.frag" />
     <None Include="shaders\opacityMask\phongOpacityMask.vert" />
     <None Include="shaders\pbr\pbr.frag" />
