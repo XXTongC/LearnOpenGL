@@ -187,6 +187,7 @@ namespace
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
 		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		ShadowResourceBinder::bindCSMShadowResources(shader, camera, dirLight, 8);
 
 		shader->setVector3("pbrAlbedo", pbrMat->mAlbedo);
 		shader->setFloat("pbrMetallic", pbrMat->mMetallic);

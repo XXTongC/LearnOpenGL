@@ -532,6 +532,17 @@
    - 针对 `ShadowResourceBinder` 抽象后执行真实 `Debug|x64 Build`。
    - `ShadowResourceBinder.obj` 成功编译并参与链接。
    - 构建结果：成功，`0` error，`0` warning。
+85. 完成第四十三轮 PBR CSM shadow 接入：
+   - 更新 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，在 `PBRMaterial` 绑定阶段调用 `ShadowResourceBinder::bindCSMShadowResources(...)`。
+   - PBR shadow map 使用 texture unit `8`，避免和常见 PBR 贴图槽位冲突。
+   - 更新 [shaders/pbr/pbr.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr.frag)，新增 CSM shadow uniforms、cascade layer 选择、shadow map array 采样和 3x3 PCF。
+   - PBR 方向光 BRDF 现在会乘以 CSM shadow visibility，PBR 路径开始实际消费统一 shadow resource。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PBR CSM shadow 接入范围和验证边界。
+86. 完成第三十三次构建与运行时 smoke 验证：
+   - 针对 PBR CSM shadow 接入后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 本机未找到 `glslangValidator`，无法做离线 GLSL validator 检查。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 出现既有 `Failed to open logfile.`，未发现与本轮 PBR shader 相关的运行时编译/链接错误。
 
 ### 当前状态
 
@@ -545,4 +556,4 @@
 - 第六轮场景对象构建拆分：已完成。
 - 当前工程可成功构建。
 - 当前剩余明显问题：`Renderer::renderObject()` 仍保留 Env / Instance / Opacity / Cube / Screen 等旧材质分支，主渲染分支尚未完全清空。
-- 下一步建议目标：让 PBR shader 试接 CSM shadow resource，或者继续迁移 Env / Instance / Opacity 等非 shadow 旧材质，进一步清空 `Renderer::renderObject()`。
+- 下一步建议目标：人工观察 PBR preview 的 shadow / normal map 方向，或继续迁移 Env / Instance / Opacity 等非 shadow 旧材质，进一步清空 `Renderer::renderObject()`。

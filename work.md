@@ -551,3 +551,18 @@ Shadow 资源绑定已从 `MaterialBinder` 中继续抽出为可复用模块：
 - point shadow 的 texture array、point light far/near、debug uniform 也通过同一个模块绑定。
 
 这一步的意义是为 PBR shader 接入 shadow 做准备：PBR 后续不需要复制 Phong shadow 材质分支，只需要在自己的 binding 阶段调用统一的 shadow resource 入口，并在 shader 侧消费对应 uniform。
+
+### 2026-05-20 PBR CSM shadow 接入
+
+PBR 材质已开始消费统一的 shadow resource：
+
+- `PBRMaterial` 绑定阶段调用 `ShadowResourceBinder::bindCSMShadowResources(...)`，当前使用 texture unit `8`，避免和常见 PBR 贴图槽冲突。
+- `pbr.frag` 新增 CSM 相关 uniform：`shadowMapSampler`、`csmLayerCount`、`csmLayers`、`lightMatrices`、`bias`、`pcfRadius`。
+- PBR fragment shader 根据 `viewMatrix` 和 `csmLayers` 选择 cascade layer，并用 `lightMatrices[layer]` 采样 shadow map array。
+- 当前先采用 3x3 PCF 的最小 shadow visibility，将方向光 PBR 结果乘以 `(1.0 - directionalShadow)`；point light shadow 和 IBL 仍未接入。
+
+验证边界：
+
+1. C++ / VS 工程构建已通过。
+2. 本机未找到 `glslangValidator`，无法做离线 GLSL validator 检查。
+3. 短启动程序未输出 `Shader Compile Error` / `Shader Link Error`，说明当前默认运行路径没有触发 PBR shader 编译或链接错误；视觉结果仍需要人工观察窗口确认。
