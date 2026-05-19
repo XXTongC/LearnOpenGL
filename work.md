@@ -851,3 +851,13 @@ PBR shader path 已能消费 IBL 资源，但默认仍关闭：
 - `DebugControllerPanel` 的 `Post Process` 区域新增 profile 文件路径显示、Save 和 Reload 操作。
 
 这一步让后处理参数从“运行时临时调节”推进到“可保存的实验配置”。后续接真实 HDR environment 验证 PBR IBL 时，tone mapping 和 Bloom 参数可以随 profile 保存，不需要每次启动后重新调整。
+
+### 2026-05-20 PBR 线性 HDR 输出修正
+
+PBR shader 输出已与统一后处理链路对齐：
+
+- `shaders/pbr/pbr.frag` 删除材质 shader 内部的 Reinhard tone mapping 和 gamma correction。
+- PBR scene pass 现在输出线性 HDR color 到 resolved HDR / Bloom / screen composite 链路。
+- tone mapping mode、exposure 和 gamma correction 统一由 `shaders/screen/screen.frag` 根据 `PostProcessSettings` 处理。
+
+这一步避免 PBR 结果在 scene pass 和 screen pass 中被重复 tone mapping / gamma。后续验证 IBL 时，PBR direct light、IBL ambient、Bloom 和最终 tone mapping 会处在同一条 HDR 输出链路上，调参结果也更可预测。

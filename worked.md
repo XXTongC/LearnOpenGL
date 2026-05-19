@@ -814,6 +814,15 @@
    - 针对 `PostProcessSettings` 持久化入口后执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning；`PostProcessSettings.obj` 已参与链接。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，在缺省没有 `config/postprocess_settings.local.ini` 时仍正常使用默认 settings；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+137. 完成第六十九轮 PBR 线性 HDR 输出修正：
+   - 更新 [shaders/pbr/pbr.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr.frag)，删除 PBR shader 末尾的 Reinhard tone mapping 和 gamma correction。
+   - PBR scene pass 现在输出线性 HDR color，交给统一 screen composite 根据 `PostProcessSettings` 执行 tone mapping、exposure 和 gamma。
+   - 这避免 PBR 颜色在材质 shader 和 screen shader 中被重复 tone mapping / gamma，对后续 IBL、Bloom 和 HDR 调参更稳定。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PBR 输出空间与后处理链路的边界修正。
+138. 完成第五十九次构建与运行时 shader smoke 验证：
+   - 针对 PBR 线性 HDR 输出修正后执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -842,6 +851,7 @@
 - 当前 IBL / environment 资源边界已建立，`EnvironmentRenderTargets` 管理 environment / irradiance / prefilter cubemap、BRDF LUT 和 capture FBO。
 - 当前 IBL 预计算流程已拆到 `IBLPrecomputePass`，并可通过 `EnvironmentProfile` 在 scene setup 阶段加载 HDR environment、创建 capture cube / BRDF quad 并触发预计算。
 - 当前 PBR shader 已支持直接光 + 可选 IBL 组合，`MaterialBinder` 会在 PBR 材质启用 IBL 且 environment ready 时绑定 irradiance / prefilter / BRDF LUT。
+- 当前 PBR shader 已输出线性 HDR color，不再在材质 shader 内部执行 tone mapping / gamma，最终显示转换统一交给 screen postprocess。
 - 当前 `EnvironmentProfile` 已接入 DebugControllerPanel UI，可在运行时编辑 HDR path / texture unit、切换 prepare 预计算，并手动触发 IBL precompute。
 - 当前 `EnvironmentProfile` 已支持 `config/environment_profile.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/environment_profile.example.ini` 作为字段示例。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
