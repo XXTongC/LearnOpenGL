@@ -695,3 +695,14 @@ Bloom 的亮度提取实现已从 framebuffer 层移回 renderer/Bloom：
 - `Bloom` 的 mip level 计算增加显式 `static_cast<int>`，避免后续重新编译时出现浮点到整数转换噪音。
 
 这一步清理了 framebuffer 到 renderer/Bloom 的反向依赖。后续接 Bloom 时，可以由 `PostProcessPass` 或独立 Bloom pass 调用 Bloom，而不是让底层 framebuffer 文件承担渲染 pass 行为。
+
+### 2026-05-20 Bloom bright extraction 接入
+
+Bloom 的第一段后处理链已接入运行时，但暂时不改变最终屏幕合成结果：
+
+- `FrameRenderTargets` 新增 `bloomBright` HDR framebuffer，用于保存 bright extraction 输出。
+- `SceneSetup` 初始化 `Bloom` 实例，和主 frame render targets 一起作为运行时渲染资源准备。
+- `PostProcessPass` 新增 `extractBloomBright(...)`，统一调度 `Bloom::extractBright(...)`。
+- `runFrame()` 在 MSAA resolve 之后、screen composite 之前执行 bright extraction：resolved HDR color -> bloom bright target。
+
+这一步只生成 bloom bright 中间结果，不做 blur/composite。这样可以先验证 Bloom shader、目标 framebuffer 和 pass 调度链路，再在后续步骤中接 blur ping-pong 与最终合成，避免一次性改变最终画面输出。

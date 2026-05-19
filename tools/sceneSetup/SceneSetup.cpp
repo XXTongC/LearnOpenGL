@@ -17,6 +17,7 @@ namespace
 		context.sceneOffScreen->setName("World Scene");
 
 		context.frameRenderTargets.initialize(context.width, context.height, 4);
+		context.bloom = std::make_shared<GLframework::Bloom>(context.width, context.height);
 
 		GLframework::PointLightShadow::initializeSharedDepthTexture(1024, 1024, 2);
 	}

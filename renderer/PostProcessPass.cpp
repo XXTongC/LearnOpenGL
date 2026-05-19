@@ -2,6 +2,7 @@
 
 #include "core.h"
 #include "materials/screenMaterial.h"
+#include "renderer/Bloom/Bloom.h"
 
 using namespace GLframework;
 
@@ -92,4 +93,18 @@ void PostProcessPass::renderScreenComposite(
 	shader->end();
 
 	glDepthMask(GL_TRUE);
+}
+
+void PostProcessPass::extractBloomBright(
+	const std::shared_ptr<Bloom>& bloom,
+	const std::shared_ptr<Framebuffer>& src,
+	const std::shared_ptr<Framebuffer>& dst
+) const
+{
+	if (bloom == nullptr)
+	{
+		return;
+	}
+
+	bloom->extractBright(src, dst);
 }

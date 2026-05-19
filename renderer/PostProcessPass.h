@@ -8,6 +8,8 @@
 
 namespace GLframework
 {
+	class Bloom;
+
 	class PostProcessPass
 	{
 	public:
@@ -22,6 +24,12 @@ namespace GLframework
 			unsigned int width,
 			unsigned int height,
 			unsigned int targetFbo = 0
+		) const;
+
+		void extractBloomBright(
+			const std::shared_ptr<Bloom>& bloom,
+			const std::shared_ptr<Framebuffer>& src,
+			const std::shared_ptr<Framebuffer>& dst
 		) const;
 	};
 }

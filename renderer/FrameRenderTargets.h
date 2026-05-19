@@ -19,7 +19,9 @@ namespace GLframework
 
 		const std::shared_ptr<Framebuffer>& getMultisample() const;
 		const std::shared_ptr<Framebuffer>& getResolved() const;
+		const std::shared_ptr<Framebuffer>& getBloomBright() const;
 		std::shared_ptr<Texture> getResolvedColorAttachment() const;
+		std::shared_ptr<Texture> getBloomBrightColorAttachment() const;
 
 	private:
 		unsigned int mWidth{ 0 };
@@ -27,5 +29,6 @@ namespace GLframework
 		unsigned int mSamples{ 0 };
 		std::shared_ptr<Framebuffer> mMultisample{ nullptr };
 		std::shared_ptr<Framebuffer> mResolved{ nullptr };
+		std::shared_ptr<Framebuffer> mBloomBright{ nullptr };
 	};
 }

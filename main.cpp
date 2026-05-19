@@ -34,6 +34,7 @@
 #include "scene.h"
 #include <chrono>
 #include "renderer.h"
+#include "renderer/Bloom/Bloom.h"
 #include "renderer/FrameRenderTargets.h"
 #include "renderer/PostProcessPass.h"
 #include "pointLight.h"
@@ -107,6 +108,7 @@ struct AppRuntimeContext
 	std::shared_ptr<GLframework::Mesh> screenQuad{ nullptr };
 	std::shared_ptr<GLframework::AmbientLight> ambientLight{ nullptr };
 	GLframework::FrameRenderTargets frameRenderTargets{};
+	std::shared_ptr<GLframework::Bloom> bloom{ nullptr };
 	std::shared_ptr<GLframework::GrassInstanceMaterial> grassMaterial{ nullptr };
 	std::shared_ptr<GLframework::Mesh> skyBoxMesh{ nullptr };
 	std::shared_ptr<GLframework::Mesh> movePlane{ nullptr };
@@ -132,6 +134,7 @@ auto& meshPointLight = gAppRuntime.meshPointLight;
 auto& screenQuad = gAppRuntime.screenQuad;
 auto& ambientLight = gAppRuntime.ambientLight;
 auto& frameRenderTargets = gAppRuntime.frameRenderTargets;
+auto& bloom = gAppRuntime.bloom;
 auto& grassMaterial = gAppRuntime.grassMaterial;
 auto& skyBoxMesh = gAppRuntime.skyBoxMesh;
 auto& movePlane = gAppRuntime.movePlane;
@@ -202,6 +205,7 @@ void runFrame()
 	// pass 1: off-screen color attachment
 	renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights, ambientLight, frameRenderTargets.getSceneFbo());
 	postProcessPass.resolveMultisample(frameRenderTargets.getMultisample(), frameRenderTargets.getResolved());
+	postProcessPass.extractBloomBright(bloom, frameRenderTargets.getResolved(), frameRenderTargets.getBloomBright());
 
 	// pass 2: post-process composite to default framebuffer
 	postProcessPass.renderScreenComposite(
@@ -250,6 +254,7 @@ GL_SCENE::SetupContext makeSceneSetupContext()
 		sceneOffScreen,
 		sceneInScreen,
 		frameRenderTargets,
+		bloom,
 		screenQuad,
 		skyBoxMesh,
 		textD,
