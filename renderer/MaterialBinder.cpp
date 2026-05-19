@@ -195,6 +195,7 @@ namespace
 		bindOptionalTexture(shader, "metallicMap", "useMetallicMap", pbrMat->mMetallicMap);
 		bindOptionalTexture(shader, "roughnessMap", "useRoughnessMap", pbrMat->mRoughnessMap);
 		bindOptionalTexture(shader, "aoMap", "useAoMap", pbrMat->mAoMap);
+		bindOptionalTexture(shader, "normalMap", "useNormalMap", pbrMat->mNormalMap);
 		bindOptionalTexture(shader, "emissiveMap", "useEmissiveMap", pbrMat->mEmissiveMap);
 	}
 }

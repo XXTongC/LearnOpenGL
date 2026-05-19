@@ -460,6 +460,15 @@
    - 针对 TBN 相关材质绑定迁移后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`11` warning。
    - warning 仍来自 Renderer 旧代码中的 include packing 与窄化转换；由于 normal/parallax 分支迁出，Renderer 旧 warning 数量从上一轮 `12` 个降到 `11` 个。
+69. 完成第三十五轮 PBR normal map 接入：
+   - 更新 [shaders/pbr/pbr.vert](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr.vert)，接收 `aTangent` 并输出 `TBN`。
+   - 更新 [shaders/pbr/pbr.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr.frag)，新增 `normalMap` / `useNormalMap`，启用贴图时将 tangent-space normal 转换到世界空间后参与 GGX 光照。
+   - 更新 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，把 `PBRMaterial::mNormalMap` 纳入可选贴图绑定流程。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PBR normal map 当前状态和后续 tangent 数据验证风险。
+70. 完成第二十五次构建验证：
+   - 针对 PBR normal map 接入后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 当前验证边界不变：MSBuild 不会编译 GLSL，`pbr.vert/.frag` 仍需要运行时 shader 编译或外部 GLSL validator 进一步确认。
 
 ### 当前状态
 

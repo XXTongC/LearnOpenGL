@@ -25,6 +25,7 @@ in vec2 uv;
 in vec4 color;
 in vec3 normal;
 in vec3 worldPosition;
+in mat3 TBN;
 
 out vec4 FragColor;
 
@@ -48,11 +49,13 @@ uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
 uniform sampler2D emissiveMap;
+uniform sampler2D normalMap;
 uniform int useAlbedoMap;
 uniform int useMetallicMap;
 uniform int useRoughnessMap;
 uniform int useAoMap;
 uniform int useEmissiveMap;
+uniform int useNormalMap;
 
 float distributionGGX(vec3 n, vec3 h, float roughness)
 {
@@ -107,6 +110,12 @@ vec3 calculatePbrLight(vec3 radiance, vec3 l, vec3 n, vec3 v, vec3 albedo, float
 void main()
 {
 	vec3 n = normalize(normal);
+	if (useNormalMap == 1)
+	{
+		vec3 tangentNormal = texture(normalMap, uv).rgb * 2.0 - vec3(1.0);
+		n = normalize(TBN * tangentNormal);
+	}
+
 	vec3 v = normalize(cameraPosition - worldPosition);
 
 	vec3 albedo = pbrAlbedo;

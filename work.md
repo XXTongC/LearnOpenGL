@@ -420,9 +420,9 @@
 - 已通过 `ShaderLibrary` 注册 `MaterialType::PBRMaterial`，避免重新把 shader 成员堆回 `Renderer`。
 - 已在 `Renderer::renderObject()` 中增加临时 PBR uniform 上传分支，用于验证材质路径完整；这部分下一步应迁入 `MaterialBinder`，否则 Renderer 仍会继续膨胀。
 
-当前刻意没有实现的内容：
+当前刻意没有实现或仍需补强的内容：
 
-- normal map 还没有真正参与 shading，因为当前几何属性和 shader 管线还没有统一 tangent / bitangent / TBN 输入。
+- normal map 已在后续接入 PBR shader，但 tangent / bitangent / TBN 的生成质量仍需要统一验证，尤其是 loader 导入模型和程序生成几何的 tangent 数据一致性。
 - IBL 还没有接入，irradiance map、prefilter map、BRDF LUT 应该在后续单独引入 environment lighting 模块。
 - PBR 贴图的 texture unit 分配仍沿用 `Texture` 自身状态，后续资源绑定系统需要统一管理槽位，避免复杂材质间冲突。
 
@@ -456,5 +456,19 @@
 
 下一步建议：
 
-1. 给 `PBRMaterial` 接入 `normalMap` 的 shader 分支，要求 `pbr.vert` 与 normal/parallax shader 一样接收 `aTangent` 并输出 `TBN`。
+1. 继续验证 PBR normal map 所需的 tangent 数据生成质量，尤其是程序生成几何和 Assimp 导入模型之间的一致性。
 2. 再将 `PhongShadowMaterial` / `PhongPointShadowMaterial` / `PhongCSMShadowMaterial` 迁出 Renderer，或者直接规划 `ShadowRenderer`，避免 shadow 特例继续挤在普通材质分支里。
+
+### 2026-05-20 PBR normal map 接入
+
+`PBRMaterial::mNormalMap` 已从数据槽推进到 shader 路径：
+
+- `pbr.vert` 现在接收 `aTangent`，并输出 `TBN`。
+- `pbr.frag` 新增 `normalMap` / `useNormalMap`，启用 normal map 时会将 tangent-space normal 转换到世界空间后参与 GGX 光照。
+- `MaterialBinder` 已绑定 `PBRMaterial::mNormalMap`，与 albedo、metallic、roughness、ao、emissive 使用同一套可选贴图开关模式。
+
+后续需要继续验证的点：
+
+1. 程序生成几何与 Assimp 导入几何的 tangent 数据是否完整、方向是否一致。
+2. PBR shader 当前直接依赖 `aTangent`，如果某些几何没有 tangent 数据，需要在 Geometry 层提供 fallback 或在创建 PBR mesh 时强制生成 tangent。
+3. PBR 仍缺 IBL，因此材质观感还只是 direct lighting PBR，不是完整生产级 PBR。
