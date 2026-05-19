@@ -12,7 +12,6 @@ namespace GLframework
 		int mHeight{ 0 };
 		// �²���ͼƬ����
 		int mMipLevels{ 0 };
-		float mThreshold{ 1.0f };
 		std::shared_ptr<Shader> mExtractBrightShader{ nullptr };
 		std::shared_ptr<Geometry> mQuad{ nullptr };
 		std::vector<std::shared_ptr<Framebuffer>> mDownSamples{};
@@ -23,7 +22,8 @@ namespace GLframework
 		~Bloom();
 		void extractBright(
 			const std::shared_ptr<Framebuffer>& src,
-			const std::shared_ptr<Framebuffer>& dst
+			const std::shared_ptr<Framebuffer>& dst,
+			float threshold
 		) const;
 		void blurPingPong(
 			const std::shared_ptr<Framebuffer>& src,

@@ -251,6 +251,7 @@
     <ClInclude Include="renderer\FrameRenderTargets.h" />
     <ClInclude Include="renderer\MaterialBinder.h" />
     <ClInclude Include="renderer\PostProcessPass.h" />
+    <ClInclude Include="renderer\PostProcessSettings.h" />
     <ClInclude Include="renderer\RenderQueue.h" />
     <ClInclude Include="renderer\RenderState.h" />
     <ClInclude Include="renderer\renderer.h" />

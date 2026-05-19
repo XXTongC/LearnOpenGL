@@ -37,7 +37,8 @@ Bloom::~Bloom()
 
 void Bloom::extractBright(
 	const std::shared_ptr<Framebuffer>& src,
-	const std::shared_ptr<Framebuffer>& dst
+	const std::shared_ptr<Framebuffer>& dst,
+	float threshold
 ) const
 {
 	if (src == nullptr || dst == nullptr || mExtractBrightShader == nullptr || mQuad == nullptr)
@@ -57,7 +58,7 @@ void Bloom::extractBright(
 		srcTex->Bind();
 	}
 	mExtractBrightShader->setInt("srcTex", 0);
-	mExtractBrightShader->setFloat("threshold", mThreshold);
+	mExtractBrightShader->setFloat("threshold", threshold);
 
 	glBindVertexArray(mQuad->getVao());
 	glDrawElements(GL_TRIANGLES, mQuad->getIndicesCount(), GL_UNSIGNED_INT, nullptr);

@@ -5,6 +5,7 @@
 #include "framework/shader.h"
 #include "framebuffer/framebuffer.h"
 #include "mesh/mesh.h"
+#include "PostProcessSettings.h"
 
 namespace GLframework
 {
@@ -29,7 +30,8 @@ namespace GLframework
 		void extractBloomBright(
 			const std::shared_ptr<Bloom>& bloom,
 			const std::shared_ptr<Framebuffer>& src,
-			const std::shared_ptr<Framebuffer>& dst
+			const std::shared_ptr<Framebuffer>& dst,
+			float threshold
 		) const;
 
 		void blurBloom(

@@ -74,9 +74,10 @@ void PostProcessPass::renderScreenComposite(
 	shader->setInt("bloomTextureSampler", 2);
 	shader->setFloat("texWidth", static_cast<float>(width));
 	shader->setFloat("texHeight", static_cast<float>(height));
-	shader->setFloat("exposure", screenMaterial->mExposure);
-	shader->setInt("enableBloom", screenMaterial->mBloomEnabled && screenMaterial->mBloomTexture != nullptr ? 1 : 0);
-	shader->setFloat("bloomIntensity", screenMaterial->mBloomIntensity);
+	shader->setFloat("exposure", screenMaterial->mSettings.exposure);
+	shader->setInt("toneMappingMode", static_cast<int>(screenMaterial->mSettings.toneMappingMode));
+	shader->setInt("enableBloom", screenMaterial->mSettings.bloomEnabled && screenMaterial->mBloomTexture != nullptr ? 1 : 0);
+	shader->setFloat("bloomIntensity", screenMaterial->mSettings.bloomIntensity);
 
 	screenMaterial->mScreenTexture->setUnit(0);
 	screenMaterial->mScreenTexture->Bind();
@@ -106,7 +107,8 @@ void PostProcessPass::renderScreenComposite(
 void PostProcessPass::extractBloomBright(
 	const std::shared_ptr<Bloom>& bloom,
 	const std::shared_ptr<Framebuffer>& src,
-	const std::shared_ptr<Framebuffer>& dst
+	const std::shared_ptr<Framebuffer>& dst,
+	float threshold
 ) const
 {
 	if (bloom == nullptr)
@@ -114,7 +116,7 @@ void PostProcessPass::extractBloomBright(
 		return;
 	}
 
-	bloom->extractBright(src, dst);
+	bloom->extractBright(src, dst, threshold);
 }
 
 void PostProcessPass::blurBloom(

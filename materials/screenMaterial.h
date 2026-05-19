@@ -1,6 +1,7 @@
 #pragma once
 
 #include "material.h"
+#include "renderer/PostProcessSettings.h"
 #include "texture.h"
 namespace GLframework
 {
@@ -18,8 +19,6 @@ namespace GLframework
 		std::shared_ptr<Texture> mScreenTexture{ nullptr };
 		std::shared_ptr<Texture> mDepthStencilTexture{ nullptr };
 		std::shared_ptr<Texture> mBloomTexture{ nullptr };
-		float mExposure = 1.0f;
-		float mBloomIntensity = 0.04f;
-		bool mBloomEnabled = true;
+		PostProcessSettings mSettings{};
 	};
 }

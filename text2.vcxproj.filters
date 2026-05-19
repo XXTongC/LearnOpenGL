@@ -587,6 +587,9 @@
     <ClInclude Include="renderer\PostProcessPass.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
+    <ClInclude Include="renderer\PostProcessSettings.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
     <ClInclude Include="renderer\RenderQueue.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>

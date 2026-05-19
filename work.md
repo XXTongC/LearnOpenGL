@@ -730,3 +730,17 @@ Blurred Bloom texture 已合成进最终 screen composite：
 - `Bloom` bright threshold 默认值从 `0.0` 调整为 `1.0`，避免把全部 HDR 颜色都当成 bloom 源。
 
 这一步完成了当前 Bloom 链路的闭环：resolved HDR color -> bright extraction -> ping-pong blur -> screen composite -> tone mapping / gamma。后续还应继续把 tone mapping 模式、Bloom threshold / iterations / intensity 等参数系统化，并处理 resize/recreate。
+
+### 2026-05-20 PostProcessSettings 参数收敛
+
+后处理参数已从多个零散字段收敛到 `PostProcessSettings`：
+
+- 新增 `PostProcessSettings`，统一维护 exposure、tone mapping mode、Bloom 开关、Bloom threshold、Bloom intensity 和 Bloom iterations。
+- `ScreenMaterial` 不再直接持有 `mExposure` / `mBloomIntensity` / `mBloomEnabled`，而是持有 `mSettings`。
+- `MaterialInspector` 增加 `Int` 属性类型，使 tone mapping mode 与 Bloom iterations 能从 inspector 修改。
+- `Bloom::extractBright(...)` 不再使用内部固定 threshold，改为由 `PostProcessSettings::bloomThreshold` 每帧传入。
+- `runFrame()` 根据 `ScreenMaterial::mSettings` 决定是否执行 Bloom extract / blur，并使用配置的 iterations。
+- `PostProcessPass::renderScreenComposite(...)` 从同一份 settings 上传 exposure、tone mapping mode、Bloom enabled 和 Bloom intensity。
+- `shaders/screen/screen.frag` 支持 exposure / Reinhard 两种 tone mapping mode。
+
+这一步让后处理参数变成一个明确配置对象。后续可以把它从 `ScreenMaterial` 进一步提升到 runtime / renderer 级别，或者直接扩展为 UI 可保存的 profile；PBR 输出进入 HDR + tone mapping + Bloom 链路时会更稳定。

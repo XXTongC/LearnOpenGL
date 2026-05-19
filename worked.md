@@ -696,6 +696,20 @@
    - 针对 Bloom screen composite 接入后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
+117. 完成第五十九轮 `PostProcessSettings` 参数收敛：
+   - 新增 [renderer/PostProcessSettings.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessSettings.h)，统一维护 exposure、tone mapping mode、Bloom 开关、Bloom threshold、Bloom intensity 和 Bloom iterations。
+   - 更新 [materials/screenMaterial.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\screenMaterial.h) 与 [materials/screenMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\screenMaterial.cpp)，移除零散后处理字段并改用 `mSettings`，同时暴露新的 inspector 参数。
+   - 更新 [tools/inspector/MaterialInspector.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialInspector.h)，新增 `Int` 属性类型，用于 tone mapping mode 与 Bloom iterations。
+   - 更新 [renderer/Bloom/Bloom.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\Bloom\Bloom.h) 与 [renderer/Bloom/Bloom.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\Bloom\Bloom.cpp)，让 `extractBright(...)` 从外部接收 threshold。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，根据 `ScreenMaterial::mSettings` 控制 Bloom extract / blur，并使用配置的 threshold 与 iterations。
+   - 更新 [renderer/PostProcessPass.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessPass.h) 与 [renderer/PostProcessPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessPass.cpp)，从统一 settings 上传 screen composite uniform。
+   - 更新 [shaders/screen/screen.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\screen\screen.frag)，支持 exposure / Reinhard 两种 tone mapping mode。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `PostProcessSettings.h` 纳入 VS 工程。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录后处理参数收敛结果和后续 profile / runtime 提升方向。
+118. 完成第四十九次构建与运行时 smoke 验证：
+   - 针对 `PostProcessSettings` 参数收敛后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -720,5 +734,6 @@
 - 当前 Bloom bright extraction 已接入运行时，resolved HDR color 会提取到 `FrameRenderTargets` 管理的 bloom bright target。
 - 当前 Bloom blur ping-pong 已接入运行时，bright target 会经过 `bloomPing` / `bloomPong` 迭代模糊。
 - 当前 Bloom composite 已接入 screen shader，resolved HDR color 会与 blurred bloom texture 合成后再 tone mapping / gamma。
-- 当前剩余明显问题：tone mapping 模式仍写在 screen shader 内，Bloom threshold / iterations 还没有 inspector 控制，`FrameRenderTargets` 还没有 resize/recreate、IBL capture target 和 BRDF LUT 管理。
-- 下一步建议目标：把 postprocess 参数系统化，或者扩展 `FrameRenderTargets` 管理 PBR / IBL 所需的 HDR 与环境贴图目标。
+- 当前后处理参数已收敛到 `PostProcessSettings`，exposure、tone mapping mode、Bloom 开关、threshold、intensity、iterations 都能通过 screen material inspector 修改。
+- 当前剩余明显问题：`PostProcessSettings` 仍挂在 `ScreenMaterial` 上，尚未提升到 runtime / renderer 级别；`FrameRenderTargets` 还没有 resize/recreate、IBL capture target 和 BRDF LUT 管理。
+- 下一步建议目标：扩展 `FrameRenderTargets` 管理 PBR / IBL 所需环境贴图目标，或者把 `PostProcessSettings` 提升为 runtime 级 profile。

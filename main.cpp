@@ -205,13 +205,22 @@ void runFrame()
 	// pass 1: off-screen color attachment
 	renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights, ambientLight, frameRenderTargets.getSceneFbo());
 	postProcessPass.resolveMultisample(frameRenderTargets.getMultisample(), frameRenderTargets.getResolved());
-	postProcessPass.extractBloomBright(bloom, frameRenderTargets.getResolved(), frameRenderTargets.getBloomBright());
-	postProcessPass.blurBloom(
-		bloom,
-		frameRenderTargets.getBloomBright(),
-		frameRenderTargets.getBloomPing(),
-		frameRenderTargets.getBloomPong()
-	);
+	if (ScreenMat != nullptr && ScreenMat->mSettings.bloomEnabled)
+	{
+		postProcessPass.extractBloomBright(
+			bloom,
+			frameRenderTargets.getResolved(),
+			frameRenderTargets.getBloomBright(),
+			ScreenMat->mSettings.bloomThreshold
+		);
+		postProcessPass.blurBloom(
+			bloom,
+			frameRenderTargets.getBloomBright(),
+			frameRenderTargets.getBloomPing(),
+			frameRenderTargets.getBloomPong(),
+			ScreenMat->mSettings.bloomIterations
+		);
+	}
 
 	// pass 2: post-process composite to default framebuffer
 	postProcessPass.renderScreenComposite(

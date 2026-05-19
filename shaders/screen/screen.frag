@@ -13,6 +13,7 @@ uniform float texWidth;
 uniform float texHeight;
 uniform int enableBloom;
 uniform float bloomIntensity;
+uniform int toneMappingMode;
 
 // calculate floating point numbers equality accurately
 bool isApproximatelyEqual(float a, float b);
@@ -56,7 +57,14 @@ void main()
     {
         color += texture(bloomTextureSampler, uv).rgb * bloomIntensity;
     }
-    color = toneMappingExposure(color);
+    if(toneMappingMode == 1)
+    {
+        color = toneMappingReinhard(color);
+    }
+    else
+    {
+        color = toneMappingExposure(color);
+    }
     // 1 将sRGB转换为RGB
     //color = pow(color,vec3(2.2));
     // 2 与光照进行计算、

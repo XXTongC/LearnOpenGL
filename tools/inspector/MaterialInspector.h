@@ -18,6 +18,7 @@ namespace GL_EDITOR
 	{
 		Section,
 		Float,
+		Int,
 		Bool,
 		Vec3,
 		Color3,
@@ -33,6 +34,8 @@ namespace GL_EDITOR
 		std::string format{ "%.3f" };
 		std::function<float()> getFloat{};
 		std::function<void(float)> setFloat{};
+		std::function<int()> getInt{};
+		std::function<void(int)> setInt{};
 		std::function<bool()> getBool{};
 		std::function<void(bool)> setBool{};
 		std::function<glm::vec3()> getVec3{};
@@ -103,6 +106,35 @@ namespace GL_EDITOR
 				std::move(label),
 				[value]() { return *value; },
 				[value](bool newValue) { *value = newValue; }
+			);
+		}
+
+		void addInt(
+			std::string label,
+			const std::function<int()>& getter,
+			const std::function<void(int)>& setter,
+			int minValue,
+			int maxValue
+		)
+		{
+			PropertyDescriptor descriptor{};
+			descriptor.kind = PropertyKind::Int;
+			descriptor.label = std::move(label);
+			descriptor.minValue = static_cast<float>(minValue);
+			descriptor.maxValue = static_cast<float>(maxValue);
+			descriptor.getInt = getter;
+			descriptor.setInt = setter;
+			mProperties.push_back(std::move(descriptor));
+		}
+
+		void addInt(std::string label, int* value, int minValue, int maxValue)
+		{
+			addInt(
+				std::move(label),
+				[value]() { return *value; },
+				[value](int newValue) { *value = newValue; },
+				minValue,
+				maxValue
 			);
 		}
 
@@ -246,6 +278,17 @@ namespace GL_EDITOR
 				if (ImGui::Checkbox(property.label.c_str(), &value))
 				{
 					property.setBool(value);
+					changed = true;
+				}
+				break;
+			}
+
+			case PropertyKind::Int:
+			{
+				int value = property.getInt();
+				if (ImGui::SliderInt(property.label.c_str(), &value, static_cast<int>(property.minValue), static_cast<int>(property.maxValue)))
+				{
+					property.setInt(value);
 					changed = true;
 				}
 				break;
