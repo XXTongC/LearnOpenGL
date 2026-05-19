@@ -792,3 +792,14 @@ PBR shader path 已能消费 IBL 资源，但默认仍关闭：
 - `shaders/pbr/pbr.frag` 新增直接光 + 可选 IBL ambient 组合，默认 `useIBL=0` 时保持原 ambient 路径。
 
 这一步完成了 PBR 采样 IBL 资源所需的绑定链路。后续重点是提供 HDR environment 资源、打开 profile 预计算，并在 UI / 配置层控制 `EnvironmentProfile`，让用户不改代码就能切换环境。
+
+### 2026-05-20 EnvironmentProfile UI 入口
+
+`EnvironmentProfile` 已有 Debug UI 入口和手动预计算触发：
+
+- `Renderer::precomputeEnvironment(const EnvironmentProfile&)` 统一负责 HDR 加载、capture cube / BRDF quad 创建和 IBL 预计算调度。
+- `SceneSetup` 改为调用 `Renderer` 的高层 profile 入口，不再重复创建 IBL capture mesh 或直接加载 HDR texture。
+- `DebugControllerPanel` 新增 `Environment / IBL` 控制区，支持编辑 HDR path、HDR texture unit、prepare 阶段预计算开关、查看 IBL ready 状态，并手动触发 `Precompute IBL Now`。
+- 默认 profile 仍不配置 HDR path，也不自动预计算，所以当前启动路径和原画面保持稳定。
+
+这一步把 environment 切换从代码路径推进到 UI / profile 路径。后续应优先补一份默认 HDR environment 或 profile 持久化机制，用真实 HDR 资源验证 PBR IBL 效果，而不是只验证默认关闭路径。

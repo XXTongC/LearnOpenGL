@@ -757,6 +757,17 @@
    - 针对 PBR 可选 IBL 绑定路径后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+127. 完成第六十四轮 `EnvironmentProfile` UI 入口：
+   - 更新 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h) 与 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，新增 `Renderer::precomputeEnvironment(const EnvironmentProfile&)` 高层入口，统一封装 HDR 加载、IBL capture cube / BRDF quad 创建和预计算调度。
+   - 更新 [tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，让 prepare 阶段调用 `Renderer` 的 profile 入口，不再重复持有 IBL 资源准备细节。
+   - 更新 [tools/editor/DebugControllerPanel.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.h) 与 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，在 controller 面板新增 `Environment / IBL` 区域，支持编辑 HDR path、HDR texture unit、prepare 预计算开关、查看 IBL ready 状态并手动触发预计算。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，将 `Renderer` 和 `EnvironmentProfile` 传入 DebugController context。
+   - 默认没有 HDR path 且 `precomputeOnPrepare=false`，所以 UI 入口不会改变当前启动画面。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 EnvironmentProfile UI 入口和下一步验证方向。
+128. 完成第五十四次构建与运行时 smoke 验证：
+   - 针对 `EnvironmentProfile` UI 入口后执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -785,5 +796,6 @@
 - 当前 IBL / environment 资源边界已建立，`EnvironmentRenderTargets` 管理 environment / irradiance / prefilter cubemap、BRDF LUT 和 capture FBO。
 - 当前 IBL 预计算流程已拆到 `IBLPrecomputePass`，并可通过 `EnvironmentProfile` 在 scene setup 阶段加载 HDR environment、创建 capture cube / BRDF quad 并触发预计算。
 - 当前 PBR shader 已支持直接光 + 可选 IBL 组合，`MaterialBinder` 会在 PBR 材质启用 IBL 且 environment ready 时绑定 irradiance / prefilter / BRDF LUT。
-- 当前剩余明显问题：`PostProcessSettings` 仍挂在 `ScreenMaterial` 上，尚未提升到 runtime / renderer 级别；`EnvironmentProfile` 还没有 UI / 配置文件入口；工程内还没有默认 HDR environment 资源；`FrameRenderTargets` 还没有 resize/recreate。
-- 下一步建议目标：为 `EnvironmentProfile` 增加 UI / 配置入口，或者引入一份默认 HDR environment 资源用于实际验证 IBL 预计算和 PBR IBL 效果。
+- 当前 `EnvironmentProfile` 已接入 DebugControllerPanel UI，可在运行时编辑 HDR path / texture unit、切换 prepare 预计算，并手动触发 IBL precompute。
+- 当前剩余明显问题：`PostProcessSettings` 仍挂在 `ScreenMaterial` 上，尚未提升到 runtime / renderer 级别；工程内还没有默认 HDR environment 资源；PBR IBL 效果尚未用真实 HDR 资源验证；`FrameRenderTargets` 还没有 resize/recreate。
+- 下一步建议目标：引入或指定一份默认 HDR environment 资源用于实际验证 IBL 预计算和 PBR IBL 效果，或者先实现 `EnvironmentProfile` 的持久化保存 / 加载。

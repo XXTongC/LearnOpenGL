@@ -295,6 +295,8 @@ GL_EDITOR::DebugControllerContext makeDebugControllerContext()
 		&pointLights,
 		textD,
 		ScreenMat,
+		renderer,
+		&environmentProfile,
 		&m_time
 	};
 }

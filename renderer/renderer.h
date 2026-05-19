@@ -19,6 +19,8 @@
 #include "scene.h"
 namespace GLframework
 {
+	struct EnvironmentProfile;
+
 	class Renderer
 	{
 	public:
@@ -36,6 +38,7 @@ namespace GLframework
 			const std::shared_ptr<Mesh>& captureCube,
 			const std::shared_ptr<Mesh>& brdfQuad
 		);
+		bool precomputeEnvironment(const EnvironmentProfile& profile);
 		//渲染功能函数
 		//1. 每次调用渲染一帧
 		

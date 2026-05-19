@@ -6,8 +6,10 @@
 namespace GLframework
 {
 	class DirectionalLight;
+	struct EnvironmentProfile;
 	class Mesh;
 	class PointLight;
+	class Renderer;
 	class ScreenMaterial;
 }
 
@@ -19,6 +21,8 @@ namespace GL_EDITOR
 		std::vector<std::shared_ptr<GLframework::PointLight>>* pointLights{ nullptr };
 		std::shared_ptr<GLframework::Mesh> textObject{ nullptr };
 		std::shared_ptr<GLframework::ScreenMaterial> screenMaterial{ nullptr };
+		std::shared_ptr<GLframework::Renderer> renderer{ nullptr };
+		GLframework::EnvironmentProfile* environmentProfile{ nullptr };
 		float* orbitAngle{ nullptr };
 	};
 

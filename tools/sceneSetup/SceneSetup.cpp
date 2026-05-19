@@ -134,22 +134,7 @@ namespace
 			return;
 		}
 
-		auto hdrEnvironment = GLframework::EnvironmentTextureLoader::loadHdrEquirectangular(context.environmentProfile);
-		if (!hdrEnvironment)
-		{
-			LogInfo("IBL precompute skipped: HDR environment load failed");
-			return;
-		}
-
-		auto captureCubeGeometry = GLframework::Geometry::createBox(context.renderer->getIBLCaptureShader(), 2.0f, 2.0f, 2.0f);
-		auto captureCube = std::make_shared<GLframework::Mesh>(captureCubeGeometry, nullptr);
-		captureCube->setName("IBL Capture Cube");
-
-		auto brdfQuadGeometry = GLframework::Geometry::createScreenPlane(context.renderer->getIBLBrdfLutShader());
-		auto brdfQuad = std::make_shared<GLframework::Mesh>(brdfQuadGeometry, nullptr);
-		brdfQuad->setName("IBL BRDF LUT Quad");
-
-		if (context.renderer->precomputeEnvironment(hdrEnvironment, captureCube, brdfQuad))
+		if (context.renderer->precomputeEnvironment(context.environmentProfile))
 		{
 			LogInfo("IBL precompute finished");
 			return;

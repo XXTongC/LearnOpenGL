@@ -1,5 +1,7 @@
 #include "renderer.h"
 
+#include "renderer/EnvironmentProfile.h"
+
 using namespace GLframework;
 
 Renderer::Renderer()
@@ -78,6 +80,30 @@ bool Renderer::precomputeEnvironment(
 
 	mEnvironmentRenderTargets.setPrecomputedEnvironment(true);
 	return true;
+}
+
+bool Renderer::precomputeEnvironment(const EnvironmentProfile& profile)
+{
+	if (!profile.hasHdrSource())
+	{
+		return false;
+	}
+
+	auto hdrEnvironment = EnvironmentTextureLoader::loadHdrEquirectangular(profile);
+	if (!hdrEnvironment)
+	{
+		return false;
+	}
+
+	auto captureCubeGeometry = Geometry::createBox(getIBLCaptureShader(), 2.0f, 2.0f, 2.0f);
+	auto captureCube = std::make_shared<Mesh>(captureCubeGeometry, nullptr);
+	captureCube->setName("IBL Capture Cube");
+
+	auto brdfQuadGeometry = Geometry::createScreenPlane(getIBLBrdfLutShader());
+	auto brdfQuad = std::make_shared<Mesh>(brdfQuadGeometry, nullptr);
+	brdfQuad->setName("IBL BRDF LUT Quad");
+
+	return precomputeEnvironment(hdrEnvironment, captureCube, brdfQuad);
 }
 
 void Renderer::render(

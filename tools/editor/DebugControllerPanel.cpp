@@ -1,11 +1,83 @@
 #include "DebugControllerPanel.h"
 
+#include <array>
+#include <string>
+
+#include "../../renderer/EnvironmentProfile.h"
+#include "../../renderer/renderer.h"
 #include "../../light/directionalLight.h"
 #include "../../light/pointLight.h"
 #include "../../light/shadow/shadow.h"
 #include "../../materials/screenMaterial.h"
 #include "../../mesh/mesh.h"
 #include "../../third_party/imgui/imgui.h"
+
+namespace
+{
+	void drawEnvironmentControls(
+		const std::shared_ptr<GLframework::Renderer>& renderer,
+		GLframework::EnvironmentProfile* profile
+	)
+	{
+		if (!profile)
+		{
+			return;
+		}
+
+		static std::array<char, 512> hdrPathBuffer{};
+		static std::string lastPath{};
+		static std::string lastPrecomputeStatus{};
+		if (lastPath != profile->hdrEquirectangularPath)
+		{
+			hdrPathBuffer.fill('\0');
+			profile->hdrEquirectangularPath.copy(hdrPathBuffer.data(), hdrPathBuffer.size() - 1);
+			lastPath = profile->hdrEquirectangularPath;
+		}
+
+		if (ImGui::CollapsingHeader("Environment / IBL", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			if (ImGui::InputText("HDR Path", hdrPathBuffer.data(), hdrPathBuffer.size()))
+			{
+				profile->hdrEquirectangularPath = hdrPathBuffer.data();
+				lastPath = profile->hdrEquirectangularPath;
+			}
+
+			int unit = static_cast<int>(profile->hdrTextureUnit);
+			if (ImGui::SliderInt("HDR Texture Unit", &unit, 0, 31))
+			{
+				profile->hdrTextureUnit = static_cast<unsigned int>(unit);
+			}
+
+			ImGui::Checkbox("Precompute On Prepare", &profile->precomputeOnPrepare);
+			const bool ready = renderer && renderer->getEnvironmentRenderTargets().hasPrecomputedEnvironment();
+			ImGui::Text("IBL Ready: %s", ready ? "Yes" : "No");
+
+			const bool canPrecompute = renderer != nullptr && profile->hasHdrSource();
+			if (!canPrecompute)
+			{
+				ImGui::BeginDisabled();
+			}
+
+			if (ImGui::Button("Precompute IBL Now"))
+			{
+				lastPrecomputeStatus = renderer->precomputeEnvironment(*profile)
+					? "IBL precompute finished."
+					: "IBL precompute failed.";
+			}
+
+			if (!canPrecompute)
+			{
+				ImGui::EndDisabled();
+				ImGui::TextWrapped("Set an HDR equirectangular texture path before precomputing.");
+			}
+
+			if (!lastPrecomputeStatus.empty())
+			{
+				ImGui::TextWrapped("%s", lastPrecomputeStatus.c_str());
+			}
+		}
+	}
+}
 
 void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
 {
@@ -50,6 +122,8 @@ void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
 	{
 		ImGui::SliderFloat("Exposure", &context.screenMaterial->mSettings.exposure, 0.0f, 4.0f);
 	}
+
+	drawEnvironmentControls(context.renderer, context.environmentProfile);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
