@@ -593,6 +593,17 @@
    - 针对 Assimp loader warning 清理后再次执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 再次短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
+97. 完成第四十九轮 `RenderQueue` 拆分：
+   - 新增 [renderer/RenderQueue.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RenderQueue.h) 与 [renderer/RenderQueue.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RenderQueue.cpp)，承接 opaque / transparent 队列构建。
+   - `RenderQueue` 现在负责清空队列、递归收集 scene 中的 `Mesh` / `InstancedMesh`、按材质透明状态分组，以及按相机深度排序 transparent 队列。
+   - 更新 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，主 `render(...)` 改为调用 `mRenderQueue.build(scene, camera)`，再把队列结果交给 `ShadowRenderer` 和 `SceneRenderPass`。
+   - 更新 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h)，删除队列成员和 `projectObject(...)` 声明，新增 `RenderQueue` 成员。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `RenderQueue` 纳入 VS 工程和 Renderer 分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 `RenderQueue` 对后续 PBR / IBL 队列扩展的意义。
+98. 完成第三十九次构建与运行时 smoke 验证：
+   - 针对 `RenderQueue` 拆分后执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -607,5 +618,6 @@
 - 当前工程可成功构建。
 - 当前 `Renderer::renderObject()` 已不再保留具体材质旧分支，材质绑定整体收敛到 `MaterialBinder`。
 - 当前 `Renderer` 已具备 shadow pass 与 scene pass 两个明确调度边界。
-- 当前剩余明显问题：Render queue 构建、frame GL state 和 postprocess 边界仍在 `Renderer` 或外部流程中，PBR / IBL 后续需要更稳定的 frame graph 雏形。
-- 下一步建议目标：抽出 render queue / frame state，或建立 postprocess pass 边界，然后继续人工观察 PBR preview 的 shadow / normal map 方向。
+- 当前 render queue 构建已从 `Renderer` 拆出，后续可扩展 PBR / IBL 所需的队列类别。
+- 当前剩余明显问题：frame GL state 和 postprocess 边界仍在 `Renderer` 或外部流程中，PBR / IBL 后续需要更稳定的 frame graph 雏形。
+- 下一步建议目标：抽出 frame state，或建立 postprocess pass 边界，然后继续人工观察 PBR preview 的 shadow / normal map 方向。

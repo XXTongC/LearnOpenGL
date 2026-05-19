@@ -619,3 +619,14 @@ PBR 材质已开始消费统一的 shadow resource：
 - 顺手移除了 `assimpInstanceLoader.cpp` 顶部重复 include。
 
 这一步不改变模型加载语义，目标是恢复 `0 warning` 构建，降低后续 PBR / pass 拆分验证时的噪音。
+
+### 2026-05-20 RenderQueue 拆分
+
+opaque / transparent 队列构建已从 `Renderer` 中拆出：
+
+- 新增 `RenderQueue`，负责清空队列、递归收集 scene 中的 mesh / instanced mesh、按材质透明状态分组。
+- 透明队列的相机深度排序迁入 `RenderQueue::sortTransparentObjects(...)`，保留原有排序规则。
+- `Renderer::render(...)` 现在只调用 `mRenderQueue.build(scene, camera)`，随后把 opaque 队列交给 `ShadowRenderer`，把 opaque / transparent 队列交给 `SceneRenderPass`。
+- `Renderer` 删除队列成员和 `projectObject(...)`，职责进一步收敛为 frame state 与 pass 编排。
+
+这一步让渲染队列成为独立概念。后续 PBR / IBL 如果需要区分 forward opaque、transparent、skybox、probe capture 或特定材质队列，可以在 `RenderQueue` 扩展，而不是继续修改 `Renderer` 主流程。

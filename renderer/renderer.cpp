@@ -1,34 +1,11 @@
 #include "renderer.h"
 
-#include <algorithm>
-
 using namespace GLframework;
 
 Renderer::Renderer()
 {
 	mShaderLibrary.initialize();
 }
-
-void Renderer::projectObject(std::shared_ptr<Object> obj)
-{
-	if(obj->getType()==ObjectType::Mesh|| obj->getType() == ObjectType::InstancedMesh)
-	{
-		std::shared_ptr<Mesh> mesh = std::static_pointer_cast<Mesh>(obj);
-		std::shared_ptr<Material> material = mesh->getMaterial();
-		if(material->getColorBlendState())
-		{
-			mTransparentObjects.push_back(mesh);
-		}else
-		{
-			mOpacityObjects.push_back(mesh);
-		}
-	}
-	for(auto& t:obj->getChildren())
-	{
-		projectObject(t);
-	}
-}
-
 
 void Renderer::setClearColor(glm::vec3 color)
 {
@@ -74,35 +51,14 @@ void Renderer::render(
 	// 2. 娓呯悊鐢诲竷 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	// 娓呯┖涓や釜闃熷垪
-	mOpacityObjects.clear();
-	mTransparentObjects.clear();
-
-	projectObject(scene);
-
-	std::sort(mTransparentObjects.begin(), mTransparentObjects.end(), [camera](const std::shared_ptr<Mesh>& A,const std::shared_ptr<Mesh>& B)
-		{
-			//	1. 璁＄畻a鐨勭浉鏈虹郴鐨刏
-			auto viewMatrix = camera->getViewMatrix();
-
-			auto modelMatrixA = A->getModelMatrix();
-			auto worldPositionA = modelMatrixA * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-			auto cameraPositionA = viewMatrix * worldPositionA;
-
-			//2 璁＄畻b鐨勭浉鏈虹郴鐨刏
-			auto modelMatrixB = B->getModelMatrix();
-			auto worldPositionB = modelMatrixB * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-			auto cameraPositionB = viewMatrix * worldPositionB;
-
-			return cameraPositionA.z < cameraPositionB.z;
-		});
+	mRenderQueue.build(scene, camera);
 
 	//	render shadowmap
-	mShadowRenderer.render(camera, mOpacityObjects, dirLight, pointLights, mShaderLibrary);
+	mShadowRenderer.render(camera, mRenderQueue.getOpacityObjects(), dirLight, pointLights, mShaderLibrary);
 
 	mSceneRenderPass.render(
-		mOpacityObjects,
-		mTransparentObjects,
+		mRenderQueue.getOpacityObjects(),
+		mRenderQueue.getTransparentObjects(),
 		camera,
 		dirLight,
 		spotLight,

@@ -5,6 +5,7 @@
 #include "framebuffer.h"
 #include "camera.h"
 #include "shader.h"
+#include "RenderQueue.h"
 #include "SceneRenderPass.h"
 #include "ShadowRenderer.h"
 #include "ShaderLibrary.h"
@@ -38,16 +39,10 @@ namespace GLframework
 	public:
 		std::shared_ptr<Material> mGlobalMaterial{nullptr};
 private:
-		void projectObject(std::shared_ptr<Object> obj);
-private:
 		ShaderLibrary mShaderLibrary{};
+		RenderQueue mRenderQueue{};
 		ShadowRenderer mShadowRenderer{};
 		SceneRenderPass mSceneRenderPass{};
-		
-		//不透明队列与透明队列
-		//ops: 每一帧绘制前需要清空两个队列
-		std::vector<std::shared_ptr<Mesh>> mOpacityObjects;
-		std::vector<std::shared_ptr<Mesh>> mTransparentObjects;
 
 	};
 }
