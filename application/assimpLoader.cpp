@@ -46,7 +46,7 @@ void AssimpLoader::processNode(std::shared_ptr<Renderer> renderer,aiNode* ainode
 	node->setScale(scale);
 
 	// 检查并解析mesh
-	for(int i = 0;i<ainode->mNumMeshes;i++)
+	for(unsigned int i = 0;i<ainode->mNumMeshes;i++)
 	{
 		// 记住ainode中的mesh储存的是mesh的ID
 		// 而aiscene中的mesh才是真正的mesh，这使得同一个mesh可以让多个node使用
@@ -57,7 +57,7 @@ void AssimpLoader::processNode(std::shared_ptr<Renderer> renderer,aiNode* ainode
 		node->addChild(mesh);
 	}
 
-	for(int i = 0;i<ainode->mNumChildren;i++)
+	for(unsigned int i = 0;i<ainode->mNumChildren;i++)
 	{
 		processNode(renderer,ainode->mChildren[i],node,scene,rootPath);
 	}
@@ -70,7 +70,7 @@ std::shared_ptr<Mesh> AssimpLoader::processMesh(std::shared_ptr<Renderer> render
 	std::vector<float> uvs;
 	std::vector<unsigned int> indices;
 
-	for(int i = 0;i<aimesh->mNumVertices;i++)
+	for(unsigned int i = 0;i<aimesh->mNumVertices;i++)
 	{
 		// position
 		positions.push_back(aimesh->mVertices[i].x);
@@ -95,9 +95,9 @@ std::shared_ptr<Mesh> AssimpLoader::processMesh(std::shared_ptr<Renderer> render
 		}
 
 	}
-	for(int i = 0;i<aimesh->mNumFaces;++i)
+	for(unsigned int i = 0;i<aimesh->mNumFaces;++i)
 	{
-		for(int j = 0;j<aimesh->mFaces[i].mNumIndices;++j)
+		for(unsigned int j = 0;j<aimesh->mFaces[i].mNumIndices;++j)
 		{
 			indices.push_back(aimesh->mFaces[i].mIndices[j]);
 		}

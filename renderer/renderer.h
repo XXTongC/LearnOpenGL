@@ -5,6 +5,7 @@
 #include "framebuffer.h"
 #include "camera.h"
 #include "shader.h"
+#include "SceneRenderPass.h"
 #include "ShadowRenderer.h"
 #include "ShaderLibrary.h"
 #include "directionalLight.h"
@@ -37,20 +38,11 @@ namespace GLframework
 	public:
 		std::shared_ptr<Material> mGlobalMaterial{nullptr};
 private:
-		void renderObject(
-			std::shared_ptr<Object> object,
-			Camera* camera,
-			std::shared_ptr < GLframework::DirectionalLight> dirLight,
-			std::shared_ptr < GLframework::SpotLight> spotLight,
-			const std::vector<std::shared_ptr<GLframework::PointLight>>& pointLights,
-			std::shared_ptr <GLframework::AmbientLight> ambient
-		);
 		void projectObject(std::shared_ptr<Object> obj);
 private:
-		void drawMesh(std::shared_ptr<Mesh> mesh);
-
 		ShaderLibrary mShaderLibrary{};
 		ShadowRenderer mShadowRenderer{};
+		SceneRenderPass mSceneRenderPass{};
 		
 		//不透明队列与透明队列
 		//ops: 每一帧绘制前需要清空两个队列

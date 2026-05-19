@@ -1,6 +1,4 @@
 ﻿#include "assimpInstanceLoader.h"
-
-#include "assimpInstanceLoader.h"
 #include "tools/tools.h"
 #include "materials/grassInstanceMaterial/grassInstanceMaterial.h"
 
@@ -101,7 +99,7 @@ void AssimpInstanceLoader::processNode(
 	node->setScale(scale);
 
 	// 检查并解析mesh
-	for (int i = 0; i < ainode->mNumMeshes; i++)
+	for (unsigned int i = 0; i < ainode->mNumMeshes; i++)
 	{
 		// 记住ainode中的mesh储存的是mesh的ID
 		// 而aiscene中的mesh才是真正的mesh，这使得同一个mesh可以让多个node使用
@@ -112,7 +110,7 @@ void AssimpInstanceLoader::processNode(
 		node->addChild(mesh);
 	}
 
-	for (int i = 0; i < ainode->mNumChildren; i++)
+	for (unsigned int i = 0; i < ainode->mNumChildren; i++)
 	{
 		processNode(renderer, ainode->mChildren[i], node, scene, rootPath,instanceCount);
 	}
@@ -131,7 +129,7 @@ std::shared_ptr<InstancedMesh> AssimpInstanceLoader::processInstanceMesh(
 	std::vector<unsigned int> indices;
 	std::vector<float> colors;
 
-	for (int i = 0; i < aimesh->mNumVertices; i++)
+	for (unsigned int i = 0; i < aimesh->mNumVertices; i++)
 	{
 		// position
 		positions.push_back(aimesh->mVertices[i].x);
@@ -164,10 +162,10 @@ std::shared_ptr<InstancedMesh> AssimpInstanceLoader::processInstanceMesh(
 		}
 
 	}
-	for (int i = 0; i < aimesh->mNumFaces; ++i)
+	for (unsigned int i = 0; i < aimesh->mNumFaces; ++i)
 	{
 		aiFace aiface = aimesh->mFaces[i];
-		for (int j = 0; j < aiface.mNumIndices; ++j)
+		for (unsigned int j = 0; j < aiface.mNumIndices; ++j)
 		{
 			indices.push_back(aiface.mIndices[j]);
 		}

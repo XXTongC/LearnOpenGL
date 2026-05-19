@@ -1,9 +1,5 @@
 #include "renderer.h"
-#include "MaterialBinder.h"
-#include "RenderState.h"
-#include <iostream>
-#include <memory>
-#include "../mesh/instancedMesh.h"
+
 #include <algorithm>
 
 using namespace GLframework;
@@ -11,25 +7,6 @@ using namespace GLframework;
 Renderer::Renderer()
 {
 	mShaderLibrary.initialize();
-}
-
-// 缁樺埗缃戞牸锛堝鐞嗘櫘閫氬拰瀹炰緥鍖栫綉鏍硷級
-void Renderer::drawMesh(std::shared_ptr<Mesh> mesh)
-{
-	auto geometry = mesh->getGeometry();
-	glBindVertexArray(geometry->getVao());
-
-	if (mesh->getType() == ObjectType::InstancedMesh)
-	{
-		std::shared_ptr<InstancedMesh> im = std::static_pointer_cast<InstancedMesh>(mesh);
-		glDrawElementsInstanced(GL_TRIANGLES, geometry->getIndicesCount(), GL_UNSIGNED_INT, nullptr, im->getInstanceCount());
-	}
-	else
-	{
-		glDrawElements(GL_TRIANGLES, geometry->getIndicesCount(), GL_UNSIGNED_INT, nullptr);
-	}
-
-	glBindVertexArray(0);
 }
 
 void Renderer::projectObject(std::shared_ptr<Object> obj)
@@ -123,59 +100,17 @@ void Renderer::render(
 	//	render shadowmap
 	mShadowRenderer.render(camera, mOpacityObjects, dirLight, pointLights, mShaderLibrary);
 
-	// 3. 娓叉煋涓や釜闃熷垪
-	for(auto& t : mOpacityObjects)
-	{
-		renderObject(t, camera, dirLight, spotLight, pointLights, ambient);
-	}
-	for(auto& t : mTransparentObjects)
-	{
-		renderObject(t, camera, dirLight, spotLight, pointLights, ambient);
-	}
-	
-}
-
-
-void Renderer::renderObject(
-	std::shared_ptr<Object> object,
-	Camera* camera,
-	std::shared_ptr<DirectionalLight> dirLight,
-	std::shared_ptr<SpotLight> spotLight,
-	const std::vector<std::shared_ptr<PointLight>>& pointLights,
-	std::shared_ptr<AmbientLight> ambient
-)
-{
-	//鍒ゆ柇鏄疢esh杩樻槸Object锛屽鏋滄槸Mesh闇€瑕佹覆鏌?
-	if (object->getType() == ObjectType::Mesh||object->getType() == ObjectType::InstancedMesh)
-	{
-		auto mesh = std::static_pointer_cast<Mesh>(object);
-
-		std::shared_ptr<Material> material = nullptr;
-		//鑰冨療鏄惁鎷ユ湁鍏ㄥ眬鏉愯川
-		if(mGlobalMaterial!=nullptr)
-		{
-			material = mGlobalMaterial;
-		}else
-		{
-			material = mesh->getMaterial();
-		}
-
-		
-
-		RenderState::applyMaterialState(*material);
-		auto shader = getShader(material->getMaterialType());
-		shader->begin();
-
-
-		if (!MaterialBinder::bind(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient))
-		{
-			std::cout << "wrong\n";
-		}
-
-		drawMesh(mesh);
-		shader->end();
-	}
-	
+	mSceneRenderPass.render(
+		mOpacityObjects,
+		mTransparentObjects,
+		camera,
+		dirLight,
+		spotLight,
+		pointLights,
+		ambient,
+		mGlobalMaterial,
+		mShaderLibrary
+	);
 }
 
 

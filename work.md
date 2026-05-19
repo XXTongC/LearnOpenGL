@@ -598,3 +598,24 @@ PBR 材质已开始消费统一的 shadow resource：
 - `Renderer` 删除了具体材质 include、旧 switch 和失效的历史绘制注释块，现在主路径只负责应用 render state、选择 shader、调用 binder、draw mesh。
 
 这一步完成了材质绑定从 `Renderer` 主流程中的整体剥离。后续重点应该转向更高层的 pass 边界：把当前 frame 流程拆成更明确的 shadow / scene / postprocess 阶段，为 PBR + IBL + 后处理组合提供稳定结构。
+
+### 2026-05-20 SceneRenderPass 初步拆分
+
+主 scene 绘制阶段已从 `Renderer` 中拆出：
+
+- 新增 `SceneRenderPass`，负责按 opaque / transparent 队列绘制 mesh。
+- `SceneRenderPass` 内部集中处理 `RenderState::applyMaterialState(...)`、shader begin/end、`MaterialBinder::bind(...)` 和普通 / instanced draw call。
+- `Renderer` 删除 `drawMesh(...)` 与 `renderObject(...)`，现在只负责 frame buffer 绑定、基础 GL frame state、队列构建和排序、shadow pass 调度、scene pass 调度。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已收录新的 pass 文件，保持 VS 工程结构一致。
+
+这一步建立了 shadow pass 与 scene pass 的明确边界。后续还应继续拆 `RenderQueue` / frame state / postprocess 边界，让 PBR + IBL 可以作为 scene pass 的材质路径扩展，而不是继续压进 `Renderer` 主流程。
+
+### 2026-05-20 Assimp loader warning 清理
+
+`SceneRenderPass` 拆分后的构建暴露出既有 loader warning：
+
+- `assimpLoader.cpp` 与 `assimpInstanceLoader.cpp` 中多个循环使用 `int` 与 Assimp 的 unsigned 计数字段比较。
+- 已将相关循环索引改为 `unsigned int`，与 `mNumMeshes`、`mNumChildren`、`mNumVertices`、`mNumFaces`、`mNumIndices` 的类型对齐。
+- 顺手移除了 `assimpInstanceLoader.cpp` 顶部重复 include。
+
+这一步不改变模型加载语义，目标是恢复 `0 warning` 构建，降低后续 PBR / pass 拆分验证时的噪音。

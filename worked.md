@@ -572,6 +572,27 @@
    - 针对 instanced 材质迁移后执行真实 `Debug|x64 Build`。
    - 构建结果：成功，`0` error，`0` warning。
    - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
+93. 完成第四十七轮 `SceneRenderPass` 初步拆分：
+   - 新增 [renderer/SceneRenderPass.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\SceneRenderPass.h) 与 [renderer/SceneRenderPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\SceneRenderPass.cpp)，承接主 scene pass 的 mesh 绘制。
+   - `SceneRenderPass` 现在负责 opaque / transparent 队列绘制、`RenderState::applyMaterialState(...)`、shader begin/end、`MaterialBinder::bind(...)` 和普通 / instanced draw call。
+   - 更新 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，删除 `drawMesh(...)` 与 `renderObject(...)`，主 `render(...)` 改为调度 shadow pass 后调用 `mSceneRenderPass.render(...)`。
+   - 更新 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h)，移除对象绘制私有函数声明并新增 `SceneRenderPass` 成员。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `SceneRenderPass` 纳入 VS 工程和 Renderer 分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 scene pass 边界和后续 render queue / postprocess 拆分方向。
+94. 完成第三十七次构建与运行时 smoke 验证：
+   - 针对 `SceneRenderPass` 拆分后执行真实 `Debug|x64 Build`。
+   - 首次构建结果：成功，`0` error，`10` warning。
+   - warning 均来自既有 `application\assimpLoader.cpp` 与 `application\assimpInstanceLoader.cpp` 的有符号/无符号比较；新增 `renderer\SceneRenderPass.*` 与修改后的 `renderer\renderer.*` 未产生 warning。
+   - 短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
+95. 完成第四十八轮 Assimp loader warning 清理：
+   - 更新 [application/assimpLoader.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\assimpLoader.cpp)，将与 Assimp unsigned 计数字段比较的循环索引从 `int` 改为 `unsigned int`。
+   - 更新 [application/assimpInstanceLoader.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\assimpInstanceLoader.cpp)，同步修正 mesh、child、vertex、face、index 循环索引类型。
+   - 移除 [application/assimpInstanceLoader.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\assimpInstanceLoader.cpp) 顶部重复的 `#include "assimpInstanceLoader.h"`。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 warning 清理原因和验证意义。
+96. 完成第三十八次构建与运行时 smoke 验证：
+   - 针对 Assimp loader warning 清理后再次执行真实 `Debug|x64 Build`。
+   - 构建结果：成功，`0` error，`0` warning。
+   - 再次短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout 未出现 `Shader Compile Error` 或 `Shader Link Error`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -585,5 +606,6 @@
 - 第六轮场景对象构建拆分：已完成。
 - 当前工程可成功构建。
 - 当前 `Renderer::renderObject()` 已不再保留具体材质旧分支，材质绑定整体收敛到 `MaterialBinder`。
-- 当前剩余明显问题：`MaterialBinder` 已变大，下一步需要拆更高层的 render pass 边界，避免后续 PBR / IBL / postprocess 继续集中到 `Renderer` 或单一 binder。
-- 下一步建议目标：拆分主 frame 渲染流程，建立 `SceneRenderPass` / `PostProcess` 边界，或者人工观察 PBR preview 的 shadow / normal map 方向，进一步验证 PBR 渲染路径。
+- 当前 `Renderer` 已具备 shadow pass 与 scene pass 两个明确调度边界。
+- 当前剩余明显问题：Render queue 构建、frame GL state 和 postprocess 边界仍在 `Renderer` 或外部流程中，PBR / IBL 后续需要更稳定的 frame graph 雏形。
+- 下一步建议目标：抽出 render queue / frame state，或建立 postprocess pass 边界，然后继续人工观察 PBR preview 的 shadow / normal map 方向。
