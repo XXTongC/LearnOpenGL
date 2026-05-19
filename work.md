@@ -328,4 +328,70 @@
 
 下一步最符合“降耦合”的动作不是继续做可视化效果，而是拆 `renderIMGUI()` 中剩余的 debug controller 面板。它的收益明确、风险可控，也能延续上一轮 `tools/editor` 模块化成果。
 
+### 当前模块依赖地图
+
+下面是当前 refactor 分支的实际依赖形态，用于指导后续拆分顺序：
+
+- `main.cpp` 仍是 composition root，直接连接 `Application`、Camera、Renderer、Scene、Framebuffer、LegacyExperiment、SceneSetup、EditorPanels 和 ImGui frame 生命周期。
+- `tools/sceneSetup` 负责默认场景装配，依赖 Renderer、Scene、Light、Material、Mesh、Framebuffer，是当前“场景内容定义”的集中位置。
+- `tools/editor` 负责 hierarchy / selection / inspector，但仍直接认识 Light、Camera、Shadow、Mesh 和 MaterialInspector。
+- `tools/inspector` 当前只抽象了 Material 的可编辑属性，尚未覆盖 Light / Camera / Shadow。
+- `renderer` 是渲染核心，但目前向上认识 Scene / Mesh / Light / Camera，向下认识 Framebuffer / Shader / Texture，同时横向认识几乎所有具体 Material 类型。
+- `materials` 保存材质状态和部分 UI 属性描述；但具体材质上传逻辑仍主要集中在 Renderer。
+- `framework` 保存 Object / Scene / Geometry / Shader / Texture；其中 Geometry 与 Texture 仍有较大实现体量。
+- `application` 主要承接窗口 Application 和 Assimp loader；loader 当前会接触 Renderer、Mesh、Texture、Shader、Material，说明资源加载和渲染资源创建尚未完全分层。
+- `legacy` 与 `tools/legacyExperiments` 已经隔离历史实验入口，但 `LegacyExperimentRunner` 仍是 header-only，实现依赖暴露偏多。
+
+### 依赖问题分级
+
+高优先级：
+
+- Renderer 对具体 Material 类型的依赖过重。现在新增一个材质通常需要修改 `MaterialType`、材质类、shader 初始化、shader 选择和 `Renderer::renderObject()` 分支，扩展成本集中在 Renderer。
+- `main.cpp` 仍保存运行时所有权和 UI frame 编排。虽然已经收敛过，但它仍同时承担初始化、每帧调度、回调转发、Camera 生命周期和 debug controller UI。
+- Camera / CameraControl 仍使用裸指针和手动 `delete`。这会阻碍后续把运行时状态移动到独立 owner 对象中。
+
+中优先级：
+
+- include 风格不统一。当前仍混用根 include、模块 include 和跨目录 `../`，这会让物理目录重组后的边界不够清晰。
+- EditorPanels 对 Light / Camera / Shadow 的字段认识过多。它已经承担面板渲染，后续不应该继续累积具体对象编辑细节。
+- `LegacyExperimentRunner` 作为 header-only 模块会把大量实验依赖传播给包含方。
+
+低优先级：
+
+- `framework/geometry.cpp` 体量偏大，但它的职责相对集中，可以等 Renderer 和 main 继续瘦身后再拆。
+- `framework/texture.cpp` 体量中等，当前更像资源封装问题，不是最先影响模块边界的点。
+- `tools/ObjectPool` 当前不像主流程关键依赖，可暂缓。
+
+### 执行 Backlog
+
+第一组：低风险降耦合，建议连续完成。
+
+1. 新增 `tools/editor/DebugControllerPanel.h/.cpp`，迁出 `main.cpp` 中 `"controller"` 面板。
+2. 将 `main.cpp` 的 ImGui 逻辑收敛成 frame 生命周期：`NewFrame -> draw panels -> Render`。
+3. 统一项目内部 include 风格，优先把明显的 `../` 改为从工程 include root 开始的模块路径。
+4. 把 `LegacyExperimentRunner` 从 header-only 拆成 `.h/.cpp`，降低包含方依赖。
+
+第二组：中风险结构拆分，需要每步构建验证。
+
+1. 从 `Renderer` 中拆出 `RenderState`，只迁移 depth / stencil / blend / culling / polygon offset 状态设置。
+2. 从 `Renderer` 中拆出 `ShaderLibrary`，让 shader 初始化和 `MaterialType -> Shader` 映射离开主渲染文件。
+3. 把 Camera / CameraControl 所有权从裸指针改成 `std::unique_ptr`，再把创建逻辑迁出 `main.cpp`。
+4. 为 Light / Camera / Shadow 增加声明式可编辑属性接口，让 `EditorPanels` 只负责调度 inspector。
+
+第三组：较高风险架构演进，等前两组稳定后再做。
+
+1. 从 `Renderer::renderObject()` 中拆出 `MaterialBinder`，逐步减少 Renderer 对具体材质类的直接 `static_pointer_cast`。
+2. 拆出 `ShadowRenderer`，独立 directional / CSM / point shadow pass。
+3. 重新定义 Loader 与 Renderer 的边界，避免 Assimp loader 直接承担过多渲染资源绑定职责。
+4. 再评估 GeometryFactory / ResourceManager 是否值得引入，避免过早抽象。
+
+### 下一步验收标准
+
+下一轮如果执行 Debug Controller Panel 拆分，验收标准应该是：
+
+- `main.cpp` 中不再直接包含 debug controller 的 ImGui 控件细节。
+- `renderIMGUI()` 只保留 ImGui frame 生命周期和模块化 panel 调用。
+- `tools/editor` 下新增的 debug controller 模块进入 `text2.vcxproj` 和 `text2.vcxproj.filters`。
+- `Debug|x64` 构建通过，且不提交本地 `imgui.ini`。
+
 后续我们可以持续直接修改这份 `work.md`，把抽象讨论逐渐收敛成具体执行计划。

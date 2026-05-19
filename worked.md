@@ -387,6 +387,10 @@
    - 基于当前 `codex/text2-refactor` 分支重新盘点项目结构，明确本轮分析只针对重构版本，不以 `master` 的旧结构为准。
    - 在 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md) 中补充 `2026-05-20 全项目重构分析（refactor 分支）`，记录当前模块状态、主要耦合热点、后续风险和建议顺序。
    - 当前判断：下一步最适合继续拆 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 中剩余的 debug controller UI，把它迁入 `tools/editor` 下的独立模块。
+52. 完成第二轮全项目重构分析补强：
+   - 继续基于当前 `codex/text2-refactor` 工作区盘点模块依赖，补充了 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md) 中的模块依赖地图。
+   - 按高 / 中 / 低优先级整理了 `main.cpp`、`renderer`、EditorPanels、include 风格、资源生命周期和 legacy 实验入口的后续风险。
+   - 补充了分阶段执行 backlog，并明确下一轮 Debug Controller Panel 拆分的验收标准。
 
 ### 当前状态
 
