@@ -3,6 +3,7 @@
 #include "camera/camera.h"
 #include "renderer/LightResourceBinder.h"
 #include "renderer/PBRIBLResourceBinder.h"
+#include "renderer/PBRSurfaceResourceBinder.h"
 #include "renderer/ShadowResourceBinder.h"
 
 using namespace GLframework;
@@ -29,45 +30,6 @@ namespace
 		shader->setVector3("cameraPosition", camera->mPosition);
 	}
 
-	void bindOptionalTexture(
-		const std::shared_ptr<Shader>& shader,
-		const char* samplerName,
-		const char* useFlagName,
-		const std::shared_ptr<Texture>& texture
-	)
-	{
-		shader->setInt(useFlagName, texture != nullptr ? 1 : 0);
-		if (!texture)
-		{
-			return;
-		}
-
-		shader->setInt(samplerName, texture->getUnit());
-		texture->Bind();
-	}
-
-	void bindPBRSurfaceUniforms(const std::shared_ptr<Shader>& shader, const std::shared_ptr<PBRMaterial>& material)
-	{
-		for (const auto& slot : material->getVec3UniformSlots())
-		{
-			shader->setVector3(slot.uniformName, slot.value ? *slot.value : glm::vec3{ 0.0f });
-		}
-
-		for (const auto& slot : material->getSurfaceFloatUniformSlots())
-		{
-			shader->setFloat(slot.uniformName, slot.value ? *slot.value : 0.0f);
-		}
-
-		for (const auto& slot : material->getTextureSlots())
-		{
-			bindOptionalTexture(
-				shader,
-				slot.samplerUniform,
-				slot.useFlagUniform,
-				slot.texture ? *slot.texture : nullptr
-			);
-		}
-	}
 }
 
 bool PBRMaterialBinder::bind(
@@ -87,7 +49,7 @@ bool PBRMaterialBinder::bind(
 	setNormalMatrix(shader, mesh);
 	LightResourceBinder::bindForwardLights(shader, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 	ShadowResourceBinder::bindCSMShadowResources(shader, context.camera, context.dirLight, 8);
-	bindPBRSurfaceUniforms(shader, material);
+	PBRSurfaceResourceBinder::bind(shader, material);
 	PBRIBLResourceBinder::bind(shader, material, context.environmentTargets);
 	return true;
 }

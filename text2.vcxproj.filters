@@ -435,6 +435,9 @@
     <ClCompile Include="renderer\PBRIBLResourceBinder.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\PBRSurfaceResourceBinder.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\LightResourceBinder.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -771,6 +774,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRIBLResourceBinder.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\PBRSurfaceResourceBinder.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\LightResourceBinder.h">

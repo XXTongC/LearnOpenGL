@@ -1439,3 +1439,13 @@ PBR IBL resource binding 已从 `PBRMaterialBinder` 中拆出：
 - `PBRIBLResourceBinder::canUseIBL(...)` 作为独立入口保留，后续 Debug UI、IBL debug pass 或 verification stats 可以复用同一套判断条件。
 
 这一步为 IBL debug view 和 PBR environment resource layout 替换做准备。后续如果要增加 irradiance / prefilter 可视化，或把 IBL 资源改为 bindless / descriptor-like 布局，改动点可以集中在 `PBRIBLResourceBinder`。
+
+### 2026-05-21 PBR Surface Resource Binder
+
+PBR surface resource binding 已从 `PBRMaterialBinder` 中拆出：
+
+- 新增 `PBRSurfaceResourceBinder`，集中绑定 PBR surface vec3 uniforms、surface float uniforms 和 6 组可选 texture slots。
+- `PBRMaterialBinder` 不再直接遍历 `PBRMaterial` 的 texture slot / surface uniform schema，只负责组合 object matrices、lights、shadow、surface 和 IBL binder。
+- PBR surface schema 仍来自 `PBRMaterial`，Debug UI、profile 和 shader binding 继续共享同一组 slot 描述。
+
+这一步为后续 BRDF 参数布局调整和材质贴图槽扩展做准备。新增 clearcoat、anisotropy、transmission 等 PBR 参数时，主要改动点应集中在 `PBRMaterial` schema 与 `PBRSurfaceResourceBinder`。

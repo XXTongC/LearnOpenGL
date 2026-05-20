@@ -200,6 +200,7 @@
     <ClCompile Include="renderer\MeshDraw.cpp" />
     <ClCompile Include="renderer\PBRMaterialBinder.cpp" />
     <ClCompile Include="renderer\PBRIBLResourceBinder.cpp" />
+    <ClCompile Include="renderer\PBRSurfaceResourceBinder.cpp" />
     <ClCompile Include="renderer\PBRDepthPrepass.cpp" />
     <ClCompile Include="renderer\PBRSceneRenderPass.cpp" />
     <ClCompile Include="renderer\PointShadowRenderPass.cpp" />
@@ -297,6 +298,7 @@
     <ClInclude Include="renderer\MeshDraw.h" />
     <ClInclude Include="renderer\PBRMaterialBinder.h" />
     <ClInclude Include="renderer\PBRIBLResourceBinder.h" />
+    <ClInclude Include="renderer\PBRSurfaceResourceBinder.h" />
     <ClInclude Include="renderer\PBRDepthPrepass.h" />
     <ClInclude Include="renderer\PBRSceneRenderPass.h" />
     <ClInclude Include="renderer\PointShadowRenderPass.h" />
