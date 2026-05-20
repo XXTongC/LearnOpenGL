@@ -960,6 +960,19 @@
    - 临时编译 `%TEMP%/text2_environment_schema_test/environment_schema_test.cpp`，链接 [renderer/EnvironmentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.cpp)、[framework/texture.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\framework\texture.cpp)、[tools/config/ProfileConfigIO.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigIO.cpp)、[tools/config/ProfileConfigParser.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigParser.cpp) 和 `glad.c`，直接验证 `EnvironmentProfileStorage::loadFromFile(...)` / `saveToFile(...)` 可按 schema 读写 HDR、procedural 和 precompute 字段；临时测试程序返回 `environment schema load/save ok`。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
    - 构建输出目录 [text2](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2) 约 `160MB`、[x64](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64) 约 `114MB`，均为 ignored generated output；验证结束后清理。
+162. 完成第八十一轮 PBRPreviewProfile schema 存取：
+   - 更新 [tools/inspector/PropertySchema.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\PropertySchema.h)，为 `PropertyDescriptor` 增加 `configKeys`，并新增 `addConfigVec3(...)` / `addConfigColor3(...)`，支持一个 UI 属性对应多个 ini key。
+   - 更新 [tools/config/ProfileConfigIO.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigIO.cpp)，支持按 component 读写 `Vec3` / `Color3` descriptor。
+   - 更新 [tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)，让 enabled、position、geometry、grid、albedo、PBR surface、IBL 和 normal map 字段都在 `visitEditableProperties(...)` 中提供 config key。
+   - `PBRPreviewProfileStorage::loadFromFile(...)` / `saveToFile(...)` 改为通过 `ProfileConfigIO` 消费同一份 property schema，不再维护手写 key 分支和手写输出逻辑。
+   - 保留既有 ini 字段名：`positionX/Y/Z`、`albedoR/G/B` 等字段格式不变，避免破坏已有 `config/pbr_preview.local.ini` 和 experiment preset。
+163. 完成第七十二次 PBRPreviewProfile schema 存取验证：
+   - 针对 PBRPreviewProfile schema 存取执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 使用 MSVC `cl /Zs` 检查 [tools/config/ProfileConfigIO.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigIO.cpp) 与 [tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)，结果通过。
+   - 临时编译并运行 `__codex_tmp_pbr_preview_schema_test.cpp`，直接验证 `PBRPreviewProfileStorage::loadFromFile(...)` 可读取旧格式 `positionX/Y/Z`、`albedoR/G/B` 等拆分字段，`saveToFile(...)` 可通过 schema 写回并再次加载；测试输出 `pbr preview schema load/save ok`，测试源文件已删除。
+   - 执行真实 `Debug|x64 Build`，首次构建成功但暴露新增 `ProfileConfigIO.cpp` 的 `C4267` warning；已通过显式转换到 `glm::vec3::length_type` 修复，随后 `cl /Zs` 和增量 `Debug|x64 Build` 均通过，增量构建结果 `0` warning、`0` error。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+   - 验证结束后已校验路径并清理 generated output 目录 [text2](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2)、[x64](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64) 和临时测试目录 `%TEMP%/text2_pbr_preview_schema_test`。
 
 ### 当前状态
 
@@ -997,9 +1010,10 @@
 - 当前 `PBRPreviewProfile` 支持 material grid，可按 metallic / roughness 范围生成多球阵列，在同一 environment / postprocess 下批量比较 PBR 参数。
 - 当前 `PropertySchema` 已从 `PropertyInspector` 拆出，profile 数据层不再依赖 ImGui 绘制层；`EnvironmentProfile`、`PostProcessSettings` 和 `PBRPreviewProfile` 已能通过 property descriptor 自动生成 Debug UI。
 - 当前 `PBRExperimentProfile` 支持用 `config/pbr_experiment.local.ini` 统一覆盖 environment、postprocess 和 PBR preview grid，减少维护多个 local ini 的成本。
-- 当前 profile 配置解析基础设施已收敛到 `ProfileConfigParser`；`ProfileConfigIO` 已开始让 descriptor 同时驱动 UI 与 ini load/save，当前已迁移 `PostProcessSettings` 和 `EnvironmentProfile`。
+- 当前 profile 配置解析基础设施已收敛到 `ProfileConfigParser`；`ProfileConfigIO` 已开始让 descriptor 同时驱动 UI 与 ini load/save，当前已迁移 `PostProcessSettings`、`EnvironmentProfile` 和 `PBRPreviewProfile`。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
 - 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例；其读写路径已迁移到 `ProfileConfigIO` schema 驱动。
 - 当前 `EnvironmentProfile` 的本地保存 / 加载路径已迁移到 `ProfileConfigIO` schema 驱动，Environment / IBL UI 与 ini 字段共享同一份 descriptor。
+- 当前 `PBRPreviewProfile` 的本地保存 / 加载路径已迁移到 `ProfileConfigIO` schema 驱动，Position / Albedo 这类 vec3 UI 字段继续兼容拆分 ini key。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
-- 下一步建议目标：扩展 `PropertySchema` 支持 vec3 / color3 的多 key 配置映射，然后把 `PBRPreviewProfile` 的 ini load/save 迁移到 `ProfileConfigIO`。
+- 下一步建议目标：让 `PBRExperimentProfile` 的 `environment.*`、`postprocess.*`、`pbrPreview.*` prefixed key 应用逻辑复用各 profile 的 schema，继续减少 profile 字段重复映射。

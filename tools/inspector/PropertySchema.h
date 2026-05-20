@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <functional>
 #include <string>
@@ -27,6 +28,7 @@ namespace GL_EDITOR
 		PropertyKind kind{ PropertyKind::Text };
 		std::string label{};
 		std::string configKey{};
+		std::vector<std::string> configKeys{};
 		float minValue{ 0.0f };
 		float maxValue{ 0.0f };
 		std::string format{ "%.3f" };
@@ -199,6 +201,27 @@ namespace GL_EDITOR
 			);
 		}
 
+		void addConfigVec3(
+			std::array<std::string, 3> keys,
+			std::string label,
+			glm::vec3* value
+		)
+		{
+			addVec3(std::move(label), value);
+			setLastConfigKeys(std::move(keys));
+		}
+
+		void addConfigVec3(
+			std::array<std::string, 3> keys,
+			std::string label,
+			const std::function<glm::vec3()>& getter,
+			const std::function<void(glm::vec3)>& setter
+		)
+		{
+			addVec3(std::move(label), getter, setter);
+			setLastConfigKeys(std::move(keys));
+		}
+
 		void addColor3(
 			std::string label,
 			const std::function<glm::vec3()>& getter,
@@ -220,6 +243,27 @@ namespace GL_EDITOR
 				[value]() { return *value; },
 				[value](glm::vec3 newValue) { *value = newValue; }
 			);
+		}
+
+		void addConfigColor3(
+			std::array<std::string, 3> keys,
+			std::string label,
+			glm::vec3* value
+		)
+		{
+			addColor3(std::move(label), value);
+			setLastConfigKeys(std::move(keys));
+		}
+
+		void addConfigColor3(
+			std::array<std::string, 3> keys,
+			std::string label,
+			const std::function<glm::vec3()>& getter,
+			const std::function<void(glm::vec3)>& setter
+		)
+		{
+			addColor3(std::move(label), getter, setter);
+			setLastConfigKeys(std::move(keys));
 		}
 
 		void addString(
@@ -282,6 +326,18 @@ namespace GL_EDITOR
 			if (!mProperties.empty())
 			{
 				mProperties.back().configKey = std::move(key);
+			}
+		}
+
+		void setLastConfigKeys(std::array<std::string, 3> keys)
+		{
+			if (!mProperties.empty())
+			{
+				mProperties.back().configKeys = {
+					std::move(keys[0]),
+					std::move(keys[1]),
+					std::move(keys[2])
+				};
 			}
 		}
 

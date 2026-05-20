@@ -988,3 +988,15 @@ Environment profile 配置读写已迁移到 `ProfileConfigIO`：
 - Environment / IBL Debug UI、local ini 读写和后续 preset tooling 现在共享同一份字段描述。
 
 这一步把 environment 与 postprocess 都推进到 schema-driven 配置读写。后续剩下最主要的配置重复点是 `PBRPreviewProfile` 的 position / albedo 这类 vec3 字段目前在 UI 中是一项，在 ini 中仍拆成多个 key；下一步需要给 schema 增加“一个 UI 属性对应多个 config key”的能力，或者明确把 profile 文件格式升级为 vector key。
+
+### 2026-05-20 PBRPreviewProfile Schema 存取
+
+PBR preview 配置读写已迁移到 `ProfileConfigIO`：
+
+- `PropertyDescriptor` 新增 `configKeys`，支持一个 UI 属性映射到多个配置 key。
+- `PropertyBuilder` 新增 `addConfigVec3(...)` 和 `addConfigColor3(...)`，用于保持 `Position`、`Albedo` 这类 UI 字段的一体化，同时继续读写 `positionX/Y/Z`、`albedoR/G/B` 这类兼容旧 ini 的拆分字段。
+- `ProfileConfigIO` 现在能按 component 读写 `Vec3` / `Color3` descriptor，不需要 profile 自己维护三个 key 分支。
+- `PBRPreviewProfile::visitEditableProperties(...)` 现在同时描述 Debug UI 与 `config/pbr_preview.local.ini` 的完整字段。
+- `PBRPreviewProfileStorage::loadFromFile(...)` / `saveToFile(...)` 不再维护手写 key 分支和手写输出逻辑。
+
+这一步把 `PostProcessSettings`、`EnvironmentProfile` 和 `PBRPreviewProfile` 都推进到 schema-driven 配置读写。下一步更有价值的重复点是 `PBRExperimentProfile`：它仍然手写 `environment.*`、`postprocess.*`、`pbrPreview.*` 的 prefixed key 应用逻辑，应该改为复用各 profile 的 schema。

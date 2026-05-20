@@ -8,7 +8,56 @@
 
 namespace
 {
-	bool applyPropertyValue(const GL_EDITOR::PropertyDescriptor& property, const std::string& value)
+	constexpr size_t invalidConfigKeyIndex = static_cast<size_t>(-1);
+	using Vec3Index = glm::vec3::length_type;
+
+	size_t findConfigKeyIndex(const GL_EDITOR::PropertyDescriptor& property, const std::string& key)
+	{
+		for (size_t index = 0; index < property.configKeys.size(); ++index)
+		{
+			if (property.configKeys[index] == key)
+			{
+				return index;
+			}
+		}
+
+		if (property.configKey == key)
+		{
+			return 0;
+		}
+
+		return invalidConfigKeyIndex;
+	}
+
+	bool applyVec3ComponentValue(
+		const GL_EDITOR::PropertyDescriptor& property,
+		const std::string& value,
+		size_t componentIndex
+	)
+	{
+		if (!property.getVec3 || !property.setVec3 || componentIndex >= 3)
+		{
+			return false;
+		}
+
+		const auto glmIndex = static_cast<Vec3Index>(componentIndex);
+		float parsedValue{ property.getVec3()[glmIndex] };
+		if (!GL_CONFIG::parseFloat(value, parsedValue))
+		{
+			return true;
+		}
+
+		glm::vec3 currentValue = property.getVec3();
+		currentValue[glmIndex] = parsedValue;
+		property.setVec3(currentValue);
+		return true;
+	}
+
+	bool applyPropertyValue(
+		const GL_EDITOR::PropertyDescriptor& property,
+		const std::string& value,
+		size_t configKeyIndex
+	)
 	{
 		switch (property.kind)
 		{
@@ -49,6 +98,10 @@ namespace
 			}
 			return true;
 
+		case GL_EDITOR::PropertyKind::Vec3:
+		case GL_EDITOR::PropertyKind::Color3:
+			return applyVec3ComponentValue(property, value, configKeyIndex);
+
 		default:
 			return false;
 		}
@@ -78,7 +131,7 @@ namespace
 		}
 	}
 
-	bool canSaveProperty(const GL_EDITOR::PropertyDescriptor& property)
+	bool isScalarConfigProperty(const GL_EDITOR::PropertyDescriptor& property)
 	{
 		return !property.configKey.empty()
 			&& (
@@ -88,6 +141,36 @@ namespace
 				|| property.kind == GL_EDITOR::PropertyKind::String
 			);
 	}
+
+	bool isVec3ConfigProperty(const GL_EDITOR::PropertyDescriptor& property)
+	{
+		return property.configKeys.size() == 3
+			&& property.getVec3
+			&& (
+				property.kind == GL_EDITOR::PropertyKind::Vec3
+				|| property.kind == GL_EDITOR::PropertyKind::Color3
+			);
+	}
+
+	void writePropertyConfig(std::ofstream& output, const GL_EDITOR::PropertyDescriptor& property)
+	{
+		if (isScalarConfigProperty(property))
+		{
+			output << property.configKey << '=' << propertyValueToString(property) << '\n';
+			return;
+		}
+
+		if (!isVec3ConfigProperty(property))
+		{
+			return;
+		}
+
+		const glm::vec3 value = property.getVec3();
+		for (size_t index = 0; index < property.configKeys.size(); ++index)
+		{
+			output << property.configKeys[index] << '=' << value[static_cast<Vec3Index>(index)] << '\n';
+		}
+	}
 }
 
 bool GL_CONFIG::loadPropertyConfig(const std::string& path, const GL_EDITOR::PropertyBuilder& builder)
@@ -96,9 +179,10 @@ bool GL_CONFIG::loadPropertyConfig(const std::string& path, const GL_EDITOR::Pro
 	{
 		for (const auto& property : builder.getProperties())
 		{
-			if (property.configKey == key)
+			const size_t configKeyIndex = findConfigKeyIndex(property, key);
+			if (configKeyIndex != invalidConfigKeyIndex)
 			{
-				applyPropertyValue(property, value);
+				applyPropertyValue(property, value, configKeyIndex);
 				return;
 			}
 		}
@@ -136,10 +220,7 @@ bool GL_CONFIG::savePropertyConfig(
 
 	for (const auto& property : builder.getProperties())
 	{
-		if (canSaveProperty(property))
-		{
-			output << property.configKey << '=' << propertyValueToString(property) << '\n';
-		}
+		writePropertyConfig(output, property);
 	}
 
 	return true;
