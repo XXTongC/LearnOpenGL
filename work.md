@@ -1297,3 +1297,16 @@ x64\Debug\text2.exe --verify-pbr
 ```
 
 本轮实际验证结果显示：`pbrMeshes=25`、`pbrPreviewMeshes=25`、`iblReady=yes`，并导出 1280x720 PPM framebuffer。后续涉及 PBR 渲染路径的改动，应该优先运行这个验证模式；普通短启动只能作为“程序没崩”的补充证据，不能代替 PBR 场景验证。
+
+### 2026-05-20 Runtime Frame Pass Plan
+
+Runtime frame pipeline 已从固定默认 pass list 推进到 profile 驱动的 pass plan：
+
+- `RuntimeFramePipelineProfile` 新增 `passOrder`，默认值为 `SceneColor,SceneResolve,Bloom,ScreenComposite`。
+- `config/runtime_frame_pipeline.example.ini` 新增 `passOrder` 示例字段，local profile 可以按 key 调整 pass 执行顺序或临时裁剪 pass。
+- `RuntimeFramePassDefinition` 新增稳定 `key`，当前 key 为 `SceneColor`、`SceneResolve`、`Bloom`、`ScreenComposite`。
+- `RuntimeFramePassRegistry::buildPassPlan(...)` 会解析 profile 的逗号分隔 pass list，去重并忽略未知 token；如果没有得到有效 pass，则回退默认顺序，避免错误配置直接黑屏。
+- `RuntimeFramePipeline::render(...)` 现在遍历 build 出来的 pass plan，不再直接使用固定 `defaultPasses()`。
+- `--verify-pbr` 会显式设置完整 passOrder，避免本地实验配置影响 PBR 验证证据。
+
+这一步让后续 PBR pass 的接入方式更明确：新增 pass 类型和 registry key 后，profile 可以决定它是否进入当前 pass plan。下一步可以开始补真实 PBR 专用 pass 槽位，例如 `PBRDepthPrepass`、`PBRShadowAtlas`、`PBRForward`、`IBLDebug`，并让 `PBRExperimentProfile` 或 runtime pipeline profile 选择具体组合。

@@ -11,6 +11,7 @@ namespace GL_RUNTIME
 {
 	struct RuntimeFramePipelineProfile
 	{
+		std::string passOrder{ "SceneColor,SceneResolve,Bloom,ScreenComposite" };
 		bool sceneColorPassEnabled{ true };
 		bool sceneResolvePassEnabled{ true };
 		bool bloomPassEnabled{ true };

@@ -1281,6 +1281,21 @@
    - `--verify-pbr` 导出 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm)，文件头为 `P6 1280 720 255`，大小 `2764816` bytes。
    - 对导出的 PPM 做像素统计：`921600` 个像素，非黑像素 `921600`，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`，可排除空黑 framebuffer 或只启动旧场景的情况。
    - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+214. 完成第一百零七轮 runtime frame pass plan：
+   - 更新 [application/RuntimeFramePipelineProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipelineProfile.h) 与 [application/RuntimeFramePipelineProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipelineProfile.cpp)，新增 `passOrder` 字段并纳入 `PropertySchema` / `ProfileConfigIO` 保存加载。
+   - 更新 [application/RuntimeFramePassRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePassRegistry.h) 与 [application/RuntimeFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePassRegistry.cpp)，为每个 pass 增加稳定 key，并新增 `findPassByKey()` / `buildPassPlan()`。
+   - 更新 [application/RuntimeFramePipeline.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipeline.cpp)，每帧从 `RuntimeFramePipelineProfile::passOrder` 构建 pass plan 并执行，而不是直接遍历固定 `defaultPasses()`。
+   - `buildPassPlan()` 会解析逗号分隔 pass key，去重并忽略未知 token；如果没有任何有效 pass，则回退默认 Scene Color -> Scene Resolve -> Bloom -> Screen Composite 顺序。
+   - 更新 [application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)，`--verify-pbr` 显式设置完整 pass order，避免本地 passOrder 实验污染 PBR 验证。
+   - 更新 [config/runtime_frame_pipeline.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\runtime_frame_pipeline.example.ini)，新增 `passOrder=SceneColor,SceneResolve,Bloom,ScreenComposite` 示例。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 profile-driven pass plan 的职责边界和后续 PBR pass 接入方式。
+215. 完成第九十八次 runtime frame pass plan 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePassRegistry.cpp)、[application/RuntimeFramePipeline.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipeline.cpp)、[application/RuntimeFramePipelineProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipelineProfile.cpp)、[application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp) 和 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 编译并运行临时 roundtrip 测试，验证 `RuntimeFramePipelineProfileStorage::saveToFile()` / `loadFromFile()` 能正确保存和恢复 `passOrder` 与四个 bool toggle；测试后已清理临时源文件和产物。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；profile-driven pass plan 相关改动已进入 VS 工程构建。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，验证模式自动退出并输出 `PBR verification scene stats: objects=33, meshes=32, pbrMeshes=25, pbrPreviewMeshes=25, iblReady=yes`。
+   - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 仍为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
 
 ### 当前状态
 
@@ -1345,7 +1360,8 @@
 - 当前 runtime startup sequence 已聚合到 `RuntimeApplicationShell`，`main.cpp` 基本只保留程序入口职责。
 - 当前 `RuntimeFramePipeline` 的步骤已拆成显式 pass 类型，PBR pipeline 后续可以按 pass 类型继续扩展。
 - 当前 `RuntimeFramePipelineProfile` 已接入 runtime context、profile loader、Debug UI 和本地 ini 读写，scene color / resolve / Bloom / screen composite pass 可运行时切换并保存。
-- 当前 `RuntimeFramePipeline` 已改为遍历 `RuntimeFramePassRegistry::defaultPasses()`，pass 的启用条件和执行入口集中到 registry，pipeline 主流程不再直接依赖具体 pass toggle 字段。
+- 当前 pass 的 key、启用条件和执行入口已集中到 `RuntimeFramePassRegistry`，pipeline 主流程不再直接依赖具体 pass toggle 字段。
 - 当前已新增 `--verify-pbr` 验证模式，可强制构建 procedural IBL + 5x5 PBR material grid，并导出 default framebuffer PPM；后续 PBR 改动不能再只用旧 Phong 短启动作为验证。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；frame pipeline pass list 当前仍是固定默认列表，还不能由 profile 动态构建。
-- 下一步建议目标：把固定 `defaultPasses()` 继续推进为由 profile 构建的 pass plan；或者先补 PBR 专用 pass/profile，为 depth prepass、shadow atlas、PBR forward 和 IBL debug pass 留出稳定扩展点。
+- 当前 `RuntimeFramePipeline` 已从固定 `defaultPasses()` 推进为 profile-driven pass plan，`RuntimeFramePipelineProfile::passOrder` 可以控制当前 pass key 顺序，无效配置会回退默认顺序。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；当前 pass plan 已可配置，但真实 PBR 专用 pass 槽位还未补齐。
+- 下一步建议目标：补 PBR 专用 pass/profile 槽位，为 depth prepass、shadow atlas、PBR forward 和 IBL debug pass 留出稳定扩展点。

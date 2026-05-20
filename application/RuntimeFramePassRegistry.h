@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 namespace GLframework
@@ -10,6 +11,7 @@ namespace GLframework
 namespace GL_RUNTIME
 {
 	struct RuntimeFramePipelineConfig;
+	struct RuntimeFramePipelineProfile;
 
 	enum class RuntimeFramePassId
 	{
@@ -28,6 +30,7 @@ namespace GL_RUNTIME
 	struct RuntimeFramePassDefinition
 	{
 		RuntimeFramePassId id{ RuntimeFramePassId::SceneColor };
+		const char* key{ "" };
 		const char* debugName{ "" };
 		RuntimeFramePassEnabledPredicate isEnabled{ nullptr };
 		RuntimeFramePassExecutor execute{ nullptr };
@@ -43,5 +46,9 @@ namespace GL_RUNTIME
 	{
 	public:
 		static const std::vector<RuntimeFramePassDefinition>& defaultPasses();
+		static const RuntimeFramePassDefinition* findPassByKey(const std::string& key);
+		static std::vector<const RuntimeFramePassDefinition*> buildPassPlan(
+			const RuntimeFramePipelineProfile& profile
+		);
 	};
 }

@@ -7,6 +7,8 @@ namespace GL_RUNTIME
 {
 	void RuntimeFramePipelineProfile::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
 	{
+		builder.addSection("Frame Pipeline Plan");
+		builder.addConfigString("passOrder", "Pass Order", &passOrder);
 		builder.addSection("Frame Pipeline Passes");
 		builder.addConfigBool("sceneColorPassEnabled", "Scene Color Pass", &sceneColorPassEnabled);
 		builder.addConfigBool("sceneResolvePassEnabled", "Scene Resolve Pass", &sceneResolvePassEnabled);
@@ -47,7 +49,7 @@ namespace GL_RUNTIME
 		snapshot.visitEditableProperties(builder);
 		return GL_CONFIG::savePropertyConfig(
 			path,
-			"# Local runtime frame pipeline pass toggles",
+			"# Local runtime frame pipeline pass plan and toggles",
 			builder
 		);
 	}

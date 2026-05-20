@@ -9,11 +9,12 @@ namespace GL_RUNTIME
 		const RuntimeFramePipelineConfig& config
 	)
 	{
-		for (const auto& pass : RuntimeFramePassRegistry::defaultPasses())
+		const auto passPlan = RuntimeFramePassRegistry::buildPassPlan(context.framePipelineProfile);
+		for (const auto* pass : passPlan)
 		{
-			if (pass.shouldExecute(context))
+			if (pass && pass->shouldExecute(context))
 			{
-				pass.executePass(context, config);
+				pass->executePass(context, config);
 			}
 		}
 	}
