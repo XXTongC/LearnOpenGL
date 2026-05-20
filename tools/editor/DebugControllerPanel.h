@@ -33,6 +33,7 @@ namespace GL_EDITOR
 		const std::string* environmentProfilePath{ nullptr };
 		GL_SCENE::PBRPreviewProfile* pbrPreviewProfile{ nullptr };
 		const std::string* pbrPreviewProfilePath{ nullptr };
+		const std::string* pbrExperimentProfilePath{ nullptr };
 		float* orbitAngle{ nullptr };
 	};
 

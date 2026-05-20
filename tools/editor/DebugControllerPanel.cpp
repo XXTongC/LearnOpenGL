@@ -11,6 +11,7 @@
 #include "../../renderer/PostProcessSettings.h"
 #include "../../third_party/imgui/imgui.h"
 #include "../inspector/PropertyInspector.h"
+#include "../sceneSetup/PBRExperimentProfile.h"
 #include "../sceneSetup/PBRPreviewProfile.h"
 
 namespace
@@ -206,6 +207,53 @@ namespace
 			}
 		}
 	}
+
+	void drawPBRExperimentControls(const GL_EDITOR::DebugControllerContext& context)
+	{
+		if (!context.environmentProfile || !context.postProcessSettings || !context.pbrPreviewProfile)
+		{
+			return;
+		}
+
+		static std::string lastConfigStatus{};
+		const std::string configPath = context.pbrExperimentProfilePath
+			? *context.pbrExperimentProfilePath
+			: GL_SCENE::PBRExperimentProfileStorage::defaultPath();
+		if (ImGui::CollapsingHeader("PBR Experiment Preset"))
+		{
+			ImGui::TextWrapped("Preset File: %s", configPath.c_str());
+			ImGui::TextWrapped("Saves or reloads the combined environment, postprocess, and PBR preview profile.");
+
+			if (ImGui::Button("Save PBR Experiment Preset"))
+			{
+				lastConfigStatus = GL_SCENE::PBRExperimentProfileStorage::saveToFile(
+					configPath,
+					*context.environmentProfile,
+					*context.postProcessSettings,
+					*context.pbrPreviewProfile
+				)
+					? "PBR experiment preset saved."
+					: "PBR experiment preset save failed.";
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Reload PBR Experiment Preset"))
+			{
+				lastConfigStatus = GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
+					configPath,
+					*context.environmentProfile,
+					*context.postProcessSettings,
+					*context.pbrPreviewProfile
+				)
+					? "PBR experiment preset reloaded."
+					: "PBR experiment preset reload failed.";
+			}
+
+			if (!lastConfigStatus.empty())
+			{
+				ImGui::TextWrapped("%s", lastConfigStatus.c_str());
+			}
+		}
+	}
 }
 
 void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
@@ -249,6 +297,7 @@ void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
 
 	drawPostProcessControls(context.postProcessSettings, context.postProcessSettingsPath);
 	drawPBRPreviewControls(context.pbrPreviewProfile, context.pbrPreviewProfilePath);
+	drawPBRExperimentControls(context);
 	drawEnvironmentControls(context.renderer, context.environmentProfile, context.environmentProfilePath);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

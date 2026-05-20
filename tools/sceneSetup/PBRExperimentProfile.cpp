@@ -1,5 +1,8 @@
 #include "PBRExperimentProfile.h"
 
+#include <filesystem>
+#include <fstream>
+
 #include "../config/ProfileConfigIO.h"
 #include "../config/ProfileConfigParser.h"
 
@@ -100,5 +103,53 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	postProcessSettings = loadedPostProcessSettings;
 	PBRPreviewProfileStorage::applyMaterialProfileReference(loadedPBRPreviewProfile);
 	pbrPreviewProfile = loadedPBRPreviewProfile;
+	return true;
+}
+
+bool GL_SCENE::PBRExperimentProfileStorage::saveToFile(
+	const std::string& path,
+	const GLframework::EnvironmentProfile& environmentProfile,
+	const GLframework::PostProcessSettings& postProcessSettings,
+	const PBRPreviewProfile& pbrPreviewProfile
+)
+{
+	const std::filesystem::path filePath{ path };
+	const auto parentPath = filePath.parent_path();
+	if (!parentPath.empty())
+	{
+		std::error_code error{};
+		std::filesystem::create_directories(parentPath, error);
+		if (error)
+		{
+			return false;
+		}
+	}
+
+	std::ofstream output(path, std::ios::trunc);
+	if (!output)
+	{
+		return false;
+	}
+
+	auto environmentSnapshot = environmentProfile;
+	auto postProcessSnapshot = postProcessSettings;
+	auto pbrPreviewSnapshot = pbrPreviewProfile;
+
+	GL_EDITOR::PropertyBuilder environmentBuilder{};
+	environmentSnapshot.visitEditableProperties(environmentBuilder);
+	GL_EDITOR::PropertyBuilder postProcessBuilder{};
+	postProcessSnapshot.visitEditableProperties(postProcessBuilder);
+	GL_EDITOR::PropertyBuilder pbrPreviewBuilder{};
+	pbrPreviewSnapshot.visitEditableProperties(pbrPreviewBuilder);
+
+	output
+		<< "# Local PBR experiment preset for environment, postprocess, and PBR preview\n"
+		<< "enabled=1\n\n";
+	GL_CONFIG::writePropertyConfig(output, "environment.", environmentBuilder);
+	output << '\n';
+	GL_CONFIG::writePropertyConfig(output, "postprocess.", postProcessBuilder);
+	output << '\n';
+	GL_CONFIG::writePropertyConfig(output, "pbrPreview.", pbrPreviewBuilder);
+
 	return true;
 }

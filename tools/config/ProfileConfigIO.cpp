@@ -152,11 +152,11 @@ namespace
 			);
 	}
 
-	void writePropertyConfig(std::ofstream& output, const GL_EDITOR::PropertyDescriptor& property)
+	void writeSinglePropertyConfig(std::ostream& output, const std::string& prefix, const GL_EDITOR::PropertyDescriptor& property)
 	{
 		if (isScalarConfigProperty(property))
 		{
-			output << property.configKey << '=' << propertyValueToString(property) << '\n';
+			output << prefix << property.configKey << '=' << propertyValueToString(property) << '\n';
 			return;
 		}
 
@@ -168,7 +168,7 @@ namespace
 		const glm::vec3 value = property.getVec3();
 		for (size_t index = 0; index < property.configKeys.size(); ++index)
 		{
-			output << property.configKeys[index] << '=' << value[static_cast<Vec3Index>(index)] << '\n';
+			output << prefix << property.configKeys[index] << '=' << value[static_cast<Vec3Index>(index)] << '\n';
 		}
 	}
 }
@@ -197,6 +197,18 @@ bool GL_CONFIG::applyPropertyConfigValue(
 	}
 
 	return false;
+}
+
+void GL_CONFIG::writePropertyConfig(
+	std::ostream& output,
+	const std::string& prefix,
+	const GL_EDITOR::PropertyBuilder& builder
+)
+{
+	for (const auto& property : builder.getProperties())
+	{
+		writeSinglePropertyConfig(output, prefix, property);
+	}
 }
 
 bool GL_CONFIG::savePropertyConfig(
@@ -230,7 +242,7 @@ bool GL_CONFIG::savePropertyConfig(
 
 	for (const auto& property : builder.getProperties())
 	{
-		writePropertyConfig(output, property);
+		writeSinglePropertyConfig(output, "", property);
 	}
 
 	return true;

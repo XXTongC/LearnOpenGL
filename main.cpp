@@ -327,6 +327,7 @@ GL_EDITOR::DebugControllerContext makeDebugControllerContext()
 		&environmentProfilePath,
 		&pbrPreviewProfile,
 		&pbrPreviewProfilePath,
+		&pbrExperimentProfilePath,
 		&m_time
 	};
 }

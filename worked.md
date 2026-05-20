@@ -1054,6 +1054,18 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera control / shadow camera double-to-float `C4244` warning，本轮未引入 PBR material preset warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+178. 完成第八十九轮 PBR experiment Debug UI：
+   - 更新 [tools/config/ProfileConfigIO.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigIO.h) 与 [tools/config/ProfileConfigIO.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigIO.cpp)，新增公开 `writePropertyConfig(...)`，支持用指定 prefix 写出 property schema。
+   - 更新 [tools/sceneSetup/PBRExperimentProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRExperimentProfile.h) 与 [tools/sceneSetup/PBRExperimentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRExperimentProfile.cpp)，新增 `saveToFile(...)`，将 environment、postprocess、PBR preview 保存成 prefixed experiment preset。
+   - 更新 [tools/editor/DebugControllerPanel.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.h) 与 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，新增 `PBR Experiment Preset` 面板，可保存 / 重载组合 preset。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，把 `pbrExperimentProfilePath` 传入 `DebugControllerContext`。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PBR experiment preset 作为组合实验层的边界。
+179. 完成第八十次 PBR experiment Debug UI 验证：
+   - 使用 MSVC `cl /Zs` 检查 [tools/config/ProfileConfigIO.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigIO.cpp)、[tools/sceneSetup/PBRExperimentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRExperimentProfile.cpp)、[tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp) 与 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 临时编译并运行 `__codex_tmp_pbr_experiment_preset_test.cpp`，验证 `PBRExperimentProfileStorage::saveToFile(...)` 可保存 prefixed experiment preset，`loadFromFile(...)` 可还原 environment / postprocess / PBR preview，并能继续应用 `pbrPreview.materialProfilePath` 引用的独立 material preset；测试输出 `pbr experiment preset config ok`，测试源文件和编译产物已删除。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera control / shadow camera double-to-float `C4244` warning，本轮未引入 PBR experiment Debug UI warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1099,7 +1111,8 @@
 - 当前 `EnvironmentProfile` 的本地保存 / 加载路径已迁移到 `ProfileConfigIO` schema 驱动，Environment / IBL UI 与 ini 字段共享同一份 descriptor。
 - 当前 `PBRPreviewProfile` 的本地保存 / 加载路径已迁移到 `ProfileConfigIO` schema 驱动，Position / Albedo 这类 vec3 UI 字段继续兼容拆分 ini key。
 - 当前 `PBRMaterialProfile` 已支持独立 `config/pbr_material.local.ini` 保存 / 加载，PBR preview 与 PBR experiment 都能通过 `materialProfilePath` 引用独立材质 preset。
+- 当前 `PBRExperimentProfile` 已支持 `config/pbr_experiment.local.ini` 保存 / 加载，并已接入 DebugControllerPanel 的组合 preset save/reload 入口。
 - 当前 runtime resize 边界已从 `main.cpp` 拆出到 `RuntimeViewport`，窗口尺寸变化会统一同步 viewport、PerspectiveCamera aspect、FrameRenderTargets 和 ScreenMaterial postprocess 输入贴图。
 - 当前 runtime input 边界已从 `main.cpp` 拆出到 `RuntimeInputController`，CameraControl 输入分发和中键临时 FOV 缩放不再由主入口直接维护。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；`main.cpp` 仍承担应用生命周期编排和全局 runtime context 创建。
-- 下一步建议目标：继续让 PBR experiment preset 接入 Debug UI 的 save/reload 入口，或者继续把 application lifecycle 从 `main.cpp` 收敛到更明确的 runtime bootstrapper。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担应用生命周期编排和全局 runtime context 创建。
+- 下一步建议目标：继续把 application lifecycle 从 `main.cpp` 收敛到更明确的 runtime bootstrapper，或者开始补 light rig / camera rig 这类 PBR experiment preset 维度。

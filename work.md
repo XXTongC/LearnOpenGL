@@ -1083,3 +1083,15 @@ PBR material preset 已从 preview profile 中拆出独立文件入口：
 - `config/pbr_preview.example.ini` 和 `config/pbr_experiment.example.ini` 已补充 `materialProfilePath` 示例字段。
 
 这一步让“材质参数 preset”和“preview 几何 / grid / normal map 设置”分离。后续新增 ORM packed texture、clearcoat 或 transmission 参数时，应先扩展 `PBRMaterialProfile` schema，然后独立 material preset、preview profile、experiment preset 和 Debug UI 会共享同一套字段来源。
+
+### 2026-05-20 PBR Experiment Debug UI
+
+PBR experiment preset 已接入运行时 Debug UI：
+
+- `ProfileConfigIO` 新增公开的 `writePropertyConfig(...)`，允许调用方把同一份 property schema 用指定 prefix 写出。
+- `PBRExperimentProfileStorage` 新增 `saveToFile(...)`，把 environment、postprocess、PBR preview 三组 schema 分别写成 `environment.*`、`postprocess.*`、`pbrPreview.*`。
+- `DebugControllerContext` 新增 `pbrExperimentProfilePath`，由 `main.cpp` 传入当前 experiment preset 路径。
+- `DebugControllerPanel` 新增 `PBR Experiment Preset` 面板，可保存 / 重载组合 preset，不再必须手动编辑 `config/pbr_experiment.local.ini`。
+- experiment preset 的 reload 继续走 `PBRExperimentProfileStorage::loadFromFile(...)`，因此仍会应用 `pbrPreview.materialProfilePath` 指向的独立 material preset。
+
+这一步让 environment、postprocess、preview grid、material preset 引用可以作为一个实验组合保存和恢复。后续如果增加更多 PBR 实验域，例如 light rig、camera rig 或 SSR / TAA 参数，应优先纳入 experiment preset 层，而不是分散到多个独立手工步骤。

@@ -18,5 +18,11 @@ namespace GL_SCENE
 			GLframework::PostProcessSettings& postProcessSettings,
 			PBRPreviewProfile& pbrPreviewProfile
 		);
+		static bool saveToFile(
+			const std::string& path,
+			const GLframework::EnvironmentProfile& environmentProfile,
+			const GLframework::PostProcessSettings& postProcessSettings,
+			const PBRPreviewProfile& pbrPreviewProfile
+		);
 	};
 }
