@@ -1378,6 +1378,21 @@
    - `--verify-pbr` renderer stats 输出：`rendererPasses=7, shadowCasters=32, directionalShadowLayers=5, directionalShadowDrawCalls=160, pointShadowLights=2, pointShadowFaces=12, pointShadowDrawCalls=384, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`，证明 shadow pass split 后 directional / point shadow 和 PBR depth / scene pass 均仍执行。
    - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
    - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+226. 完成第一百一十三轮 light resource binder：
+   - 新增 [renderer/LightResourceBinder.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\LightResourceBinder.h) 与 [renderer/LightResourceBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\LightResourceBinder.cpp)，集中绑定 forward lighting uniforms。
+   - `LightResourceBinder::bindForwardLights(...)` 负责写入 spot light、directional light、point light array、`POINT_LIGHT_NUM` 和 ambient color。
+   - 更新 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，移除内部 `setLightingUniforms(...)`，所有 Phong / PBR / shadow material 统一调用 `LightResourceBinder`。
+   - `MaterialBinder` 不再直接依赖 `PointLightShadow` 获取点光数量常量，降低材质绑定与 shadow light 实现之间的耦合。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 LightResourceBinder 加入 VS 工程和 renderer filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 light resource binder 对 PBR lighting path 后续 UBO / clustered lighting 的准备意义。
+227. 完成第一百零四次 light resource binder 验证：
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 使用 MSVC `cl /Zs` 检查 [renderer/LightResourceBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\LightResourceBinder.cpp)、[renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)、[renderer/PBRSceneRenderPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRSceneRenderPass.cpp)、[renderer/SceneRenderPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\SceneRenderPass.cpp) 和 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 执行 `Debug|x64` + `LinkIncremental=false` 构建通过，新增 `LightResourceBinder.cpp` 已进入 VS 工程。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，验证模式自动退出并输出 `PBR verification scene stats: objects=33, meshes=32, pbrMeshes=25, pbrPreviewMeshes=25, iblReady=yes`。
+   - `--verify-pbr` renderer stats 输出：`rendererPasses=7, shadowCasters=32, directionalShadowLayers=5, directionalShadowDrawCalls=160, pointShadowLights=2, pointShadowFaces=12, pointShadowDrawCalls=384, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`，证明 lighting uniform 迁移后 PBR path、shadow pass 和 legacy draw calls 均保持正常。
+   - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
+   - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1450,5 +1465,6 @@
 - 当前 renderer frame stats 已接入 Debug UI，普通运行时可以直接观察 PBR depth / scene pass 是否实际执行。
 - 当前 renderer 内部 pass 顺序已收敛到 `RendererFramePassRegistry`，后续 PBR shadow atlas / IBL debug / G-buffer pass 可以继续按 key 增加，而不必扩写 `Renderer::render()` 主流程。
 - 当前 directional shadow 与 point shadow 已拆成独立 render pass，`ShadowRenderer` 只保留调度 facade 职责，后续可逐步替换为 PBR shadow atlas 资源布局。
+- 当前 forward lighting uniform 绑定已从 `MaterialBinder` 拆到 `LightResourceBinder`，后续 PBR lighting 可集中演进为 UBO / SSBO / clustered light list。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR path 已有 depth / scene pass 边界，但 shadow atlas 和 IBL debug pass 还未拆出。
 - 下一步建议目标：继续补 PBR shadow atlas / IBL debug pass 的具体槽位，或把 PBR verification capture 加入更明确的视觉检查流程。

@@ -1374,3 +1374,14 @@ Shadow 渲染边界已从 `ShadowRenderer` 内部拆出：
 - `RendererFrameStats`、Debug UI 和 `--verify-pbr` 输出已接入 shadow stats，后续可以直接观察 shadow pass 是否覆盖当前 PBR 场景。
 
 这一步为后续 `PBRShadowAtlas` 做准备：directional shadow、point shadow 和 mesh depth draw 已经不再绑定在一个大 `ShadowRenderer.cpp` 里，后续可以逐步替换某个 shadow pass 的资源布局，而不必重写整个 renderer frame flow。
+
+### 2026-05-20 Light Resource Binder
+
+Forward lighting uniform 绑定已从 `MaterialBinder` 中拆出：
+
+- 新增 `LightResourceBinder`，集中写入 spot light、directional light、point light array、`POINT_LIGHT_NUM` 和 ambient color uniforms。
+- `MaterialBinder` 不再持有灯光 uniform 绑定细节，Phong / PBR / shadow material 都通过 `LightResourceBinder::bindForwardLights(...)` 复用同一入口。
+- `MaterialBinder` 对 `PointLightShadow` 的直接依赖已移除，point light 数量常量由 `LightResourceBinder` 负责。
+- VS 工程已加入 `LightResourceBinder.cpp/.h`。
+
+这一步为 PBR lighting path 后续演进做准备：将来如果要把 forward light uniforms 替换为 UBO、SSBO、clustered light list 或 PBR 专用 light binder，改动点可以集中在 `LightResourceBinder`，而不是在每个材质绑定函数里重复修改。

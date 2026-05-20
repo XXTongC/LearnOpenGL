@@ -1,7 +1,5 @@
 #include "MaterialBinder.h"
 
-#include <string>
-
 #include "materials/cubeMaterial.h"
 #include "materials/cubeSphereMaterial.h"
 #include "materials/depthMaterial.h"
@@ -18,9 +16,9 @@
 #include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
 #include "materials/phongShadowMaterial/phongShadowMaterial.h"
 #include "materials/whiteMaterial.h"
-#include "light/shadow/pointLightShadow/pointLightShadow.h"
 #include "mesh/instancedMesh.h"
 #include "renderer/EnvironmentRenderTargets.h"
+#include "renderer/LightResourceBinder.h"
 #include "renderer/ShadowResourceBinder.h"
 
 using namespace GLframework;
@@ -45,43 +43,6 @@ namespace
 		shader->setFloat("time", static_cast<float>(glfwGetTime()));
 		shader->setFloat("speed", 0.5f);
 		shader->setVector3("cameraPosition", camera->mPosition);
-	}
-
-	void setLightingUniforms(
-		const std::shared_ptr<Shader>& shader,
-		const std::shared_ptr<DirectionalLight>& dirLight,
-		const std::shared_ptr<SpotLight>& spotLight,
-		const std::vector<std::shared_ptr<PointLight>>& pointLights,
-		const std::shared_ptr<AmbientLight>& ambient
-	)
-	{
-		shader->setVector3("spotLight.position", spotLight->getPosition());
-		shader->setVector3("spotLight.color", spotLight->getColor());
-		shader->setFloat("spotLight.specularIntensity", spotLight->getSpecularIntensity());
-		shader->setVector3("spotLight.targetDirection", spotLight->getDirection());
-		shader->setFloat("spotLight.innerLine", glm::cos(glm::radians(spotLight->getInnerAngle())));
-		shader->setFloat("spotLight.outLine", glm::cos(glm::radians(spotLight->getOutAngle())));
-
-		shader->setVector3("directionalLight.color", dirLight->getColor());
-		shader->setVector3("directionalLight.direction", dirLight->getDirection());
-		shader->setFloat("directionalLight.specularIntensity", dirLight->getSpecularIntensity());
-		shader->setFloat("directionalLight.intensity", dirLight->getIntensity());
-
-		for (size_t i = 0; i < pointLights.size(); i++)
-		{
-			auto& pointLight = pointLights[i];
-			std::string baseName = "pointLights[" + std::to_string(i) + "]";
-
-			shader->setVector3(baseName + ".color", pointLight->getColor());
-			shader->setVector3(baseName + ".position", pointLight->getPosition());
-			shader->setFloat(baseName + ".specularIntensity", pointLight->getSpecularIntensity());
-			shader->setFloat(baseName + ".k2", pointLight->getK2());
-			shader->setFloat(baseName + ".k1", pointLight->getK1());
-			shader->setFloat(baseName + ".k0", pointLight->getK0());
-		}
-		shader->setInt("POINT_LIGHT_NUM", PointLightShadow::getMAX_POINT_LIGHT());
-
-		shader->setVector3("ambientColor", ambient->getColor());
 	}
 
 	void bindTexture(const std::shared_ptr<Shader>& shader, const char* samplerName, const std::shared_ptr<Texture>& texture)
@@ -195,7 +156,7 @@ namespace
 		bindTexture(shader, "opacityMaskSampler", opacityMat->mOpacityrMask);
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
-		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 		shader->setFloat("shiness", opacityMat->mShiness);
 	}
 
@@ -217,7 +178,7 @@ namespace
 		bindTexture(shader, "envSampler", phongMat->mEnv);
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
-		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 		shader->setFloat("shiness", phongMat->mShiness);
 	}
 
@@ -239,7 +200,7 @@ namespace
 		bindTexture(shader, "envSampler", phongMat->mEnv);
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
-		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 		shader->setFloat("shiness", phongMat->mShiness);
 	}
 
@@ -260,7 +221,7 @@ namespace
 		setCommonMaterialUniforms(shader, material, camera);
 		setPhongTextures(shader, phongMat->mDiffuse, phongMat->mSpecularMask);
 		setMVPMatrices(shader, mesh, camera);
-		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 		shader->setFloat("shiness", phongMat->mShiness);
 		setInstanceMatrixUniforms(shader, instancedMesh);
 	}
@@ -298,7 +259,7 @@ namespace
 		bindTexture(shader, "cloudMask", grassMat->mCloudMask);
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
-		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 		shader->setFloat("shiness", grassMat->mShiness);
 		setInstanceMatrixUniforms(shader, instancedMesh);
 	}
@@ -320,7 +281,7 @@ namespace
 		setPhongTextures(shader, phongMat->mDiffuse, phongMat->mSpecularMask);
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
-		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 		shader->setFloat("shiness", phongMat->mShiness);
 	}
 
@@ -342,7 +303,7 @@ namespace
 		bindTexture(shader, "NormalMapSampler", phongMat->mNormal);
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
-		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 		shader->setFloat("shiness", phongMat->mShiness);
 	}
 
@@ -365,7 +326,7 @@ namespace
 		bindTexture(shader, "ParallaxMapSampler", phongMat->mParallaxMap);
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
-		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 		shader->setFloat("heightScale", phongMat->mHeightScale);
 		shader->setInt("layerNum", phongMat->mLayerNum);
 		shader->setFloat("shiness", phongMat->mShiness);
@@ -392,7 +353,7 @@ namespace
 		setCommonMaterialUniforms(shader, material, camera);
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
-		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 		ShadowResourceBinder::bindCSMShadowResources(shader, camera, dirLight, 8);
 
 		for (const auto& slot : pbrMat->getVec3UniformSlots())
@@ -450,7 +411,7 @@ namespace
 		setPhongTextures(shader, phongMat->mDiffuse, phongMat->mSpecularMask);
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
-		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 		shader->setFloat("shiness", phongMat->mShiness);
 	}
 
@@ -472,7 +433,7 @@ namespace
 
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
-		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 		shader->setFloat("shiness", phongMat->mShiness);
 	}
 
@@ -495,7 +456,7 @@ namespace
 
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
-		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
+		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 
 		shader->setFloat("shiness", phongMat->mShiness);
 		shader->setInt("debugShadowMap", 1);

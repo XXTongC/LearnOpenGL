@@ -194,6 +194,7 @@
     <ClCompile Include="renderer\FrameRenderState.cpp" />
     <ClCompile Include="renderer\FrameRenderTargets.cpp" />
     <ClCompile Include="renderer\IBLPrecomputePass.cpp" />
+    <ClCompile Include="renderer\LightResourceBinder.cpp" />
     <ClCompile Include="renderer\MaterialBinder.cpp" />
     <ClCompile Include="renderer\PBRDepthPrepass.cpp" />
     <ClCompile Include="renderer\PBRSceneRenderPass.cpp" />
@@ -285,6 +286,7 @@
     <ClInclude Include="renderer\FrameRenderState.h" />
     <ClInclude Include="renderer\FrameRenderTargets.h" />
     <ClInclude Include="renderer\IBLPrecomputePass.h" />
+    <ClInclude Include="renderer\LightResourceBinder.h" />
     <ClInclude Include="renderer\MaterialBinder.h" />
     <ClInclude Include="renderer\PBRDepthPrepass.h" />
     <ClInclude Include="renderer\PBRSceneRenderPass.h" />
