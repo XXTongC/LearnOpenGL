@@ -254,6 +254,7 @@ namespace
 			ImGui::Text("PBR Shadow Atlas Point Faces: %d / %d @ %d", stats.pbrShadowAtlasPointFacesRendered, stats.pbrShadowAtlasPointFaces, stats.pbrShadowAtlasPointResolution);
 			ImGui::Text("PBR Shadow Atlas Draw Calls: directional %d, point %d", stats.pbrShadowAtlasDirectionalDrawCalls, stats.pbrShadowAtlasPointDrawCalls);
 			ImGui::Text("Legacy Scene Draw Calls: %d", stats.legacySceneDrawCalls);
+			ImGui::Text("Legacy Transparent Draw Calls: %d", stats.legacyTransparentDrawCalls);
 			ImGui::Text("PBR Depth Prepass Draw Calls: %d", stats.pbrDepthPrepassDrawCalls);
 			ImGui::Text("PBR GBuffer Ready: %s", stats.pbrGBufferReady ? "Yes" : "No");
 			ImGui::Text("PBR GBuffer Size: %d x %d", stats.pbrGBufferWidth, stats.pbrGBufferHeight);
@@ -268,6 +269,7 @@ namespace
 			ImGui::Text("PBR Deferred Light Buffer Point Lights: %d / %d", stats.pbrDeferredLightBufferPointLights, stats.pbrDeferredLightBufferMaxPointLights);
 			ImGui::Text("PBR GBuffer Debug Draw Calls: %d", stats.pbrGBufferDebugDrawCalls);
 			ImGui::Text("PBR Scene Draw Calls: %d", stats.pbrSceneDrawCalls);
+			ImGui::Text("PBR Transparent Draw Calls: %d", stats.pbrTransparentDrawCalls);
 			ImGui::Text("IBL Debug Draw Calls: %d", stats.iblDebugDrawCalls);
 			ImGui::TextWrapped("Use these values to verify whether the current scene is actually using the PBR render path.");
 		}

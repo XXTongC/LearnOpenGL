@@ -36,7 +36,9 @@ namespace GLframework
 		int pbrDeferredLightBufferMaxPointLights{ 0 };
 		int pbrGBufferDebugDrawCalls{ 0 };
 		int legacySceneDrawCalls{ 0 };
+		int legacyTransparentDrawCalls{ 0 };
 		int pbrSceneDrawCalls{ 0 };
+		int pbrTransparentDrawCalls{ 0 };
 		int iblDebugDrawCalls{ 0 };
 	};
 }

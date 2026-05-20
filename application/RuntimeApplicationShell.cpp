@@ -52,6 +52,7 @@ namespace GL_RUNTIME
 		RuntimeScenePreparer::prepare(mRuntime, mLegacyExperiments, makeScenePrepareConfig());
 		if (mConfig.pbrVerification.enabled)
 		{
+			RuntimePBRVerification::addVerificationSceneProbes(mRuntime, mConfig.pbrVerification);
 			RuntimePBRVerification::applyRendererPassProfile(mRuntime, mConfig.pbrVerification);
 			RuntimePBRVerification::reportPreparedScene(mRuntime);
 		}

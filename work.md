@@ -1651,3 +1651,14 @@ PBR point light shadow atlas 已从“只写入”推进到“forward / deferred
 - `--verify-pbr-deferred-no-atlas` 继续验证禁用 `PBRShadowAtlas` pass 时 point shadow atlas 不会绑定，shader 会回到无 point atlas shadow 的 fallback 行为。
 
 这一步完成了 PBR shadow atlas 的主要 producer-consumer 闭环：directional CSM 与 point light depth array 都已经由 PBR atlas pass 生产，并被 forward / deferred PBR shader 采样。后续重点转向透明 forward fallback、material feature parity，以及 clustered/tiled light list。
+
+### 2026-05-21 PBR Deferred Transparent Forward Fallback
+
+Deferred PBR 已新增透明 forward fallback 的验证路径：
+
+- 新增 `--verify-pbr-deferred-transparent`，在 PBR verification scene 中追加一个透明 PBR probe，并把 renderer pass order 设置为 `PBRDeferredLighting` 后继续执行 `LegacyTransparentScene,PBRTransparentScene`。
+- `RuntimePBRVerification::addVerificationSceneProbes(...)` 负责按验证配置追加透明 PBR probe；普通 `--verify-pbr`、`--verify-pbr-deferred` 不会被该 probe 污染。
+- `RendererFrameStats` 新增 `legacyTransparentDrawCalls` 与 `pbrTransparentDrawCalls`，Debug UI 和 verification 输出可以直接确认透明 fallback 是否实际执行。
+- 透明 probe 使用 PBRMaterial、blend enabled、depth write disabled、opacity 0.45，仍走 `PBRSceneRenderPass` / `PBRMaterialBinder`，因此会复用 PBR IBL、directional / point shadow atlas binding。
+
+这一步没有引入新的透明渲染算法，目标是先把 deferred opaque + forward transparent 的组合路径变成可验证状态。后续如果要支持 OIT、weighted blended transparency 或独立 transparent lighting 策略，可以在这个 fallback 边界上继续替换。

@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "../framework/object.h"
+#include "../framework/geometry.h"
+#include "../framework/scene.h"
 #include "../materials/material.h"
 #include "../materials/pbrMaterial/PBRMaterial.h"
 #include "../mesh/mesh.h"
@@ -25,6 +27,8 @@ namespace
 		int meshCount{ 0 };
 		int pbrMeshCount{ 0 };
 		int pbrPreviewMeshCount{ 0 };
+		int transparentMeshCount{ 0 };
+		int pbrTransparentMeshCount{ 0 };
 	};
 
 	void reportLine(const std::string& message)
@@ -53,6 +57,14 @@ namespace
 		if (mesh && mesh->getMaterial() && mesh->getMaterial()->getMaterialType() == GLframework::MaterialType::PBRMaterial)
 		{
 			++stats.pbrMeshCount;
+		}
+		if (mesh && mesh->getMaterial() && mesh->getMaterial()->getColorBlendState())
+		{
+			++stats.transparentMeshCount;
+			if (mesh->getMaterial()->getMaterialType() == GLframework::MaterialType::PBRMaterial)
+			{
+				++stats.pbrTransparentMeshCount;
+			}
 		}
 
 		if (object->getName().find("PBR Preview") == 0)
@@ -165,6 +177,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + PBR deferred lighting pass";
 		}
+		if (config.enablePbrTransparentFallbackPass)
+		{
+			profileLine += " + transparent forward fallback";
+		}
 		if (config.enablePbrGBufferDebugPass)
 		{
 			profileLine += " + PBR G-buffer debug pass";
@@ -204,6 +220,10 @@ namespace GL_RUNTIME
 		{
 			rendererPassProfile.defaultPassOrder =
 				shadowPrefix + "PBRDepthPrepass,PBRGBuffer,PBRDeferredLighting";
+			if (config.enablePbrTransparentFallbackPass)
+			{
+				rendererPassProfile.defaultPassOrder += ",LegacyTransparentScene,PBRTransparentScene";
+			}
 			rendererPassProfile.pbrDeferredLightingIntensity = 1.0f;
 			rendererPassProfile.pbrDeferredIblDiffuseStrength = 1.0f;
 			rendererPassProfile.pbrDeferredIblSpecularStrength = 1.0f;
@@ -230,6 +250,40 @@ namespace GL_RUNTIME
 		}
 	}
 
+	void RuntimePBRVerification::addVerificationSceneProbes(
+		GLframework::AppRuntimeContext& context,
+		const RuntimePBRVerificationConfig& config
+	)
+	{
+		if (!config.enablePbrTransparentFallbackPass || !context.sceneOffScreen || !context.renderer)
+		{
+			return;
+		}
+
+		auto material = std::make_shared<GLframework::PBRMaterial>();
+		material->mAlbedo = { 0.15f, 0.85f, 1.0f };
+		material->mMetallic = 0.0f;
+		material->mRoughness = 0.18f;
+		material->mAo = 1.0f;
+		material->mUseIBL = true;
+		material->mIblDiffuseStrength = 0.8f;
+		material->mIblSpecularStrength = 1.0f;
+		material->setColorBlendState(true);
+		material->setOpacity(0.45f);
+		material->setDepthWrite(false);
+
+		auto geometry = GLframework::Geometry::createSphere(
+			context.renderer->getShader(GLframework::MaterialType::PBRMaterial),
+			0.55f,
+			32,
+			16
+		);
+		auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
+		mesh->setName("PBR Transparent Fallback Probe");
+		mesh->setPosition({ 0.0f, 0.65f, 2.45f });
+		context.sceneOffScreen->addChild(mesh);
+	}
+
 	void RuntimePBRVerification::reportPreparedScene(GLframework::AppRuntimeContext& context)
 	{
 		PBRVerificationSceneStats stats{};
@@ -242,6 +296,8 @@ namespace GL_RUNTIME
 			+ ", meshes=" + std::to_string(stats.meshCount)
 			+ ", pbrMeshes=" + std::to_string(stats.pbrMeshCount)
 			+ ", pbrPreviewMeshes=" + std::to_string(stats.pbrPreviewMeshCount)
+			+ ", transparentMeshes=" + std::to_string(stats.transparentMeshCount)
+			+ ", pbrTransparentMeshes=" + std::to_string(stats.pbrTransparentMeshCount)
 			+ ", iblReady=" + (environmentReady ? std::string{ "yes" } : std::string{ "no" })
 		);
 	}
@@ -270,7 +326,9 @@ namespace GL_RUNTIME
 			+ ", pbrShadowAtlasPointDrawCalls=" + std::to_string(stats.pbrShadowAtlasPointDrawCalls)
 			+ ", pbrDepthPrepassDrawCalls=" + std::to_string(stats.pbrDepthPrepassDrawCalls)
 			+ ", legacyDrawCalls=" + std::to_string(stats.legacySceneDrawCalls)
-			+ ", pbrDrawCalls=" + std::to_string(stats.pbrSceneDrawCalls);
+			+ ", legacyTransparentDrawCalls=" + std::to_string(stats.legacyTransparentDrawCalls)
+			+ ", pbrDrawCalls=" + std::to_string(stats.pbrSceneDrawCalls)
+			+ ", pbrTransparentDrawCalls=" + std::to_string(stats.pbrTransparentDrawCalls);
 		if (stats.iblDebugDrawCalls > 0)
 		{
 			statsLine += ", iblDebugDrawCalls=" + std::to_string(stats.iblDebugDrawCalls);

@@ -271,13 +271,15 @@ namespace
 			return;
 		}
 
-		context.stats->legacySceneDrawCalls += context.sceneRenderPass->render(
+		const int drawCalls = context.sceneRenderPass->render(
 			{},
 			context.renderQueue->getLegacyTransparentObjects(),
 			nullptr,
 			*context.shaderLibrary,
 			createMaterialBindingContext(context)
 		);
+		context.stats->legacySceneDrawCalls += drawCalls;
+		context.stats->legacyTransparentDrawCalls += drawCalls;
 	}
 
 	void renderPBRTransparentScene(RendererFrameContext& context)
@@ -287,12 +289,14 @@ namespace
 			return;
 		}
 
-		context.stats->pbrSceneDrawCalls += context.pbrSceneRenderPass->render(
+		const int drawCalls = context.pbrSceneRenderPass->render(
 			{},
 			context.renderQueue->getPbrTransparentObjects(),
 			*context.shaderLibrary,
 			createMaterialBindingContext(context)
 		);
+		context.stats->pbrSceneDrawCalls += drawCalls;
+		context.stats->pbrTransparentDrawCalls += drawCalls;
 	}
 
 	void renderIBLDebug(RendererFrameContext& context)

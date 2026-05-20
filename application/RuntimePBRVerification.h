@@ -17,6 +17,7 @@ namespace GL_RUNTIME
 		bool enablePbrDeferredLightingPass{ false };
 		bool enablePbrGBufferDebugPass{ false };
 		bool disablePbrShadowAtlasPass{ false };
+		bool enablePbrTransparentFallbackPass{ false };
 		int maxFrames{ 3 };
 		int captureFrame{ 2 };
 		std::string capturePath{ "out/pbr_verification.ppm" };
@@ -30,6 +31,10 @@ namespace GL_RUNTIME
 			const RuntimePBRVerificationConfig& config
 		);
 		static void applyRendererPassProfile(
+			GLframework::AppRuntimeContext& context,
+			const RuntimePBRVerificationConfig& config
+		);
+		static void addVerificationSceneProbes(
 			GLframework::AppRuntimeContext& context,
 			const RuntimePBRVerificationConfig& config
 		);
