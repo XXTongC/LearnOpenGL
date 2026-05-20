@@ -5,6 +5,7 @@
 #include <typeinfo>
 #include "GL_ERROR_FIND.h"
 #include "Application.h"
+#include "RuntimeInputController.h"
 #include "RuntimeViewport.h"
 #include "tools/tools.h"
 #include "shader.h"
@@ -498,7 +499,7 @@ void initIMGUI()
 //�����֣��������ص�����
 void OnScroll(double offset)
 {
-	cameracontrol->onScroll(static_cast<float>(offset));
+	GL_RUNTIME::RuntimeInputController::handleScroll(offset, { camera, cameracontrol });
 }
 
 void OnResize(int newWidth, int newHeight)
@@ -520,7 +521,7 @@ void OnResize(int newWidth, int newHeight)
 
 void OnKeyboardCallback(int key, int action, int mods)
 {
-	GL_CALL(cameracontrol->onKey(key, action, mods));
+	GL_RUNTIME::RuntimeInputController::handleKey(key, action, mods, { camera, cameracontrol });
 #ifdef _DEBUG
 	std::cout << "OnKeyboardCallback Pressed: " << key << " " << action << " " << mods << std::endl;
 #endif
@@ -533,27 +534,7 @@ void OnMouseCallback(int button, int action, int mods)
 #ifdef _DEBUG
 	std::cout << "OnMouseCallback : " << button << " " << action << " " << mods << std::endl;
 #endif
-	cameracontrol->onMouse(button, action,x, y);
-	if(CameraControl* control=dynamic_cast<GameCameraControl*>(cameracontrol))
-	{
-		if(PerspectiveCamera* icamera = dynamic_cast<PerspectiveCamera*>(camera))
-		{
-			if(button==GLFW_MOUSE_BUTTON_MIDDLE&&action==GLFW_PRESS)
-			{
-				if(icamera!=nullptr)
-				{
-					icamera->setFovy(icamera->mFovy / 2.0f);
-				}
-			}
-			else if(button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_RELEASE)
-			{
-				if (icamera != nullptr)
-				{
-					icamera->setFovy(icamera->mFovy * 2.0f);
-				}
-			}
-		}
-	}
+	GL_RUNTIME::RuntimeInputController::handleMouse(button, action, x, y, { camera, cameracontrol });
 	
 }
 
@@ -584,7 +565,7 @@ void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods
 void OnCursor(double xpos, double ypos)
 {
 	//std::cout << "(" << xpos << ", " << ypos << ")" << std::endl;
-	cameracontrol->onCursor(xpos, ypos);
+	GL_RUNTIME::RuntimeInputController::handleCursor(xpos, ypos, { camera, cameracontrol });
 }
 #pragma endregion
 

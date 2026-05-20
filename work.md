@@ -1058,3 +1058,15 @@ PBR preview preset 已开始复用正式的材质 profile：
 - `RuntimeViewport.cpp/.h` 已加入 Visual Studio 工程和 filters，保持 VS 分类与物理文件一致。
 
 这一步降低了主入口对渲染目标和 camera 类型的直接耦合。后续 PBR 路径如果新增更多 resize-sensitive 资源，例如 clustered light grid、screen-space reflection history、temporal accumulation target，应继续挂到 runtime resize 协调边界，而不是回到 `main.cpp`。
+
+### 2026-05-20 Runtime Input Boundary
+
+Camera input / 临时 FOV 交互已从 `main.cpp` 拆出：
+
+- 新增 `RuntimeInputController`，集中处理 scroll、keyboard、mouse、cursor 对 `CameraControl` 的分发。
+- 中键按下临时缩小 `PerspectiveCamera::mFovy`、中键释放恢复 FOV 的逻辑迁移到 `RuntimeInputController::applyTemporaryFovZoom(...)`。
+- `RuntimeInputContext` 显式传入当前 `Camera` 和 `CameraControl`，避免输入模块直接依赖全局变量。
+- `main.cpp` 的 GLFW 回调现在只负责取 cursor position、保留 debug log，并把输入事件转交给 runtime input 边界。
+- `RuntimeInputController.cpp/.h` 已加入 Visual Studio 工程和 Application filter。
+
+这一步继续降低主入口复杂度。后续如果引入 editor camera、game camera、preview orbit camera 或 PBR 材质调试专用相机，应把输入路由扩展在 runtime input 边界内，而不是继续把 camera-specific 分支写回 `main.cpp`。

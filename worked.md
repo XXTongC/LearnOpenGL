@@ -1029,6 +1029,17 @@
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera control / shadow camera double-to-float `C4244` warning，本轮未引入 runtime viewport warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+174. 完成第八十七轮 runtime input boundary：
+   - 新增 [application/RuntimeInputController.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeInputController.h) 与 [application/RuntimeInputController.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeInputController.cpp)，集中处理 scroll、keyboard、mouse、cursor 对 `CameraControl` 的分发。
+   - 将原本写在 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 鼠标回调里的中键临时 FOV 缩放逻辑迁移到 `RuntimeInputController::applyTemporaryFovZoom(...)`。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，GLFW 回调只保留 cursor position 获取和 debug log，再把输入事件转交给 `RuntimeInputController`。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 runtime input controller 新源码加入 VS 工程和 Application filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录后续 editor camera / preview camera 输入路由应挂到 runtime input 边界。
+175. 完成第七十八次 runtime input boundary 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeInputController.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeInputController.cpp)、[application/RuntimeViewport.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeViewport.cpp) 与 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera control / shadow camera double-to-float `C4244` warning，本轮未引入 runtime input warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
 
 ### 当前状态
 
@@ -1074,5 +1085,6 @@
 - 当前 `EnvironmentProfile` 的本地保存 / 加载路径已迁移到 `ProfileConfigIO` schema 驱动，Environment / IBL UI 与 ini 字段共享同一份 descriptor。
 - 当前 `PBRPreviewProfile` 的本地保存 / 加载路径已迁移到 `ProfileConfigIO` schema 驱动，Position / Albedo 这类 vec3 UI 字段继续兼容拆分 ini key。
 - 当前 runtime resize 边界已从 `main.cpp` 拆出到 `RuntimeViewport`，窗口尺寸变化会统一同步 viewport、PerspectiveCamera aspect、FrameRenderTargets 和 ScreenMaterial postprocess 输入贴图。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；camera input / FOV 临时交互仍在 `main.cpp` 中，尚未拆成独立 runtime input controller。
-- 下一步建议目标：继续把 camera input / FOV 交互从 `main.cpp` 拆出，或者为 `PBRMaterialProfile` 增加独立 material preset 文件入口。
+- 当前 runtime input 边界已从 `main.cpp` 拆出到 `RuntimeInputController`，CameraControl 输入分发和中键临时 FOV 缩放不再由主入口直接维护。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；`main.cpp` 仍承担应用生命周期编排和全局 runtime context 创建。
+- 下一步建议目标：为 `PBRMaterialProfile` 增加独立 material preset 文件入口，或者继续把 application lifecycle 从 `main.cpp` 收敛到更明确的 runtime bootstrapper。
