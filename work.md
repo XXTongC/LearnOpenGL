@@ -1480,3 +1480,14 @@ PBR scene pass 已绕过通用材质 switch：
 - `MaterialBinder` 仍保留 PBR 分支，用于 global material override 或 legacy scene pass 的兼容路径。
 
 这一步进一步明确 PBR forward pass 的 ownership：PBR pass 负责 PBR material binding，legacy scene pass 负责通用 / 历史材质绑定。后续添加 G-buffer 或 PBR debug pass 时，可以直接复用 PBR 专用 binder，而不是通过通用材质 switch 间接调用。
+
+### 2026-05-21 Renderer Frame Pass Plan Builder
+
+Renderer 内部 pass plan 已从“直接选择固定 vector”推进到“按稳定 pass key 解析 order string”：
+
+- `RendererFramePassDefinition` 新增 `keyName`，每个 renderer pass 现在都有稳定配置 key 和调试名。
+- `RendererFramePassRegistry` 新增 `defaultPassOrder()` 与 `globalMaterialOverridePassOrder()`，当前默认顺序保持为 `BeginFrame,ShadowMaps,PBRDepthPrepass,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene`。
+- `RendererFramePassRegistry::buildPassPlan(...)` 会解析逗号分隔 pass order、忽略未知 token、去重重复 pass；如果没有有效 pass，则回退默认 renderer pass plan。
+- `Renderer::render(...)` 现在通过 order string 构建 pass plan，再执行每个 pass；默认路径和 global material override 路径的行为保持不变。
+
+这一步的目的不是把 renderer pass 立刻暴露成用户配置，而是先把内部扩展机制打通。后续新增 `PBRShadowAtlas`、`GBuffer`、`IBLDebug` 或 clustered lighting pass 时，可以按 key 注册并插入 order，而不是继续修改 `Renderer::render()` 主流程。

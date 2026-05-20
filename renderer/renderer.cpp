@@ -144,11 +144,16 @@ void Renderer::render(
 		&mLastFrameStats
 	};
 
-	const auto& passPlan = mGlobalMaterial
-		? RendererFramePassRegistry::globalMaterialOverridePasses()
-		: RendererFramePassRegistry::defaultPasses();
-	for (const auto& pass : passPlan)
+	const auto passPlan = RendererFramePassRegistry::buildPassPlan(
+		mGlobalMaterial
+			? RendererFramePassRegistry::globalMaterialOverridePassOrder()
+			: RendererFramePassRegistry::defaultPassOrder()
+	);
+	for (const auto* pass : passPlan)
 	{
-		RendererFramePassRegistry::executePass(pass, frameContext);
+		if (pass)
+		{
+			RendererFramePassRegistry::executePass(*pass, frameContext);
+		}
 	}
 }

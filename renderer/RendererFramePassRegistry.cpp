@@ -1,5 +1,9 @@
 #include "RendererFramePassRegistry.h"
 
+#include <algorithm>
+#include <cctype>
+#include <sstream>
+
 #include "FrameRenderState.h"
 #include "MaterialBindingContext.h"
 #include "PBRDepthPrepass.h"
@@ -18,6 +22,24 @@ using namespace GLframework;
 
 namespace
 {
+	std::string trim(std::string value)
+	{
+		auto isSpace = [](unsigned char ch)
+		{
+			return std::isspace(ch) != 0;
+		};
+
+		value.erase(value.begin(), std::find_if(value.begin(), value.end(), [isSpace](char ch)
+		{
+			return !isSpace(static_cast<unsigned char>(ch));
+		}));
+		value.erase(std::find_if(value.rbegin(), value.rend(), [isSpace](char ch)
+		{
+			return !isSpace(static_cast<unsigned char>(ch));
+		}).base(), value.end());
+		return value;
+	}
+
 	const std::vector<std::shared_ptr<PointLight>>& pointLightsOrEmpty(const RendererFrameContext& context)
 	{
 		static const std::vector<std::shared_ptr<PointLight>> emptyPointLights{};
@@ -168,18 +190,29 @@ namespace
 			createMaterialBindingContext(context)
 		);
 	}
+
+	bool containsPassKey(
+		const std::vector<const RendererFramePassDefinition*>& passes,
+		RendererFramePassKey key
+	)
+	{
+		return std::any_of(passes.begin(), passes.end(), [key](const RendererFramePassDefinition* pass)
+		{
+			return pass && pass->key == key;
+		});
+	}
 }
 
 const std::vector<RendererFramePassDefinition>& RendererFramePassRegistry::defaultPasses()
 {
 	static const std::vector<RendererFramePassDefinition> passes{
-		{ RendererFramePassKey::BeginFrame, "Begin Frame" },
-		{ RendererFramePassKey::ShadowMaps, "Shadow Maps" },
-		{ RendererFramePassKey::PBRDepthPrepass, "PBR Depth Prepass" },
-		{ RendererFramePassKey::LegacyOpaqueScene, "Legacy Opaque Scene" },
-		{ RendererFramePassKey::PBROpaqueScene, "PBR Opaque Scene" },
-		{ RendererFramePassKey::LegacyTransparentScene, "Legacy Transparent Scene" },
-		{ RendererFramePassKey::PBRTransparentScene, "PBR Transparent Scene" }
+		{ RendererFramePassKey::BeginFrame, "BeginFrame", "Begin Frame" },
+		{ RendererFramePassKey::ShadowMaps, "ShadowMaps", "Shadow Maps" },
+		{ RendererFramePassKey::PBRDepthPrepass, "PBRDepthPrepass", "PBR Depth Prepass" },
+		{ RendererFramePassKey::LegacyOpaqueScene, "LegacyOpaqueScene", "Legacy Opaque Scene" },
+		{ RendererFramePassKey::PBROpaqueScene, "PBROpaqueScene", "PBR Opaque Scene" },
+		{ RendererFramePassKey::LegacyTransparentScene, "LegacyTransparentScene", "Legacy Transparent Scene" },
+		{ RendererFramePassKey::PBRTransparentScene, "PBRTransparentScene", "PBR Transparent Scene" }
 	};
 	return passes;
 }
@@ -187,11 +220,76 @@ const std::vector<RendererFramePassDefinition>& RendererFramePassRegistry::defau
 const std::vector<RendererFramePassDefinition>& RendererFramePassRegistry::globalMaterialOverridePasses()
 {
 	static const std::vector<RendererFramePassDefinition> passes{
-		{ RendererFramePassKey::BeginFrame, "Begin Frame" },
-		{ RendererFramePassKey::ShadowMaps, "Shadow Maps" },
-		{ RendererFramePassKey::GlobalMaterialScene, "Global Material Scene" }
+		{ RendererFramePassKey::BeginFrame, "BeginFrame", "Begin Frame" },
+		{ RendererFramePassKey::ShadowMaps, "ShadowMaps", "Shadow Maps" },
+		{ RendererFramePassKey::GlobalMaterialScene, "GlobalMaterialScene", "Global Material Scene" }
 	};
 	return passes;
+}
+
+const char* RendererFramePassRegistry::defaultPassOrder()
+{
+	return "BeginFrame,ShadowMaps,PBRDepthPrepass,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene";
+}
+
+const char* RendererFramePassRegistry::globalMaterialOverridePassOrder()
+{
+	return "BeginFrame,ShadowMaps,GlobalMaterialScene";
+}
+
+const RendererFramePassDefinition* RendererFramePassRegistry::findPassByKey(const std::string& key)
+{
+	const auto normalizedKey = trim(key);
+	if (normalizedKey.empty())
+	{
+		return nullptr;
+	}
+
+	for (const auto& pass : defaultPasses())
+	{
+		if (normalizedKey == pass.keyName || normalizedKey == pass.debugName)
+		{
+			return &pass;
+		}
+	}
+
+	for (const auto& pass : globalMaterialOverridePasses())
+	{
+		if (normalizedKey == pass.keyName || normalizedKey == pass.debugName)
+		{
+			return &pass;
+		}
+	}
+
+	return nullptr;
+}
+
+std::vector<const RendererFramePassDefinition*> RendererFramePassRegistry::buildPassPlan(
+	const std::string& passOrder
+)
+{
+	std::vector<const RendererFramePassDefinition*> plan{};
+	std::stringstream stream{ passOrder };
+	std::string token{};
+	while (std::getline(stream, token, ','))
+	{
+		const auto* pass = findPassByKey(token);
+		if (pass && !containsPassKey(plan, pass->key))
+		{
+			plan.push_back(pass);
+		}
+	}
+
+	if (!plan.empty())
+	{
+		return plan;
+	}
+
+	for (const auto& pass : defaultPasses())
+	{
+		plan.push_back(&pass);
+	}
+	return plan;
 }
 
 void RendererFramePassRegistry::executePass(const RendererFramePassDefinition& pass, RendererFrameContext& context)

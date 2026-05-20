@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 namespace GLframework
@@ -21,6 +22,7 @@ namespace GLframework
 	struct RendererFramePassDefinition
 	{
 		RendererFramePassKey key;
+		const char* keyName;
 		const char* debugName;
 	};
 
@@ -29,6 +31,10 @@ namespace GLframework
 	public:
 		static const std::vector<RendererFramePassDefinition>& defaultPasses();
 		static const std::vector<RendererFramePassDefinition>& globalMaterialOverridePasses();
+		static const char* defaultPassOrder();
+		static const char* globalMaterialOverridePassOrder();
+		static const RendererFramePassDefinition* findPassByKey(const std::string& key);
+		static std::vector<const RendererFramePassDefinition*> buildPassPlan(const std::string& passOrder);
 		static void executePass(const RendererFramePassDefinition& pass, RendererFrameContext& context);
 	};
 }
