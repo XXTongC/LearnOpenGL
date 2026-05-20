@@ -1,8 +1,8 @@
 #include "PBRMaterialBinder.h"
 
 #include "camera/camera.h"
-#include "renderer/EnvironmentRenderTargets.h"
 #include "renderer/LightResourceBinder.h"
+#include "renderer/PBRIBLResourceBinder.h"
 #include "renderer/ShadowResourceBinder.h"
 
 using namespace GLframework;
@@ -29,12 +29,6 @@ namespace
 		shader->setVector3("cameraPosition", camera->mPosition);
 	}
 
-	void bindTexture(const std::shared_ptr<Shader>& shader, const char* samplerName, const std::shared_ptr<Texture>& texture)
-	{
-		shader->setInt(samplerName, texture->getUnit());
-		texture->Bind();
-	}
-
 	void bindOptionalTexture(
 		const std::shared_ptr<Shader>& shader,
 		const char* samplerName,
@@ -50,14 +44,6 @@ namespace
 
 		shader->setInt(samplerName, texture->getUnit());
 		texture->Bind();
-	}
-
-	bool canUseIBL(const std::shared_ptr<PBRMaterial>& material, const EnvironmentRenderTargets* environmentTargets)
-	{
-		return material->mUseIBL
-			&& environmentTargets != nullptr
-			&& environmentTargets->isInitialized()
-			&& environmentTargets->hasPrecomputedEnvironment();
 	}
 
 	void bindPBRSurfaceUniforms(const std::shared_ptr<Shader>& shader, const std::shared_ptr<PBRMaterial>& material)
@@ -82,31 +68,6 @@ namespace
 			);
 		}
 	}
-
-	void bindPBRIBLUniforms(
-		const std::shared_ptr<Shader>& shader,
-		const std::shared_ptr<PBRMaterial>& material,
-		const EnvironmentRenderTargets* environmentTargets,
-		bool useIBL
-	)
-	{
-		shader->setInt("useIBL", useIBL ? 1 : 0);
-		for (const auto& slot : material->getIblFloatUniformSlots())
-		{
-			shader->setFloat(slot.uniformName, slot.value ? *slot.value : 0.0f);
-		}
-
-		if (!useIBL)
-		{
-			return;
-		}
-
-		const unsigned int maxMipLevels = environmentTargets->getMaxPrefilterMipLevels();
-		shader->setFloat("iblMaxReflectionLod", maxMipLevels > 0 ? static_cast<float>(maxMipLevels - 1) : 0.0f);
-		bindTexture(shader, "irradianceMap", environmentTargets->getIrradianceMap());
-		bindTexture(shader, "prefilterMap", environmentTargets->getPrefilterMap());
-		bindTexture(shader, "brdfLut", environmentTargets->getBrdfLut());
-	}
 }
 
 bool PBRMaterialBinder::bind(
@@ -121,13 +82,12 @@ bool PBRMaterialBinder::bind(
 		return false;
 	}
 
-	const bool useIBL = canUseIBL(material, context.environmentTargets);
 	setCommonMaterialUniforms(shader, material, context.camera);
 	setMVPMatrices(shader, mesh, context.camera);
 	setNormalMatrix(shader, mesh);
 	LightResourceBinder::bindForwardLights(shader, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 	ShadowResourceBinder::bindCSMShadowResources(shader, context.camera, context.dirLight, 8);
 	bindPBRSurfaceUniforms(shader, material);
-	bindPBRIBLUniforms(shader, material, context.environmentTargets, useIBL);
+	PBRIBLResourceBinder::bind(shader, material, context.environmentTargets);
 	return true;
 }

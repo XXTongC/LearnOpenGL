@@ -1451,6 +1451,18 @@
    - `--verify-pbr` renderer stats 输出保持为 `rendererPasses=7, shadowCasters=32, directionalShadowLayers=5, directionalShadowDrawCalls=160, pointShadowLights=2, pointShadowFaces=12, pointShadowDrawCalls=384, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`。
    - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
    - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+236. 完成第一百一十八轮 PBR IBL resource binder：
+   - 新增 [renderer/PBRIBLResourceBinder.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRIBLResourceBinder.h) 与 [renderer/PBRIBLResourceBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRIBLResourceBinder.cpp)，集中处理 PBR IBL 可用性判断、`useIBL` uniform、IBL strength uniforms、irradiance / prefilter / BRDF LUT 贴图绑定和 max reflection LOD。
+   - 更新 [renderer/PBRMaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRMaterialBinder.cpp)，移除内联 IBL resource binding 逻辑，改为调用 `PBRIBLResourceBinder::bind(...)`。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `PBRIBLResourceBinder.cpp/.h` 加入 VS 工程和 renderer filter。
+237. 完成第一百零九次 PBR IBL resource binder 验证：
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 使用 MSVC `cl /Zs` 检查 [renderer/PBRIBLResourceBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRIBLResourceBinder.cpp)、[renderer/PBRMaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRMaterialBinder.cpp)、[renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)、[renderer/PBRSceneRenderPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRSceneRenderPass.cpp) 和 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，结果通过。
+   - 执行 `Debug|x64` + `LinkIncremental=false` 构建通过，新增 `PBRIBLResourceBinder.cpp` 已进入 VS 工程。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，验证模式自动退出并输出 `PBR verification scene stats: objects=33, meshes=32, pbrMeshes=25, pbrPreviewMeshes=25, iblReady=yes`。
+   - `--verify-pbr` renderer stats 输出保持为 `rendererPasses=7, shadowCasters=32, directionalShadowLayers=5, directionalShadowDrawCalls=160, pointShadowLights=2, pointShadowFaces=12, pointShadowDrawCalls=384, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`。
+   - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
+   - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1528,5 +1540,6 @@
 - 当前 mesh indexed draw 已收敛到 `MeshDraw`，legacy scene、PBR scene、PBR depth、shadow 和 IBL capture 共享同一个普通 / instanced mesh draw 入口。
 - 当前材质绑定上下文已收敛到 `MaterialBindingContext`，renderer pass 到 material binder 不再逐项传递 camera / lights / environment 参数。
 - 当前 PBR depth prepass 的 depth shader frame/object uniform 写入已收敛到 `DepthPrepassBinder`，后续 G-buffer / depth-only PBR pass 可以复用该绑定边界。
+- 当前 PBR IBL 资源绑定已收敛到 `PBRIBLResourceBinder`，PBRMaterialBinder 不再直接维护 irradiance / prefilter / BRDF LUT 贴图绑定细节。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR path 已有 depth / scene pass 边界，但 shadow atlas 和 IBL debug pass 还未拆出。
 - 下一步建议目标：继续补 PBR shadow atlas / IBL debug pass 的具体槽位，或把 PBR verification capture 加入更明确的视觉检查流程。

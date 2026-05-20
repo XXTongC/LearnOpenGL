@@ -1429,3 +1429,13 @@ PBR depth prepass 的 shader binding 已从 pass 主流程中拆出：
 - `RendererFramePassRegistry` 的 PBR depth prepass 和 scene pass 都通过 `createMaterialBindingContext(...)` 构造绑定上下文。
 
 这一步把 depth-only binding 与 pass orchestration 分开。后续如果要增加 PBR G-buffer depth pass、shadow atlas depth variant 或 depth debug view，可以优先复用 / 扩展 `DepthPrepassBinder`，而不是继续把 camera 和 shader uniform 写入散落在具体 pass 中。
+
+### 2026-05-20 PBR IBL Resource Binder
+
+PBR IBL resource binding 已从 `PBRMaterialBinder` 中拆出：
+
+- 新增 `PBRIBLResourceBinder`，集中处理 `useIBL` 判断、IBL strength uniforms、`iblMaxReflectionLod` 和 irradiance / prefilter / BRDF LUT texture binding。
+- `PBRMaterialBinder` 不再直接依赖 `EnvironmentRenderTargets` 的 IBL 资源细节，只在材质绑定过程中调用 `PBRIBLResourceBinder::bind(...)`。
+- `PBRIBLResourceBinder::canUseIBL(...)` 作为独立入口保留，后续 Debug UI、IBL debug pass 或 verification stats 可以复用同一套判断条件。
+
+这一步为 IBL debug view 和 PBR environment resource layout 替换做准备。后续如果要增加 irradiance / prefilter 可视化，或把 IBL 资源改为 bindless / descriptor-like 布局，改动点可以集中在 `PBRIBLResourceBinder`。

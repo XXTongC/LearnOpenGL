@@ -432,6 +432,9 @@
     <ClCompile Include="renderer\PBRMaterialBinder.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\PBRIBLResourceBinder.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\LightResourceBinder.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -765,6 +768,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRMaterialBinder.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\PBRIBLResourceBinder.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\LightResourceBinder.h">
