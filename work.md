@@ -1519,3 +1519,16 @@ Renderer 已新增第一个可选 PBR / IBL 诊断 pass：
 - 新增 `--verify-pbr-ibl-debug` 验证入口，使用 PBR verification scene 但临时插入 `IBLDebug` pass，导出 `out/pbr_ibl_debug_verification.ppm`。
 
 这一步不是最终 IBL 可视化工具，而是先把“PBR 环境资源可诊断”接入 renderer pass 系统。后续如果 BRDF、prefilter mip、irradiance 或 environment 资源出现问题，可以通过 pass profile 直接切换可视化对象，而不是靠猜测 shader binding 是否正确。
+
+### 2026-05-21 PBR GBuffer Renderer Pass
+
+Renderer 已新增可选 PBR G-buffer pass：
+
+- 新增 `PBRGBufferRenderTargets`，集中管理 G-buffer FBO、position/roughness、normal/metallic、albedo/AO 三张 `RGBA16F` color attachment 和 depth attachment。
+- 新增 `PBRGBufferPass`，复用 `PBRObjectUniformBinder` 与 `PBRSurfaceResourceBinder`，只处理 PBR opaque mesh 的 geometry/material surface 写入。
+- 新增 `shaders/pbr/pbr_gbuffer.*`，把 world position、normal、albedo、metallic、roughness、AO 写入 G-buffer attachments。
+- `RendererFramePassRegistry` 新增可选 pass key `PBRGBuffer`；默认 pass order 不包含它，因此默认 forward PBR 行为不变。
+- `RuntimePBRVerification` 新增 `--verify-pbr-gbuffer`，验证模式会临时把 pass order 调整为 `BeginFrame,ShadowMaps,PBRDepthPrepass,PBRGBuffer,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene`。
+- `RendererFrameStats` 和 Debug UI 新增 G-buffer ready、size、draw calls，可直接确认 pass 是否真的执行。
+
+这一步不是要立刻切换到 deferred PBR，而是先把 PBR 几何缓冲生产点接入现有 renderer pass 系统。后续 deferred lighting、G-buffer debug view、clustered lighting 或 SSR/TAA 都可以消费 `PBRGBufferRenderTargets`，而不是重新从 forward pass 里拆数据。

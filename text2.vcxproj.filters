@@ -453,6 +453,12 @@
     <ClCompile Include="renderer\PBRDepthPrepass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\PBRGBufferPass.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\PBRGBufferRenderTargets.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\PBRSceneRenderPass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -804,6 +810,12 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRDepthPrepass.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\PBRGBufferPass.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\PBRGBufferRenderTargets.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRSceneRenderPass.h">
@@ -2651,6 +2663,12 @@
       <Filter>资源文件\shaders\pbr</Filter>
     </None>
     <None Include="shaders\pbr\pbr.vert">
+      <Filter>资源文件\shaders\pbr</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr_gbuffer.frag">
+      <Filter>资源文件\shaders\pbr</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr_gbuffer.vert">
       <Filter>资源文件\shaders\pbr</Filter>
     </None>
     <None Include="shaders\ibl\capture.vert">

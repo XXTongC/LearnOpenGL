@@ -13,6 +13,7 @@ namespace GL_RUNTIME
 	{
 		bool enabled{ false };
 		bool enableIblDebugPass{ false };
+		bool enablePbrGBufferPass{ false };
 		int maxFrames{ 3 };
 		int captureFrame{ 2 };
 		std::string capturePath{ "out/pbr_verification.ppm" };

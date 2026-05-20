@@ -16,6 +16,8 @@ namespace GLframework
 	class IBLDebugPass;
 	class Material;
 	class PBRDepthPrepass;
+	class PBRGBufferPass;
+	class PBRGBufferRenderTargets;
 	class PBRSceneRenderPass;
 	class PointLight;
 	class RenderQueue;
@@ -42,8 +44,10 @@ namespace GLframework
 		ShadowRenderer* shadowRenderer{ nullptr };
 		SceneRenderPass* sceneRenderPass{ nullptr };
 		PBRDepthPrepass* pbrDepthPrepass{ nullptr };
+		PBRGBufferPass* pbrGBufferPass{ nullptr };
 		PBRSceneRenderPass* pbrSceneRenderPass{ nullptr };
 		IBLDebugPass* iblDebugPass{ nullptr };
+		PBRGBufferRenderTargets* pbrGBufferTargets{ nullptr };
 		ShaderLibrary* shaderLibrary{ nullptr };
 		EnvironmentRenderTargets* environmentTargets{ nullptr };
 		RendererFramePassProfile* framePassProfile{ nullptr };

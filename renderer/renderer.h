@@ -10,6 +10,8 @@
 #include "IBLPrecomputePass.h"
 #include "IBLDebugPass.h"
 #include "PBRDepthPrepass.h"
+#include "PBRGBufferPass.h"
+#include "PBRGBufferRenderTargets.h"
 #include "PBRSceneRenderPass.h"
 #include "RenderQueue.h"
 #include "RendererFrameStats.h"
@@ -69,8 +71,10 @@ private:
 		ShadowRenderer mShadowRenderer{};
 		SceneRenderPass mSceneRenderPass{};
 		PBRDepthPrepass mPbrDepthPrepass{};
+		PBRGBufferPass mPbrGBufferPass{};
 		PBRSceneRenderPass mPbrSceneRenderPass{};
 		IBLDebugPass mIblDebugPass{};
+		PBRGBufferRenderTargets mPbrGBufferTargets{};
 		EnvironmentRenderTargets mEnvironmentRenderTargets{};
 		IBLPrecomputePass mIblPrecomputePass{};
 		RendererFrameStats mLastFrameStats{};

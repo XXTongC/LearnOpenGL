@@ -156,11 +156,16 @@ namespace GL_RUNTIME
 		context.pbrCameraRigProfile.farPlane = 1000.0f;
 		context.pbrCameraRigProfile.applyTo(context.camera);
 
-		reportLine(
-			config.enableIblDebugPass
-				? "PBR verification profile applied: procedural IBL + 5x5 material grid + IBL debug pass"
-				: "PBR verification profile applied: procedural IBL + 5x5 material grid"
-		);
+		std::string profileLine = "PBR verification profile applied: procedural IBL + 5x5 material grid";
+		if (config.enablePbrGBufferPass)
+		{
+			profileLine += " + PBR G-buffer pass";
+		}
+		if (config.enableIblDebugPass)
+		{
+			profileLine += " + IBL debug pass";
+		}
+		reportLine(profileLine);
 	}
 
 	void RuntimePBRVerification::applyRendererPassProfile(
@@ -175,15 +180,19 @@ namespace GL_RUNTIME
 
 		auto& rendererPassProfile = context.renderer->getFramePassProfile();
 		rendererPassProfile.resetToDefaults();
-		if (!config.enableIblDebugPass)
+		if (config.enablePbrGBufferPass)
 		{
-			return;
+			rendererPassProfile.defaultPassOrder =
+				"BeginFrame,ShadowMaps,PBRDepthPrepass,PBRGBuffer,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene";
 		}
 
-		rendererPassProfile.defaultPassOrder += ",IBLDebug";
-		rendererPassProfile.iblDebugMode = 0;
-		rendererPassProfile.iblDebugMipLevel = 0.0f;
-		rendererPassProfile.iblDebugIntensity = 1.0f;
+		if (config.enableIblDebugPass)
+		{
+			rendererPassProfile.defaultPassOrder += ",IBLDebug";
+			rendererPassProfile.iblDebugMode = 0;
+			rendererPassProfile.iblDebugMipLevel = 0.0f;
+			rendererPassProfile.iblDebugIntensity = 1.0f;
+		}
 	}
 
 	void RuntimePBRVerification::reportPreparedScene(GLframework::AppRuntimeContext& context)
@@ -224,6 +233,14 @@ namespace GL_RUNTIME
 		if (stats.iblDebugDrawCalls > 0)
 		{
 			statsLine += ", iblDebugDrawCalls=" + std::to_string(stats.iblDebugDrawCalls);
+		}
+		if (stats.pbrGBufferReady || stats.pbrGBufferDrawCalls > 0)
+		{
+			statsLine += ", pbrGBufferDrawCalls=" + std::to_string(stats.pbrGBufferDrawCalls);
+			statsLine += ", pbrGBufferReady=";
+			statsLine += (stats.pbrGBufferReady ? "yes" : "no");
+			statsLine += ", pbrGBufferSize=" + std::to_string(stats.pbrGBufferWidth)
+				+ "x" + std::to_string(stats.pbrGBufferHeight);
 		}
 		reportLine(statsLine);
 	}

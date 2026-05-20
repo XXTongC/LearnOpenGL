@@ -8,6 +8,7 @@
 #include "IBLDebugPass.h"
 #include "MaterialBindingContext.h"
 #include "PBRDepthPrepass.h"
+#include "PBRGBufferPass.h"
 #include "PBRSceneRenderPass.h"
 #include "RenderQueue.h"
 #include "RendererFrameContext.h"
@@ -50,6 +51,7 @@ namespace
 	const std::vector<RendererFramePassDefinition>& optionalPasses()
 	{
 		static const std::vector<RendererFramePassDefinition> passes{
+			{ RendererFramePassKey::PBRGBuffer, "PBRGBuffer", "PBR GBuffer" },
 			{ RendererFramePassKey::IBLDebug, "IBLDebug", "IBL Debug" }
 		};
 		return passes;
@@ -136,6 +138,25 @@ namespace
 			createMaterialBindingContext(context),
 			*context.shaderLibrary
 		);
+	}
+
+	void renderPBRGBuffer(RendererFrameContext& context)
+	{
+		if (!context.pbrGBufferPass || !context.pbrGBufferTargets || !context.renderQueue || !context.shaderLibrary || !context.stats)
+		{
+			return;
+		}
+
+		const auto stats = context.pbrGBufferPass->render(
+			context.renderQueue->getPbrOpacityObjects(),
+			createMaterialBindingContext(context),
+			*context.shaderLibrary,
+			*context.pbrGBufferTargets
+		);
+		context.stats->pbrGBufferDrawCalls = stats.drawCalls;
+		context.stats->pbrGBufferReady = stats.ready;
+		context.stats->pbrGBufferWidth = stats.targetWidth;
+		context.stats->pbrGBufferHeight = stats.targetHeight;
 	}
 
 	void renderLegacyOpaqueScene(RendererFrameContext& context)
@@ -343,6 +364,9 @@ void RendererFramePassRegistry::executePass(const RendererFramePassDefinition& p
 		break;
 	case RendererFramePassKey::PBRDepthPrepass:
 		renderPBRDepthPrepass(context);
+		break;
+	case RendererFramePassKey::PBRGBuffer:
+		renderPBRGBuffer(context);
 		break;
 	case RendererFramePassKey::LegacyOpaqueScene:
 		renderLegacyOpaqueScene(context);

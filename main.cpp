@@ -25,7 +25,10 @@ namespace
 	GL_RUNTIME::RuntimeApplicationShellConfig makeShellConfig(int argc, char** argv)
 	{
 		GL_RUNTIME::RuntimeApplicationShellConfig config{};
-		if (hasArgument(argc, argv, "--verify-pbr") || hasArgument(argc, argv, "--verify-pbr-ibl-debug"))
+		const bool verifyPbr = hasArgument(argc, argv, "--verify-pbr");
+		const bool verifyPbrIblDebug = hasArgument(argc, argv, "--verify-pbr-ibl-debug");
+		const bool verifyPbrGBuffer = hasArgument(argc, argv, "--verify-pbr-gbuffer");
+		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer)
 		{
 			config.window = { 1280, 720 };
 			config.enableGui = false;
@@ -33,10 +36,15 @@ namespace
 			config.pbrVerification.maxFrames = 3;
 			config.pbrVerification.captureFrame = 2;
 			config.pbrVerification.capturePath = "out/pbr_verification.ppm";
-			if (hasArgument(argc, argv, "--verify-pbr-ibl-debug"))
+			if (verifyPbrIblDebug)
 			{
 				config.pbrVerification.enableIblDebugPass = true;
 				config.pbrVerification.capturePath = "out/pbr_ibl_debug_verification.ppm";
+			}
+			if (verifyPbrGBuffer)
+			{
+				config.pbrVerification.enablePbrGBufferPass = true;
+				config.pbrVerification.capturePath = "out/pbr_gbuffer_verification.ppm";
 			}
 		}
 

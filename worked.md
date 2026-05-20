@@ -1563,6 +1563,26 @@
    - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-ibl-debug`，验证模式临时插入 `IBLDebug` pass，并输出 `rendererPasses=8` 与 `iblDebugDrawCalls=1`。
    - `--verify-pbr-ibl-debug` 导出的 [out/pbr_ibl_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_ibl_debug_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `145.33 / 154.29 / 165.66`。
    - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+252. 完成第一百二十六轮 PBR G-buffer renderer pass：
+   - 新增 [renderer/PBRGBufferRenderTargets.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRGBufferRenderTargets.h) 和 [renderer/PBRGBufferRenderTargets.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRGBufferRenderTargets.cpp)，集中管理 G-buffer FBO、三张 `RGBA16F` color attachment 和 depth attachment。
+   - 新增 [renderer/PBRGBufferPass.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRGBufferPass.h) 和 [renderer/PBRGBufferPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRGBufferPass.cpp)，复用 `PBRObjectUniformBinder`、`PBRSurfaceResourceBinder` 与 `MeshDraw` 写入 PBR opaque mesh 的 G-buffer。
+   - 新增 [shaders/pbr/pbr_gbuffer.vert](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr_gbuffer.vert) 和 [shaders/pbr/pbr_gbuffer.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr_gbuffer.frag)，输出 position/roughness、normal/metallic、albedo/AO。
+   - 更新 [renderer/ShaderLibrary.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShaderLibrary.h) 和 [renderer/ShaderLibrary.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShaderLibrary.cpp)，集中管理 PBR G-buffer shader。
+   - 更新 [renderer/RendererFramePassRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.h) 和 [renderer/RendererFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.cpp)，新增可选 pass key `PBRGBuffer`；默认 pass order 不包含它，按 profile 或 verification 临时插入。
+   - 更新 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h)、[renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp) 和 [renderer/RendererFrameContext.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFrameContext.h)，把 G-buffer pass 与 render targets 接入 renderer frame context。
+   - 更新 [renderer/RendererFrameStats.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFrameStats.h) 和 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，Debug UI 可观察 `pbrGBufferReady`、`pbrGBufferSize` 和 `pbrGBufferDrawCalls`。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)、[application/RuntimePBRVerification.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.h) 和 [application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)，新增 `--verify-pbr-gbuffer` 验证入口。
+   - 更新 [config/renderer_frame_pass.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\renderer_frame_pass.example.ini) 与 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 `PBRGBuffer` 可选 pass 的插入方式和后续 deferred / debug 消费方向。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，把新增 C++ 文件和 shader 文件加入 VS 工程。
+253. 完成第一百一十七次 PBR G-buffer renderer pass 验证：
+   - 使用 MSVC `cl /Zs` 检查 [renderer/PBRGBufferRenderTargets.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRGBufferRenderTargets.cpp)、[renderer/PBRGBufferPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRGBufferPass.cpp)、[renderer/ShaderLibrary.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShaderLibrary.cpp)、[renderer/RendererFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.cpp)、[renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)、[application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)、[application/RuntimeApplicationShell.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationShell.cpp)、[main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 和 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，结果通过。
+   - 执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行 `Debug|x64` + `LinkIncremental=false` 构建通过，新增 [renderer/PBRGBufferPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRGBufferPass.cpp) 与 [renderer/PBRGBufferRenderTargets.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRGBufferRenderTargets.cpp) 已进入 VS 工程。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，默认 PBR 验证保持 `rendererPasses=7`，说明默认 pass order 没有被 `PBRGBuffer` 改动污染。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-gbuffer`，验证模式临时插入 `PBRGBuffer` pass，并输出 `rendererPasses=8`、`pbrGBufferDrawCalls=25`、`pbrGBufferReady=yes`、`pbrGBufferSize=1280x720`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-ibl-debug`，已有 IBL debug 验证仍保持 `rendererPasses=8` 与 `iblDebugDrawCalls=1`。
+   - `--verify-pbr` 与 `--verify-pbr-gbuffer` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) / [out/pbr_gbuffer_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_gbuffer_verification.ppm) 均为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计均为非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
+   - `--verify-pbr-ibl-debug` 导出的 [out/pbr_ibl_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_ibl_debug_verification.ppm) 非黑比例 `100%`，RGB 均值约 `145.33 / 154.29 / 165.66`。
 
 ### 当前状态
 
@@ -1633,7 +1653,7 @@
 - 当前 renderer 已新增 PBR 专用 scene pass，PBR mesh 从 render queue 分类到 PBR 子队列后由 `PBRSceneRenderPass` 渲染；`--verify-pbr` 已验证 `pbrDrawCalls=25`。
 - 当前 renderer 已新增 PBR depth prepass，`--verify-pbr` 已验证 `pbrDepthPrepassDrawCalls=25` 且 `pbrDrawCalls=25`。
 - 当前 renderer frame stats 已接入 Debug UI，普通运行时可以直接观察 PBR depth / scene pass 是否实际执行。
-- 当前 renderer 内部 pass 顺序已收敛到 `RendererFramePassRegistry`，并已支持通过 `RendererFramePassProfile` 配置 pass order；`IBLDebug` 已作为首个可选 PBR diagnostics pass 接入，后续 PBR shadow atlas / G-buffer pass 可以继续按 key 增加、插入和本地 profile 验证，而不必扩写 `Renderer::render()` 主流程。
+- 当前 renderer 内部 pass 顺序已收敛到 `RendererFramePassRegistry`，并已支持通过 `RendererFramePassProfile` 配置 pass order；`IBLDebug` 与 `PBRGBuffer` 已作为可选 PBR pass 接入，后续 PBR shadow atlas / deferred lighting / G-buffer debug view 可以继续按 key 增加、插入和本地 profile 验证，而不必扩写 `Renderer::render()` 主流程。
 - 当前 directional shadow 与 point shadow 已拆成独立 render pass，`ShadowRenderer` 只保留调度 facade 职责，后续可逐步替换为 PBR shadow atlas 资源布局。
 - 当前 forward lighting uniform 绑定已从 `MaterialBinder` 拆到 `LightResourceBinder`，后续 PBR lighting 可集中演进为 UBO / SSBO / clustered light list。
 - 当前 PBR 材质 shader 绑定已从通用 `MaterialBinder` 拆到 `PBRMaterialBinder`，后续 PBR-specific uniform / IBL / shadow binding 可以独立演进。
@@ -1645,5 +1665,6 @@
 - 当前 PBR shadow 资源绑定已收敛到 `PBRShadowResourceBinder`，PBRMaterialBinder 不再直接依赖通用 CSM shadow binder 和固定 shadow texture unit。
 - 当前 PBR object-level uniforms 已收敛到 `PBRObjectUniformBinder`，PBRMaterialBinder 只保留 PBR forward binding 编排职责。
 - 当前 PBR scene pass 已直接调用 `PBRMaterialBinder`，默认 PBR forward path 不再经过通用 `MaterialBinder` switch。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR path 已有 depth / scene pass 边界，但 shadow atlas 和 IBL debug pass 还未拆出。
-- 下一步建议目标：继续补 PBR shadow atlas / IBL debug pass 的具体槽位，或把 PBR verification capture 加入更明确的视觉检查流程。
+- 当前 PBR G-buffer 生产点已接入 renderer pass 系统，`--verify-pbr-gbuffer` 已验证 `pbrGBufferDrawCalls=25`、`pbrGBufferReady=yes` 和 `pbrGBufferSize=1280x720`。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR path 已有 depth / scene / diagnostics / G-buffer 边界，但 shadow atlas、deferred lighting consumer 和 G-buffer debug view 还未实现。
+- 下一步建议目标：让 `PBRGBufferRenderTargets` 被一个 debug/deferred consumer 实际读取，或者继续推进 PBR shadow atlas 资源布局。

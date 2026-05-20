@@ -13,6 +13,7 @@ namespace GLframework
 		ShadowMaps,
 		GlobalMaterialScene,
 		PBRDepthPrepass,
+		PBRGBuffer,
 		LegacyOpaqueScene,
 		PBROpaqueScene,
 		LegacyTransparentScene,

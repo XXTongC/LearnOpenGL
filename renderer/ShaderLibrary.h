@@ -20,6 +20,7 @@ namespace GLframework
 		std::shared_ptr<Shader> getPrefilterShader() const;
 		std::shared_ptr<Shader> getBrdfLutShader() const;
 		std::shared_ptr<Shader> getIblDebugShader() const;
+		std::shared_ptr<Shader> getPbrGBufferShader() const;
 
 	private:
 		std::shared_ptr<Shader> createShader(const char* vertexPath, const char* fragmentPath);
@@ -32,5 +33,6 @@ namespace GLframework
 		std::shared_ptr<Shader> mPrefilterShader{ nullptr };
 		std::shared_ptr<Shader> mBrdfLutShader{ nullptr };
 		std::shared_ptr<Shader> mIblDebugShader{ nullptr };
+		std::shared_ptr<Shader> mPbrGBufferShader{ nullptr };
 	};
 }

@@ -27,7 +27,7 @@ void RendererFramePassProfile::visitEditableProperties(GL_EDITOR::PropertyBuilde
 	builder.addConfigString("globalMaterialOverridePassOrder", "Global Material Override Pass Order", &globalMaterialOverridePassOrder);
 	builder.addText(
 		"Available Pass Keys",
-		"BeginFrame, ShadowMaps, GlobalMaterialScene, PBRDepthPrepass, LegacyOpaqueScene, PBROpaqueScene, LegacyTransparentScene, PBRTransparentScene, IBLDebug"
+		"BeginFrame, ShadowMaps, GlobalMaterialScene, PBRDepthPrepass, PBRGBuffer, LegacyOpaqueScene, PBROpaqueScene, LegacyTransparentScene, PBRTransparentScene, IBLDebug"
 	);
 	builder.addSection("IBL Debug Pass");
 	builder.addConfigInt("iblDebugMode", "IBL Debug Mode", &iblDebugMode, 0, 3);

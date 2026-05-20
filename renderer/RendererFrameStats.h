@@ -12,6 +12,10 @@ namespace GLframework
 		int pointShadowFaceCount{ 0 };
 		int pointShadowDrawCalls{ 0 };
 		int pbrDepthPrepassDrawCalls{ 0 };
+		int pbrGBufferDrawCalls{ 0 };
+		int pbrGBufferWidth{ 0 };
+		int pbrGBufferHeight{ 0 };
+		bool pbrGBufferReady{ false };
 		int legacySceneDrawCalls{ 0 };
 		int pbrSceneDrawCalls{ 0 };
 		int iblDebugDrawCalls{ 0 };
