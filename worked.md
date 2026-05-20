@@ -936,6 +936,18 @@
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera / shadow camera double-to-float `C4244` warning，本轮新增代码未引入构建错误。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
    - 构建输出目录 [text2](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2) 约 `160MB`、[x64](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64) 约 `114MB`，均为 ignored generated output；验证结束后已校验路径位于当前 workspace 内并清理，C 盘剩余空间恢复到约 `1.98GB`。
+158. 完成第七十九轮 ProfileConfigIO 与 PostProcess schema 存取：
+   - 更新 [tools/inspector/PropertySchema.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\PropertySchema.h)，为 `PropertyDescriptor` 增加 `configKey`，并为 `PropertyBuilder` 增加 `addConfigFloat`、`addConfigInt`、`addConfigBool`、`addConfigString`。
+   - 新增 [tools/config/ProfileConfigIO.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigIO.h) 与 [tools/config/ProfileConfigIO.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigIO.cpp)，根据 descriptor 的 `configKey`、字段类型和 getter / setter 执行通用 ini load/save。
+   - 更新 [renderer/PostProcessSettings.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessSettings.cpp)，让 `visitEditableProperties(...)` 同时提供 UI 描述和 config key；`PostProcessSettingsStorage::loadFromFile(...)` / `saveToFile(...)` 改为通过 `ProfileConfigIO` 读写。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `ProfileConfigIO.cpp/.h` 纳入 VS 工程。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PostProcess schema 存取作为后续迁移 Environment / PBRPreview profile 的低风险验证点。
+159. 完成第七十次 PostProcess schema 存取验证：
+   - 针对 ProfileConfigIO 与 PostProcess schema 存取执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 使用 MSVC `cl /Zs` 检查 [tools/config/ProfileConfigIO.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigIO.cpp) 与 [renderer/PostProcessSettings.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessSettings.cpp)，结果通过。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；新增 `ProfileConfigIO.obj` 已参与链接，仍存在既有 camera / shadow camera double-to-float `C4244` warning。
+   - 临时编译 `%TEMP%/text2_schema_test/postprocess_schema_test.cpp`，只链接 [renderer/PostProcessSettings.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessSettings.cpp)、[tools/config/ProfileConfigIO.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigIO.cpp)、[tools/config/ProfileConfigParser.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigParser.cpp)，直接验证 `PostProcessSettingsStorage::loadFromFile(...)` 能读取 exposure / toneMapping / Bloom 字段，`saveToFile(...)` 能按 schema 写回相同 key；临时测试程序返回 `postprocess schema load/save ok`。
+   - 构建输出目录 [text2](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2) 约 `161MB`、[x64](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64) 约 `114MB`，以及最小测试遗留的 ignored `.obj` 产物均已在验证结束后清理。
 
 ### 当前状态
 
@@ -973,8 +985,8 @@
 - 当前 `PBRPreviewProfile` 支持 material grid，可按 metallic / roughness 范围生成多球阵列，在同一 environment / postprocess 下批量比较 PBR 参数。
 - 当前 `PropertySchema` 已从 `PropertyInspector` 拆出，profile 数据层不再依赖 ImGui 绘制层；`EnvironmentProfile`、`PostProcessSettings` 和 `PBRPreviewProfile` 已能通过 property descriptor 自动生成 Debug UI。
 - 当前 `PBRExperimentProfile` 支持用 `config/pbr_experiment.local.ini` 统一覆盖 environment、postprocess 和 PBR preview grid，减少维护多个 local ini 的成本。
-- 当前 profile 配置解析基础设施已收敛到 `ProfileConfigParser`，后续新增 PBR material preset / experiment preset 不需要再复制 trim/parse/key-value 遍历逻辑。
+- 当前 profile 配置解析基础设施已收敛到 `ProfileConfigParser`；`ProfileConfigIO` 已开始让 descriptor 同时驱动 UI 与 ini load/save，当前已迁移 `PostProcessSettings`。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
-- 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例。
+- 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例；其读写路径已迁移到 `ProfileConfigIO` schema 驱动。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
-- 下一步建议目标：把 property descriptor 与 profile ini load/save 的 key schema 合并，减少新增 PBR / environment / postprocess 字段时的重复配置解析和保存代码。
+- 下一步建议目标：继续把 `EnvironmentProfile` 的 ini load/save 迁移到 `ProfileConfigIO`，再处理 `PBRPreviewProfile` 的 vec3 拆分 key。

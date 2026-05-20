@@ -519,6 +519,9 @@
     <ClCompile Include="tools\config\ProfileConfigParser.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\config\ProfileConfigIO.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -1806,6 +1809,9 @@
       <Filter>include\GLframework\tools\Logger</Filter>
     </ClInclude>
     <ClInclude Include="tools\config\ProfileConfigParser.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\config\ProfileConfigIO.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\sceneSetup\PBRExperimentProfile.h">

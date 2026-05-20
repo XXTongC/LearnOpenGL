@@ -965,3 +965,15 @@ Profile UI 的通用层继续拆分：
 - `DebugControllerPanel` 的 Environment / Post Process 字段 UI 改为消费 profile schema，不再手写对应的 `InputText`、`SliderInt`、`SliderFloat`、`Checkbox` 控件。
 
 这一步把自动 UI 从 PBR Preview 扩展到 environment 与 postprocess。更关键的是 schema 与 ImGui 绘制器被拆开，后续配置读写、preset diff、inspector 或非 ImGui 工具都可以复用字段描述，而不是被 UI 框架绑定。
+
+### 2026-05-20 ProfileConfigIO 与 PostProcess Schema 存取
+
+Postprocess 配置读写已开始复用 property schema：
+
+- `PropertyDescriptor` 新增 `configKey`，`PropertyBuilder` 新增 `addConfigFloat`、`addConfigInt`、`addConfigBool`、`addConfigString`。
+- 新增 `ProfileConfigIO`，根据 descriptor 的 `configKey`、字段类型和 getter / setter 执行通用 ini load/save。
+- `PostProcessSettings::visitEditableProperties(...)` 的 exposure、tone mapping、Bloom 字段现在同时描述 UI 与配置 key。
+- `PostProcessSettingsStorage::loadFromFile(...)` / `saveToFile(...)` 不再维护手写 key 分支和手写输出顺序，而是通过 `ProfileConfigIO` 消费同一份 property schema。
+- `ProfileConfigParser` 继续负责底层 key-value 文件读取和基础类型解析，`ProfileConfigIO` 负责把这些 key-value 应用到 descriptor。
+
+这一步先只迁移 `PostProcessSettings`，因为它字段少、无 vector 拆分、风险最低。方向验证通过后，可以继续迁移 `EnvironmentProfile`，再处理 `PBRPreviewProfile` 中 position / albedo 这类 UI 是 vec3、配置是多个 key 的字段映射。

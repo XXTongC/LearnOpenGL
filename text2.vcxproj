@@ -204,6 +204,7 @@
     <ClCompile Include="third_party\imgui\imgui_tables.cpp" />
     <ClCompile Include="third_party\imgui\imgui_widgets.cpp" />
     <ClCompile Include="tools\config\ProfileConfigParser.cpp" />
+    <ClCompile Include="tools\config\ProfileConfigIO.cpp" />
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp" />
     <ClCompile Include="tools\editor\EditorPanels.cpp" />
     <ClCompile Include="tools\Logger\Logger.cpp" />
@@ -637,6 +638,7 @@
     <ClInclude Include="third_party\imgui\imstb_rectpack.h" />
     <ClInclude Include="third_party\imgui\imstb_textedit.h" />
     <ClInclude Include="third_party\imgui\imstb_truetype.h" />
+    <ClInclude Include="tools\config\ProfileConfigIO.h" />
     <ClInclude Include="tools\config\ProfileConfigParser.h" />
     <ClInclude Include="tools\editor\DebugControllerPanel.h" />
     <ClInclude Include="tools\editor\EditorPanels.h" />

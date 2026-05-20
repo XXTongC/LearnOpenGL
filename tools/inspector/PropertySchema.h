@@ -26,6 +26,7 @@ namespace GL_EDITOR
 	{
 		PropertyKind kind{ PropertyKind::Text };
 		std::string label{};
+		std::string configKey{};
 		float minValue{ 0.0f };
 		float maxValue{ 0.0f };
 		std::string format{ "%.3f" };
@@ -85,6 +86,19 @@ namespace GL_EDITOR
 			);
 		}
 
+		void addConfigFloat(
+			std::string key,
+			std::string label,
+			float* value,
+			float minValue,
+			float maxValue,
+			std::string format = "%.3f"
+		)
+		{
+			addFloat(std::move(label), value, minValue, maxValue, std::move(format));
+			setLastConfigKey(std::move(key));
+		}
+
 		void addBool(
 			std::string label,
 			const std::function<bool()>& getter,
@@ -106,6 +120,12 @@ namespace GL_EDITOR
 				[value]() { return *value; },
 				[value](bool newValue) { *value = newValue; }
 			);
+		}
+
+		void addConfigBool(std::string key, std::string label, bool* value)
+		{
+			addBool(std::move(label), value);
+			setLastConfigKey(std::move(key));
 		}
 
 		void addInt(
@@ -135,6 +155,25 @@ namespace GL_EDITOR
 				minValue,
 				maxValue
 			);
+		}
+
+		void addConfigInt(
+			std::string key,
+			std::string label,
+			const std::function<int()>& getter,
+			const std::function<void(int)>& setter,
+			int minValue,
+			int maxValue
+		)
+		{
+			addInt(std::move(label), getter, setter, minValue, maxValue);
+			setLastConfigKey(std::move(key));
+		}
+
+		void addConfigInt(std::string key, std::string label, int* value, int minValue, int maxValue)
+		{
+			addInt(std::move(label), value, minValue, maxValue);
+			setLastConfigKey(std::move(key));
 		}
 
 		void addVec3(
@@ -209,6 +248,12 @@ namespace GL_EDITOR
 			);
 		}
 
+		void addConfigString(std::string key, std::string label, std::string* value, size_t capacity = 512)
+		{
+			addString(std::move(label), value, capacity);
+			setLastConfigKey(std::move(key));
+		}
+
 		void addText(std::string label, const std::function<std::string()>& getter)
 		{
 			PropertyDescriptor descriptor{};
@@ -232,6 +277,14 @@ namespace GL_EDITOR
 		}
 
 	private:
+		void setLastConfigKey(std::string key)
+		{
+			if (!mProperties.empty())
+			{
+				mProperties.back().configKey = std::move(key);
+			}
+		}
+
 		std::vector<PropertyDescriptor> mProperties{};
 	};
 }
