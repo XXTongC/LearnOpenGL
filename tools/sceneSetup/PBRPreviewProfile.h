@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "../../materials/pbrMaterial/PBRMaterial.h"
 #include "../../third_party/glm/glm.hpp"
 
 namespace GL_EDITOR
@@ -13,6 +14,8 @@ namespace GL_SCENE
 {
 	struct PBRPreviewProfile
 	{
+		PBRPreviewProfile();
+
 		bool enabled{ true };
 		glm::vec3 position{ 2.2f, -3.9f, 2.0f };
 		float radius{ 0.75f };
@@ -28,13 +31,7 @@ namespace GL_SCENE
 		float gridRoughnessMin{ 0.08f };
 		float gridRoughnessMax{ 1.0f };
 
-		glm::vec3 albedo{ 0.9f, 0.42f, 0.18f };
-		float metallic{ 0.2f };
-		float roughness{ 0.35f };
-		float ao{ 1.0f };
-		bool useIBL{ true };
-		float iblDiffuseStrength{ 1.0f };
-		float iblSpecularStrength{ 1.0f };
+		GLframework::PBRMaterialProfile material{};
 
 		std::string normalMapPath{ "Texture/normal/normal_map.png" };
 		unsigned int normalMapUnit{ 4 };

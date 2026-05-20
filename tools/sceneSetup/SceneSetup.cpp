@@ -111,13 +111,9 @@ namespace
 	)
 	{
 		auto pbrMat = std::make_shared<GLframework::PBRMaterial>();
-		pbrMat->mAlbedo = profile.albedo;
+		profile.material.applyTo(*pbrMat);
 		pbrMat->mMetallic = metallic;
 		pbrMat->mRoughness = roughness;
-		pbrMat->mAo = profile.ao;
-		pbrMat->mUseIBL = profile.useIBL;
-		pbrMat->mIblDiffuseStrength = profile.iblDiffuseStrength;
-		pbrMat->mIblSpecularStrength = profile.iblSpecularStrength;
 		pbrMat->mNormalMap = normalMap;
 		return pbrMat;
 	}
@@ -187,7 +183,7 @@ namespace
 			return;
 		}
 
-		auto pbrMat = createPBRPreviewMaterial(profile, normalMap, profile.metallic, profile.roughness);
+		auto pbrMat = createPBRPreviewMaterial(profile, normalMap, profile.material.metallic, profile.material.roughness);
 		auto pbrGeo = GLframework::Geometry::createSphere(
 			context.renderer->getShader(pbrMat->getMaterialType()),
 			std::max(profile.radius, 0.01f),

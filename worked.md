@@ -1005,6 +1005,20 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera / shadow camera double-to-float `C4244` warning，本轮未引入新的 PBR uniform slot warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+170. 完成第八十五轮 PBR material profile：
+   - 更新 [materials/pbrMaterial/PBRMaterial.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.h) 与 [materials/pbrMaterial/PBRMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.cpp)，新增 `PBRMaterialProfile`，集中保存 albedo、metallic、roughness、AO、emissive 和 IBL strength 等材质 preset 参数。
+   - `PBRMaterialProfile` 新增 `visitEditableProperties(...)`，提供可复用的 PBR surface / IBL property schema，并保持既有 `albedoR/G/B`、`metallic`、`roughness`、`ao`、`useIBL` 等 config key 兼容。
+   - `PBRMaterialProfile` 新增 `applyTo(...)` / `copyFrom(...)`，提供 profile 与真实 `PBRMaterial` 之间的转换入口。
+   - 更新 [tools/sceneSetup/PBRPreviewProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.h) 与 [tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)，让 preview profile 持有 `PBRMaterialProfile material`，不再直接维护一套 PBR surface / IBL 字段。
+   - 更新 [tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，创建 PBR preview material 时先应用 `profile.material`，material grid 再覆盖 metallic / roughness。
+   - 更新 [config/pbr_preview.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\pbr_preview.example.ini) 与 [config/pbr_experiment.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\pbr_experiment.example.ini)，补齐 emissive profile 字段示例。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PBR material profile 与运行时 `PBRMaterial` 的转换边界。
+171. 完成第七十六次 PBR material profile 验证：
+   - 使用 MSVC `cl /Zs` 检查 [materials/pbrMaterial/PBRMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.cpp)、[tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)、[tools/sceneSetup/PBRExperimentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRExperimentProfile.cpp)、[tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp) 和 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，结果通过。
+   - 临时编译并运行 `__codex_tmp_pbr_material_profile_test.cpp`，直接验证 `PBRPreviewProfileStorage::loadFromFile(...)` 可加载旧字段和新增 emissive 字段，`saveToFile(...)` 可写回并再次加载，`PBRMaterialProfile::applyTo(...)` 可正确落到真实 `PBRMaterial`；测试输出 `pbr material profile config ok`，测试源文件已删除。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera / shadow camera double-to-float `C4244` warning，本轮未引入新的 PBR material profile warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1041,6 +1055,7 @@
 - 当前 `PBR Preview Sphere` 已由 `PBRPreviewProfile` 驱动，可通过 `config/pbr_preview.local.ini` 调整位置、几何细分、PBR surface 参数、IBL 强度和 normal map，而不需要修改 `SceneSetup.cpp`。
 - 当前 `PBRPreviewProfile` 支持 material grid，可按 metallic / roughness 范围生成多球阵列，在同一 environment / postprocess 下批量比较 PBR 参数。
 - 当前 `PBRMaterial` 已提供 texture slot schema 与 uniform slot schema，PBR Inspector 字段和 `MaterialBinder` shader 写入共享材质侧声明。
+- 当前 `PBRPreviewProfile` 已通过 `PBRMaterialProfile` 管理 PBR surface / IBL 材质参数，preview preset 与运行时 `PBRMaterial` 之间有明确转换入口。
 - 当前 `PropertySchema` 已从 `PropertyInspector` 拆出，profile 数据层不再依赖 ImGui 绘制层；`EnvironmentProfile`、`PostProcessSettings` 和 `PBRPreviewProfile` 已能通过 property descriptor 自动生成 Debug UI。
 - 当前 `PBRExperimentProfile` 支持用 `config/pbr_experiment.local.ini` 统一覆盖 environment、postprocess 和 PBR preview grid，并已复用各 profile 的 property schema 应用 prefixed key。
 - 当前 profile 配置解析基础设施已收敛到 `ProfileConfigParser`；`ProfileConfigIO` 已开始让 descriptor 同时驱动 UI 与 ini load/save，当前已迁移 `PostProcessSettings`、`EnvironmentProfile` 和 `PBRPreviewProfile`。
@@ -1049,4 +1064,4 @@
 - 当前 `EnvironmentProfile` 的本地保存 / 加载路径已迁移到 `ProfileConfigIO` schema 驱动，Environment / IBL UI 与 ini 字段共享同一份 descriptor。
 - 当前 `PBRPreviewProfile` 的本地保存 / 加载路径已迁移到 `ProfileConfigIO` schema 驱动，Position / Albedo 这类 vec3 UI 字段继续兼容拆分 ini key。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
-- 下一步建议目标：开始把 PBR 材质 preset/profile 与 `PBRMaterial` schema 连接，或者先抽出 runtime resize / camera 控制边界，继续降低 `main.cpp` 耦合。
+- 下一步建议目标：继续把 runtime resize / camera 控制边界从 `main.cpp` 拆出，或者为 `PBRMaterialProfile` 增加独立 material preset 文件入口。

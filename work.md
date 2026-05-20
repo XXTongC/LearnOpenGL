@@ -1033,3 +1033,16 @@ PBR 材质参数 uniform 也开始从手写绑定收敛到声明式描述：
 - `MaterialBinder::bindPBRMaterial(...)` 复用同一份 uniform slot 写入 `pbrAlbedo`、`pbrMetallic`、`pbrRoughness`、`pbrAo`、`pbrEmissive*` 和 IBL strength uniform。
 
 这一步继续保持现有 shader uniform 名称不变，目标是降低新增 PBR 参数时的重复修改点。当前 `useIBL` 仍由 Binder 根据材质开关与 environment readiness 计算，因此暂时不纳入普通 bool slot。
+
+### 2026-05-20 PBR Material Profile
+
+PBR preview preset 已开始复用正式的材质 profile：
+
+- `PBRMaterial` 新增 `PBRMaterialProfile`，集中保存 albedo、metallic、roughness、AO、emissive 和 IBL strength 等可配置材质参数。
+- `PBRMaterialProfile::visitEditableProperties(...)` 负责生成可读写 ini 的 PBR surface / IBL schema，继续保持 `albedoR/G/B`、`metallic`、`roughness`、`ao`、`useIBL` 等既有 key 不变，并新增 emissive 相关 key。
+- `PBRMaterialProfile::applyTo(...)` / `copyFrom(...)` 提供 profile 与真实 `PBRMaterial` 之间的转换入口。
+- `PBRPreviewProfile` 不再直接维护一套 PBR surface / IBL 字段，而是持有 `PBRMaterialProfile material`。
+- `SceneSetup::createPBRPreviewMaterial(...)` 现在先把 `profile.material` 应用到 `PBRMaterial`，material grid 再覆盖 metallic / roughness。
+- `config/pbr_preview.example.ini` 和 `config/pbr_experiment.example.ini` 已补齐 emissive 字段示例。
+
+这一步把“实验 preset 的材质参数”和“运行时 PBRMaterial”之间的边界明确下来。后续如果做独立材质库或 material preset 文件，可以直接复用 `PBRMaterialProfile`，不需要重新定义一套字段。

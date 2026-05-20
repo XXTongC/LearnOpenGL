@@ -7,6 +7,25 @@
 
 namespace GLframework
 {
+	class PBRMaterial;
+
+	struct PBRMaterialProfile
+	{
+		glm::vec3 albedo{ 1.0f, 1.0f, 1.0f };
+		glm::vec3 emissiveColor{ 0.0f, 0.0f, 0.0f };
+		float metallic{ 0.0f };
+		float roughness{ 0.5f };
+		float ao{ 1.0f };
+		float emissiveIntensity{ 0.0f };
+		bool useIBL{ false };
+		float iblDiffuseStrength{ 1.0f };
+		float iblSpecularStrength{ 1.0f };
+
+		void applyTo(PBRMaterial& material) const;
+		void copyFrom(const PBRMaterial& material);
+		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder);
+	};
+
 	struct PBRTextureSlot
 	{
 		const char* label{ "" };

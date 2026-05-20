@@ -11,6 +11,17 @@ namespace
 	}
 }
 
+GL_SCENE::PBRPreviewProfile::PBRPreviewProfile()
+{
+	material.albedo = { 0.9f, 0.42f, 0.18f };
+	material.metallic = 0.2f;
+	material.roughness = 0.35f;
+	material.ao = 1.0f;
+	material.useIBL = true;
+	material.iblDiffuseStrength = 1.0f;
+	material.iblSpecularStrength = 1.0f;
+}
+
 std::string GL_SCENE::PBRPreviewProfileStorage::defaultPath()
 {
 	return "config/pbr_preview.local.ini";
@@ -38,16 +49,7 @@ void GL_SCENE::PBRPreviewProfile::visitEditableProperties(GL_EDITOR::PropertyBui
 	builder.addConfigFloat("gridRoughnessMin", "Grid Roughness Min", &gridRoughnessMin, 0.04f, 1.0f);
 	builder.addConfigFloat("gridRoughnessMax", "Grid Roughness Max", &gridRoughnessMax, 0.04f, 1.0f);
 
-	builder.addSection("PBR Surface");
-	builder.addConfigColor3({ "albedoR", "albedoG", "albedoB" }, "Albedo", &albedo);
-	builder.addConfigFloat("metallic", "Metallic", &metallic, 0.0f, 1.0f);
-	builder.addConfigFloat("roughness", "Roughness", &roughness, 0.04f, 1.0f);
-	builder.addConfigFloat("ao", "AO", &ao, 0.0f, 1.0f);
-
-	builder.addSection("IBL");
-	builder.addConfigBool("useIBL", "Use IBL", &useIBL);
-	builder.addConfigFloat("iblDiffuseStrength", "IBL Diffuse Strength", &iblDiffuseStrength, 0.0f, 5.0f);
-	builder.addConfigFloat("iblSpecularStrength", "IBL Specular Strength", &iblSpecularStrength, 0.0f, 5.0f);
+	material.visitEditableProperties(builder);
 
 	builder.addSection("Textures");
 	builder.addConfigString("normalMapPath", "Normal Map Path", &normalMapPath);

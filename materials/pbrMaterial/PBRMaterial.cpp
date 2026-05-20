@@ -8,6 +8,25 @@ using namespace GLframework;
 
 namespace
 {
+	void addMaterialProfileSurfaceProperties(GL_EDITOR::PropertyBuilder& builder, PBRMaterialProfile& profile)
+	{
+		builder.addSection("PBR Surface");
+		builder.addConfigColor3({ "albedoR", "albedoG", "albedoB" }, "Albedo", &profile.albedo);
+		builder.addConfigFloat("metallic", "Metallic", &profile.metallic, 0.0f, 1.0f);
+		builder.addConfigFloat("roughness", "Roughness", &profile.roughness, 0.04f, 1.0f);
+		builder.addConfigFloat("ao", "AO", &profile.ao, 0.0f, 1.0f);
+		builder.addConfigColor3({ "emissiveR", "emissiveG", "emissiveB" }, "Emissive Color", &profile.emissiveColor);
+		builder.addConfigFloat("emissiveIntensity", "Emissive Intensity", &profile.emissiveIntensity, 0.0f, 20.0f);
+	}
+
+	void addMaterialProfileIblProperties(GL_EDITOR::PropertyBuilder& builder, PBRMaterialProfile& profile)
+	{
+		builder.addSection("IBL");
+		builder.addConfigBool("useIBL", "Use IBL", &profile.useIBL);
+		builder.addConfigFloat("iblDiffuseStrength", "IBL Diffuse Strength", &profile.iblDiffuseStrength, 0.0f, 5.0f);
+		builder.addConfigFloat("iblSpecularStrength", "IBL Specular Strength", &profile.iblSpecularStrength, 0.0f, 5.0f);
+	}
+
 	struct PBRTextureSlotMetadata
 	{
 		const char* label{ "" };
@@ -104,6 +123,38 @@ namespace
 	{
 		builder.addFloat(slot.label, slot.value, slot.minValue, slot.maxValue);
 	}
+}
+
+void PBRMaterialProfile::applyTo(PBRMaterial& material) const
+{
+	material.mAlbedo = albedo;
+	material.mEmissiveColor = emissiveColor;
+	material.mMetallic = metallic;
+	material.mRoughness = roughness;
+	material.mAo = ao;
+	material.mEmissiveIntensity = emissiveIntensity;
+	material.mUseIBL = useIBL;
+	material.mIblDiffuseStrength = iblDiffuseStrength;
+	material.mIblSpecularStrength = iblSpecularStrength;
+}
+
+void PBRMaterialProfile::copyFrom(const PBRMaterial& material)
+{
+	albedo = material.mAlbedo;
+	emissiveColor = material.mEmissiveColor;
+	metallic = material.mMetallic;
+	roughness = material.mRoughness;
+	ao = material.mAo;
+	emissiveIntensity = material.mEmissiveIntensity;
+	useIBL = material.mUseIBL;
+	iblDiffuseStrength = material.mIblDiffuseStrength;
+	iblSpecularStrength = material.mIblSpecularStrength;
+}
+
+void PBRMaterialProfile::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
+{
+	addMaterialProfileSurfaceProperties(builder, *this);
+	addMaterialProfileIblProperties(builder, *this);
 }
 
 PBRMaterial::PBRMaterial()
