@@ -185,6 +185,64 @@ bool GL_SCENE::PBRPreviewProfileStorage::loadFromFile(const std::string& path, P
 			continue;
 		}
 
+		if (key == "useMaterialGrid")
+		{
+			bool parsedUseMaterialGrid{ loadedProfile.useMaterialGrid };
+			if (parseBool(value, parsedUseMaterialGrid))
+			{
+				loadedProfile.useMaterialGrid = parsedUseMaterialGrid;
+			}
+			continue;
+		}
+
+		if (key == "gridColumns")
+		{
+			parseInt(value, loadedProfile.gridColumns);
+			continue;
+		}
+
+		if (key == "gridRows")
+		{
+			parseInt(value, loadedProfile.gridRows);
+			continue;
+		}
+
+		if (key == "gridSpacing")
+		{
+			parseFloat(value, loadedProfile.gridSpacing);
+			continue;
+		}
+
+		if (key == "gridRadius")
+		{
+			parseFloat(value, loadedProfile.gridRadius);
+			continue;
+		}
+
+		if (key == "gridMetallicMin")
+		{
+			parseFloat(value, loadedProfile.gridMetallicMin);
+			continue;
+		}
+
+		if (key == "gridMetallicMax")
+		{
+			parseFloat(value, loadedProfile.gridMetallicMax);
+			continue;
+		}
+
+		if (key == "gridRoughnessMin")
+		{
+			parseFloat(value, loadedProfile.gridRoughnessMin);
+			continue;
+		}
+
+		if (key == "gridRoughnessMax")
+		{
+			parseFloat(value, loadedProfile.gridRoughnessMax);
+			continue;
+		}
+
 		if (key == "albedoR")
 		{
 			parseFloat(value, loadedProfile.albedo.r);
@@ -287,6 +345,15 @@ bool GL_SCENE::PBRPreviewProfileStorage::saveToFile(const std::string& path, con
 	output << "radius=" << profile.radius << '\n';
 	output << "segments=" << profile.segments << '\n';
 	output << "rings=" << profile.rings << '\n';
+	output << "useMaterialGrid=" << (profile.useMaterialGrid ? 1 : 0) << '\n';
+	output << "gridColumns=" << profile.gridColumns << '\n';
+	output << "gridRows=" << profile.gridRows << '\n';
+	output << "gridSpacing=" << profile.gridSpacing << '\n';
+	output << "gridRadius=" << profile.gridRadius << '\n';
+	output << "gridMetallicMin=" << profile.gridMetallicMin << '\n';
+	output << "gridMetallicMax=" << profile.gridMetallicMax << '\n';
+	output << "gridRoughnessMin=" << profile.gridRoughnessMin << '\n';
+	output << "gridRoughnessMax=" << profile.gridRoughnessMax << '\n';
 	output << "albedoR=" << profile.albedo.r << '\n';
 	output << "albedoG=" << profile.albedo.g << '\n';
 	output << "albedoB=" << profile.albedo.b << '\n';

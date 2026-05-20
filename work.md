@@ -895,3 +895,15 @@ IBL 预计算现在不再强依赖外部 `.hdr/.exr` 文件：
 - `config/*.local.ini` 已覆盖本地 profile，用户可以为不同 PBR / IBL 实验保留本机 preset，不会污染 Git 分支。
 
 这一步把 PBR 验证从“改 C++ 代码调实验球”推进到“改 local profile 调实验球”。后续可以把 profile 扩展为多 material preset / 多球阵列，用同一套 environment 与 postprocess 设置同时比较 roughness、metallic 和 IBL 强度。
+
+### 2026-05-20 PBR Preview Material Grid
+
+PBR preview profile 现在支持材质对比阵列：
+
+- `PBRPreviewProfile` 新增 `useMaterialGrid`、行列数、spacing、grid radius、metallic range 和 roughness range。
+- 单球模式保持兼容；`useMaterialGrid=0` 时仍按 `metallic` / `roughness` 创建一个 `PBR Preview Sphere`。
+- grid 模式会复用同一个 sphere geometry 和 normal map，根据列插值 metallic、根据行插值 roughness，生成一组 `PBR Preview Mx Ry` 测试球。
+- grid 行列数在 scene setup 中限制到 `1..10`，避免 local profile 写错导致一次创建过多 mesh。
+- `config/pbr_preview.example.ini` 已启用 5x5 示例阵列，用户复制为 local profile 后即可在同一 environment / postprocess 下比较 PBR 参数。
+
+这一步让 PBR / IBL 验证从单点观察推进到批量对比。下一步更有价值的是把这组 preview 对象的运行时 UI 暴露出来，或者把 environment / postprocess / preview 三类 profile 合并成一个更高层的 experiment preset。

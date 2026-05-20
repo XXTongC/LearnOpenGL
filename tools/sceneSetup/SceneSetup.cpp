@@ -1,6 +1,7 @@
 #include "SceneSetup.h"
 
 #include <algorithm>
+#include <string>
 
 #include "../../light/shadow/pointLightShadow/pointLightShadow.h"
 #include "../../materials/cubeSphereMaterial.h"
@@ -91,6 +92,50 @@ namespace
 		context.sceneOffScreen->addChild(boxMeshA);
 	}
 
+	float interpolatePreviewValue(float minValue, float maxValue, int index, int count)
+	{
+		if (count <= 1)
+		{
+			return minValue;
+		}
+
+		const float t = static_cast<float>(index) / static_cast<float>(count - 1);
+		return minValue + (maxValue - minValue) * t;
+	}
+
+	std::shared_ptr<GLframework::PBRMaterial> createPBRPreviewMaterial(
+		const GL_SCENE::PBRPreviewProfile& profile,
+		const std::shared_ptr<GLframework::Texture>& normalMap,
+		float metallic,
+		float roughness
+	)
+	{
+		auto pbrMat = std::make_shared<GLframework::PBRMaterial>();
+		pbrMat->mAlbedo = profile.albedo;
+		pbrMat->mMetallic = metallic;
+		pbrMat->mRoughness = roughness;
+		pbrMat->mAo = profile.ao;
+		pbrMat->mUseIBL = profile.useIBL;
+		pbrMat->mIblDiffuseStrength = profile.iblDiffuseStrength;
+		pbrMat->mIblSpecularStrength = profile.iblSpecularStrength;
+		pbrMat->mNormalMap = normalMap;
+		return pbrMat;
+	}
+
+	void addPBRPreviewSphere(
+		GL_SCENE::SetupContext& context,
+		const std::shared_ptr<GLframework::Geometry>& geometry,
+		const std::shared_ptr<GLframework::PBRMaterial>& material,
+		const std::string& name,
+		const glm::vec3& position
+	)
+	{
+		auto pbrMesh = std::make_shared<GLframework::Mesh>(geometry, material);
+		pbrMesh->setName(name);
+		pbrMesh->setPosition(position);
+		context.sceneOffScreen->addChild(pbrMesh);
+	}
+
 	void preparePBRPreview(GL_SCENE::SetupContext& context)
 	{
 		const auto& profile = context.pbrPreviewProfile;
@@ -99,29 +144,57 @@ namespace
 			return;
 		}
 
-		auto pbrMat = std::make_shared<GLframework::PBRMaterial>();
-		pbrMat->mAlbedo = profile.albedo;
-		pbrMat->mMetallic = profile.metallic;
-		pbrMat->mRoughness = profile.roughness;
-		pbrMat->mAo = profile.ao;
-		pbrMat->mUseIBL = profile.useIBL;
-		pbrMat->mIblDiffuseStrength = profile.iblDiffuseStrength;
-		pbrMat->mIblSpecularStrength = profile.iblSpecularStrength;
+		std::shared_ptr<GLframework::Texture> normalMap{ nullptr };
 		if (!profile.normalMapPath.empty())
 		{
-			pbrMat->mNormalMap = std::make_shared<GLframework::Texture>(profile.normalMapPath, profile.normalMapUnit);
+			normalMap = std::make_shared<GLframework::Texture>(profile.normalMapPath, profile.normalMapUnit);
 		}
 
+		if (profile.useMaterialGrid)
+		{
+			const int columns = std::clamp(profile.gridColumns, 1, 10);
+			const int rows = std::clamp(profile.gridRows, 1, 10);
+			const float radius = std::max(profile.gridRadius, 0.01f);
+			const float spacing = std::max(profile.gridSpacing, radius * 2.1f);
+			auto pbrGeo = GLframework::Geometry::createSphere(
+				context.renderer->getShader(GLframework::MaterialType::PBRMaterial),
+				radius,
+				std::max(profile.segments, 3),
+				std::max(profile.rings, 2)
+			);
+
+			for (int row = 0; row < rows; ++row)
+			{
+				const float roughness = interpolatePreviewValue(profile.gridRoughnessMin, profile.gridRoughnessMax, row, rows);
+				for (int column = 0; column < columns; ++column)
+				{
+					const float metallic = interpolatePreviewValue(profile.gridMetallicMin, profile.gridMetallicMax, column, columns);
+					auto pbrMat = createPBRPreviewMaterial(profile, normalMap, metallic, roughness);
+					const glm::vec3 offset{
+						(static_cast<float>(column) - static_cast<float>(columns - 1) * 0.5f) * spacing,
+						0.0f,
+						(static_cast<float>(row) - static_cast<float>(rows - 1) * 0.5f) * spacing
+					};
+					addPBRPreviewSphere(
+						context,
+						pbrGeo,
+						pbrMat,
+						"PBR Preview M" + std::to_string(column) + " R" + std::to_string(row),
+						profile.position + offset
+					);
+				}
+			}
+			return;
+		}
+
+		auto pbrMat = createPBRPreviewMaterial(profile, normalMap, profile.metallic, profile.roughness);
 		auto pbrGeo = GLframework::Geometry::createSphere(
 			context.renderer->getShader(pbrMat->getMaterialType()),
 			std::max(profile.radius, 0.01f),
 			std::max(profile.segments, 3),
 			std::max(profile.rings, 2)
 		);
-		auto pbrMesh = std::make_shared<GLframework::Mesh>(pbrGeo, pbrMat);
-		pbrMesh->setName("PBR Preview Sphere");
-		pbrMesh->setPosition(profile.position);
-		context.sceneOffScreen->addChild(pbrMesh);
+		addPBRPreviewSphere(context, pbrGeo, pbrMat, "PBR Preview Sphere", profile.position);
 	}
 
 	void prepareScreenPass(GL_SCENE::SetupContext& context)

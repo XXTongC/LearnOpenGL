@@ -860,6 +860,18 @@
    - 默认短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
    - 临时创建被 `.gitignore` 覆盖的 [config/pbr_preview.local.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\pbr_preview.local.ini)，覆盖 preview sphere 位置、半径、细分数、albedo、metallic、roughness 和 IBL strength 后再次短启动约 `6` 秒；错误关键字扫描为空。
    - 验证结束后已移除临时 local profile，避免改变用户后续手动运行的默认 preview preset。
+145. 完成第七十三轮 PBR Preview Material Grid：
+   - 更新 [tools/sceneSetup/PBRPreviewProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.h) 与 [tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)，新增 `useMaterialGrid`、grid 行列数、spacing、grid radius、metallic range 和 roughness range，并支持保存 / 加载。
+   - 更新 [tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，保留单球模式，同时在 grid 模式下复用同一个 sphere geometry 和 normal map，根据列插值 metallic、根据行插值 roughness，生成 `PBR Preview Mx Ry` 测试球阵列。
+   - grid 行列数在 scene setup 中限制到 `1..10`，避免 local profile 写错导致一次创建过多 mesh。
+   - 更新 [config/pbr_preview.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\pbr_preview.example.ini)，增加 5x5 PBR material grid 示例字段。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PBR preview material grid 和后续 experiment preset 方向。
+146. 完成第六十三次构建、默认启动 smoke 与 grid + procedural IBL smoke 验证：
+   - 针对 PBR Preview Material Grid 执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning。
+   - 默认短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+   - 临时创建被 `.gitignore` 覆盖的 [config/pbr_preview.local.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\pbr_preview.local.ini) 和 [config/environment_profile.local.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\environment_profile.local.ini)，启用 `4x4` material grid 与 procedural IBL precompute 后短启动约 `10` 秒；错误关键字扫描为空。
+   - 验证结束后已移除两个临时 local profile，避免改变用户后续手动运行的默认环境。
 
 ### 当前状态
 
@@ -894,7 +906,8 @@
 - 当前 `EnvironmentProfile` 已支持 procedural HDR equirectangular source，可通过 DebugControllerPanel 或 local profile 在无外部 HDR 文件时触发 IBL precompute。
 - 当前默认 `PBR Preview Sphere` 会请求 IBL；environment 未 ready 时 shader 侧自动关闭，environment ready 后可直接验证 PBR IBL 采样链路。
 - 当前 `PBR Preview Sphere` 已由 `PBRPreviewProfile` 驱动，可通过 `config/pbr_preview.local.ini` 调整位置、几何细分、PBR surface 参数、IBL 强度和 normal map，而不需要修改 `SceneSetup.cpp`。
+- 当前 `PBRPreviewProfile` 支持 material grid，可按 metallic / roughness 范围生成多球阵列，在同一 environment / postprocess 下批量比较 PBR 参数。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
 - 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例。
-- 当前剩余明显问题：PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR preview 仍只有单球 preset，尚不能一次性比较 roughness / metallic 阵列；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
-- 下一步建议目标：把 PBR preview profile 扩展为多 material preset / 多球阵列，使用同一 environment 和 postprocess 设置批量比较 PBR 参数，再引入真实 HDR environment 做视觉质量确认。
+- 当前剩余明显问题：PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；environment / postprocess / PBR preview 现在是三个独立 profile，还没有更高层的 experiment preset 统一管理；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
+- 下一步建议目标：新增高层 PBR experiment preset，把 environment、postprocess 和 PBR preview grid 组合成一份可切换实验配置，减少验证不同 PBR 场景时需要同时维护多个 local ini 的成本。

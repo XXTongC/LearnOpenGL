@@ -13,6 +13,15 @@ namespace GL_SCENE
 		float radius{ 0.75f };
 		int segments{ 48 };
 		int rings{ 24 };
+		bool useMaterialGrid{ false };
+		int gridColumns{ 5 };
+		int gridRows{ 5 };
+		float gridSpacing{ 1.1f };
+		float gridRadius{ 0.42f };
+		float gridMetallicMin{ 0.0f };
+		float gridMetallicMax{ 1.0f };
+		float gridRoughnessMin{ 0.08f };
+		float gridRoughnessMax{ 1.0f };
 
 		glm::vec3 albedo{ 0.9f, 0.42f, 0.18f };
 		float metallic{ 0.2f };
