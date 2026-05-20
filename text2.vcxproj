@@ -137,6 +137,7 @@
     <ClCompile Include="light\ambientLight.cpp" />
     <ClCompile Include="application\Application.cpp" />
     <ClCompile Include="application\RuntimeBootstrapper.cpp" />
+    <ClCompile Include="application\RuntimeEditorPanelCoordinator.cpp" />
     <ClCompile Include="application\RuntimeFrameRunner.cpp" />
     <ClCompile Include="application\RuntimeGuiHost.cpp" />
     <ClCompile Include="application\RuntimeInputController.cpp" />
@@ -288,6 +289,7 @@
     <ClInclude Include="application\AppRuntimeContext.h" />
     <ClInclude Include="application\Application.h" />
     <ClInclude Include="application\RuntimeBootstrapper.h" />
+    <ClInclude Include="application\RuntimeEditorPanelCoordinator.h" />
     <ClInclude Include="application\RuntimeFrameRunner.h" />
     <ClInclude Include="application\RuntimeGuiHost.h" />
     <ClInclude Include="application\RuntimeInputController.h" />

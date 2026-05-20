@@ -7,6 +7,7 @@
 #include "AppRuntimeContext.h"
 #include "Application.h"
 #include "RuntimeBootstrapper.h"
+#include "RuntimeEditorPanelCoordinator.h"
 #include "RuntimeFrameRunner.h"
 #include "RuntimeGuiHost.h"
 #include "RuntimeInputController.h"
@@ -54,8 +55,6 @@
 #include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
 #include "tools/Logger/Logger.h"
 #include "tools/Logger/LogManager.h"
-#include "tools/editor/DebugControllerPanel.h"
-#include "tools/editor/EditorPanels.h"
 #include "tools/legacyExperiments/LegacyExperimentRunner.h"
 #include "tools/sceneSetup/PBRCameraRigProfile.h"
 #include "tools/sceneSetup/PBRExperimentProfile.h"
@@ -83,11 +82,9 @@ void printOpenGLCapabilities();
 void cleanupRuntime();
 GL_RUNTIME::RuntimeFrameConfig makeFrameConfig();
 GL_RUNTIME::RuntimeScenePrepareConfig makeScenePrepareConfig();
-GL_EDITOR::DebugControllerContext makeDebugControllerContext();
 
 //
 void prepareCamera();
-GL_EDITOR::EditorPanelContext makeEditorPanelContext();
 
 //
 void prepareState();
@@ -220,41 +217,6 @@ GL_RUNTIME::RuntimeScenePrepareConfig makeScenePrepareConfig()
 	};
 }
 
-GL_EDITOR::DebugControllerContext makeDebugControllerContext()
-{
-	return {
-		&dirLight,
-		&ambientLight,
-		&spotLight,
-		&pointLights,
-		textD,
-		&postProcessSettings,
-		&postProcessSettingsPath,
-		renderer,
-		&environmentProfile,
-		&environmentProfilePath,
-		&pbrPreviewProfile,
-		&pbrPreviewProfilePath,
-		&pbrExperimentProfilePath,
-		&pbrLightRigProfile,
-		&pbrCameraRigProfile,
-		camera,
-		&m_time
-	};
-}
-
-GL_EDITOR::EditorPanelContext makeEditorPanelContext()
-{
-	GL_EDITOR::EditorPanelContext context{};
-	context.sceneOffScreen = sceneOffScreen;
-	context.sceneInScreen = sceneInScreen;
-	context.directionalLight = dirLight;
-	context.spotLight = spotLight;
-	context.pointLights = &pointLights;
-	context.mainCamera = camera;
-	return context;
-}
-
 bool setAndInitWindow(int width, int height)
 {
 	LogInfo("Window Initializing...");
@@ -283,11 +245,7 @@ void renderFrameUi()
 
 void drawEditorPanels()
 {
-	GL_EDITOR::drawDebugControllerPanel(makeDebugControllerContext());
-	const auto editorContext = makeEditorPanelContext();
-	GL_EDITOR::ensureSelectionIsInitialized(gEditorSelection, sceneOffScreen);
-	GL_EDITOR::drawHierarchyPanel(editorContext, gEditorSelection);
-	GL_EDITOR::drawSelectionInspectorPanel(editorContext, gEditorSelection);
+	GL_RUNTIME::RuntimeEditorPanelCoordinator::drawPanels(gAppRuntime, gEditorSelection, &m_time);
 }
 
 void prepareCamera() 

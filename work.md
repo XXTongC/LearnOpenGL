@@ -1174,3 +1174,14 @@ ImGui host 阶段已开始从 `main.cpp` 拆出：
 - `main.cpp` 不再直接 include `imgui.h`、`imgui_impl_glfw.h` 或 `imgui_impl_opengl3.h`，只保留 `drawEditorPanels()` 作为过渡 callback。
 
 这一步把 UI backend 生命周期从主入口移出。后续如果继续降耦合，应把 `makeDebugControllerContext()`、`makeEditorPanelContext()` 和 selection 初始化迁移到 editor/runtime panel coordinator，而不是让 `main.cpp` 长期负责 editor 数据装配。
+
+### 2026-05-20 Runtime Editor Panel Coordinator
+
+Editor panel 数据装配已开始从 `main.cpp` 拆出：
+
+- 新增 `RuntimeEditorPanelCoordinator`，集中构建 `DebugControllerContext` 和 `EditorPanelContext`。
+- Hierarchy / SelectionInspector 所需的 selection 初始化也移动到 coordinator，避免 `main.cpp` 直接知道 editor panel 的绘制顺序和默认 selection 规则。
+- `main.cpp` 的 `drawEditorPanels()` 现在只作为 `RuntimeGuiHost` 的无捕获 callback wrapper，实际面板装配由 coordinator 执行。
+- 这一步没有改变 DebugControllerPanel、EditorPanels 的内部 UI 行为，只移动数据 wiring 边界。
+
+这一步进一步降低 `main.cpp` 对 PBR debug UI / selection inspector 的了解程度。后续可以继续处理启动和回调边界：把 window/camera lifecycle 与 GLFW callback glue 收敛到 runtime application shell，让 PBR pipeline 扩展基本不再触碰主入口。
