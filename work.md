@@ -1460,3 +1460,13 @@ PBR shadow resource binding 已从 `PBRMaterialBinder` 中拆出：
 - `PBRMaterialBinder` 现在只组合 common uniforms、light binder、PBR shadow binder、surface binder 和 IBL binder。
 
 这一步为 `PBRShadowAtlas` 做准备。后续如果替换 shadow atlas、增加 PBR 专用 cascade 布局或新增 shadow debug view，优先修改 `PBRShadowResourceBinder`，而不是改动 PBR 材质主绑定流程。
+
+### 2026-05-21 PBR Object Uniform Binder
+
+PBR object-level uniform binding 已从 `PBRMaterialBinder` 中拆出：
+
+- 新增 `PBRObjectUniformBinder`，集中写入 `opacity`、`time`、`speed`、`cameraPosition`、MVP matrices 和 `normalMatrix`。
+- `PBRMaterialBinder` 现在只负责组合 `PBRObjectUniformBinder`、`LightResourceBinder`、`PBRShadowResourceBinder`、`PBRSurfaceResourceBinder` 和 `PBRIBLResourceBinder`。
+- 这让 PBR forward binding 的各类资源边界基本成型：object uniforms、lights、shadow、surface、IBL 均有独立入口。
+
+这一步为后续 G-buffer、PBR debug view 和 shader layout 变体做准备。不同 PBR pass 可以复用 object uniform binder，也可以替换为 G-buffer 专用 object binder，而不用修改主材质绑定编排。
