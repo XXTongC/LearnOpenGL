@@ -477,6 +477,9 @@
     <ClCompile Include="renderer\RenderQueue.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\RendererFramePassProfile.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\RendererFramePassRegistry.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -825,6 +828,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\RendererFrameContext.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\RendererFramePassProfile.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\RendererFramePassRegistry.h">
@@ -2069,6 +2075,9 @@
       <Filter>资源文件\config</Filter>
     </None>
     <None Include="config\postprocess_settings.example.ini">
+      <Filter>资源文件\config</Filter>
+    </None>
+    <None Include="config\renderer_frame_pass.example.ini">
       <Filter>资源文件\config</Filter>
     </None>
     <None Include="config\runtime_frame_pipeline.example.ini">

@@ -41,6 +41,7 @@ namespace GL_EDITOR
 		std::shared_ptr<GLframework::Mesh> textObject{ nullptr };
 		GL_RUNTIME::RuntimeFramePipelineProfile* framePipelineProfile{ nullptr };
 		const std::string* framePipelineProfilePath{ nullptr };
+		const std::string* rendererFramePassProfilePath{ nullptr };
 		GLframework::PostProcessSettings* postProcessSettings{ nullptr };
 		const std::string* postProcessSettingsPath{ nullptr };
 		std::shared_ptr<GLframework::Renderer> renderer{ nullptr };

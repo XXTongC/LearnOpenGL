@@ -12,6 +12,7 @@
 #include "PBRSceneRenderPass.h"
 #include "RenderQueue.h"
 #include "RendererFrameStats.h"
+#include "RendererFramePassProfile.h"
 #include "SceneRenderPass.h"
 #include "ShadowRenderer.h"
 #include "ShaderLibrary.h"
@@ -37,6 +38,8 @@ namespace GLframework
 		const IBLPrecomputePass& getIBLPrecomputePass() const;
 		IBLPrecomputePass& getIBLPrecomputePass();
 		const RendererFrameStats& getLastFrameStats() const;
+		const RendererFramePassProfile& getFramePassProfile() const;
+		RendererFramePassProfile& getFramePassProfile();
 		bool precomputeEnvironment(
 			const std::shared_ptr<Texture>& equirectangularMap,
 			const std::shared_ptr<Mesh>& captureCube,
@@ -69,6 +72,7 @@ private:
 		EnvironmentRenderTargets mEnvironmentRenderTargets{};
 		IBLPrecomputePass mIblPrecomputePass{};
 		RendererFrameStats mLastFrameStats{};
+		RendererFramePassProfile mFramePassProfile{};
 
 	};
 }

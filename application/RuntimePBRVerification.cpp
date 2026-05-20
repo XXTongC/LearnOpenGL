@@ -108,6 +108,10 @@ namespace GL_RUNTIME
 		context.framePipelineProfile.bloomPassEnabled = true;
 		context.framePipelineProfile.screenCompositePassEnabled = true;
 		context.framePipelineProfile.passOrder = "SceneColor,SceneResolve,Bloom,ScreenComposite";
+		if (context.renderer)
+		{
+			context.renderer->getFramePassProfile().resetToDefaults();
+		}
 
 		context.pbrPreviewProfile.enabled = true;
 		context.pbrPreviewProfile.position = { 0.0f, -3.7f, 1.2f };

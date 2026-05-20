@@ -57,6 +57,16 @@ const RendererFrameStats& Renderer::getLastFrameStats() const
 	return mLastFrameStats;
 }
 
+const RendererFramePassProfile& Renderer::getFramePassProfile() const
+{
+	return mFramePassProfile;
+}
+
+RendererFramePassProfile& Renderer::getFramePassProfile()
+{
+	return mFramePassProfile;
+}
+
 bool Renderer::precomputeEnvironment(
 	const std::shared_ptr<Texture>& equirectangularMap,
 	const std::shared_ptr<Mesh>& captureCube,
@@ -146,8 +156,8 @@ void Renderer::render(
 
 	const auto passPlan = RendererFramePassRegistry::buildPassPlan(
 		mGlobalMaterial
-			? RendererFramePassRegistry::globalMaterialOverridePassOrder()
-			: RendererFramePassRegistry::defaultPassOrder()
+			? mFramePassProfile.globalMaterialOverridePassOrder
+			: mFramePassProfile.defaultPassOrder
 	);
 	for (const auto* pass : passPlan)
 	{

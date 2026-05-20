@@ -178,6 +178,57 @@ namespace
 		}
 	}
 
+	void drawRendererFramePassControls(
+		const std::shared_ptr<GLframework::Renderer>& renderer,
+		const std::string* profilePath
+	)
+	{
+		if (!renderer)
+		{
+			return;
+		}
+
+		static std::string lastConfigStatus{};
+		auto& profile = renderer->getFramePassProfile();
+		const std::string configPath = profilePath
+			? *profilePath
+			: GLframework::RendererFramePassProfileStorage::defaultPath();
+		if (ImGui::CollapsingHeader("Renderer Frame Pass Plan"))
+		{
+			ImGui::TextWrapped("Profile File: %s", configPath.c_str());
+			ImGui::TextWrapped("This controls the renderer-internal scene pass order. Invalid or empty plans fall back to the built-in default plan.");
+
+			GL_EDITOR::PropertyBuilder builder{};
+			profile.visitEditableProperties(builder);
+			GL_EDITOR::drawProperties(builder);
+
+			if (ImGui::Button("Save Renderer Pass Profile"))
+			{
+				lastConfigStatus = GLframework::RendererFramePassProfileStorage::saveToFile(configPath, profile)
+					? "Renderer pass profile saved."
+					: "Renderer pass profile save failed.";
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Reload Renderer Pass Profile"))
+			{
+				lastConfigStatus = GLframework::RendererFramePassProfileStorage::loadFromFile(configPath, profile)
+					? "Renderer pass profile reloaded."
+					: "Renderer pass profile reload failed.";
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Reset Renderer Pass Defaults"))
+			{
+				profile.resetToDefaults();
+				lastConfigStatus = "Renderer pass profile reset to built-in defaults.";
+			}
+
+			if (!lastConfigStatus.empty())
+			{
+				ImGui::TextWrapped("%s", lastConfigStatus.c_str());
+			}
+		}
+	}
+
 	void drawRendererFrameStats(const std::shared_ptr<GLframework::Renderer>& renderer)
 	{
 		if (!renderer)
@@ -400,6 +451,7 @@ void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
 
 	drawPostProcessControls(context.postProcessSettings, context.postProcessSettingsPath);
 	drawFramePipelineControls(context.framePipelineProfile, context.framePipelineProfilePath);
+	drawRendererFramePassControls(context.renderer, context.rendererFramePassProfilePath);
 	drawRendererFrameStats(context.renderer);
 	drawPBRPreviewControls(context.pbrPreviewProfile, context.pbrPreviewProfilePath);
 	drawPBRExperimentControls(context);

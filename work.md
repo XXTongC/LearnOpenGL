@@ -1491,3 +1491,17 @@ Renderer 内部 pass plan 已从“直接选择固定 vector”推进到“按�
 - `Renderer::render(...)` 现在通过 order string 构建 pass plan，再执行每个 pass；默认路径和 global material override 路径的行为保持不变。
 
 这一步的目的不是把 renderer pass 立刻暴露成用户配置，而是先把内部扩展机制打通。后续新增 `PBRShadowAtlas`、`GBuffer`、`IBLDebug` 或 clustered lighting pass 时，可以按 key 注册并插入 order，而不是继续修改 `Renderer::render()` 主流程。
+
+### 2026-05-21 Renderer Frame Pass Profile
+
+Renderer 内部 pass plan 已接入 profile 化配置：
+
+- 新增 `RendererFramePassProfile`，保存默认 renderer pass order 和 global material override pass order。
+- 新增 `RendererFramePassProfileStorage`，通过 `PropertySchema` / `ProfileConfigIO` 读写 `config/renderer_frame_pass.local.ini`。
+- 新增 `config/renderer_frame_pass.example.ini`，记录当前默认 renderer pass key 顺序。
+- `Renderer` 现在持有 frame pass profile，`Renderer::render(...)` 会从 profile 读取 pass order，再交给 `RendererFramePassRegistry::buildPassPlan(...)` 构建执行计划。
+- `RuntimeProfileLoader` 启动时会加载 renderer frame pass profile；没有 local 配置时保持内建默认顺序。
+- `DebugControllerPanel` 新增 Renderer Frame Pass Plan 面板，可编辑、保存、重载和恢复内建默认 renderer pass order。
+- `--verify-pbr` 会强制重置 renderer pass profile 为内建默认值，避免本地实验配置影响 PBR 验证证据。
+
+这一步把上一轮的 renderer pass builder 从“内部工具函数”推进为“可实验的渲染路径配置”。后续新增 `PBRShadowAtlas`、`GBuffer`、`IBLDebug` 或 clustered lighting pass 后，可以先通过 local profile 组合验证不同 pass 顺序，再决定是否固化为默认路径。

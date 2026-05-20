@@ -9,6 +9,7 @@
 #include "../renderer/FrameRenderTargets.h"
 #include "../renderer/PostProcessPass.h"
 #include "../renderer/PostProcessSettings.h"
+#include "../renderer/RendererFramePassProfile.h"
 #include "../third_party/glm/glm.hpp"
 #include "../tools/sceneSetup/PBRCameraRigProfile.h"
 #include "../tools/sceneSetup/PBRExperimentProfile.h"
@@ -51,6 +52,7 @@ namespace GLframework
 		PostProcessPass postProcessPass{};
 		GL_RUNTIME::RuntimeFramePipelineProfile framePipelineProfile{};
 		std::string framePipelineProfilePath{ GL_RUNTIME::RuntimeFramePipelineProfileStorage::defaultPath() };
+		std::string rendererFramePassProfilePath{ RendererFramePassProfileStorage::defaultPath() };
 		PostProcessSettings postProcessSettings{};
 		std::string postProcessSettingsPath{ PostProcessSettingsStorage::defaultPath() };
 		EnvironmentProfile environmentProfile{};

@@ -1,5 +1,6 @@
 #include "RuntimeProfileLoader.h"
 
+#include "../renderer/renderer.h"
 #include "../tools/Logger/LogManager.h"
 
 namespace
@@ -35,6 +36,25 @@ namespace
 		}
 
 		LogInfo("Runtime frame pipeline profile config not found, using defaults: " + context.framePipelineProfilePath);
+	}
+
+	void loadRendererFramePassProfile(GLframework::AppRuntimeContext& context)
+	{
+		if (!context.renderer)
+		{
+			return;
+		}
+
+		if (GLframework::RendererFramePassProfileStorage::loadFromFile(
+			context.rendererFramePassProfilePath,
+			context.renderer->getFramePassProfile()
+		))
+		{
+			LogInfo("Renderer frame pass profile loaded from " + context.rendererFramePassProfilePath);
+			return;
+		}
+
+		LogInfo("Renderer frame pass profile config not found, using defaults: " + context.rendererFramePassProfilePath);
 	}
 
 	void loadPBRPreviewProfile(GLframework::AppRuntimeContext& context)
@@ -73,6 +93,7 @@ void GL_RUNTIME::RuntimeProfileLoader::loadAll(GLframework::AppRuntimeContext& c
 	loadEnvironmentProfile(context);
 	loadPostProcessSettings(context);
 	loadFramePipelineProfile(context);
+	loadRendererFramePassProfile(context);
 	loadPBRPreviewProfile(context);
 	loadPBRExperimentProfile(context);
 }

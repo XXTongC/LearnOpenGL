@@ -15,6 +15,7 @@ namespace GL_RUNTIME
 			context.textD,
 			&context.framePipelineProfile,
 			&context.framePipelineProfilePath,
+			&context.rendererFramePassProfilePath,
 			&context.postProcessSettings,
 			&context.postProcessSettingsPath,
 			context.renderer,
