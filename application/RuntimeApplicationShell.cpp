@@ -149,11 +149,13 @@ namespace GL_RUNTIME
 			return;
 		}
 
-		mVerificationCaptureWritten = RuntimePBRVerification::captureDefaultFramebuffer(
+		RuntimePBRVerification::captureDefaultFramebuffer(
 			mConfig.pbrVerification.capturePath,
 			static_cast<unsigned int>(GL_APP->getWidth()),
 			static_cast<unsigned int>(GL_APP->getHeight())
 		);
+		RuntimePBRVerification::reportRenderedFrame(mRuntime);
+		mVerificationCaptureWritten = true;
 	}
 
 	void RuntimeApplicationShell::printOpenGLCapabilities() const

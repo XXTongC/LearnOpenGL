@@ -1310,3 +1310,17 @@ Runtime frame pipeline 已从固定默认 pass list 推进到 profile 驱动的 
 - `--verify-pbr` 会显式设置完整 passOrder，避免本地实验配置影响 PBR 验证证据。
 
 这一步让后续 PBR pass 的接入方式更明确：新增 pass 类型和 registry key 后，profile 可以决定它是否进入当前 pass plan。下一步可以开始补真实 PBR 专用 pass 槽位，例如 `PBRDepthPrepass`、`PBRShadowAtlas`、`PBRForward`、`IBLDebug`，并让 `PBRExperimentProfile` 或 runtime pipeline profile 选择具体组合。
+
+### 2026-05-20 Renderer PBR Scene Pass
+
+Renderer 内部已开始拆出真实 PBR 渲染边界：
+
+- `RenderQueue` 继续保留全量 opaque / transparent 队列给 shadow 等既有系统使用，同时新增 legacy / PBR 子队列。
+- 新增 `PBRSceneRenderPass`，只接受 `PBRMaterial` mesh，并复用 `MaterialBinder` 写入 PBR shader、IBL、light、shadow 相关 uniform。
+- `SceneRenderPass::render(...)` 现在返回 draw call 数，便于验证 legacy 路径实际绘制量。
+- `Renderer` 默认路径按 `legacy opaque -> PBR opaque -> legacy transparent -> PBR transparent` 执行；shadow pass 仍使用全部 opaque caster，避免 PBR mesh 从阴影投射中丢失。
+- 如果设置了 `mGlobalMaterial`，Renderer 仍回退为原通用 scene pass 渲染全队列，保留旧的全局材质 override 行为。
+- 新增 `RendererFrameStats`，记录 `shadowCasterCount`、`legacySceneDrawCalls` 和 `pbrSceneDrawCalls`。
+- `--verify-pbr` 会在 capture 帧输出 renderer stats，用于证明 PBR mesh 实际走了 PBR 专用 pass。
+
+本轮验证显示 `pbrMeshes=25` 且 `pbrDrawCalls=25`，说明 PBR preview grid 已经不再只是混在旧 scene pass 里渲染。后续可以继续把 PBR 专用 pass 拆成更细的 `PBRDepthPrepass`、`PBRShadowAtlas`、`PBRForward` 或 IBL debug pass。

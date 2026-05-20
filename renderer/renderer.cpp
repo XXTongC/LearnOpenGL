@@ -50,6 +50,11 @@ IBLPrecomputePass& Renderer::getIBLPrecomputePass()
 	return mIblPrecomputePass;
 }
 
+const RendererFrameStats& Renderer::getLastFrameStats() const
+{
+	return mLastFrameStats;
+}
+
 bool Renderer::precomputeEnvironment(
 	const std::shared_ptr<Texture>& equirectangularMap,
 	const std::shared_ptr<Mesh>& captureCube,
@@ -116,21 +121,74 @@ void Renderer::render(
 	unsigned int fbo
 )
 {
+	mLastFrameStats = {};
 	mFrameRenderState.begin(fbo);
 	mRenderQueue.build(scene, camera);
+	mLastFrameStats.shadowCasterCount = static_cast<int>(mRenderQueue.getOpacityObjects().size());
 
 	//	render shadowmap
 	mShadowRenderer.render(camera, mRenderQueue.getOpacityObjects(), dirLight, pointLights, mShaderLibrary);
 
-	mSceneRenderPass.render(
-		mRenderQueue.getOpacityObjects(),
-		mRenderQueue.getTransparentObjects(),
+	if (mGlobalMaterial)
+	{
+		mLastFrameStats.legacySceneDrawCalls = mSceneRenderPass.render(
+			mRenderQueue.getOpacityObjects(),
+			mRenderQueue.getTransparentObjects(),
+			camera,
+			dirLight,
+			spotLight,
+			pointLights,
+			ambient,
+			mGlobalMaterial,
+			mShaderLibrary,
+			&mEnvironmentRenderTargets
+		);
+		return;
+	}
+
+	mLastFrameStats.legacySceneDrawCalls = mSceneRenderPass.render(
+		mRenderQueue.getLegacyOpacityObjects(),
+		{},
 		camera,
 		dirLight,
 		spotLight,
 		pointLights,
 		ambient,
-		mGlobalMaterial,
+		nullptr,
+		mShaderLibrary,
+		&mEnvironmentRenderTargets
+	);
+	mLastFrameStats.pbrSceneDrawCalls = mPbrSceneRenderPass.render(
+		mRenderQueue.getPbrOpacityObjects(),
+		{},
+		camera,
+		dirLight,
+		spotLight,
+		pointLights,
+		ambient,
+		mShaderLibrary,
+		&mEnvironmentRenderTargets
+	);
+	mLastFrameStats.legacySceneDrawCalls += mSceneRenderPass.render(
+		{},
+		mRenderQueue.getLegacyTransparentObjects(),
+		camera,
+		dirLight,
+		spotLight,
+		pointLights,
+		ambient,
+		nullptr,
+		mShaderLibrary,
+		&mEnvironmentRenderTargets
+	);
+	mLastFrameStats.pbrSceneDrawCalls += mPbrSceneRenderPass.render(
+		{},
+		mRenderQueue.getPbrTransparentObjects(),
+		camera,
+		dirLight,
+		spotLight,
+		pointLights,
+		ambient,
 		mShaderLibrary,
 		&mEnvironmentRenderTargets
 	);

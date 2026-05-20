@@ -171,6 +171,21 @@ namespace GL_RUNTIME
 		);
 	}
 
+	void RuntimePBRVerification::reportRenderedFrame(GLframework::AppRuntimeContext& context)
+	{
+		if (!context.renderer)
+		{
+			return;
+		}
+
+		const auto& stats = context.renderer->getLastFrameStats();
+		reportLine(
+			"PBR verification renderer stats: shadowCasters=" + std::to_string(stats.shadowCasterCount)
+			+ ", legacyDrawCalls=" + std::to_string(stats.legacySceneDrawCalls)
+			+ ", pbrDrawCalls=" + std::to_string(stats.pbrSceneDrawCalls)
+		);
+	}
+
 	bool RuntimePBRVerification::captureDefaultFramebuffer(
 		const std::string& path,
 		unsigned int width,

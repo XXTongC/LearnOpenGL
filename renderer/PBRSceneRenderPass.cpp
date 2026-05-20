@@ -1,38 +1,38 @@
-#include "SceneRenderPass.h"
+#include "PBRSceneRenderPass.h"
 
 #include <iostream>
 
+#include "materials/material.h"
 #include "mesh/instancedMesh.h"
 #include "renderer/MaterialBinder.h"
 #include "renderer/RenderState.h"
 
 using namespace GLframework;
 
-int SceneRenderPass::render(
-	const std::vector<std::shared_ptr<Mesh>>& opacityObjects,
-	const std::vector<std::shared_ptr<Mesh>>& transparentObjects,
+int PBRSceneRenderPass::render(
+	const std::vector<std::shared_ptr<Mesh>>& pbrOpacityObjects,
+	const std::vector<std::shared_ptr<Mesh>>& pbrTransparentObjects,
 	Camera* camera,
 	const std::shared_ptr<DirectionalLight>& dirLight,
 	const std::shared_ptr<SpotLight>& spotLight,
 	const std::vector<std::shared_ptr<PointLight>>& pointLights,
 	const std::shared_ptr<AmbientLight>& ambient,
-	const std::shared_ptr<Material>& globalMaterial,
 	const ShaderLibrary& shaderLibrary,
 	const EnvironmentRenderTargets* environmentTargets
 ) const
 {
 	int drawCalls = 0;
-	for (const auto& mesh : opacityObjects)
+	for (const auto& mesh : pbrOpacityObjects)
 	{
-		if (renderObject(mesh, camera, dirLight, spotLight, pointLights, ambient, globalMaterial, shaderLibrary, environmentTargets))
+		if (renderObject(mesh, camera, dirLight, spotLight, pointLights, ambient, shaderLibrary, environmentTargets))
 		{
 			++drawCalls;
 		}
 	}
 
-	for (const auto& mesh : transparentObjects)
+	for (const auto& mesh : pbrTransparentObjects)
 	{
-		if (renderObject(mesh, camera, dirLight, spotLight, pointLights, ambient, globalMaterial, shaderLibrary, environmentTargets))
+		if (renderObject(mesh, camera, dirLight, spotLight, pointLights, ambient, shaderLibrary, environmentTargets))
 		{
 			++drawCalls;
 		}
@@ -41,27 +41,25 @@ int SceneRenderPass::render(
 	return drawCalls;
 }
 
-bool SceneRenderPass::renderObject(
+bool PBRSceneRenderPass::renderObject(
 	const std::shared_ptr<Mesh>& mesh,
 	Camera* camera,
 	const std::shared_ptr<DirectionalLight>& dirLight,
 	const std::shared_ptr<SpotLight>& spotLight,
 	const std::vector<std::shared_ptr<PointLight>>& pointLights,
 	const std::shared_ptr<AmbientLight>& ambient,
-	const std::shared_ptr<Material>& globalMaterial,
 	const ShaderLibrary& shaderLibrary,
 	const EnvironmentRenderTargets* environmentTargets
 ) const
 {
-	const std::shared_ptr<Material> material = globalMaterial != nullptr ? globalMaterial : mesh->getMaterial();
-	if (material == nullptr)
+	const auto material = mesh ? mesh->getMaterial() : nullptr;
+	if (!material || material->getMaterialType() != MaterialType::PBRMaterial)
 	{
-		std::cout << "SceneRenderPass: missing material\n";
 		return false;
 	}
 
 	RenderState::applyMaterialState(*material);
-	auto shader = shaderLibrary.get(material->getMaterialType());
+	auto shader = shaderLibrary.get(MaterialType::PBRMaterial);
 	if (shader == nullptr)
 	{
 		return false;
@@ -70,7 +68,7 @@ bool SceneRenderPass::renderObject(
 	shader->begin();
 	if (!MaterialBinder::bind(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient, environmentTargets))
 	{
-		std::cout << "SceneRenderPass: unsupported material\n";
+		std::cout << "PBRSceneRenderPass: unsupported PBR material\n";
 	}
 
 	drawMesh(mesh);
@@ -78,7 +76,7 @@ bool SceneRenderPass::renderObject(
 	return true;
 }
 
-void SceneRenderPass::drawMesh(const std::shared_ptr<Mesh>& mesh) const
+void PBRSceneRenderPass::drawMesh(const std::shared_ptr<Mesh>& mesh) const
 {
 	auto geometry = mesh->getGeometry();
 	glBindVertexArray(geometry->getVao());

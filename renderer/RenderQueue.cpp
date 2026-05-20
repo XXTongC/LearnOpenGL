@@ -2,7 +2,24 @@
 
 #include <algorithm>
 
+#include "materials/material.h"
+
 using namespace GLframework;
+
+namespace
+{
+	bool isPbrMesh(const std::shared_ptr<Mesh>& mesh)
+	{
+		const auto material = mesh ? mesh->getMaterial() : nullptr;
+		return material && material->getMaterialType() == MaterialType::PBRMaterial;
+	}
+
+	bool isTransparentMesh(const std::shared_ptr<Mesh>& mesh)
+	{
+		const auto material = mesh ? mesh->getMaterial() : nullptr;
+		return material && material->getColorBlendState();
+	}
+}
 
 void RenderQueue::build(const std::shared_ptr<Scene>& scene, Camera* camera)
 {
@@ -13,13 +30,19 @@ void RenderQueue::build(const std::shared_ptr<Scene>& scene, Camera* camera)
 	}
 
 	projectObject(scene);
-	sortTransparentObjects(camera);
+	sortTransparentObjects(camera, mTransparentObjects);
+	sortTransparentObjects(camera, mLegacyTransparentObjects);
+	sortTransparentObjects(camera, mPbrTransparentObjects);
 }
 
 void RenderQueue::clear()
 {
 	mOpacityObjects.clear();
 	mTransparentObjects.clear();
+	mLegacyOpacityObjects.clear();
+	mLegacyTransparentObjects.clear();
+	mPbrOpacityObjects.clear();
+	mPbrTransparentObjects.clear();
 }
 
 const std::vector<std::shared_ptr<Mesh>>& RenderQueue::getOpacityObjects() const
@@ -32,19 +55,57 @@ const std::vector<std::shared_ptr<Mesh>>& RenderQueue::getTransparentObjects() c
 	return mTransparentObjects;
 }
 
+const std::vector<std::shared_ptr<Mesh>>& RenderQueue::getLegacyOpacityObjects() const
+{
+	return mLegacyOpacityObjects;
+}
+
+const std::vector<std::shared_ptr<Mesh>>& RenderQueue::getLegacyTransparentObjects() const
+{
+	return mLegacyTransparentObjects;
+}
+
+const std::vector<std::shared_ptr<Mesh>>& RenderQueue::getPbrOpacityObjects() const
+{
+	return mPbrOpacityObjects;
+}
+
+const std::vector<std::shared_ptr<Mesh>>& RenderQueue::getPbrTransparentObjects() const
+{
+	return mPbrTransparentObjects;
+}
+
 void RenderQueue::projectObject(const std::shared_ptr<Object>& object)
 {
 	if (object->getType() == ObjectType::Mesh || object->getType() == ObjectType::InstancedMesh)
 	{
 		std::shared_ptr<Mesh> mesh = std::static_pointer_cast<Mesh>(object);
-		std::shared_ptr<Material> material = mesh->getMaterial();
-		if (material != nullptr && material->getColorBlendState())
+		const bool pbr = isPbrMesh(mesh);
+		const bool transparent = isTransparentMesh(mesh);
+
+		if (transparent)
 		{
 			mTransparentObjects.push_back(mesh);
+			if (pbr)
+			{
+				mPbrTransparentObjects.push_back(mesh);
+			}
+			else
+			{
+				mLegacyTransparentObjects.push_back(mesh);
+			}
 		}
 		else
 		{
 			mOpacityObjects.push_back(mesh);
+			if (pbr)
+			{
+				mPbrOpacityObjects.push_back(mesh);
+			}
+			else
+			{
+				mLegacyOpacityObjects.push_back(mesh);
+			}
 		}
 	}
 
@@ -54,7 +115,7 @@ void RenderQueue::projectObject(const std::shared_ptr<Object>& object)
 	}
 }
 
-void RenderQueue::sortTransparentObjects(Camera* camera)
+void RenderQueue::sortTransparentObjects(Camera* camera, std::vector<std::shared_ptr<Mesh>>& objects)
 {
 	if (camera == nullptr)
 	{
@@ -62,8 +123,8 @@ void RenderQueue::sortTransparentObjects(Camera* camera)
 	}
 
 	std::sort(
-		mTransparentObjects.begin(),
-		mTransparentObjects.end(),
+		objects.begin(),
+		objects.end(),
 		[camera](const std::shared_ptr<Mesh>& a, const std::shared_ptr<Mesh>& b)
 		{
 			const auto viewMatrix = camera->getViewMatrix();

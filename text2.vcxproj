@@ -194,6 +194,7 @@
     <ClCompile Include="renderer\FrameRenderTargets.cpp" />
     <ClCompile Include="renderer\IBLPrecomputePass.cpp" />
     <ClCompile Include="renderer\MaterialBinder.cpp" />
+    <ClCompile Include="renderer\PBRSceneRenderPass.cpp" />
     <ClCompile Include="renderer\PostProcessPass.cpp" />
     <ClCompile Include="renderer\PostProcessSettings.cpp" />
     <ClCompile Include="renderer\RenderQueue.cpp" />
@@ -279,6 +280,7 @@
     <ClInclude Include="renderer\FrameRenderTargets.h" />
     <ClInclude Include="renderer\IBLPrecomputePass.h" />
     <ClInclude Include="renderer\MaterialBinder.h" />
+    <ClInclude Include="renderer\PBRSceneRenderPass.h" />
     <ClInclude Include="renderer\PostProcessPass.h" />
     <ClInclude Include="renderer\PostProcessSettings.h" />
     <ClInclude Include="renderer\RenderQueue.h" />

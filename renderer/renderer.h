@@ -8,6 +8,7 @@
 #include "EnvironmentRenderTargets.h"
 #include "FrameRenderState.h"
 #include "IBLPrecomputePass.h"
+#include "PBRSceneRenderPass.h"
 #include "RenderQueue.h"
 #include "SceneRenderPass.h"
 #include "ShadowRenderer.h"
@@ -21,6 +22,13 @@ namespace GLframework
 {
 	struct EnvironmentProfile;
 
+	struct RendererFrameStats
+	{
+		int shadowCasterCount{ 0 };
+		int legacySceneDrawCalls{ 0 };
+		int pbrSceneDrawCalls{ 0 };
+	};
+
 	class Renderer
 	{
 	public:
@@ -33,6 +41,7 @@ namespace GLframework
 		EnvironmentRenderTargets& getEnvironmentRenderTargets();
 		const IBLPrecomputePass& getIBLPrecomputePass() const;
 		IBLPrecomputePass& getIBLPrecomputePass();
+		const RendererFrameStats& getLastFrameStats() const;
 		bool precomputeEnvironment(
 			const std::shared_ptr<Texture>& equirectangularMap,
 			const std::shared_ptr<Mesh>& captureCube,
@@ -60,8 +69,10 @@ private:
 		RenderQueue mRenderQueue{};
 		ShadowRenderer mShadowRenderer{};
 		SceneRenderPass mSceneRenderPass{};
+		PBRSceneRenderPass mPbrSceneRenderPass{};
 		EnvironmentRenderTargets mEnvironmentRenderTargets{};
 		IBLPrecomputePass mIblPrecomputePass{};
+		RendererFrameStats mLastFrameStats{};
 
 	};
 }

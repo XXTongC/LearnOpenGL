@@ -22,6 +22,7 @@ namespace GL_RUNTIME
 	public:
 		static void applyProfile(GLframework::AppRuntimeContext& context);
 		static void reportPreparedScene(GLframework::AppRuntimeContext& context);
+		static void reportRenderedFrame(GLframework::AppRuntimeContext& context);
 		static bool captureDefaultFramebuffer(
 			const std::string& path,
 			unsigned int width,

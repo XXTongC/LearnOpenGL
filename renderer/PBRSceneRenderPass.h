@@ -8,7 +8,6 @@
 #include "light/directionalLight.h"
 #include "light/pointLight.h"
 #include "light/spotLight.h"
-#include "materials/material.h"
 #include "mesh/mesh.h"
 #include "renderer/ShaderLibrary.h"
 
@@ -16,18 +15,17 @@ namespace GLframework
 {
 	class EnvironmentRenderTargets;
 
-	class SceneRenderPass
+	class PBRSceneRenderPass
 	{
 	public:
 		int render(
-			const std::vector<std::shared_ptr<Mesh>>& opacityObjects,
-			const std::vector<std::shared_ptr<Mesh>>& transparentObjects,
+			const std::vector<std::shared_ptr<Mesh>>& pbrOpacityObjects,
+			const std::vector<std::shared_ptr<Mesh>>& pbrTransparentObjects,
 			Camera* camera,
 			const std::shared_ptr<DirectionalLight>& dirLight,
 			const std::shared_ptr<SpotLight>& spotLight,
 			const std::vector<std::shared_ptr<PointLight>>& pointLights,
 			const std::shared_ptr<AmbientLight>& ambient,
-			const std::shared_ptr<Material>& globalMaterial,
 			const ShaderLibrary& shaderLibrary,
 			const EnvironmentRenderTargets* environmentTargets
 		) const;
@@ -40,7 +38,6 @@ namespace GLframework
 			const std::shared_ptr<SpotLight>& spotLight,
 			const std::vector<std::shared_ptr<PointLight>>& pointLights,
 			const std::shared_ptr<AmbientLight>& ambient,
-			const std::shared_ptr<Material>& globalMaterial,
 			const ShaderLibrary& shaderLibrary,
 			const EnvironmentRenderTargets* environmentTargets
 		) const;
