@@ -1,112 +1,9 @@
 #include "PBRPreviewProfile.h"
 
-#include <algorithm>
-#include <cctype>
 #include <filesystem>
 #include <fstream>
 
-namespace
-{
-	std::string trim(std::string value)
-	{
-		auto isSpace = [](unsigned char ch)
-		{
-			return std::isspace(ch) != 0;
-		};
-
-		value.erase(value.begin(), std::find_if(value.begin(), value.end(), [isSpace](char ch)
-		{
-			return !isSpace(static_cast<unsigned char>(ch));
-		}));
-		value.erase(std::find_if(value.rbegin(), value.rend(), [isSpace](char ch)
-		{
-			return !isSpace(static_cast<unsigned char>(ch));
-		}).base(), value.end());
-		return value;
-	}
-
-	bool parseFloat(const std::string& value, float& output)
-	{
-		try
-		{
-			size_t parsedCharacters{ 0 };
-			const auto parsed = std::stof(value, &parsedCharacters);
-			if (parsedCharacters != value.size())
-			{
-				return false;
-			}
-
-			output = parsed;
-			return true;
-		}
-		catch (...)
-		{
-			return false;
-		}
-	}
-
-	bool parseInt(const std::string& value, int& output)
-	{
-		try
-		{
-			size_t parsedCharacters{ 0 };
-			const auto parsed = std::stoi(value, &parsedCharacters);
-			if (parsedCharacters != value.size())
-			{
-				return false;
-			}
-
-			output = parsed;
-			return true;
-		}
-		catch (...)
-		{
-			return false;
-		}
-	}
-
-	bool parseUnsigned(const std::string& value, unsigned int& output)
-	{
-		try
-		{
-			size_t parsedCharacters{ 0 };
-			const auto parsed = std::stoul(value, &parsedCharacters);
-			if (parsedCharacters != value.size())
-			{
-				return false;
-			}
-
-			output = static_cast<unsigned int>(parsed);
-			return true;
-		}
-		catch (...)
-		{
-			return false;
-		}
-	}
-
-	bool parseBool(std::string value, bool& output)
-	{
-		std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch)
-		{
-			return static_cast<char>(std::tolower(ch));
-		});
-
-		if (value == "1" || value == "true" || value == "yes" || value == "on")
-		{
-			output = true;
-			return true;
-		}
-
-		if (value == "0" || value == "false" || value == "no" || value == "off")
-		{
-			output = false;
-			return true;
-		}
-
-		return false;
-	}
-}
+#include "../config/ProfileConfigParser.h"
 
 std::string GL_SCENE::PBRPreviewProfileStorage::defaultPath()
 {
@@ -115,202 +12,185 @@ std::string GL_SCENE::PBRPreviewProfileStorage::defaultPath()
 
 bool GL_SCENE::PBRPreviewProfileStorage::loadFromFile(const std::string& path, PBRPreviewProfile& profile)
 {
-	std::ifstream input(path);
-	if (!input)
-	{
-		return false;
-	}
-
 	PBRPreviewProfile loadedProfile = profile;
-	std::string line{};
-	while (std::getline(input, line))
+	const bool loaded = GL_CONFIG::readKeyValueFile(path, [&loadedProfile](const std::string& key, const std::string& value)
 	{
-		line = trim(line);
-		if (line.empty() || line[0] == '#' || line[0] == ';' || line[0] == '[')
-		{
-			continue;
-		}
-
-		const auto separator = line.find('=');
-		if (separator == std::string::npos)
-		{
-			continue;
-		}
-
-		const auto key = trim(line.substr(0, separator));
-		const auto value = trim(line.substr(separator + 1));
 		if (key == "enabled")
 		{
 			bool parsedEnabled{ loadedProfile.enabled };
-			if (parseBool(value, parsedEnabled))
+			if (GL_CONFIG::parseBool(value, parsedEnabled))
 			{
 				loadedProfile.enabled = parsedEnabled;
 			}
-			continue;
+			return;
 		}
 
 		if (key == "positionX")
 		{
-			parseFloat(value, loadedProfile.position.x);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.position.x);
+			return;
 		}
 
 		if (key == "positionY")
 		{
-			parseFloat(value, loadedProfile.position.y);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.position.y);
+			return;
 		}
 
 		if (key == "positionZ")
 		{
-			parseFloat(value, loadedProfile.position.z);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.position.z);
+			return;
 		}
 
 		if (key == "radius")
 		{
-			parseFloat(value, loadedProfile.radius);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.radius);
+			return;
 		}
 
 		if (key == "segments")
 		{
-			parseInt(value, loadedProfile.segments);
-			continue;
+			GL_CONFIG::parseInt(value, loadedProfile.segments);
+			return;
 		}
 
 		if (key == "rings")
 		{
-			parseInt(value, loadedProfile.rings);
-			continue;
+			GL_CONFIG::parseInt(value, loadedProfile.rings);
+			return;
 		}
 
 		if (key == "useMaterialGrid")
 		{
 			bool parsedUseMaterialGrid{ loadedProfile.useMaterialGrid };
-			if (parseBool(value, parsedUseMaterialGrid))
+			if (GL_CONFIG::parseBool(value, parsedUseMaterialGrid))
 			{
 				loadedProfile.useMaterialGrid = parsedUseMaterialGrid;
 			}
-			continue;
+			return;
 		}
 
 		if (key == "gridColumns")
 		{
-			parseInt(value, loadedProfile.gridColumns);
-			continue;
+			GL_CONFIG::parseInt(value, loadedProfile.gridColumns);
+			return;
 		}
 
 		if (key == "gridRows")
 		{
-			parseInt(value, loadedProfile.gridRows);
-			continue;
+			GL_CONFIG::parseInt(value, loadedProfile.gridRows);
+			return;
 		}
 
 		if (key == "gridSpacing")
 		{
-			parseFloat(value, loadedProfile.gridSpacing);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.gridSpacing);
+			return;
 		}
 
 		if (key == "gridRadius")
 		{
-			parseFloat(value, loadedProfile.gridRadius);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.gridRadius);
+			return;
 		}
 
 		if (key == "gridMetallicMin")
 		{
-			parseFloat(value, loadedProfile.gridMetallicMin);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.gridMetallicMin);
+			return;
 		}
 
 		if (key == "gridMetallicMax")
 		{
-			parseFloat(value, loadedProfile.gridMetallicMax);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.gridMetallicMax);
+			return;
 		}
 
 		if (key == "gridRoughnessMin")
 		{
-			parseFloat(value, loadedProfile.gridRoughnessMin);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.gridRoughnessMin);
+			return;
 		}
 
 		if (key == "gridRoughnessMax")
 		{
-			parseFloat(value, loadedProfile.gridRoughnessMax);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.gridRoughnessMax);
+			return;
 		}
 
 		if (key == "albedoR")
 		{
-			parseFloat(value, loadedProfile.albedo.r);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.albedo.r);
+			return;
 		}
 
 		if (key == "albedoG")
 		{
-			parseFloat(value, loadedProfile.albedo.g);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.albedo.g);
+			return;
 		}
 
 		if (key == "albedoB")
 		{
-			parseFloat(value, loadedProfile.albedo.b);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.albedo.b);
+			return;
 		}
 
 		if (key == "metallic")
 		{
-			parseFloat(value, loadedProfile.metallic);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.metallic);
+			return;
 		}
 
 		if (key == "roughness")
 		{
-			parseFloat(value, loadedProfile.roughness);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.roughness);
+			return;
 		}
 
 		if (key == "ao")
 		{
-			parseFloat(value, loadedProfile.ao);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.ao);
+			return;
 		}
 
 		if (key == "useIBL")
 		{
 			bool parsedUseIBL{ loadedProfile.useIBL };
-			if (parseBool(value, parsedUseIBL))
+			if (GL_CONFIG::parseBool(value, parsedUseIBL))
 			{
 				loadedProfile.useIBL = parsedUseIBL;
 			}
-			continue;
+			return;
 		}
 
 		if (key == "iblDiffuseStrength")
 		{
-			parseFloat(value, loadedProfile.iblDiffuseStrength);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.iblDiffuseStrength);
+			return;
 		}
 
 		if (key == "iblSpecularStrength")
 		{
-			parseFloat(value, loadedProfile.iblSpecularStrength);
-			continue;
+			GL_CONFIG::parseFloat(value, loadedProfile.iblSpecularStrength);
+			return;
 		}
 
 		if (key == "normalMapPath")
 		{
 			loadedProfile.normalMapPath = value;
-			continue;
+			return;
 		}
 
 		if (key == "normalMapUnit")
 		{
-			parseUnsigned(value, loadedProfile.normalMapUnit);
+			GL_CONFIG::parseUnsigned(value, loadedProfile.normalMapUnit);
 		}
+	});
+	if (!loaded)
+	{
+		return false;
 	}
 
 	profile = loadedProfile;

@@ -885,6 +885,16 @@
    - 默认短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
    - 临时创建被 `.gitignore` 覆盖的 [config/pbr_experiment.local.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\pbr_experiment.local.ini)，用单个文件启用 procedural IBL、postprocess 和 `4x4` PBR material grid 后短启动约 `10` 秒；错误关键字扫描为空。
    - 验证结束后已移除临时 experiment local profile。
+149. 完成第七十五轮 ProfileConfigParser 共享解析工具：
+   - 新增 [tools/config/ProfileConfigParser.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigParser.h) 与 [tools/config/ProfileConfigParser.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigParser.cpp)，统一提供 `trim`、`startsWith`、`readKeyValueFile`、`parseBool`、`parseFloat`、`parseInt`、`parseUnsigned`。
+   - 更新 [renderer/EnvironmentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.cpp)、[renderer/PostProcessSettings.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessSettings.cpp)、[tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)、[tools/sceneSetup/PBRExperimentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRExperimentProfile.cpp)，移除重复的 key-value 文件遍历和基础类型解析函数。
+   - 各 profile 仍保留字段映射逻辑，只把通用文件解析和类型解析下沉到共享工具，避免过度抽象配置语义。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将共享 parser 纳入 VS 工程分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 profile parser 收敛和后续 schema 化方向。
+150. 完成第六十五次轻量语法验证：
+   - 针对 ProfileConfigParser 收敛执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - C 盘剩余空间约 `200MB`，不足以可靠执行完整 MSBuild 并生成 `text2/`、`x64/` 输出；本轮改用 MSVC `cl /Zs` 对 [tools/config/ProfileConfigParser.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigParser.cpp)、[renderer/EnvironmentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.cpp)、[renderer/PostProcessSettings.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessSettings.cpp)、[tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)、[tools/sceneSetup/PBRExperimentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRExperimentProfile.cpp) 做无输出语法检查。
+   - `cl /Zs` 结果：通过，未生成 obj/link 产物；本轮未执行完整运行时 smoke，原因是磁盘空间不足。
 
 ### 当前状态
 
@@ -921,7 +931,8 @@
 - 当前 `PBR Preview Sphere` 已由 `PBRPreviewProfile` 驱动，可通过 `config/pbr_preview.local.ini` 调整位置、几何细分、PBR surface 参数、IBL 强度和 normal map，而不需要修改 `SceneSetup.cpp`。
 - 当前 `PBRPreviewProfile` 支持 material grid，可按 metallic / roughness 范围生成多球阵列，在同一 environment / postprocess 下批量比较 PBR 参数。
 - 当前 `PBRExperimentProfile` 支持用 `config/pbr_experiment.local.ini` 统一覆盖 environment、postprocess 和 PBR preview grid，减少维护多个 local ini 的成本。
+- 当前 profile 配置解析基础设施已收敛到 `ProfileConfigParser`，后续新增 PBR material preset / experiment preset 不需要再复制 trim/parse/key-value 遍历逻辑。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
 - 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例。
-- 当前剩余明显问题：PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
-- 下一步建议目标：把 PBR experiment preset 接入 Debug UI 的 Load/Reload 或 preset 下拉，或者继续把 camera/runtime resize 行为从 `main.cpp` 中拆出。
+- 当前剩余明显问题：C 盘空间不足会阻塞完整 MSBuild / runtime smoke；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
+- 下一步建议目标：优先释放或迁移构建输出目录以恢复完整 build/smoke 验证能力，然后把 PBR experiment preset 接入 Debug UI 的 Load/Reload 或 preset 下拉。

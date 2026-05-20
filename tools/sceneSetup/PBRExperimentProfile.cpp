@@ -1,116 +1,9 @@
 #include "PBRExperimentProfile.h"
 
-#include <algorithm>
-#include <cctype>
-#include <fstream>
+#include "../config/ProfileConfigParser.h"
 
 namespace
 {
-	std::string trim(std::string value)
-	{
-		auto isSpace = [](unsigned char ch)
-		{
-			return std::isspace(ch) != 0;
-		};
-
-		value.erase(value.begin(), std::find_if(value.begin(), value.end(), [isSpace](char ch)
-		{
-			return !isSpace(static_cast<unsigned char>(ch));
-		}));
-		value.erase(std::find_if(value.rbegin(), value.rend(), [isSpace](char ch)
-		{
-			return !isSpace(static_cast<unsigned char>(ch));
-		}).base(), value.end());
-		return value;
-	}
-
-	bool startsWith(const std::string& value, const std::string& prefix)
-	{
-		return value.size() >= prefix.size() && value.compare(0, prefix.size(), prefix) == 0;
-	}
-
-	bool parseFloat(const std::string& value, float& output)
-	{
-		try
-		{
-			size_t parsedCharacters{ 0 };
-			const auto parsed = std::stof(value, &parsedCharacters);
-			if (parsedCharacters != value.size())
-			{
-				return false;
-			}
-
-			output = parsed;
-			return true;
-		}
-		catch (...)
-		{
-			return false;
-		}
-	}
-
-	bool parseInt(const std::string& value, int& output)
-	{
-		try
-		{
-			size_t parsedCharacters{ 0 };
-			const auto parsed = std::stoi(value, &parsedCharacters);
-			if (parsedCharacters != value.size())
-			{
-				return false;
-			}
-
-			output = parsed;
-			return true;
-		}
-		catch (...)
-		{
-			return false;
-		}
-	}
-
-	bool parseUnsigned(const std::string& value, unsigned int& output)
-	{
-		try
-		{
-			size_t parsedCharacters{ 0 };
-			const auto parsed = std::stoul(value, &parsedCharacters);
-			if (parsedCharacters != value.size())
-			{
-				return false;
-			}
-
-			output = static_cast<unsigned int>(parsed);
-			return true;
-		}
-		catch (...)
-		{
-			return false;
-		}
-	}
-
-	bool parseBool(std::string value, bool& output)
-	{
-		std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch)
-		{
-			return static_cast<char>(std::tolower(ch));
-		});
-
-		if (value == "1" || value == "true" || value == "yes" || value == "on")
-		{
-			output = true;
-			return true;
-		}
-
-		if (value == "0" || value == "false" || value == "no" || value == "off")
-		{
-			output = false;
-			return true;
-		}
-
-		return false;
-	}
-
 	bool applyEnvironmentKey(const std::string& key, const std::string& value, GLframework::EnvironmentProfile& profile)
 	{
 		if (key == "hdrEquirectangularPath")
@@ -121,42 +14,42 @@ namespace
 
 		if (key == "hdrTextureUnit")
 		{
-			return parseUnsigned(value, profile.hdrTextureUnit);
+			return GL_CONFIG::parseUnsigned(value, profile.hdrTextureUnit);
 		}
 
 		if (key == "precomputeOnPrepare")
 		{
-			return parseBool(value, profile.precomputeOnPrepare);
+			return GL_CONFIG::parseBool(value, profile.precomputeOnPrepare);
 		}
 
 		if (key == "useProceduralEnvironment")
 		{
-			return parseBool(value, profile.useProceduralEnvironment);
+			return GL_CONFIG::parseBool(value, profile.useProceduralEnvironment);
 		}
 
 		if (key == "proceduralWidth")
 		{
-			return parseUnsigned(value, profile.proceduralWidth);
+			return GL_CONFIG::parseUnsigned(value, profile.proceduralWidth);
 		}
 
 		if (key == "proceduralHeight")
 		{
-			return parseUnsigned(value, profile.proceduralHeight);
+			return GL_CONFIG::parseUnsigned(value, profile.proceduralHeight);
 		}
 
 		if (key == "proceduralSkyIntensity")
 		{
-			return parseFloat(value, profile.proceduralSkyIntensity);
+			return GL_CONFIG::parseFloat(value, profile.proceduralSkyIntensity);
 		}
 
 		if (key == "proceduralGroundIntensity")
 		{
-			return parseFloat(value, profile.proceduralGroundIntensity);
+			return GL_CONFIG::parseFloat(value, profile.proceduralGroundIntensity);
 		}
 
 		if (key == "proceduralSunIntensity")
 		{
-			return parseFloat(value, profile.proceduralSunIntensity);
+			return GL_CONFIG::parseFloat(value, profile.proceduralSunIntensity);
 		}
 
 		return false;
@@ -166,13 +59,13 @@ namespace
 	{
 		if (key == "exposure")
 		{
-			return parseFloat(value, settings.exposure);
+			return GL_CONFIG::parseFloat(value, settings.exposure);
 		}
 
 		if (key == "toneMappingMode")
 		{
 			int parsedMode{ static_cast<int>(settings.toneMappingMode) };
-			if (!parseInt(value, parsedMode))
+			if (!GL_CONFIG::parseInt(value, parsedMode))
 			{
 				return false;
 			}
@@ -185,22 +78,22 @@ namespace
 
 		if (key == "bloomEnabled")
 		{
-			return parseBool(value, settings.bloomEnabled);
+			return GL_CONFIG::parseBool(value, settings.bloomEnabled);
 		}
 
 		if (key == "bloomThreshold")
 		{
-			return parseFloat(value, settings.bloomThreshold);
+			return GL_CONFIG::parseFloat(value, settings.bloomThreshold);
 		}
 
 		if (key == "bloomIntensity")
 		{
-			return parseFloat(value, settings.bloomIntensity);
+			return GL_CONFIG::parseFloat(value, settings.bloomIntensity);
 		}
 
 		if (key == "bloomIterations")
 		{
-			return parseInt(value, settings.bloomIterations);
+			return GL_CONFIG::parseInt(value, settings.bloomIterations);
 		}
 
 		return false;
@@ -210,127 +103,127 @@ namespace
 	{
 		if (key == "enabled")
 		{
-			return parseBool(value, profile.enabled);
+			return GL_CONFIG::parseBool(value, profile.enabled);
 		}
 
 		if (key == "positionX")
 		{
-			return parseFloat(value, profile.position.x);
+			return GL_CONFIG::parseFloat(value, profile.position.x);
 		}
 
 		if (key == "positionY")
 		{
-			return parseFloat(value, profile.position.y);
+			return GL_CONFIG::parseFloat(value, profile.position.y);
 		}
 
 		if (key == "positionZ")
 		{
-			return parseFloat(value, profile.position.z);
+			return GL_CONFIG::parseFloat(value, profile.position.z);
 		}
 
 		if (key == "radius")
 		{
-			return parseFloat(value, profile.radius);
+			return GL_CONFIG::parseFloat(value, profile.radius);
 		}
 
 		if (key == "segments")
 		{
-			return parseInt(value, profile.segments);
+			return GL_CONFIG::parseInt(value, profile.segments);
 		}
 
 		if (key == "rings")
 		{
-			return parseInt(value, profile.rings);
+			return GL_CONFIG::parseInt(value, profile.rings);
 		}
 
 		if (key == "useMaterialGrid")
 		{
-			return parseBool(value, profile.useMaterialGrid);
+			return GL_CONFIG::parseBool(value, profile.useMaterialGrid);
 		}
 
 		if (key == "gridColumns")
 		{
-			return parseInt(value, profile.gridColumns);
+			return GL_CONFIG::parseInt(value, profile.gridColumns);
 		}
 
 		if (key == "gridRows")
 		{
-			return parseInt(value, profile.gridRows);
+			return GL_CONFIG::parseInt(value, profile.gridRows);
 		}
 
 		if (key == "gridSpacing")
 		{
-			return parseFloat(value, profile.gridSpacing);
+			return GL_CONFIG::parseFloat(value, profile.gridSpacing);
 		}
 
 		if (key == "gridRadius")
 		{
-			return parseFloat(value, profile.gridRadius);
+			return GL_CONFIG::parseFloat(value, profile.gridRadius);
 		}
 
 		if (key == "gridMetallicMin")
 		{
-			return parseFloat(value, profile.gridMetallicMin);
+			return GL_CONFIG::parseFloat(value, profile.gridMetallicMin);
 		}
 
 		if (key == "gridMetallicMax")
 		{
-			return parseFloat(value, profile.gridMetallicMax);
+			return GL_CONFIG::parseFloat(value, profile.gridMetallicMax);
 		}
 
 		if (key == "gridRoughnessMin")
 		{
-			return parseFloat(value, profile.gridRoughnessMin);
+			return GL_CONFIG::parseFloat(value, profile.gridRoughnessMin);
 		}
 
 		if (key == "gridRoughnessMax")
 		{
-			return parseFloat(value, profile.gridRoughnessMax);
+			return GL_CONFIG::parseFloat(value, profile.gridRoughnessMax);
 		}
 
 		if (key == "albedoR")
 		{
-			return parseFloat(value, profile.albedo.r);
+			return GL_CONFIG::parseFloat(value, profile.albedo.r);
 		}
 
 		if (key == "albedoG")
 		{
-			return parseFloat(value, profile.albedo.g);
+			return GL_CONFIG::parseFloat(value, profile.albedo.g);
 		}
 
 		if (key == "albedoB")
 		{
-			return parseFloat(value, profile.albedo.b);
+			return GL_CONFIG::parseFloat(value, profile.albedo.b);
 		}
 
 		if (key == "metallic")
 		{
-			return parseFloat(value, profile.metallic);
+			return GL_CONFIG::parseFloat(value, profile.metallic);
 		}
 
 		if (key == "roughness")
 		{
-			return parseFloat(value, profile.roughness);
+			return GL_CONFIG::parseFloat(value, profile.roughness);
 		}
 
 		if (key == "ao")
 		{
-			return parseFloat(value, profile.ao);
+			return GL_CONFIG::parseFloat(value, profile.ao);
 		}
 
 		if (key == "useIBL")
 		{
-			return parseBool(value, profile.useIBL);
+			return GL_CONFIG::parseBool(value, profile.useIBL);
 		}
 
 		if (key == "iblDiffuseStrength")
 		{
-			return parseFloat(value, profile.iblDiffuseStrength);
+			return GL_CONFIG::parseFloat(value, profile.iblDiffuseStrength);
 		}
 
 		if (key == "iblSpecularStrength")
 		{
-			return parseFloat(value, profile.iblSpecularStrength);
+			return GL_CONFIG::parseFloat(value, profile.iblSpecularStrength);
 		}
 
 		if (key == "normalMapPath")
@@ -341,7 +234,7 @@ namespace
 
 		if (key == "normalMapUnit")
 		{
-			return parseUnsigned(value, profile.normalMapUnit);
+			return GL_CONFIG::parseUnsigned(value, profile.normalMapUnit);
 		}
 
 		return false;
@@ -360,60 +253,46 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	PBRPreviewProfile& pbrPreviewProfile
 )
 {
-	std::ifstream input(path);
-	if (!input)
-	{
-		return false;
-	}
-
 	bool enabled{ true };
 	auto loadedEnvironmentProfile = environmentProfile;
 	auto loadedPostProcessSettings = postProcessSettings;
 	auto loadedPBRPreviewProfile = pbrPreviewProfile;
 
-	std::string line{};
-	while (std::getline(input, line))
+	const bool loaded = GL_CONFIG::readKeyValueFile(path, [&enabled, &loadedEnvironmentProfile, &loadedPostProcessSettings, &loadedPBRPreviewProfile](
+		const std::string& key,
+		const std::string& value
+	)
 	{
-		line = trim(line);
-		if (line.empty() || line[0] == '#' || line[0] == ';' || line[0] == '[')
-		{
-			continue;
-		}
-
-		const auto separator = line.find('=');
-		if (separator == std::string::npos)
-		{
-			continue;
-		}
-
-		const auto key = trim(line.substr(0, separator));
-		const auto value = trim(line.substr(separator + 1));
 		if (key == "enabled")
 		{
-			parseBool(value, enabled);
-			continue;
+			GL_CONFIG::parseBool(value, enabled);
+			return;
 		}
 
 		constexpr auto environmentPrefix = "environment.";
 		constexpr auto postProcessPrefix = "postprocess.";
 		constexpr auto pbrPreviewPrefix = "pbrPreview.";
 
-		if (startsWith(key, environmentPrefix))
+		if (GL_CONFIG::startsWith(key, environmentPrefix))
 		{
 			applyEnvironmentKey(key.substr(std::char_traits<char>::length(environmentPrefix)), value, loadedEnvironmentProfile);
-			continue;
+			return;
 		}
 
-		if (startsWith(key, postProcessPrefix))
+		if (GL_CONFIG::startsWith(key, postProcessPrefix))
 		{
 			applyPostProcessKey(key.substr(std::char_traits<char>::length(postProcessPrefix)), value, loadedPostProcessSettings);
-			continue;
+			return;
 		}
 
-		if (startsWith(key, pbrPreviewPrefix))
+		if (GL_CONFIG::startsWith(key, pbrPreviewPrefix))
 		{
 			applyPBRPreviewKey(key.substr(std::char_traits<char>::length(pbrPreviewPrefix)), value, loadedPBRPreviewProfile);
 		}
+	});
+	if (!loaded)
+	{
+		return false;
 	}
 
 	if (!enabled)

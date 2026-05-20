@@ -1,7 +1,6 @@
 #include "EnvironmentProfile.h"
 
 #include <algorithm>
-#include <cctype>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
@@ -10,6 +9,7 @@
 #include <vector>
 
 #include "stb_image.h"
+#include "tools/config/ProfileConfigParser.h"
 
 using namespace GLframework;
 
@@ -43,86 +43,6 @@ namespace
 		}
 
 		return GL_RGB16F;
-	}
-
-	std::string trim(std::string value)
-	{
-		auto isSpace = [](unsigned char ch)
-		{
-			return std::isspace(ch) != 0;
-		};
-
-		value.erase(value.begin(), std::find_if(value.begin(), value.end(), [isSpace](char ch)
-		{
-			return !isSpace(static_cast<unsigned char>(ch));
-		}));
-		value.erase(std::find_if(value.rbegin(), value.rend(), [isSpace](char ch)
-		{
-			return !isSpace(static_cast<unsigned char>(ch));
-		}).base(), value.end());
-		return value;
-	}
-
-	bool parseUnsigned(const std::string& value, unsigned int& output)
-	{
-		try
-		{
-			size_t parsedCharacters{ 0 };
-			const auto parsed = std::stoul(value, &parsedCharacters);
-			if (parsedCharacters != value.size())
-			{
-				return false;
-			}
-
-			output = static_cast<unsigned int>(parsed);
-			return true;
-		}
-		catch (...)
-		{
-			return false;
-		}
-	}
-
-	bool parseFloat(const std::string& value, float& output)
-	{
-		try
-		{
-			size_t parsedCharacters{ 0 };
-			const auto parsed = std::stof(value, &parsedCharacters);
-			if (parsedCharacters != value.size())
-			{
-				return false;
-			}
-
-			output = parsed;
-			return true;
-		}
-		catch (...)
-		{
-			return false;
-		}
-	}
-
-	bool parseBool(std::string value, bool& output)
-	{
-		std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch)
-		{
-			return static_cast<char>(std::tolower(ch));
-		});
-
-		if (value == "1" || value == "true" || value == "yes" || value == "on")
-		{
-			output = true;
-			return true;
-		}
-
-		if (value == "0" || value == "false" || value == "no" || value == "off")
-		{
-			output = false;
-			return true;
-		}
-
-		return false;
 	}
 
 	std::shared_ptr<Texture> createFloatEquirectangularTexture(
@@ -304,114 +224,97 @@ std::string EnvironmentProfileStorage::defaultPath()
 
 bool EnvironmentProfileStorage::loadFromFile(const std::string& path, EnvironmentProfile& profile)
 {
-	std::ifstream input(path);
-	if (!input)
-	{
-		return false;
-	}
-
 	EnvironmentProfile loadedProfile = profile;
-	std::string line{};
-	while (std::getline(input, line))
+	const bool loaded = GL_CONFIG::readKeyValueFile(path, [&loadedProfile](const std::string& key, const std::string& value)
 	{
-		line = trim(line);
-		if (line.empty() || line[0] == '#' || line[0] == ';' || line[0] == '[')
-		{
-			continue;
-		}
-
-		const auto separator = line.find('=');
-		if (separator == std::string::npos)
-		{
-			continue;
-		}
-
-		const auto key = trim(line.substr(0, separator));
-		const auto value = trim(line.substr(separator + 1));
 		if (key == "hdrEquirectangularPath")
 		{
 			loadedProfile.hdrEquirectangularPath = value;
-			continue;
+			return;
 		}
 
 		if (key == "hdrTextureUnit")
 		{
 			unsigned int parsedUnit{ loadedProfile.hdrTextureUnit };
-			if (parseUnsigned(value, parsedUnit))
+			if (GL_CONFIG::parseUnsigned(value, parsedUnit))
 			{
 				loadedProfile.hdrTextureUnit = parsedUnit;
 			}
-			continue;
+			return;
 		}
 
 		if (key == "precomputeOnPrepare")
 		{
 			bool parsedPrecompute{ loadedProfile.precomputeOnPrepare };
-			if (parseBool(value, parsedPrecompute))
+			if (GL_CONFIG::parseBool(value, parsedPrecompute))
 			{
 				loadedProfile.precomputeOnPrepare = parsedPrecompute;
 			}
-			continue;
+			return;
 		}
 
 		if (key == "useProceduralEnvironment")
 		{
 			bool parsedUseProceduralEnvironment{ loadedProfile.useProceduralEnvironment };
-			if (parseBool(value, parsedUseProceduralEnvironment))
+			if (GL_CONFIG::parseBool(value, parsedUseProceduralEnvironment))
 			{
 				loadedProfile.useProceduralEnvironment = parsedUseProceduralEnvironment;
 			}
-			continue;
+			return;
 		}
 
 		if (key == "proceduralWidth")
 		{
 			unsigned int parsedWidth{ loadedProfile.proceduralWidth };
-			if (parseUnsigned(value, parsedWidth))
+			if (GL_CONFIG::parseUnsigned(value, parsedWidth))
 			{
 				loadedProfile.proceduralWidth = parsedWidth;
 			}
-			continue;
+			return;
 		}
 
 		if (key == "proceduralHeight")
 		{
 			unsigned int parsedHeight{ loadedProfile.proceduralHeight };
-			if (parseUnsigned(value, parsedHeight))
+			if (GL_CONFIG::parseUnsigned(value, parsedHeight))
 			{
 				loadedProfile.proceduralHeight = parsedHeight;
 			}
-			continue;
+			return;
 		}
 
 		if (key == "proceduralSkyIntensity")
 		{
 			float parsedSkyIntensity{ loadedProfile.proceduralSkyIntensity };
-			if (parseFloat(value, parsedSkyIntensity))
+			if (GL_CONFIG::parseFloat(value, parsedSkyIntensity))
 			{
 				loadedProfile.proceduralSkyIntensity = parsedSkyIntensity;
 			}
-			continue;
+			return;
 		}
 
 		if (key == "proceduralGroundIntensity")
 		{
 			float parsedGroundIntensity{ loadedProfile.proceduralGroundIntensity };
-			if (parseFloat(value, parsedGroundIntensity))
+			if (GL_CONFIG::parseFloat(value, parsedGroundIntensity))
 			{
 				loadedProfile.proceduralGroundIntensity = parsedGroundIntensity;
 			}
-			continue;
+			return;
 		}
 
 		if (key == "proceduralSunIntensity")
 		{
 			float parsedSunIntensity{ loadedProfile.proceduralSunIntensity };
-			if (parseFloat(value, parsedSunIntensity))
+			if (GL_CONFIG::parseFloat(value, parsedSunIntensity))
 			{
 				loadedProfile.proceduralSunIntensity = parsedSunIntensity;
 			}
 		}
+	});
+	if (!loaded)
+	{
+		return false;
 	}
 
 	profile = loadedProfile;

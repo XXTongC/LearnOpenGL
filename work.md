@@ -919,3 +919,14 @@ PBR 实验配置现在有一个高层覆盖入口：
 - `enabled=0` 时 experiment preset 会被读取但不应用，方便临时保留配置文件。
 
 这一步解决的是实验配置分散的问题。后续如果继续推进，建议把 `PBRExperimentProfile` 接入 Debug UI 的 Load/Reload/Save 或 preset 下拉，避免运行时仍需要手动编辑 local ini。
+
+### 2026-05-20 ProfileConfigParser 共享解析工具
+
+Profile 解析的重复基础设施已收敛：
+
+- 新增 `tools/config/ProfileConfigParser`，统一提供 `trim`、`startsWith`、`readKeyValueFile`、`parseBool`、`parseFloat`、`parseInt`、`parseUnsigned`。
+- `EnvironmentProfileStorage`、`PostProcessSettingsStorage`、`PBRPreviewProfileStorage`、`PBRExperimentProfileStorage` 不再各自维护一份 key-value 文件遍历和基础类型解析函数。
+- 各 profile 仍保留自己的字段映射逻辑，避免把配置语义塞进通用 parser。
+- VS 工程已纳入 `ProfileConfigParser.cpp/.h`，后续新增 PBR material preset 或 experiment preset 不需要再复制解析工具。
+
+这一步降低了继续扩展 PBR 配置体系的维护成本。后续更合理的方向是进一步把字段映射做成声明式 schema，让配置文件、Debug UI 和 inspector 可以共享同一份属性描述。
