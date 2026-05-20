@@ -56,14 +56,16 @@ int PBRGBufferDebugPass::render(
 	shader->setInt("positionRoughnessTexture", 0);
 	shader->setInt("normalMetallicTexture", 1);
 	shader->setInt("albedoAoTexture", 2);
+	shader->setInt("emissiveTexture", 4);
 	shader->setInt("depthTexture", 3);
-	shader->setInt("gbufferDebugMode", std::clamp(profile.pbrGBufferDebugMode, 0, 6));
+	shader->setInt("gbufferDebugMode", std::clamp(profile.pbrGBufferDebugMode, 0, 7));
 	shader->setFloat("gbufferDebugIntensity", profile.pbrGBufferDebugIntensity);
 
 	bindTexture(targets.getPositionRoughnessTexture(), 0);
 	bindTexture(targets.getNormalMetallicTexture(), 1);
 	bindTexture(targets.getAlbedoAoTexture(), 2);
 	bindTexture(targets.getDepthTexture(), 3);
+	bindTexture(targets.getEmissiveTexture(), 4);
 
 	const bool drawn = MeshDraw::drawIndexed(mDebugQuad);
 	shader->end();

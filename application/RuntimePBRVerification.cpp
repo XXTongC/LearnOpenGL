@@ -29,6 +29,7 @@ namespace
 		int pbrPreviewMeshCount{ 0 };
 		int transparentMeshCount{ 0 };
 		int pbrTransparentMeshCount{ 0 };
+		int pbrEmissiveMeshCount{ 0 };
 	};
 
 	void reportLine(const std::string& message)
@@ -57,6 +58,11 @@ namespace
 		if (mesh && mesh->getMaterial() && mesh->getMaterial()->getMaterialType() == GLframework::MaterialType::PBRMaterial)
 		{
 			++stats.pbrMeshCount;
+			const auto pbrMaterial = std::dynamic_pointer_cast<GLframework::PBRMaterial>(mesh->getMaterial());
+			if (pbrMaterial && pbrMaterial->mEmissiveIntensity > 0.0f && glm::length(pbrMaterial->mEmissiveColor) > 0.0001f)
+			{
+				++stats.pbrEmissiveMeshCount;
+			}
 		}
 		if (mesh && mesh->getMaterial() && mesh->getMaterial()->getColorBlendState())
 		{
@@ -181,6 +187,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + transparent forward fallback";
 		}
+		if (config.enablePbrEmissiveProbe)
+		{
+			profileLine += " + emissive G-buffer probe";
+		}
 		if (config.enablePbrGBufferDebugPass)
 		{
 			profileLine += " + PBR G-buffer debug pass";
@@ -255,33 +265,59 @@ namespace GL_RUNTIME
 		const RuntimePBRVerificationConfig& config
 	)
 	{
-		if (!config.enablePbrTransparentFallbackPass || !context.sceneOffScreen || !context.renderer)
+		if ((!config.enablePbrTransparentFallbackPass && !config.enablePbrEmissiveProbe) || !context.sceneOffScreen || !context.renderer)
 		{
 			return;
 		}
 
-		auto material = std::make_shared<GLframework::PBRMaterial>();
-		material->mAlbedo = { 0.15f, 0.85f, 1.0f };
-		material->mMetallic = 0.0f;
-		material->mRoughness = 0.18f;
-		material->mAo = 1.0f;
-		material->mUseIBL = true;
-		material->mIblDiffuseStrength = 0.8f;
-		material->mIblSpecularStrength = 1.0f;
-		material->setColorBlendState(true);
-		material->setOpacity(0.45f);
-		material->setDepthWrite(false);
+		if (config.enablePbrTransparentFallbackPass)
+		{
+			auto material = std::make_shared<GLframework::PBRMaterial>();
+			material->mAlbedo = { 0.15f, 0.85f, 1.0f };
+			material->mMetallic = 0.0f;
+			material->mRoughness = 0.18f;
+			material->mAo = 1.0f;
+			material->mUseIBL = true;
+			material->mIblDiffuseStrength = 0.8f;
+			material->mIblSpecularStrength = 1.0f;
+			material->setColorBlendState(true);
+			material->setOpacity(0.45f);
+			material->setDepthWrite(false);
 
-		auto geometry = GLframework::Geometry::createSphere(
-			context.renderer->getShader(GLframework::MaterialType::PBRMaterial),
-			0.55f,
-			32,
-			16
-		);
-		auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
-		mesh->setName("PBR Transparent Fallback Probe");
-		mesh->setPosition({ 0.0f, 0.65f, 2.45f });
-		context.sceneOffScreen->addChild(mesh);
+			auto geometry = GLframework::Geometry::createSphere(
+				context.renderer->getShader(GLframework::MaterialType::PBRMaterial),
+				0.55f,
+				32,
+				16
+			);
+			auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
+			mesh->setName("PBR Transparent Fallback Probe");
+			mesh->setPosition({ 0.0f, 0.65f, 2.45f });
+			context.sceneOffScreen->addChild(mesh);
+		}
+
+		if (config.enablePbrEmissiveProbe)
+		{
+			auto material = std::make_shared<GLframework::PBRMaterial>();
+			material->mAlbedo = { 0.0f, 0.0f, 0.0f };
+			material->mMetallic = 0.0f;
+			material->mRoughness = 1.0f;
+			material->mAo = 1.0f;
+			material->mEmissiveColor = { 0.0f, 0.85f, 1.0f };
+			material->mEmissiveIntensity = 3.5f;
+			material->mUseIBL = false;
+
+			auto geometry = GLframework::Geometry::createSphere(
+				context.renderer->getShader(GLframework::MaterialType::PBRMaterial),
+				0.48f,
+				32,
+				16
+			);
+			auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
+			mesh->setName("PBR Deferred Emissive Probe");
+			mesh->setPosition({ 0.0f, -0.7f, 2.35f });
+			context.sceneOffScreen->addChild(mesh);
+		}
 	}
 
 	void RuntimePBRVerification::reportPreparedScene(GLframework::AppRuntimeContext& context)
@@ -298,6 +334,7 @@ namespace GL_RUNTIME
 			+ ", pbrPreviewMeshes=" + std::to_string(stats.pbrPreviewMeshCount)
 			+ ", transparentMeshes=" + std::to_string(stats.transparentMeshCount)
 			+ ", pbrTransparentMeshes=" + std::to_string(stats.pbrTransparentMeshCount)
+			+ ", pbrEmissiveMeshes=" + std::to_string(stats.pbrEmissiveMeshCount)
 			+ ", iblReady=" + (environmentReady ? std::string{ "yes" } : std::string{ "no" })
 		);
 	}

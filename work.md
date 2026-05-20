@@ -1662,3 +1662,15 @@ Deferred PBR 已新增透明 forward fallback 的验证路径：
 - 透明 probe 使用 PBRMaterial、blend enabled、depth write disabled、opacity 0.45，仍走 `PBRSceneRenderPass` / `PBRMaterialBinder`，因此会复用 PBR IBL、directional / point shadow atlas binding。
 
 这一步没有引入新的透明渲染算法，目标是先把 deferred opaque + forward transparent 的组合路径变成可验证状态。后续如果要支持 OIT、weighted blended transparency 或独立 transparent lighting 策略，可以在这个 fallback 边界上继续替换。
+
+### 2026-05-21 PBR Deferred Emissive Material Parity
+
+Deferred PBR 已补齐第一块 material feature parity：emissive。
+
+- `PBRGBufferRenderTargets` 新增 emissive color attachment，G-buffer 从 position/normal/albedo 三张 color attachment 扩展为四张 color attachment。
+- `shaders/pbr/pbr_gbuffer.frag` 写入 `pbrEmissiveColor * pbrEmissiveIntensity` 与 emissive map contribution；`PBRSurfaceResourceBinder` 已经统一绑定 emissive uniforms / texture slots，因此无需为 G-buffer 增加独立材质绑定分支。
+- `shaders/pbr/pbr_deferred_lighting.frag` 新增 `emissiveTexture` 输入，并在 lighting 输出中叠加 emissive。空像素判断改为允许 emissive-only material，不再因为 albedo 为 0 而丢弃 emissive probe。
+- `PBRGBufferDebugPass` 和 `shaders/diagnostics/pbr_gbuffer_debug.frag` 新增 debug mode `7 = Emissive`，便于直接检查 G-buffer emissive attachment。
+- 新增 `--verify-pbr-deferred-emissive`，在 verification scene 中追加一个 opaque emissive PBR probe，用于验证 emissive attachment 能进入 deferred lighting 输出。
+
+这一步让 forward PBR 已有的 emissive color / map / intensity 数据进入 deferred path。后续 material parity 还需要继续覆盖 opacity / alpha mask、clearcoat 或更多贴图通道，但 emissive 已经有独立 attachment、debug view 和 runtime verification。

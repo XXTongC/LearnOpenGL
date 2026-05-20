@@ -9,6 +9,7 @@ uniform sampler2D positionRoughnessTexture;
 uniform sampler2D normalMetallicTexture;
 uniform sampler2D albedoAoTexture;
 uniform sampler2D depthTexture;
+uniform sampler2D emissiveTexture;
 
 uniform vec3 cameraPosition;
 
@@ -41,11 +42,12 @@ void main()
 	vec4 positionRoughness = texture(positionRoughnessTexture, uv);
 	vec4 normalMetallic = texture(normalMetallicTexture, uv);
 	vec4 albedoAo = texture(albedoAoTexture, uv);
+	vec3 emissive = texture(emissiveTexture, uv).rgb;
 	float depth = texture(depthTexture, uv).r;
 
 	vec3 albedo = albedoAo.rgb;
 	vec3 n = normalize(normalMetallic.xyz);
-	if (depth >= 1.0 || length(albedo) <= 0.0001 || length(normalMetallic.xyz) <= 0.0001)
+	if (depth >= 1.0 || (length(albedo) <= 0.0001 && length(emissive) <= 0.0001) || length(normalMetallic.xyz) <= 0.0001)
 	{
 		FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 		return;
@@ -83,5 +85,5 @@ void main()
 		color += calculatePbrLight(pointColorIntensity.rgb * pointColorIntensity.a * attenuation * pointEnabled, l, n, v, albedo, metallic, roughness) * (1.0 - pointShadow);
 	}
 
-	FragColor = vec4(color * max(pbrDeferredLightingIntensity, 0.0), 1.0);
+	FragColor = vec4(color * max(pbrDeferredLightingIntensity, 0.0) + emissive, 1.0);
 }

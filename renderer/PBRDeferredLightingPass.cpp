@@ -132,11 +132,13 @@ void PBRDeferredLightingPass::bindGBufferTextures(
 	shader->setInt("normalMetallicTexture", 1);
 	shader->setInt("albedoAoTexture", 2);
 	shader->setInt("depthTexture", 3);
+	shader->setInt("emissiveTexture", 7);
 
 	bindTexture2D(targets.getPositionRoughnessTexture(), 0);
 	bindTexture2D(targets.getNormalMetallicTexture(), 1);
 	bindTexture2D(targets.getAlbedoAoTexture(), 2);
 	bindTexture2D(targets.getDepthTexture(), 3);
+	bindTexture2D(targets.getEmissiveTexture(), 7);
 }
 
 void PBRDeferredLightingPass::ensureLightingQuad(const std::shared_ptr<Shader>& shader)

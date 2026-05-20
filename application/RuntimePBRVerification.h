@@ -18,6 +18,7 @@ namespace GL_RUNTIME
 		bool enablePbrGBufferDebugPass{ false };
 		bool disablePbrShadowAtlasPass{ false };
 		bool enablePbrTransparentFallbackPass{ false };
+		bool enablePbrEmissiveProbe{ false };
 		int maxFrames{ 3 };
 		int captureFrame{ 2 };
 		std::string capturePath{ "out/pbr_verification.ppm" };

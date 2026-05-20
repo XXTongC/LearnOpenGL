@@ -39,9 +39,9 @@ void RendererFramePassProfile::visitEditableProperties(GL_EDITOR::PropertyBuilde
 	builder.addConfigFloat("pbrDeferredIblDiffuseStrength", "PBR Deferred IBL Diffuse Strength", &pbrDeferredIblDiffuseStrength, 0.0f, 8.0f);
 	builder.addConfigFloat("pbrDeferredIblSpecularStrength", "PBR Deferred IBL Specular Strength", &pbrDeferredIblSpecularStrength, 0.0f, 8.0f);
 	builder.addSection("PBR GBuffer Debug Pass");
-	builder.addConfigInt("pbrGBufferDebugMode", "PBR GBuffer Debug Mode", &pbrGBufferDebugMode, 0, 6);
+	builder.addConfigInt("pbrGBufferDebugMode", "PBR GBuffer Debug Mode", &pbrGBufferDebugMode, 0, 7);
 	builder.addConfigFloat("pbrGBufferDebugIntensity", "PBR GBuffer Debug Intensity", &pbrGBufferDebugIntensity, 0.0f, 8.0f);
-	builder.addText("PBR GBuffer Debug Modes", "0 = Albedo, 1 = Normal, 2 = Roughness, 3 = Metallic, 4 = AO, 5 = Depth, 6 = World Position");
+	builder.addText("PBR GBuffer Debug Modes", "0 = Albedo, 1 = Normal, 2 = Roughness, 3 = Metallic, 4 = AO, 5 = Depth, 6 = World Position, 7 = Emissive");
 	builder.addSection("IBL Debug Pass");
 	builder.addConfigInt("iblDebugMode", "IBL Debug Mode", &iblDebugMode, 0, 3);
 	builder.addConfigFloat("iblDebugMipLevel", "IBL Debug Mip Level", &iblDebugMipLevel, 0.0f, 8.0f);

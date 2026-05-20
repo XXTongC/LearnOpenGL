@@ -30,6 +30,7 @@ bool PBRGBufferRenderTargets::ensureSize(unsigned int width, unsigned int height
 	mPositionRoughnessTexture = createColorAttachment(width, height);
 	mNormalMetallicTexture = createColorAttachment(width, height);
 	mAlbedoAoTexture = createColorAttachment(width, height);
+	mEmissiveTexture = createColorAttachment(width, height);
 	mDepthTexture = createDepthAttachment(width, height);
 
 	glGenFramebuffers(1, &mFbo);
@@ -37,14 +38,16 @@ bool PBRGBufferRenderTargets::ensureSize(unsigned int width, unsigned int height
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mPositionRoughnessTexture, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, mNormalMetallicTexture, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, mAlbedoAoTexture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, mEmissiveTexture, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDepthTexture, 0);
 
-	const unsigned int attachments[3]{
+	const unsigned int attachments[4]{
 		GL_COLOR_ATTACHMENT0,
 		GL_COLOR_ATTACHMENT1,
-		GL_COLOR_ATTACHMENT2
+		GL_COLOR_ATTACHMENT2,
+		GL_COLOR_ATTACHMENT3
 	};
-	glDrawBuffers(3, attachments);
+	glDrawBuffers(4, attachments);
 
 	mComplete = glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!mComplete)
@@ -72,6 +75,11 @@ void PBRGBufferRenderTargets::release()
 	{
 		glDeleteTextures(1, &mAlbedoAoTexture);
 		mAlbedoAoTexture = 0;
+	}
+	if (mEmissiveTexture != 0)
+	{
+		glDeleteTextures(1, &mEmissiveTexture);
+		mEmissiveTexture = 0;
 	}
 	if (mDepthTexture != 0)
 	{
@@ -122,6 +130,11 @@ unsigned int PBRGBufferRenderTargets::getNormalMetallicTexture() const
 unsigned int PBRGBufferRenderTargets::getAlbedoAoTexture() const
 {
 	return mAlbedoAoTexture;
+}
+
+unsigned int PBRGBufferRenderTargets::getEmissiveTexture() const
+{
+	return mEmissiveTexture;
 }
 
 unsigned int PBRGBufferRenderTargets::getDepthTexture() const

@@ -8,21 +8,26 @@ in mat3 TBN;
 layout(location = 0) out vec4 gPositionRoughness;
 layout(location = 1) out vec4 gNormalMetallic;
 layout(location = 2) out vec4 gAlbedoAo;
+layout(location = 3) out vec4 gEmissive;
 
 uniform vec3 pbrAlbedo;
 uniform float pbrMetallic;
 uniform float pbrRoughness;
 uniform float pbrAo;
+uniform vec3 pbrEmissiveColor;
+uniform float pbrEmissiveIntensity;
 
 uniform sampler2D albedoMap;
 uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
+uniform sampler2D emissiveMap;
 uniform sampler2D normalMap;
 uniform int useAlbedoMap;
 uniform int useMetallicMap;
 uniform int useRoughnessMap;
 uniform int useAoMap;
+uniform int useEmissiveMap;
 uniform int useNormalMap;
 
 void main()
@@ -58,7 +63,14 @@ void main()
 		ao = texture(aoMap, uv).r;
 	}
 
+	vec3 emissive = pbrEmissiveColor * pbrEmissiveIntensity;
+	if (useEmissiveMap == 1)
+	{
+		emissive += texture(emissiveMap, uv).rgb * pbrEmissiveIntensity;
+	}
+
 	gPositionRoughness = vec4(worldPosition, roughness);
 	gNormalMetallic = vec4(normalize(n), metallic);
 	gAlbedoAo = vec4(albedo, ao);
+	gEmissive = vec4(emissive, 1.0);
 }
