@@ -77,6 +77,7 @@ void printOpenGLCapabilities();
 void cleanupRuntime();
 void loadEnvironmentProfile();
 void loadPostProcessSettings();
+void loadPBRPreviewProfile();
 void refreshPostProcessInputTextures();
 GL_EXPERIMENTS::RuntimeContext makeLegacyExperimentContext();
 GL_SCENE::SetupContext makeSceneSetupContext();
@@ -125,6 +126,8 @@ struct AppRuntimeContext
 	std::string postProcessSettingsPath{ GLframework::PostProcessSettingsStorage::defaultPath() };
 	GLframework::EnvironmentProfile environmentProfile{};
 	std::string environmentProfilePath{ GLframework::EnvironmentProfileStorage::defaultPath() };
+	GL_SCENE::PBRPreviewProfile pbrPreviewProfile{};
+	std::string pbrPreviewProfilePath{ GL_SCENE::PBRPreviewProfileStorage::defaultPath() };
 	Camera* camera{ nullptr };
 	CameraControl* cameracontrol{ nullptr };
 	glm::vec3 clearColor{};
@@ -155,6 +158,8 @@ auto& postProcessSettings = gAppRuntime.postProcessSettings;
 auto& postProcessSettingsPath = gAppRuntime.postProcessSettingsPath;
 auto& environmentProfile = gAppRuntime.environmentProfile;
 auto& environmentProfilePath = gAppRuntime.environmentProfilePath;
+auto& pbrPreviewProfile = gAppRuntime.pbrPreviewProfile;
+auto& pbrPreviewProfilePath = gAppRuntime.pbrPreviewProfilePath;
 Camera*& camera = gAppRuntime.camera;
 CameraControl*& cameracontrol = gAppRuntime.cameracontrol;
 glm::vec3& clearColor = gAppRuntime.clearColor;
@@ -203,6 +208,7 @@ bool initializeApplication()
 	prepareCamera();
 	loadEnvironmentProfile();
 	loadPostProcessSettings();
+	loadPBRPreviewProfile();
 	prepare();
 	initIMGUI();
 	printOpenGLCapabilities();
@@ -297,7 +303,8 @@ GL_SCENE::SetupContext makeSceneSetupContext()
 		width,
 		height,
 		TexturePath,
-		environmentProfile
+		environmentProfile,
+		pbrPreviewProfile
 	};
 }
 
@@ -365,6 +372,17 @@ void loadPostProcessSettings()
 	}
 
 	LogInfo("Postprocess settings config not found, using defaults: " + postProcessSettingsPath);
+}
+
+void loadPBRPreviewProfile()
+{
+	if (GL_SCENE::PBRPreviewProfileStorage::loadFromFile(pbrPreviewProfilePath, pbrPreviewProfile))
+	{
+		LogInfo("PBR preview profile loaded from " + pbrPreviewProfilePath);
+		return;
+	}
+
+	LogInfo("PBR preview profile config not found, using defaults: " + pbrPreviewProfilePath);
 }
 
 void refreshPostProcessInputTextures()

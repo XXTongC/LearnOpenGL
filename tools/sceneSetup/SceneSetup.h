@@ -11,6 +11,7 @@
 #include "../../renderer/EnvironmentProfile.h"
 #include "../../renderer/FrameRenderTargets.h"
 #include "../../renderer/renderer.h"
+#include "PBRPreviewProfile.h"
 
 namespace GL_SCENE
 {
@@ -33,6 +34,7 @@ namespace GL_SCENE
 		int height{ 0 };
 		const std::string& texturePath;
 		GLframework::EnvironmentProfile& environmentProfile;
+		PBRPreviewProfile& pbrPreviewProfile;
 	};
 
 	void prepareDefaultScene(SetupContext& context);

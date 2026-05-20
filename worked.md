@@ -847,6 +847,19 @@
    - 默认短启动 `x64\Debug\text2.exe` 约 `6` 秒，在无 environment precompute 时仍未出现 shader / IBL 错误关键字。
    - 临时创建被 `.gitignore` 覆盖的 [config/environment_profile.local.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\environment_profile.local.ini)，设置 procedural source 与 `precomputeOnPrepare=1` 后短启动约 `10` 秒；错误关键字扫描为空，覆盖了 PBR preview 请求 IBL 且 environment ready 后的绑定路径。
    - 验证结束后已移除临时 local profile。
+143. 完成第七十二轮 PBR Preview Profile 配置化：
+   - 新增 [tools/sceneSetup/PBRPreviewProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.h) 与 [tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)，集中描述 PBR preview sphere 的启用开关、位置、半径、细分数、PBR surface 参数、IBL 强度和 normal map，并支持从 key-value local profile 保存 / 加载。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，在 `AppRuntimeContext` 中新增 `pbrPreviewProfile` 和 `pbrPreviewProfilePath`，启动时在 `prepare()` 前尝试加载 `config/pbr_preview.local.ini`。
+   - 更新 [tools/sceneSetup/SceneSetup.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.h) 与 [tools/sceneSetup/SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，让 `preparePBRPreview(...)` 从 profile 读取材质和 mesh 参数，不再直接写死 albedo / metallic / roughness / position / sphere subdivision。
+   - 新增 [config/pbr_preview.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\pbr_preview.example.ini)，记录可提交的 PBR preview preset 字段示例；本地 `config/pbr_preview.local.ini` 被既有 `config/*.local.ini` ignore 规则覆盖。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将新 profile 源文件、头文件和 example config 纳入 VS 工程分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PBR preview profile 化和后续多 material preset / 多球阵列方向。
+144. 完成第六十二次构建、默认启动 smoke 与 PBR preview local profile smoke 验证：
+   - 针对 PBR Preview Profile 配置化执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error，`0` warning；`PBRPreviewProfile.obj` 已参与链接。
+   - 默认短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+   - 临时创建被 `.gitignore` 覆盖的 [config/pbr_preview.local.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\pbr_preview.local.ini)，覆盖 preview sphere 位置、半径、细分数、albedo、metallic、roughness 和 IBL strength 后再次短启动约 `6` 秒；错误关键字扫描为空。
+   - 验证结束后已移除临时 local profile，避免改变用户后续手动运行的默认 preview preset。
 
 ### 当前状态
 
@@ -880,7 +893,8 @@
 - 当前 `EnvironmentProfile` 已支持 `config/environment_profile.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/environment_profile.example.ini` 作为字段示例。
 - 当前 `EnvironmentProfile` 已支持 procedural HDR equirectangular source，可通过 DebugControllerPanel 或 local profile 在无外部 HDR 文件时触发 IBL precompute。
 - 当前默认 `PBR Preview Sphere` 会请求 IBL；environment 未 ready 时 shader 侧自动关闭，environment ready 后可直接验证 PBR IBL 采样链路。
+- 当前 `PBR Preview Sphere` 已由 `PBRPreviewProfile` 驱动，可通过 `config/pbr_preview.local.ini` 调整位置、几何细分、PBR surface 参数、IBL 强度和 normal map，而不需要修改 `SceneSetup.cpp`。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
 - 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例。
-- 当前剩余明显问题：PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
-- 下一步建议目标：给 PBR preview / 测试材质提供一键启用 IBL 的实验入口，使用 procedural source 先验证完整链路，再引入真实 HDR environment 做视觉质量确认。
+- 当前剩余明显问题：PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR preview 仍只有单球 preset，尚不能一次性比较 roughness / metallic 阵列；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
+- 下一步建议目标：把 PBR preview profile 扩展为多 material preset / 多球阵列，使用同一 environment 和 postprocess 设置批量比较 PBR 参数，再引入真实 HDR environment 做视觉质量确认。

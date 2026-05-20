@@ -883,3 +883,15 @@ IBL 预计算现在不再强依赖外部 `.hdr/.exr` 文件：
 - 当 `EnvironmentProfile` 启用 procedural source 并完成 precompute 后，同一个 preview sphere 会自动进入 IBL 采样路径，不需要再选中材质手动打开 `Use IBL`。
 
 这一步把上一轮 procedural environment 从“可生成 IBL 资源”推进到“默认 PBR 测试对象会消费 IBL 资源”。后续建议把这个 preview setup 进一步提升为可配置的 PBR test scene / material preset，避免把实验场景参数长期写死在 `SceneSetup.cpp` 中。
+
+### 2026-05-20 PBR Preview Profile 配置化
+
+默认 PBR 测试球已从硬编码实验参数迁移到 profile：
+
+- 新增 `PBRPreviewProfile`，集中描述 preview sphere 的启用开关、位置、半径、细分数、PBR surface 参数、IBL 强度和 normal map。
+- 新增 `PBRPreviewProfileStorage`，从 `config/pbr_preview.local.ini` 读取本地 preset；仓库提供 `config/pbr_preview.example.ini` 作为字段模板。
+- `AppRuntimeContext` 持有 `pbrPreviewProfile` 和 profile path，并在 `prepare()` 前加载，保证 scene setup 阶段只消费已解析配置。
+- `SceneSetup::preparePBRPreview(...)` 不再直接写死材质和 mesh 参数，而是根据 profile 构建 `PBR Preview Sphere`。
+- `config/*.local.ini` 已覆盖本地 profile，用户可以为不同 PBR / IBL 实验保留本机 preset，不会污染 Git 分支。
+
+这一步把 PBR 验证从“改 C++ 代码调实验球”推进到“改 local profile 调实验球”。后续可以把 profile 扩展为多 material preset / 多球阵列，用同一套 environment 与 postprocess 设置同时比较 roughness、metallic 和 IBL 强度。

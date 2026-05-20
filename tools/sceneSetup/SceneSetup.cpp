@@ -1,5 +1,7 @@
 #include "SceneSetup.h"
 
+#include <algorithm>
+
 #include "../../light/shadow/pointLightShadow/pointLightShadow.h"
 #include "../../materials/cubeSphereMaterial.h"
 #include "../../materials/pbrMaterial/PBRMaterial.h"
@@ -91,23 +93,34 @@ namespace
 
 	void preparePBRPreview(GL_SCENE::SetupContext& context)
 	{
+		const auto& profile = context.pbrPreviewProfile;
+		if (!profile.enabled)
+		{
+			return;
+		}
+
 		auto pbrMat = std::make_shared<GLframework::PBRMaterial>();
-		pbrMat->mAlbedo = { 0.9f, 0.42f, 0.18f };
-		pbrMat->mMetallic = 0.2f;
-		pbrMat->mRoughness = 0.35f;
-		pbrMat->mAo = 1.0f;
-		pbrMat->mUseIBL = true;
-		pbrMat->mNormalMap = std::make_shared<GLframework::Texture>("Texture/normal/normal_map.png", 4);
+		pbrMat->mAlbedo = profile.albedo;
+		pbrMat->mMetallic = profile.metallic;
+		pbrMat->mRoughness = profile.roughness;
+		pbrMat->mAo = profile.ao;
+		pbrMat->mUseIBL = profile.useIBL;
+		pbrMat->mIblDiffuseStrength = profile.iblDiffuseStrength;
+		pbrMat->mIblSpecularStrength = profile.iblSpecularStrength;
+		if (!profile.normalMapPath.empty())
+		{
+			pbrMat->mNormalMap = std::make_shared<GLframework::Texture>(profile.normalMapPath, profile.normalMapUnit);
+		}
 
 		auto pbrGeo = GLframework::Geometry::createSphere(
 			context.renderer->getShader(pbrMat->getMaterialType()),
-			0.75f,
-			48,
-			24
+			std::max(profile.radius, 0.01f),
+			std::max(profile.segments, 3),
+			std::max(profile.rings, 2)
 		);
 		auto pbrMesh = std::make_shared<GLframework::Mesh>(pbrGeo, pbrMat);
 		pbrMesh->setName("PBR Preview Sphere");
-		pbrMesh->setPosition({ 2.2f, -3.9f, 2.0f });
+		pbrMesh->setPosition(profile.position);
 		context.sceneOffScreen->addChild(pbrMesh);
 	}
 
