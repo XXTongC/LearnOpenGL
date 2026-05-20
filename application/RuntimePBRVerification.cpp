@@ -161,6 +161,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + PBR G-buffer pass";
 		}
+		if (config.enablePbrDeferredLightingPass)
+		{
+			profileLine += " + PBR deferred lighting pass";
+		}
 		if (config.enablePbrGBufferDebugPass)
 		{
 			profileLine += " + PBR G-buffer debug pass";
@@ -184,7 +188,15 @@ namespace GL_RUNTIME
 
 		auto& rendererPassProfile = context.renderer->getFramePassProfile();
 		rendererPassProfile.resetToDefaults();
-		if (config.enablePbrGBufferPass || config.enablePbrGBufferDebugPass)
+		if (config.enablePbrDeferredLightingPass)
+		{
+			rendererPassProfile.defaultPassOrder =
+				"BeginFrame,ShadowMaps,PBRDepthPrepass,PBRGBuffer,PBRDeferredLighting";
+			rendererPassProfile.pbrDeferredLightingIntensity = 1.0f;
+			rendererPassProfile.pbrDeferredIblDiffuseStrength = 1.0f;
+			rendererPassProfile.pbrDeferredIblSpecularStrength = 1.0f;
+		}
+		else if (config.enablePbrGBufferPass || config.enablePbrGBufferDebugPass)
 		{
 			rendererPassProfile.defaultPassOrder =
 				"BeginFrame,ShadowMaps,PBRDepthPrepass,PBRGBuffer,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene";
@@ -252,6 +264,10 @@ namespace GL_RUNTIME
 			statsLine += (stats.pbrGBufferReady ? "yes" : "no");
 			statsLine += ", pbrGBufferSize=" + std::to_string(stats.pbrGBufferWidth)
 				+ "x" + std::to_string(stats.pbrGBufferHeight);
+		}
+		if (stats.pbrDeferredLightingDrawCalls > 0)
+		{
+			statsLine += ", pbrDeferredLightingDrawCalls=" + std::to_string(stats.pbrDeferredLightingDrawCalls);
 		}
 		if (stats.pbrGBufferDebugDrawCalls > 0)
 		{

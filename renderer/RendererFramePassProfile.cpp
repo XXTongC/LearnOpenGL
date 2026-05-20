@@ -17,6 +17,9 @@ void RendererFramePassProfile::resetToDefaults()
 	globalMaterialOverridePassOrder = RendererFramePassRegistry::globalMaterialOverridePassOrder();
 	pbrGBufferDebugMode = 0;
 	pbrGBufferDebugIntensity = 1.0f;
+	pbrDeferredLightingIntensity = 1.0f;
+	pbrDeferredIblDiffuseStrength = 1.0f;
+	pbrDeferredIblSpecularStrength = 1.0f;
 	iblDebugMode = 0;
 	iblDebugMipLevel = 0.0f;
 	iblDebugIntensity = 1.0f;
@@ -29,8 +32,12 @@ void RendererFramePassProfile::visitEditableProperties(GL_EDITOR::PropertyBuilde
 	builder.addConfigString("globalMaterialOverridePassOrder", "Global Material Override Pass Order", &globalMaterialOverridePassOrder);
 	builder.addText(
 		"Available Pass Keys",
-		"BeginFrame, ShadowMaps, GlobalMaterialScene, PBRDepthPrepass, PBRGBuffer, PBRGBufferDebug, LegacyOpaqueScene, PBROpaqueScene, LegacyTransparentScene, PBRTransparentScene, IBLDebug"
+		"BeginFrame, ShadowMaps, GlobalMaterialScene, PBRDepthPrepass, PBRGBuffer, PBRDeferredLighting, PBRGBufferDebug, LegacyOpaqueScene, PBROpaqueScene, LegacyTransparentScene, PBRTransparentScene, IBLDebug"
 	);
+	builder.addSection("PBR Deferred Lighting Pass");
+	builder.addConfigFloat("pbrDeferredLightingIntensity", "PBR Deferred Lighting Intensity", &pbrDeferredLightingIntensity, 0.0f, 8.0f);
+	builder.addConfigFloat("pbrDeferredIblDiffuseStrength", "PBR Deferred IBL Diffuse Strength", &pbrDeferredIblDiffuseStrength, 0.0f, 8.0f);
+	builder.addConfigFloat("pbrDeferredIblSpecularStrength", "PBR Deferred IBL Specular Strength", &pbrDeferredIblSpecularStrength, 0.0f, 8.0f);
 	builder.addSection("PBR GBuffer Debug Pass");
 	builder.addConfigInt("pbrGBufferDebugMode", "PBR GBuffer Debug Mode", &pbrGBufferDebugMode, 0, 6);
 	builder.addConfigFloat("pbrGBufferDebugIntensity", "PBR GBuffer Debug Intensity", &pbrGBufferDebugIntensity, 0.0f, 8.0f);

@@ -29,7 +29,8 @@ namespace
 		const bool verifyPbrIblDebug = hasArgument(argc, argv, "--verify-pbr-ibl-debug");
 		const bool verifyPbrGBuffer = hasArgument(argc, argv, "--verify-pbr-gbuffer");
 		const bool verifyPbrGBufferDebug = hasArgument(argc, argv, "--verify-pbr-gbuffer-debug");
-		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer || verifyPbrGBufferDebug)
+		const bool verifyPbrDeferred = hasArgument(argc, argv, "--verify-pbr-deferred");
+		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer || verifyPbrGBufferDebug || verifyPbrDeferred)
 		{
 			config.window = { 1280, 720 };
 			config.enableGui = false;
@@ -52,6 +53,12 @@ namespace
 				config.pbrVerification.enablePbrGBufferPass = true;
 				config.pbrVerification.enablePbrGBufferDebugPass = true;
 				config.pbrVerification.capturePath = "out/pbr_gbuffer_debug_verification.ppm";
+			}
+			if (verifyPbrDeferred)
+			{
+				config.pbrVerification.enablePbrGBufferPass = true;
+				config.pbrVerification.enablePbrDeferredLightingPass = true;
+				config.pbrVerification.capturePath = "out/pbr_deferred_verification.ppm";
 			}
 		}
 

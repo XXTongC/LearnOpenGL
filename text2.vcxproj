@@ -199,6 +199,7 @@
     <ClCompile Include="renderer\LightResourceBinder.cpp" />
     <ClCompile Include="renderer\MaterialBinder.cpp" />
     <ClCompile Include="renderer\MeshDraw.cpp" />
+    <ClCompile Include="renderer\PBRDeferredLightingPass.cpp" />
     <ClCompile Include="renderer\PBRMaterialBinder.cpp" />
     <ClCompile Include="renderer\PBRIBLResourceBinder.cpp" />
     <ClCompile Include="renderer\PBRObjectUniformBinder.cpp" />
@@ -304,6 +305,7 @@
     <ClInclude Include="renderer\MaterialBindingContext.h" />
     <ClInclude Include="renderer\MaterialBinder.h" />
     <ClInclude Include="renderer\MeshDraw.h" />
+    <ClInclude Include="renderer\PBRDeferredLightingPass.h" />
     <ClInclude Include="renderer\PBRMaterialBinder.h" />
     <ClInclude Include="renderer\PBRIBLResourceBinder.h" />
     <ClInclude Include="renderer\PBRObjectUniformBinder.h" />
@@ -772,6 +774,8 @@
     <None Include="shaders\opacityMask\phongOpacityMask.vert" />
     <None Include="shaders\pbr\pbr.frag" />
     <None Include="shaders\pbr\pbr.vert" />
+    <None Include="shaders\pbr\pbr_deferred_lighting.frag" />
+    <None Include="shaders\pbr\pbr_deferred_lighting.vert" />
     <None Include="shaders\pbr\pbr_gbuffer.frag" />
     <None Include="shaders\pbr\pbr_gbuffer.vert" />
     <None Include="shaders\phong.vert" />

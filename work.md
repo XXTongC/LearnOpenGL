@@ -1546,3 +1546,16 @@ Renderer 已新增第一个 G-buffer consumer pass：
 - `shaders/pbr/pbr.vert` 与 `shaders/pbr/pbr_gbuffer.vert` 固定 PBR attribute layout，使 PBR forward pass 与 G-buffer pass 共享同一套 VAO attribute convention。
 
 这一步把 G-buffer 从“只写不读”的准备状态推进到“可诊断、可验证”的状态。后续如果要做 deferred lighting pass，可以直接复用同一个 `PBRGBufferRenderTargets` 输入；如果 G-buffer 某个 channel 异常，也可以先用 `PBRGBufferDebug` 定位，而不是猜测 pass 是否真的写入了 attachment。
+
+### 2026-05-21 PBR Deferred Lighting Consumer
+
+Renderer 已新增最小 deferred PBR lighting consumer：
+
+- 新增 `PBRDeferredLightingPass`，从 `PBRGBufferRenderTargets` 读取 G-buffer attachments，并使用当前 camera、ambient、directional light、point lights 和 IBL resources 做 fullscreen lighting。
+- 新增 `shaders/pbr/pbr_deferred_lighting.*`，复用 forward PBR 的 GGX / Smith / Schlick BRDF 计算方式，当前实现先覆盖最小 opaque PBR lighting，不处理透明、emissive map 和 shadow。
+- `RendererFramePassRegistry` 新增可选 pass key `PBRDeferredLighting`；该 pass 依赖 `PBRGBuffer`，验证模式使用 `BeginFrame,ShadowMaps,PBRDepthPrepass,PBRGBuffer,PBRDeferredLighting`，不经过 forward PBR scene pass。
+- `RendererFramePassProfile` 新增 `pbrDeferredLightingIntensity`、`pbrDeferredIblDiffuseStrength`、`pbrDeferredIblSpecularStrength`，Debug UI 和 renderer pass profile ini 可调整 deferred lighting 强度。
+- `RendererFrameStats` 新增 `pbrDeferredLightingDrawCalls`，Debug UI 和 verification stats 可确认 deferred lighting pass 是否实际执行。
+- `RuntimePBRVerification` 新增 `--verify-pbr-deferred`，导出 `out/pbr_deferred_verification.ppm`，用于证明 G-buffer 可以进入实际 lighting consumer，而不只是进入 debug view。
+
+这一步不是最终 deferred PBR renderer，而是把关键的 producer-consumer 闭环打通：PBR opaque mesh 可以进入 G-buffer，再由单独 lighting pass 读取并输出最终 HDR scene color。后续要补的主要是 shadow atlas / shadow sampling、透明 forward fallback、material feature parity，以及把 light data 从逐 uniform 绑定演进为 UBO / SSBO / clustered light list。

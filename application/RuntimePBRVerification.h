@@ -14,6 +14,7 @@ namespace GL_RUNTIME
 		bool enabled{ false };
 		bool enableIblDebugPass{ false };
 		bool enablePbrGBufferPass{ false };
+		bool enablePbrDeferredLightingPass{ false };
 		bool enablePbrGBufferDebugPass{ false };
 		int maxFrames{ 3 };
 		int captureFrame{ 2 };

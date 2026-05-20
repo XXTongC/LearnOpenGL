@@ -21,6 +21,7 @@ namespace GLframework
 		std::shared_ptr<Shader> getBrdfLutShader() const;
 		std::shared_ptr<Shader> getIblDebugShader() const;
 		std::shared_ptr<Shader> getPbrGBufferShader() const;
+		std::shared_ptr<Shader> getPbrDeferredLightingShader() const;
 		std::shared_ptr<Shader> getPbrGBufferDebugShader() const;
 
 	private:
@@ -35,6 +36,7 @@ namespace GLframework
 		std::shared_ptr<Shader> mBrdfLutShader{ nullptr };
 		std::shared_ptr<Shader> mIblDebugShader{ nullptr };
 		std::shared_ptr<Shader> mPbrGBufferShader{ nullptr };
+		std::shared_ptr<Shader> mPbrDeferredLightingShader{ nullptr };
 		std::shared_ptr<Shader> mPbrGBufferDebugShader{ nullptr };
 	};
 }

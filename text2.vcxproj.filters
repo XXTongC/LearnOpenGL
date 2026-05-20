@@ -483,6 +483,9 @@
     <ClCompile Include="renderer\IBLPrecomputePass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\PBRDeferredLightingPass.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\PostProcessPass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -843,6 +846,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\IBLPrecomputePass.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\PBRDeferredLightingPass.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PostProcessPass.h">
@@ -2675,6 +2681,12 @@
       <Filter>资源文件\shaders\pbr</Filter>
     </None>
     <None Include="shaders\pbr\pbr.vert">
+      <Filter>资源文件\shaders\pbr</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr_deferred_lighting.frag">
+      <Filter>资源文件\shaders\pbr</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr_deferred_lighting.vert">
       <Filter>资源文件\shaders\pbr</Filter>
     </None>
     <None Include="shaders\pbr\pbr_gbuffer.frag">

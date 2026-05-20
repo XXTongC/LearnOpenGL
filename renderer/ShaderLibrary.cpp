@@ -30,6 +30,7 @@ void GLframework::ShaderLibrary::initialize()
 	mBrdfLutShader = createShader("shaders/ibl/brdf_lut.vert", "shaders/ibl/brdf_lut.frag");
 	mIblDebugShader = createShader("shaders/diagnostics/ibl_debug.vert", "shaders/diagnostics/ibl_debug.frag");
 	mPbrGBufferShader = createShader("shaders/pbr/pbr_gbuffer.vert", "shaders/pbr/pbr_gbuffer.frag");
+	mPbrDeferredLightingShader = createShader("shaders/pbr/pbr_deferred_lighting.vert", "shaders/pbr/pbr_deferred_lighting.frag");
 	mPbrGBufferDebugShader = createShader("shaders/diagnostics/pbr_gbuffer_debug.vert", "shaders/diagnostics/pbr_gbuffer_debug.frag");
 }
 
@@ -83,6 +84,11 @@ std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getIblDebugShad
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPbrGBufferShader() const
 {
 	return mPbrGBufferShader;
+}
+
+std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPbrDeferredLightingShader() const
+{
+	return mPbrDeferredLightingShader;
 }
 
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPbrGBufferDebugShader() const
