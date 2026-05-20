@@ -1219,3 +1219,15 @@ Window setup 和输入 callback glue 已从 `main.cpp` 拆出：
 - `main.cpp` 不再定义 `OnScroll`、`OnResize`、`OnKeyboardCallback`、`OnMouseCallback`、`OnCursor`、`setAndInitWindow` 或旧的 `processInput` / `keyCallBack` 函数。
 
 这一步把窗口初始化和输入回调 wiring 从主入口移出。后续可以继续清理 `main.cpp` 剩余的全局 alias / legacy 参数，或者把 runtime startup sequence 聚合成一个更完整的 application shell。
+
+### 2026-05-20 Main Runtime Alias Cleanup
+
+`main.cpp` 剩余全局 alias 和遗留实验变量已开始清理：
+
+- 移除 `main.cpp` 中对 `gAppRuntime` 各字段的大量 `auto&` alias，主入口不再直接展开 renderer、scene、material、light、profile 等 runtime 字段。
+- 移除未使用的旧实验变量，例如 `scale`、`brigtnesee`、`angle`、`specularIntensity` 和旧 `moveit()`。
+- 新增 `MainStartupConfig`，集中保存 window size、skybox texture path、legacy grass grid 和 editor orbit angle。
+- `RuntimeWindowLifecycle`、`RuntimeScenePreparer` 和 `RuntimeEditorPanelCoordinator` 继续通过明确 config/context 获取需要的数据，不再依赖 main 中零散全局变量。
+- 精简 `main.cpp` include 列表，只保留当前入口实际需要的 runtime/application/editor 类型。
+
+这一步让 `main.cpp` 更接近“程序入口 + startup config + callback wrapper”。后续如果继续收口，可以把 startup sequence 聚合成 `RuntimeApplicationShell`，或把 `RuntimeFramePipeline` 内部 pass 继续拆成可替换对象。

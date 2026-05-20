@@ -1,8 +1,6 @@
 #include "core.h"
 #include <iostream>
-#include <memory>
-#include <vector>
-#include <typeinfo>
+#include <string>
 #include "GL_ERROR_FIND.h"
 #include "AppRuntimeContext.h"
 #include "Application.h"
@@ -15,118 +13,41 @@
 #include "RuntimeScenePreparer.h"
 #include "RuntimeViewport.h"
 #include "RuntimeWindowLifecycle.h"
-#include "tools/tools.h"
-#include "shader.h"
-#include "texture.h"
-#include "trackBallCameraControl.h"
-#include "opacityMaskMatetial.h"
-#include "cubeMaterial.h"
-#include "screenMaterial.h"
-#include "geometry.h"
-#include "mesh/mesh.h"
-#include "phongMaterial.h"
-#include "phongEnvSphereMaterial.h"
-#include "../mesh/instancedMesh.h"
-#include "phongInstanceMaterial.h"
-#include "materials/phongNormalMaterial/phongNormalMaterial.h"
-#include "cubeSphereMaterial.h"
-#include "materials/grassInstanceMaterial/grassInstanceMaterial.h"
-#include "materials/phongCSMShadowMaterial/phongCSMShadowMaterial.h"
-#include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
-#include "materials/phongShadowMaterial/phongShadowMaterial.h"
-
-#include "depthMaterial.h"
-#include "material.h"
-#include "scene.h"
-#include <chrono>
-#include "renderer.h"
-#include "renderer/Bloom/Bloom.h"
-#include "renderer/EnvironmentProfile.h"
-#include "renderer/FrameRenderTargets.h"
-#include "renderer/PostProcessPass.h"
-#include "renderer/PostProcessSettings.h"
-#include "pointLight.h"
-#include "assimpInstanceLoader.h"
-#include "assimpLoader.h"
-#include "phongEnvMaterial.h"
-#include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
-#include "tools/Logger/Logger.h"
 #include "tools/Logger/LogManager.h"
 #include "tools/legacyExperiments/LegacyExperimentRunner.h"
-#include "tools/sceneSetup/PBRCameraRigProfile.h"
-#include "tools/sceneSetup/PBRExperimentProfile.h"
-#include "tools/sceneSetup/PBRLightRigProfile.h"
 int GLframework::PointLightShadow::MAX_POINT_LIGHTS = 2;
 /*
  * refer to ColorBlend, there are still some problem should be solve such as opacity order, look up OIT and Depth Peeling
 */
 
-bool initializeApplication();
-void runFrame();
-void printOpenGLCapabilities();
-void cleanupRuntime();
-GL_RUNTIME::RuntimeFrameConfig makeFrameConfig();
-GL_RUNTIME::RuntimeCameraConfig makeCameraConfig();
-GL_RUNTIME::RuntimeScenePrepareConfig makeScenePrepareConfig();
-
-void renderFrameUi();
-void drawEditorPanels();
-
-//grass texture attribute
-int rNum = 30;
-int cNum = 30;
-float scale = 0.0f;
-float brigtnesee = 1.0f;
-
-//GLuint vao;
-float angle = 0.0f;
-GLframework::AppRuntimeContext gAppRuntime{};
-GL_EDITOR::SelectionContext gEditorSelection{};
-
-auto& renderer = gAppRuntime.renderer;
-auto& sceneOffScreen = gAppRuntime.sceneOffScreen;
-auto& sceneInScreen = gAppRuntime.sceneInScreen;
-auto& meshPointLight = gAppRuntime.meshPointLight;
-auto& screenQuad = gAppRuntime.screenQuad;
-auto& ambientLight = gAppRuntime.ambientLight;
-auto& frameRenderTargets = gAppRuntime.frameRenderTargets;
-auto& bloom = gAppRuntime.bloom;
-auto& grassMaterial = gAppRuntime.grassMaterial;
-auto& skyBoxMesh = gAppRuntime.skyBoxMesh;
-auto& movePlane = gAppRuntime.movePlane;
-auto& textD = gAppRuntime.textD;
-auto& ScreenMat = gAppRuntime.screenMaterial;
-auto& csmShadowMaterial = gAppRuntime.csmShadowMaterial;
-auto& postProcessPass = gAppRuntime.postProcessPass;
-auto& postProcessSettings = gAppRuntime.postProcessSettings;
-auto& postProcessSettingsPath = gAppRuntime.postProcessSettingsPath;
-auto& environmentProfile = gAppRuntime.environmentProfile;
-auto& environmentProfilePath = gAppRuntime.environmentProfilePath;
-auto& pbrPreviewProfile = gAppRuntime.pbrPreviewProfile;
-auto& pbrLightRigProfile = gAppRuntime.pbrLightRigProfile;
-auto& pbrCameraRigProfile = gAppRuntime.pbrCameraRigProfile;
-auto& pbrPreviewProfilePath = gAppRuntime.pbrPreviewProfilePath;
-auto& pbrExperimentProfilePath = gAppRuntime.pbrExperimentProfilePath;
-glm::vec3& clearColor = gAppRuntime.clearColor;
-auto& dirLight = gAppRuntime.dirLight;
-auto& spotLight = gAppRuntime.spotLight;
-auto& pointLights = gAppRuntime.pointLights;
-GL_EXPERIMENTS::LegacyExperimentRunner gLegacyExperiments{};
-
-//----skyBox----
-std::string TexturePath{ "Texture/bk.jpg" };
-//---------------
-int width = 1920, height = 1080;
-float specularIntensity = 0.8f;
-
-//--------text--------
-void moveit()
+namespace
 {
-	movePlane->setPosition({ 0.0f,(glm::sin(glfwGetTime()) + 1) * 5,0.0f });
+	struct MainStartupConfig
+	{
+		GL_RUNTIME::RuntimeWindowConfig window{ 1920, 1080 };
+		std::string skyboxTexturePath{ "Texture/bk.jpg" };
+		int legacyGrassRows{ 30 };
+		int legacyGrassColumns{ 30 };
+		float editorOrbitAngle{ 0.0f };
+	};
+
+	GLframework::AppRuntimeContext gAppRuntime{};
+	GL_EDITOR::SelectionContext gEditorSelection{};
+	GL_EXPERIMENTS::LegacyExperimentRunner gLegacyExperiments{};
+	MainStartupConfig gStartupConfig{};
+
+	bool initializeApplication();
+	void runFrame();
+	void printOpenGLCapabilities();
+	void cleanupRuntime();
+	GL_RUNTIME::RuntimeFrameConfig makeFrameConfig();
+	GL_RUNTIME::RuntimeCameraConfig makeCameraConfig();
+	GL_RUNTIME::RuntimeScenePrepareConfig makeScenePrepareConfig();
+	void renderFrameUi();
+	void drawEditorPanels();
 }
-float m_time = 0.0f;
-//--------------------
+
 int main()
 {
 	LogManager::getInstance().setMinLevel(LogManager::Level::info);
@@ -139,15 +60,17 @@ int main()
 	});
 }
 
+namespace
+{
 bool initializeApplication()
 {
 	std::cout << "Please set the window as x * y" << std::endl;
 	if (!GL_RUNTIME::RuntimeWindowLifecycle::initialize(
-		{ width, height },
-		{ &gAppRuntime, &width, &height }
+		gStartupConfig.window,
+		{ &gAppRuntime, &gStartupConfig.window.width, &gStartupConfig.window.height }
 	)) return false;
 
-	GL_RUNTIME::RuntimeViewport::applyViewport(width, height);
+	GL_RUNTIME::RuntimeViewport::applyViewport(gStartupConfig.window.width, gStartupConfig.window.height);
 	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 
 	GL_RUNTIME::RuntimeCameraLifecycle::initializeDefaultCamera(gAppRuntime, makeCameraConfig());
@@ -187,11 +110,11 @@ void cleanupRuntime()
 GL_RUNTIME::RuntimeScenePrepareConfig makeScenePrepareConfig()
 {
 	return {
-		width,
-		height,
-		TexturePath,
-		rNum,
-		cNum
+		gStartupConfig.window.width,
+		gStartupConfig.window.height,
+		gStartupConfig.skyboxTexturePath,
+		gStartupConfig.legacyGrassRows,
+		gStartupConfig.legacyGrassColumns
 	};
 }
 
@@ -210,6 +133,7 @@ void renderFrameUi()
 
 void drawEditorPanels()
 {
-	GL_RUNTIME::RuntimeEditorPanelCoordinator::drawPanels(gAppRuntime, gEditorSelection, &m_time);
+	GL_RUNTIME::RuntimeEditorPanelCoordinator::drawPanels(gAppRuntime, gEditorSelection, &gStartupConfig.editorOrbitAngle);
+}
 }
 

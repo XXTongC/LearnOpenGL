@@ -1204,6 +1204,18 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 runtime window lifecycle warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+202. 完成第一百零一轮 main runtime alias cleanup：
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，移除对 `gAppRuntime` 各字段的大量 `auto&` alias，主入口不再直接展开 renderer、scene、material、light 和 profile 字段。
+   - 移除 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 中未使用的旧实验变量和函数，包括 `scale`、`brigtnesee`、`angle`、`specularIntensity` 和旧 `moveit()`。
+   - 新增本地 `MainStartupConfig`，集中保存 window size、skybox texture path、legacy grass grid 和 editor orbit angle。
+   - 将 startup helper 和全局 runtime state 收入 anonymous namespace，减少主入口符号外泄。
+   - 精简 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) include 列表，只保留当前入口实际依赖。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 main runtime alias cleanup。
+203. 完成第九十二次 main runtime alias cleanup 验证：
+   - 使用 MSVC `cl /Zs` 检查 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 main cleanup warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1264,5 +1276,6 @@
 - 当前 runtime camera lifecycle 已从 `main.cpp` 拆出到 `RuntimeCameraLifecycle`，默认 camera / camera control 创建与清理集中在 application 层。
 - 当前 runtime frame pipeline 已从 `RuntimeFrameRunner` 拆出到 `RuntimeFramePipeline`，当前 frame pass 顺序具备独立扩展边界。
 - 当前 runtime window lifecycle 已从 `main.cpp` 拆出到 `RuntimeWindowLifecycle`，window setup 和 Application callback glue 集中在 application 层。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍保留较多全局 alias / legacy 参数和 startup callback wrapper。
-- 下一步建议目标：清理 `main.cpp` 剩余全局 alias / legacy 参数；或者继续把 `RuntimeFramePipeline` 内的 pass 细化为可替换的 pass 类型。
+- 当前 `main.cpp` 的 runtime field alias 和未使用 legacy 参数已清理，启动参数集中到本地 `MainStartupConfig`。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍保留 startup sequence 和少量 callback wrapper。
+- 下一步建议目标：把 startup sequence 聚合成 `RuntimeApplicationShell`；或者继续把 `RuntimeFramePipeline` 内的 pass 细化为可替换的 pass 类型。
