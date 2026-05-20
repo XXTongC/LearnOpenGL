@@ -211,6 +211,7 @@
     <ClCompile Include="renderer\PBRGBufferPass.cpp" />
     <ClCompile Include="renderer\PBRGBufferRenderTargets.cpp" />
     <ClCompile Include="renderer\PBRSceneRenderPass.cpp" />
+    <ClCompile Include="renderer\PBRShadowAtlasRenderPass.cpp" />
     <ClCompile Include="renderer\PBRShadowAtlasRenderTargets.cpp" />
     <ClCompile Include="renderer\PointShadowRenderPass.cpp" />
     <ClCompile Include="renderer\PostProcessPass.cpp" />
@@ -319,6 +320,7 @@
     <ClInclude Include="renderer\PBRGBufferPass.h" />
     <ClInclude Include="renderer\PBRGBufferRenderTargets.h" />
     <ClInclude Include="renderer\PBRSceneRenderPass.h" />
+    <ClInclude Include="renderer\PBRShadowAtlasRenderPass.h" />
     <ClInclude Include="renderer\PBRShadowAtlasRenderTargets.h" />
     <ClInclude Include="renderer\PointShadowRenderPass.h" />
     <ClInclude Include="renderer\PostProcessPass.h" />

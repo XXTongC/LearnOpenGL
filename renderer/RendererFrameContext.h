@@ -21,6 +21,7 @@ namespace GLframework
 	class PBRGBufferDebugPass;
 	class PBRGBufferRenderTargets;
 	class PBRSceneRenderPass;
+	class PBRShadowAtlasRenderPass;
 	class PBRShadowAtlasRenderTargets;
 	class PointLight;
 	class RenderQueue;
@@ -52,6 +53,7 @@ namespace GLframework
 		PBRGBufferDebugPass* pbrGBufferDebugPass{ nullptr };
 		PBRSceneRenderPass* pbrSceneRenderPass{ nullptr };
 		IBLDebugPass* iblDebugPass{ nullptr };
+		PBRShadowAtlasRenderPass* pbrShadowAtlasPass{ nullptr };
 		PBRShadowAtlasRenderTargets* pbrShadowAtlasTargets{ nullptr };
 		PBRGBufferRenderTargets* pbrGBufferTargets{ nullptr };
 		ShaderLibrary* shaderLibrary{ nullptr };

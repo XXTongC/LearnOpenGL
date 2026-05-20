@@ -18,6 +18,9 @@ namespace GLframework
 		int directionalLayerCount{ 0 };
 		int pointLightCount{ 0 };
 		int pointFaceCount{ 0 };
+		int pointFacesRendered{ 0 };
+		int directionalDrawCalls{ 0 };
+		int pointDrawCalls{ 0 };
 		int directionalResolution{ 0 };
 		int pointResolution{ 0 };
 		unsigned int framebuffer{ 0 };

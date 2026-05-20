@@ -15,6 +15,7 @@
 #include "PBRGBufferDebugPass.h"
 #include "PBRGBufferRenderTargets.h"
 #include "PBRSceneRenderPass.h"
+#include "PBRShadowAtlasRenderPass.h"
 #include "PBRShadowAtlasRenderTargets.h"
 #include "RenderQueue.h"
 #include "RendererFrameStats.h"
@@ -79,6 +80,7 @@ private:
 		PBRGBufferDebugPass mPbrGBufferDebugPass{};
 		PBRSceneRenderPass mPbrSceneRenderPass{};
 		IBLDebugPass mIblDebugPass{};
+		PBRShadowAtlasRenderPass mPbrShadowAtlasPass{};
 		PBRShadowAtlasRenderTargets mPbrShadowAtlasTargets{};
 		PBRGBufferRenderTargets mPbrGBufferTargets{};
 		EnvironmentRenderTargets mEnvironmentRenderTargets{};

@@ -465,6 +465,9 @@
     <ClCompile Include="renderer\PBRSceneRenderPass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\PBRShadowAtlasRenderPass.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\PBRShadowAtlasRenderTargets.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -834,6 +837,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRSceneRenderPass.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\PBRShadowAtlasRenderPass.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRShadowAtlasRenderTargets.h">

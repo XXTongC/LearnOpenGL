@@ -153,6 +153,7 @@ void Renderer::render(
 		&mPbrGBufferDebugPass,
 		&mPbrSceneRenderPass,
 		&mIblDebugPass,
+		&mPbrShadowAtlasPass,
 		&mPbrShadowAtlasTargets,
 		&mPbrGBufferTargets,
 		&mShaderLibrary,

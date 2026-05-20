@@ -1604,3 +1604,14 @@ Renderer 已新增 PBR shadow atlas 的资源布局层：
 - Debug UI 与 `--verify-pbr*` 输出新增 `pbrShadowAtlasReady`、directional layer count 和 point face count。
 
 这一步暂时不替换现有 shadow 渲染和采样资源，目的是先把 PBR shadow atlas 的所有权、生命周期和可观测状态接进 renderer。后续可以把 directional / point shadow pass 逐步改为写入这组 atlas targets，再切换 PBR forward / deferred shader sampling。
+
+### 2026-05-21 PBR Shadow Atlas Render Pass
+
+PBR shadow atlas 已从“只创建资源”推进到“实际写入”：
+
+- 新增 `PBRShadowAtlasRenderPass`，复用现有 shadow shaders 和 `ShadowMeshDraw`，把当前 shadow casters 额外渲染到 `PBRShadowAtlasRenderTargets`。
+- directional atlas 会按当前 CSM layer 写入 directional depth texture array；point atlas 会按 point light cubemap faces 写入 point depth texture array。
+- `ShadowMaps` pass 目前仍先生成旧 shadow maps，再额外写入 PBR atlas，因此现有 PBR forward / deferred shadow sampling 行为不变。
+- `RendererFrameStats`、Debug UI 和 `--verify-pbr*` 会输出 atlas directional / point draw calls 与 point faces rendered。
+
+这一步让 shadow atlas 具备可验证的生产链路，但还没有切换 shader sampling。下一步可以把 `PBRShadowResourceBinder` 从旧 CSM texture 迁移到 atlas resources，或者先把 atlas pass 改成可选 profile pass 以控制额外 shadow 渲染成本。

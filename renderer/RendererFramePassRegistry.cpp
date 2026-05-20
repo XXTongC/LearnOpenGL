@@ -12,6 +12,7 @@
 #include "PBRGBufferDebugPass.h"
 #include "PBRGBufferPass.h"
 #include "PBRSceneRenderPass.h"
+#include "PBRShadowAtlasRenderPass.h"
 #include "PBRShadowAtlasRenderTargets.h"
 #include "RenderQueue.h"
 #include "RendererFrameContext.h"
@@ -114,16 +115,23 @@ namespace
 			context.stats->pointShadowDrawCalls = stats.pointDrawCalls;
 		}
 
-		if (context.pbrShadowAtlasTargets && context.stats)
+		if (context.pbrShadowAtlasPass && context.pbrShadowAtlasTargets && context.stats)
 		{
-			const auto atlasStats = context.pbrShadowAtlasTargets->prepare(
+			const auto atlasStats = context.pbrShadowAtlasPass->render(
+				context.camera,
+				context.renderQueue->getOpacityObjects(),
 				context.dirLight,
-				pointLightsOrEmpty(context)
+				pointLightsOrEmpty(context),
+				*context.pbrShadowAtlasTargets,
+				*context.shaderLibrary
 			);
 			context.stats->pbrShadowAtlasReady = atlasStats.ready;
 			context.stats->pbrShadowAtlasDirectionalLayers = atlasStats.directionalLayerCount;
 			context.stats->pbrShadowAtlasPointLights = atlasStats.pointLightCount;
 			context.stats->pbrShadowAtlasPointFaces = atlasStats.pointFaceCount;
+			context.stats->pbrShadowAtlasPointFacesRendered = atlasStats.pointFacesRendered;
+			context.stats->pbrShadowAtlasDirectionalDrawCalls = atlasStats.directionalDrawCalls;
+			context.stats->pbrShadowAtlasPointDrawCalls = atlasStats.pointDrawCalls;
 			context.stats->pbrShadowAtlasDirectionalResolution = atlasStats.directionalResolution;
 			context.stats->pbrShadowAtlasPointResolution = atlasStats.pointResolution;
 		}

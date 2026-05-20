@@ -253,6 +253,9 @@ namespace GL_RUNTIME
 			+ ", pbrShadowAtlasReady=" + (stats.pbrShadowAtlasReady ? std::string{ "yes" } : std::string{ "no" })
 			+ ", pbrShadowAtlasDirectionalLayers=" + std::to_string(stats.pbrShadowAtlasDirectionalLayers)
 			+ ", pbrShadowAtlasPointFaces=" + std::to_string(stats.pbrShadowAtlasPointFaces)
+			+ ", pbrShadowAtlasPointFacesRendered=" + std::to_string(stats.pbrShadowAtlasPointFacesRendered)
+			+ ", pbrShadowAtlasDirectionalDrawCalls=" + std::to_string(stats.pbrShadowAtlasDirectionalDrawCalls)
+			+ ", pbrShadowAtlasPointDrawCalls=" + std::to_string(stats.pbrShadowAtlasPointDrawCalls)
 			+ ", pbrDepthPrepassDrawCalls=" + std::to_string(stats.pbrDepthPrepassDrawCalls)
 			+ ", legacyDrawCalls=" + std::to_string(stats.legacySceneDrawCalls)
 			+ ", pbrDrawCalls=" + std::to_string(stats.pbrSceneDrawCalls);
