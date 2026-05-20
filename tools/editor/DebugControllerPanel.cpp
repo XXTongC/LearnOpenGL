@@ -1,6 +1,5 @@
 #include "DebugControllerPanel.h"
 
-#include <array>
 #include <string>
 
 #include "../../renderer/EnvironmentProfile.h"
@@ -27,57 +26,18 @@ namespace
 			return;
 		}
 
-		static std::array<char, 512> hdrPathBuffer{};
-		static std::string lastPath{};
 		static std::string lastPrecomputeStatus{};
 		static std::string lastConfigStatus{};
 		const std::string configPath = profilePath ? *profilePath : GLframework::EnvironmentProfileStorage::defaultPath();
-		if (lastPath != profile->hdrEquirectangularPath)
-		{
-			hdrPathBuffer.fill('\0');
-			profile->hdrEquirectangularPath.copy(hdrPathBuffer.data(), hdrPathBuffer.size() - 1);
-			lastPath = profile->hdrEquirectangularPath;
-		}
 
 		if (ImGui::CollapsingHeader("Environment / IBL", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::TextWrapped("Profile File: %s", configPath.c_str());
 
-			if (ImGui::InputText("HDR Path", hdrPathBuffer.data(), hdrPathBuffer.size()))
-			{
-				profile->hdrEquirectangularPath = hdrPathBuffer.data();
-				lastPath = profile->hdrEquirectangularPath;
-			}
+			GL_EDITOR::PropertyBuilder builder{};
+			profile->visitEditableProperties(builder);
+			GL_EDITOR::drawProperties(builder);
 
-			int unit = static_cast<int>(profile->hdrTextureUnit);
-			if (ImGui::SliderInt("HDR Texture Unit", &unit, 0, 31))
-			{
-				profile->hdrTextureUnit = static_cast<unsigned int>(unit);
-			}
-
-			ImGui::Checkbox("Use Procedural Environment", &profile->useProceduralEnvironment);
-			if (profile->useProceduralEnvironment)
-			{
-				ImGui::TextWrapped("Procedural environment is generated at precompute time.");
-
-				int proceduralWidth = static_cast<int>(profile->proceduralWidth);
-				if (ImGui::SliderInt("Procedural Width", &proceduralWidth, 64, 2048))
-				{
-					profile->proceduralWidth = static_cast<unsigned int>(proceduralWidth);
-				}
-
-				int proceduralHeight = static_cast<int>(profile->proceduralHeight);
-				if (ImGui::SliderInt("Procedural Height", &proceduralHeight, 32, 1024))
-				{
-					profile->proceduralHeight = static_cast<unsigned int>(proceduralHeight);
-				}
-
-				ImGui::SliderFloat("Procedural Sky Intensity", &profile->proceduralSkyIntensity, 0.0f, 10.0f);
-				ImGui::SliderFloat("Procedural Ground Intensity", &profile->proceduralGroundIntensity, 0.0f, 2.0f);
-				ImGui::SliderFloat("Procedural Sun Intensity", &profile->proceduralSunIntensity, 0.0f, 20.0f);
-			}
-
-			ImGui::Checkbox("Precompute On Prepare", &profile->precomputeOnPrepare);
 			const bool ready = renderer && renderer->getEnvironmentRenderTargets().hasPrecomputedEnvironment();
 			ImGui::Text("IBL Ready: %s", ready ? "Yes" : "No");
 
@@ -92,7 +52,6 @@ namespace
 			{
 				if (GLframework::EnvironmentProfileStorage::loadFromFile(configPath, *profile))
 				{
-					lastPath.clear();
 					lastConfigStatus = "Environment profile reloaded.";
 				}
 				else
@@ -147,20 +106,10 @@ namespace
 		if (ImGui::CollapsingHeader("Post Process", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::TextWrapped("Profile File: %s", configPath.c_str());
-			ImGui::SliderFloat("Exposure", &settings->exposure, 0.0f, 4.0f);
 
-			int toneMappingMode = static_cast<int>(settings->toneMappingMode);
-			if (ImGui::SliderInt("Tone Mapping Mode", &toneMappingMode, 0, 1))
-			{
-				settings->toneMappingMode = toneMappingMode == 1
-					? GLframework::ToneMappingMode::Reinhard
-					: GLframework::ToneMappingMode::Exposure;
-			}
-
-			ImGui::Checkbox("Bloom Enabled", &settings->bloomEnabled);
-			ImGui::SliderFloat("Bloom Threshold", &settings->bloomThreshold, 0.0f, 20.0f);
-			ImGui::SliderFloat("Bloom Intensity", &settings->bloomIntensity, 0.0f, 2.0f);
-			ImGui::SliderInt("Bloom Iterations", &settings->bloomIterations, 0, 20);
+			GL_EDITOR::PropertyBuilder builder{};
+			settings->visitEditableProperties(builder);
+			GL_EDITOR::drawProperties(builder);
 
 			if (ImGui::Button("Save Post Process Profile"))
 			{

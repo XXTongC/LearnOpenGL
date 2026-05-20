@@ -2,6 +2,11 @@
 
 #include <string>
 
+namespace GL_EDITOR
+{
+	class PropertyBuilder;
+}
+
 namespace GLframework
 {
 	enum class ToneMappingMode
@@ -19,6 +24,8 @@ namespace GLframework
 		float bloomThreshold{ 1.0f };
 		float bloomIntensity{ 0.04f };
 		int bloomIterations{ 6 };
+
+		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder);
 	};
 
 	class PostProcessSettingsStorage

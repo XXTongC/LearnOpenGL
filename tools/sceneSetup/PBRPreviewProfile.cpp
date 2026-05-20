@@ -4,7 +4,7 @@
 #include <fstream>
 
 #include "../config/ProfileConfigParser.h"
-#include "../inspector/PropertyInspector.h"
+#include "../inspector/PropertySchema.h"
 
 namespace
 {

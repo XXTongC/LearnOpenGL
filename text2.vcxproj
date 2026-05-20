@@ -642,6 +642,7 @@
     <ClInclude Include="tools\editor\EditorPanels.h" />
     <ClInclude Include="tools\inspector\MaterialInspector.h" />
     <ClInclude Include="tools\inspector\PropertyInspector.h" />
+    <ClInclude Include="tools\inspector\PropertySchema.h" />
     <ClInclude Include="tools\Logger\Logger.h" />
     <ClInclude Include="tools\Logger\LogManager.h" />
     <ClInclude Include="tools\sceneSetup\PBRExperimentProfile.h" />

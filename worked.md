@@ -922,6 +922,20 @@
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera / shadow camera double-to-float `C4244` warning，本轮新增代码未引入构建错误。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
    - 构建输出目录 [text2](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2) 约 `158MB`、[x64](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64) 约 `113MB`，均为 ignored generated output；验证结束后已校验路径位于当前 workspace 内并清理，C 盘剩余空间恢复到约 `1.99GB`。
+156. 完成第七十八轮 PropertySchema 与 Profile UI 继续收敛：
+   - 新增 [tools/inspector/PropertySchema.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\PropertySchema.h)，将 `PropertyKind`、`PropertyDescriptor` 和 `PropertyBuilder` 从 ImGui 绘制层拆出，形成不依赖 ImGui 的字段描述层。
+   - 更新 [tools/inspector/PropertyInspector.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\PropertyInspector.h)，保留 `drawProperties(...)` 作为 ImGui renderer，改为消费 `PropertySchema`。
+   - 更新 [renderer/EnvironmentProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.h) 与 [renderer/EnvironmentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.cpp)，新增 `visitEditableProperties(...)` 描述 HDR source、texture unit、procedural source、precompute 和 procedural intensity 字段。
+   - 更新 [renderer/PostProcessSettings.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessSettings.h) 与 [renderer/PostProcessSettings.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessSettings.cpp)，新增 `visitEditableProperties(...)` 描述 tone mapping 与 Bloom 字段。
+   - 更新 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，Environment / Post Process 折叠区改为通过 `PropertyBuilder` 自动绘制字段 UI，面板只保留保存、重载、IBL precompute 和状态显示逻辑。
+   - 更新 [tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)，profile 数据层改为只包含 `PropertySchema`，避免引入 ImGui 绘制层依赖。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj)、[text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters) 与 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，将新 schema 头文件纳入 VS 工程并记录后续方向。
+157. 完成第六十九次 schema UI 构建与短启动 smoke 验证：
+   - 针对 PropertySchema 与 Environment / Post Process profile UI 收敛执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 使用 MSVC `cl /Zs` 检查 [renderer/EnvironmentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.cpp)、[renderer/PostProcessSettings.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessSettings.cpp)、[tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)、[tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)，结果通过。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera / shadow camera double-to-float `C4244` warning，本轮新增代码未引入构建错误。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+   - 构建输出目录 [text2](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2) 约 `160MB`、[x64](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64) 约 `114MB`，均为 ignored generated output；验证结束后已校验路径位于当前 workspace 内并清理，C 盘剩余空间恢复到约 `1.98GB`。
 
 ### 当前状态
 
@@ -946,21 +960,21 @@
 - 当前 Bloom bright extraction 已接入运行时，resolved HDR color 会提取到 `FrameRenderTargets` 管理的 bloom bright target。
 - 当前 Bloom blur ping-pong 已接入运行时，bright target 会经过 `bloomPing` / `bloomPong` 迭代模糊。
 - 当前 Bloom composite 已接入 screen shader，resolved HDR color 会与 blurred bloom texture 合成后再 tone mapping / gamma。
-- 当前后处理参数已收敛到 runtime-level `PostProcessSettings`，exposure、tone mapping mode、Bloom 开关、threshold、intensity、iterations 都能通过 DebugControllerPanel 修改，`ScreenMaterial` 只保留 postprocess 输入贴图。
+- 当前后处理参数已收敛到 runtime-level `PostProcessSettings`，exposure、tone mapping mode、Bloom 开关、threshold、intensity、iterations 都能通过 DebugControllerPanel 修改，且 UI 字段已改为由 `PropertySchema` 自动生成；`ScreenMaterial` 只保留 postprocess 输入贴图。
 - 当前 IBL / environment 资源边界已建立，`EnvironmentRenderTargets` 管理 environment / irradiance / prefilter cubemap、BRDF LUT 和 capture FBO。
 - 当前 IBL 预计算流程已拆到 `IBLPrecomputePass`，并可通过 `EnvironmentProfile` 在 scene setup 阶段加载 HDR environment、创建 capture cube / BRDF quad 并触发预计算。
 - 当前 PBR shader 已支持直接光 + 可选 IBL 组合，`MaterialBinder` 会在 PBR 材质启用 IBL 且 environment ready 时绑定 irradiance / prefilter / BRDF LUT。
 - 当前 PBR shader 已输出线性 HDR color，不再在材质 shader 内部执行 tone mapping / gamma，最终显示转换统一交给 screen postprocess。
-- 当前 `EnvironmentProfile` 已接入 DebugControllerPanel UI，可在运行时编辑 HDR path / texture unit、切换 prepare 预计算，并手动触发 IBL precompute。
+- 当前 `EnvironmentProfile` 已接入 DebugControllerPanel UI，可在运行时编辑 HDR path / texture unit、切换 prepare 预计算，并手动触发 IBL precompute；字段 UI 已改为由 `PropertySchema` 自动生成。
 - 当前 `EnvironmentProfile` 已支持 `config/environment_profile.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/environment_profile.example.ini` 作为字段示例。
 - 当前 `EnvironmentProfile` 已支持 procedural HDR equirectangular source，可通过 DebugControllerPanel 或 local profile 在无外部 HDR 文件时触发 IBL precompute。
 - 当前默认 `PBR Preview Sphere` 会请求 IBL；environment 未 ready 时 shader 侧自动关闭，environment ready 后可直接验证 PBR IBL 采样链路。
 - 当前 `PBR Preview Sphere` 已由 `PBRPreviewProfile` 驱动，可通过 `config/pbr_preview.local.ini` 调整位置、几何细分、PBR surface 参数、IBL 强度和 normal map，而不需要修改 `SceneSetup.cpp`。
 - 当前 `PBRPreviewProfile` 支持 material grid，可按 metallic / roughness 范围生成多球阵列，在同一 environment / postprocess 下批量比较 PBR 参数。
-- 当前 `PropertyInspector` 已从 `MaterialInspector` 拆出，`PBRPreviewProfile` 已能通过 property descriptor 自动生成 Debug UI。
+- 当前 `PropertySchema` 已从 `PropertyInspector` 拆出，profile 数据层不再依赖 ImGui 绘制层；`EnvironmentProfile`、`PostProcessSettings` 和 `PBRPreviewProfile` 已能通过 property descriptor 自动生成 Debug UI。
 - 当前 `PBRExperimentProfile` 支持用 `config/pbr_experiment.local.ini` 统一覆盖 environment、postprocess 和 PBR preview grid，减少维护多个 local ini 的成本。
 - 当前 profile 配置解析基础设施已收敛到 `ProfileConfigParser`，后续新增 PBR material preset / experiment preset 不需要再复制 trim/parse/key-value 遍历逻辑。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
 - 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
-- 下一步建议目标：继续把 `EnvironmentProfile` 和 `PostProcessSettings` 迁移到 `PropertyInspector` / schema 体系，让配置文件、Debug UI 和 inspector 共享字段描述，减少新增 PBR 材质参数时的重复 wiring。
+- 下一步建议目标：把 property descriptor 与 profile ini load/save 的 key schema 合并，减少新增 PBR / environment / postprocess 字段时的重复配置解析和保存代码。

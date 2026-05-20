@@ -1826,6 +1826,9 @@
     <ClInclude Include="tools\inspector\PropertyInspector.h">
       <Filter>include\GLframework\tools\inspector</Filter>
     </ClInclude>
+    <ClInclude Include="tools\inspector\PropertySchema.h">
+      <Filter>include\GLframework\tools\inspector</Filter>
+    </ClInclude>
     <ClInclude Include="tools\ObjectPool\ObjectPool.h">
       <Filter>include\GLframework\tools\ObjectPool</Filter>
     </ClInclude>

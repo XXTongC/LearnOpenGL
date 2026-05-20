@@ -953,3 +953,15 @@ PBR preview profile 已开始接入系统化属性 UI：
 - 当前 geometry / grid 修改仍在 scene prepare 时生效，运行时 UI 会明确提示需要保存后重启或重新 prepare 才会重建 preview objects。
 
 这一步是自动 UI 的第一层落地：新增 PBR preview profile 字段时，不再需要在 Debug 面板中重复写一组 `ImGui::Slider...`。后续更合理的推进方式是把 `EnvironmentProfile` 和 `PostProcessSettings` 也迁移到同一套 property descriptor，再把 descriptor 与 ini load/save 的 key schema 合并。
+
+### 2026-05-20 PropertySchema 与 Profile UI 继续收敛
+
+Profile UI 的通用层继续拆分：
+
+- 新增 `PropertySchema`，只包含 `PropertyKind`、`PropertyDescriptor` 和 `PropertyBuilder`，不依赖 ImGui。
+- `PropertyInspector` 收敛为 ImGui 绘制层，只负责把 property schema 渲染成控件。
+- `EnvironmentProfile` 新增 `visitEditableProperties(...)`，用 schema 描述 HDR path、texture unit、procedural environment、precompute 开关和 procedural intensity 参数。
+- `PostProcessSettings` 新增 `visitEditableProperties(...)`，用 schema 描述 exposure、tone mapping mode 和 Bloom 参数。
+- `DebugControllerPanel` 的 Environment / Post Process 字段 UI 改为消费 profile schema，不再手写对应的 `InputText`、`SliderInt`、`SliderFloat`、`Checkbox` 控件。
+
+这一步把自动 UI 从 PBR Preview 扩展到 environment 与 postprocess。更关键的是 schema 与 ImGui 绘制器被拆开，后续配置读写、preset diff、inspector 或非 ImGui 工具都可以复用字段描述，而不是被 UI 框架绑定。

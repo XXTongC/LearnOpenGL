@@ -10,11 +10,17 @@
 
 #include "stb_image.h"
 #include "tools/config/ProfileConfigParser.h"
+#include "tools/inspector/PropertySchema.h"
 
 using namespace GLframework;
 
 namespace
 {
+	int toEditableInt(unsigned int value)
+	{
+		return static_cast<int>(value);
+	}
+
 	unsigned int getFormatForChannelCount(int channels)
 	{
 		if (channels == 1)
@@ -91,6 +97,41 @@ bool EnvironmentProfile::hasHdrSource() const
 bool EnvironmentProfile::hasEnvironmentSource() const
 {
 	return useProceduralEnvironment || hasHdrSource();
+}
+
+void EnvironmentProfile::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
+{
+	builder.addSection("Environment Source");
+	builder.addString("HDR Path", &hdrEquirectangularPath);
+	builder.addInt(
+		"HDR Texture Unit",
+		[this]() { return toEditableInt(hdrTextureUnit); },
+		[this](int value) { hdrTextureUnit = value < 0 ? 0u : static_cast<unsigned int>(value); },
+		0,
+		31
+	);
+	builder.addBool("Use Procedural Environment", &useProceduralEnvironment);
+	builder.addBool("Precompute On Prepare", &precomputeOnPrepare);
+
+	builder.addSection("Procedural Environment");
+	builder.addText("Mode", "Generated at precompute time when Use Procedural Environment is enabled.");
+	builder.addInt(
+		"Procedural Width",
+		[this]() { return toEditableInt(proceduralWidth); },
+		[this](int value) { proceduralWidth = value < 0 ? 0u : static_cast<unsigned int>(value); },
+		64,
+		2048
+	);
+	builder.addInt(
+		"Procedural Height",
+		[this]() { return toEditableInt(proceduralHeight); },
+		[this](int value) { proceduralHeight = value < 0 ? 0u : static_cast<unsigned int>(value); },
+		32,
+		1024
+	);
+	builder.addFloat("Procedural Sky Intensity", &proceduralSkyIntensity, 0.0f, 10.0f);
+	builder.addFloat("Procedural Ground Intensity", &proceduralGroundIntensity, 0.0f, 2.0f);
+	builder.addFloat("Procedural Sun Intensity", &proceduralSunIntensity, 0.0f, 20.0f);
 }
 
 std::shared_ptr<Texture> EnvironmentTextureLoader::loadEquirectangular(const EnvironmentProfile& profile)

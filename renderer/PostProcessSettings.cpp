@@ -5,6 +5,7 @@
 #include <string>
 
 #include "tools/config/ProfileConfigParser.h"
+#include "tools/inspector/PropertySchema.h"
 
 using namespace GLframework;
 
@@ -14,11 +15,36 @@ namespace
 	{
 		return value == 1 ? ToneMappingMode::Reinhard : ToneMappingMode::Exposure;
 	}
+
+	int toneMappingModeToInt(ToneMappingMode mode)
+	{
+		return mode == ToneMappingMode::Reinhard ? 1 : 0;
+	}
 }
 
 std::string PostProcessSettingsStorage::defaultPath()
 {
 	return "config/postprocess_settings.local.ini";
+}
+
+void PostProcessSettings::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
+{
+	builder.addSection("HDR Tone Mapping");
+	builder.addFloat("Exposure", &exposure, 0.0f, 4.0f);
+	builder.addInt(
+		"Tone Mapping Mode",
+		[this]() { return toneMappingModeToInt(toneMappingMode); },
+		[this](int value) { toneMappingMode = toneMappingModeFromInt(value); },
+		0,
+		1
+	);
+	builder.addText("Tone Mapping Modes", "0 = Exposure, 1 = Reinhard");
+
+	builder.addSection("Bloom");
+	builder.addBool("Bloom Enabled", &bloomEnabled);
+	builder.addFloat("Bloom Threshold", &bloomThreshold, 0.0f, 20.0f);
+	builder.addFloat("Bloom Intensity", &bloomIntensity, 0.0f, 2.0f);
+	builder.addInt("Bloom Iterations", &bloomIterations, 0, 20);
 }
 
 bool PostProcessSettingsStorage::loadFromFile(const std::string& path, PostProcessSettings& settings)

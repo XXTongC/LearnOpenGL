@@ -5,6 +5,11 @@
 
 #include "framework/texture.h"
 
+namespace GL_EDITOR
+{
+	class PropertyBuilder;
+}
+
 namespace GLframework
 {
 	struct EnvironmentProfile
@@ -21,6 +26,7 @@ namespace GLframework
 
 		bool hasHdrSource() const;
 		bool hasEnvironmentSource() const;
+		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder);
 	};
 
 	class EnvironmentTextureLoader
