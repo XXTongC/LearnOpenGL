@@ -47,11 +47,12 @@ namespace GL_RUNTIME
 		RuntimeProfileLoader::loadAll(mRuntime);
 		if (mConfig.pbrVerification.enabled)
 		{
-			RuntimePBRVerification::applyProfile(mRuntime);
+			RuntimePBRVerification::applyProfile(mRuntime, mConfig.pbrVerification);
 		}
 		RuntimeScenePreparer::prepare(mRuntime, mLegacyExperiments, makeScenePrepareConfig());
 		if (mConfig.pbrVerification.enabled)
 		{
+			RuntimePBRVerification::applyRendererPassProfile(mRuntime, mConfig.pbrVerification);
 			RuntimePBRVerification::reportPreparedScene(mRuntime);
 		}
 		if (mConfig.enableGui)

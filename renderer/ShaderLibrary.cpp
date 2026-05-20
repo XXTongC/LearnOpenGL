@@ -28,6 +28,7 @@ void GLframework::ShaderLibrary::initialize()
 	mIrradianceConvolutionShader = createShader("shaders/ibl/capture.vert", "shaders/ibl/irradiance_convolution.frag");
 	mPrefilterShader = createShader("shaders/ibl/capture.vert", "shaders/ibl/prefilter.frag");
 	mBrdfLutShader = createShader("shaders/ibl/brdf_lut.vert", "shaders/ibl/brdf_lut.frag");
+	mIblDebugShader = createShader("shaders/diagnostics/ibl_debug.vert", "shaders/diagnostics/ibl_debug.frag");
 }
 
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::get(MaterialType type) const
@@ -70,6 +71,11 @@ std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPrefilterSha
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getBrdfLutShader() const
 {
 	return mBrdfLutShader;
+}
+
+std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getIblDebugShader() const
+{
+	return mIblDebugShader;
 }
 
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::createShader(const char* vertexPath, const char* fragmentPath)

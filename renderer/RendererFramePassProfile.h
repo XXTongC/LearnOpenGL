@@ -15,6 +15,9 @@ namespace GLframework
 
 		std::string defaultPassOrder{};
 		std::string globalMaterialOverridePassOrder{};
+		int iblDebugMode{ 0 };
+		float iblDebugMipLevel{ 0.0f };
+		float iblDebugIntensity{ 1.0f };
 
 		void resetToDefaults();
 		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder);

@@ -252,6 +252,7 @@ namespace
 			ImGui::Text("Legacy Scene Draw Calls: %d", stats.legacySceneDrawCalls);
 			ImGui::Text("PBR Depth Prepass Draw Calls: %d", stats.pbrDepthPrepassDrawCalls);
 			ImGui::Text("PBR Scene Draw Calls: %d", stats.pbrSceneDrawCalls);
+			ImGui::Text("IBL Debug Draw Calls: %d", stats.iblDebugDrawCalls);
 			ImGui::TextWrapped("Use these values to verify whether the current scene is actually using the PBR render path.");
 		}
 	}

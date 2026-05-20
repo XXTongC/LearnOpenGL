@@ -16,7 +16,8 @@ namespace GLframework
 		LegacyOpaqueScene,
 		PBROpaqueScene,
 		LegacyTransparentScene,
-		PBRTransparentScene
+		PBRTransparentScene,
+		IBLDebug
 	};
 
 	struct RendererFramePassDefinition

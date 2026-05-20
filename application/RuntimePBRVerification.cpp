@@ -87,7 +87,10 @@ namespace
 
 namespace GL_RUNTIME
 {
-	void RuntimePBRVerification::applyProfile(GLframework::AppRuntimeContext& context)
+	void RuntimePBRVerification::applyProfile(
+		GLframework::AppRuntimeContext& context,
+		const RuntimePBRVerificationConfig& config
+	)
 	{
 		context.environmentProfile.precomputeOnPrepare = true;
 		context.environmentProfile.useProceduralEnvironment = true;
@@ -108,10 +111,7 @@ namespace GL_RUNTIME
 		context.framePipelineProfile.bloomPassEnabled = true;
 		context.framePipelineProfile.screenCompositePassEnabled = true;
 		context.framePipelineProfile.passOrder = "SceneColor,SceneResolve,Bloom,ScreenComposite";
-		if (context.renderer)
-		{
-			context.renderer->getFramePassProfile().resetToDefaults();
-		}
+		applyRendererPassProfile(context, config);
 
 		context.pbrPreviewProfile.enabled = true;
 		context.pbrPreviewProfile.position = { 0.0f, -3.7f, 1.2f };
@@ -156,7 +156,34 @@ namespace GL_RUNTIME
 		context.pbrCameraRigProfile.farPlane = 1000.0f;
 		context.pbrCameraRigProfile.applyTo(context.camera);
 
-		reportLine("PBR verification profile applied: procedural IBL + 5x5 material grid");
+		reportLine(
+			config.enableIblDebugPass
+				? "PBR verification profile applied: procedural IBL + 5x5 material grid + IBL debug pass"
+				: "PBR verification profile applied: procedural IBL + 5x5 material grid"
+		);
+	}
+
+	void RuntimePBRVerification::applyRendererPassProfile(
+		GLframework::AppRuntimeContext& context,
+		const RuntimePBRVerificationConfig& config
+	)
+	{
+		if (!context.renderer)
+		{
+			return;
+		}
+
+		auto& rendererPassProfile = context.renderer->getFramePassProfile();
+		rendererPassProfile.resetToDefaults();
+		if (!config.enableIblDebugPass)
+		{
+			return;
+		}
+
+		rendererPassProfile.defaultPassOrder += ",IBLDebug";
+		rendererPassProfile.iblDebugMode = 0;
+		rendererPassProfile.iblDebugMipLevel = 0.0f;
+		rendererPassProfile.iblDebugIntensity = 1.0f;
 	}
 
 	void RuntimePBRVerification::reportPreparedScene(GLframework::AppRuntimeContext& context)
@@ -183,7 +210,7 @@ namespace GL_RUNTIME
 		}
 
 		const auto& stats = context.renderer->getLastFrameStats();
-		reportLine(
+		std::string statsLine =
 			"PBR verification renderer stats: rendererPasses=" + std::to_string(stats.rendererPassCount)
 			+ ", shadowCasters=" + std::to_string(stats.shadowCasterCount)
 			+ ", directionalShadowLayers=" + std::to_string(stats.directionalShadowLayerCount)
@@ -193,8 +220,12 @@ namespace GL_RUNTIME
 			+ ", pointShadowDrawCalls=" + std::to_string(stats.pointShadowDrawCalls)
 			+ ", pbrDepthPrepassDrawCalls=" + std::to_string(stats.pbrDepthPrepassDrawCalls)
 			+ ", legacyDrawCalls=" + std::to_string(stats.legacySceneDrawCalls)
-			+ ", pbrDrawCalls=" + std::to_string(stats.pbrSceneDrawCalls)
-		);
+			+ ", pbrDrawCalls=" + std::to_string(stats.pbrSceneDrawCalls);
+		if (stats.iblDebugDrawCalls > 0)
+		{
+			statsLine += ", iblDebugDrawCalls=" + std::to_string(stats.iblDebugDrawCalls);
+		}
+		reportLine(statsLine);
 	}
 
 	bool RuntimePBRVerification::captureDefaultFramebuffer(

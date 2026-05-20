@@ -8,6 +8,7 @@
 #include "EnvironmentRenderTargets.h"
 #include "FrameRenderState.h"
 #include "IBLPrecomputePass.h"
+#include "IBLDebugPass.h"
 #include "PBRDepthPrepass.h"
 #include "PBRSceneRenderPass.h"
 #include "RenderQueue.h"
@@ -69,6 +70,7 @@ private:
 		SceneRenderPass mSceneRenderPass{};
 		PBRDepthPrepass mPbrDepthPrepass{};
 		PBRSceneRenderPass mPbrSceneRenderPass{};
+		IBLDebugPass mIblDebugPass{};
 		EnvironmentRenderTargets mEnvironmentRenderTargets{};
 		IBLPrecomputePass mIblPrecomputePass{};
 		RendererFrameStats mLastFrameStats{};

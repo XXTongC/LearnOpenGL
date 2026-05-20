@@ -14,5 +14,6 @@ namespace GLframework
 		int pbrDepthPrepassDrawCalls{ 0 };
 		int legacySceneDrawCalls{ 0 };
 		int pbrSceneDrawCalls{ 0 };
+		int iblDebugDrawCalls{ 0 };
 	};
 }

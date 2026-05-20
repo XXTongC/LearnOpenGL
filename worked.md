@@ -1544,6 +1544,25 @@
    - `--verify-pbr` renderer stats 输出保持为 `rendererPasses=7, shadowCasters=32, directionalShadowLayers=5, directionalShadowDrawCalls=160, pointShadowLights=2, pointShadowFaces=12, pointShadowDrawCalls=384, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`。
    - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
    - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+250. 完成第一百二十五轮 IBL debug renderer pass：
+   - 新增 [renderer/IBLDebugPass.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\IBLDebugPass.h) 和 [renderer/IBLDebugPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\IBLDebugPass.cpp)，可在当前 scene color target 绘制 IBL debug fullscreen view。
+   - 新增 [shaders/diagnostics/ibl_debug.vert](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\diagnostics\ibl_debug.vert) 和 [shaders/diagnostics/ibl_debug.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\diagnostics\ibl_debug.frag)，支持 environment、irradiance、prefilter 和 BRDF LUT debug view。
+   - 更新 [renderer/ShaderLibrary.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShaderLibrary.h) 和 [renderer/ShaderLibrary.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShaderLibrary.cpp)，集中管理 IBL debug shader。
+   - 更新 [renderer/RendererFramePassRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.h) 和 [renderer/RendererFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.cpp)，新增可选 pass key `IBLDebug`；默认 pass order 不包含它，本地 profile 可按需插入。
+   - 更新 [renderer/RendererFramePassProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassProfile.h)、[renderer/RendererFramePassProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassProfile.cpp) 和 [config/renderer_frame_pass.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\renderer_frame_pass.example.ini)，新增 `iblDebugMode`、`iblDebugMipLevel`、`iblDebugIntensity` 配置。
+   - 更新 [renderer/RendererFrameStats.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFrameStats.h) 和 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，Debug UI 可观察 `iblDebugDrawCalls`。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)、[application/RuntimePBRVerification.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.h)、[application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp) 和 [application/RuntimeApplicationShell.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationShell.cpp)，新增 `--verify-pbr-ibl-debug` 验证入口。
+   - VS 工程已加入新增 pass 源文件、头文件和 diagnostics shader 文件。
+251. 完成第一百一十六次 IBL debug renderer pass 验证：
+   - 使用 MSVC `cl /Zs` 检查 [renderer/IBLDebugPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\IBLDebugPass.cpp)、[renderer/ShaderLibrary.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShaderLibrary.cpp)、[renderer/RendererFramePassProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassProfile.cpp)、[renderer/RendererFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.cpp)、[renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)、[application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)、[application/RuntimeApplicationShell.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationShell.cpp) 和 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行 `Debug|x64` + `LinkIncremental=false` 构建通过，新增 [renderer/IBLDebugPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\IBLDebugPass.cpp) 已进入 VS 工程。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，默认 PBR 验证保持 `rendererPasses=7`，说明默认 pass order 没有被 `IBLDebug` 改动污染。
+   - 默认 `--verify-pbr` renderer stats 保持为 `rendererPasses=7, shadowCasters=32, directionalShadowLayers=5, directionalShadowDrawCalls=160, pointShadowLights=2, pointShadowFaces=12, pointShadowDrawCalls=384, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`。
+   - 默认 `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-ibl-debug`，验证模式临时插入 `IBLDebug` pass，并输出 `rendererPasses=8` 与 `iblDebugDrawCalls=1`。
+   - `--verify-pbr-ibl-debug` 导出的 [out/pbr_ibl_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_ibl_debug_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `145.33 / 154.29 / 165.66`。
+   - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1614,7 +1633,7 @@
 - 当前 renderer 已新增 PBR 专用 scene pass，PBR mesh 从 render queue 分类到 PBR 子队列后由 `PBRSceneRenderPass` 渲染；`--verify-pbr` 已验证 `pbrDrawCalls=25`。
 - 当前 renderer 已新增 PBR depth prepass，`--verify-pbr` 已验证 `pbrDepthPrepassDrawCalls=25` 且 `pbrDrawCalls=25`。
 - 当前 renderer frame stats 已接入 Debug UI，普通运行时可以直接观察 PBR depth / scene pass 是否实际执行。
-- 当前 renderer 内部 pass 顺序已收敛到 `RendererFramePassRegistry`，并已支持通过 `RendererFramePassProfile` 配置 pass order；后续 PBR shadow atlas / IBL debug / G-buffer pass 可以继续按 key 增加、插入和本地 profile 验证，而不必扩写 `Renderer::render()` 主流程。
+- 当前 renderer 内部 pass 顺序已收敛到 `RendererFramePassRegistry`，并已支持通过 `RendererFramePassProfile` 配置 pass order；`IBLDebug` 已作为首个可选 PBR diagnostics pass 接入，后续 PBR shadow atlas / G-buffer pass 可以继续按 key 增加、插入和本地 profile 验证，而不必扩写 `Renderer::render()` 主流程。
 - 当前 directional shadow 与 point shadow 已拆成独立 render pass，`ShadowRenderer` 只保留调度 facade 职责，后续可逐步替换为 PBR shadow atlas 资源布局。
 - 当前 forward lighting uniform 绑定已从 `MaterialBinder` 拆到 `LightResourceBinder`，后续 PBR lighting 可集中演进为 UBO / SSBO / clustered light list。
 - 当前 PBR 材质 shader 绑定已从通用 `MaterialBinder` 拆到 `PBRMaterialBinder`，后续 PBR-specific uniform / IBL / shadow binding 可以独立演进。

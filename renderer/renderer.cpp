@@ -149,8 +149,10 @@ void Renderer::render(
 		&mSceneRenderPass,
 		&mPbrDepthPrepass,
 		&mPbrSceneRenderPass,
+		&mIblDebugPass,
 		&mShaderLibrary,
 		&mEnvironmentRenderTargets,
+		&mFramePassProfile,
 		&mLastFrameStats
 	};
 

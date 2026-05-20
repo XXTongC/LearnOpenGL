@@ -194,6 +194,7 @@
     <ClCompile Include="renderer\DirectionalShadowRenderPass.cpp" />
     <ClCompile Include="renderer\FrameRenderState.cpp" />
     <ClCompile Include="renderer\FrameRenderTargets.cpp" />
+    <ClCompile Include="renderer\IBLDebugPass.cpp" />
     <ClCompile Include="renderer\IBLPrecomputePass.cpp" />
     <ClCompile Include="renderer\LightResourceBinder.cpp" />
     <ClCompile Include="renderer\MaterialBinder.cpp" />
@@ -294,6 +295,7 @@
     <ClInclude Include="renderer\DirectionalShadowRenderPass.h" />
     <ClInclude Include="renderer\FrameRenderState.h" />
     <ClInclude Include="renderer\FrameRenderTargets.h" />
+    <ClInclude Include="renderer\IBLDebugPass.h" />
     <ClInclude Include="renderer\IBLPrecomputePass.h" />
     <ClInclude Include="renderer\LightResourceBinder.h" />
     <ClInclude Include="renderer\MaterialBindingContext.h" />
@@ -747,6 +749,8 @@
     <None Include="shaders\cube\cube.vert" />
     <None Include="shaders\depth\depth.frag" />
     <None Include="shaders\depth\depth.vert" />
+    <None Include="shaders\diagnostics\ibl_debug.frag" />
+    <None Include="shaders\diagnostics\ibl_debug.vert" />
     <None Include="shaders\fragment.glsl" />
     <None Include="shaders\grassInstance\grassInstance.frag" />
     <None Include="shaders\grassInstance\grassInstance.vert" />

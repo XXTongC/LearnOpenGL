@@ -13,6 +13,7 @@ namespace GLframework
 	class DirectionalLight;
 	class EnvironmentRenderTargets;
 	class FrameRenderState;
+	class IBLDebugPass;
 	class Material;
 	class PBRDepthPrepass;
 	class PBRSceneRenderPass;
@@ -23,6 +24,7 @@ namespace GLframework
 	class ShaderLibrary;
 	class ShadowRenderer;
 	class SpotLight;
+	struct RendererFramePassProfile;
 
 	struct RendererFrameContext
 	{
@@ -41,8 +43,10 @@ namespace GLframework
 		SceneRenderPass* sceneRenderPass{ nullptr };
 		PBRDepthPrepass* pbrDepthPrepass{ nullptr };
 		PBRSceneRenderPass* pbrSceneRenderPass{ nullptr };
+		IBLDebugPass* iblDebugPass{ nullptr };
 		ShaderLibrary* shaderLibrary{ nullptr };
 		EnvironmentRenderTargets* environmentTargets{ nullptr };
+		RendererFramePassProfile* framePassProfile{ nullptr };
 		RendererFrameStats* stats{ nullptr };
 	};
 }

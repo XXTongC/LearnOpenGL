@@ -19,6 +19,7 @@ namespace GLframework
 		std::shared_ptr<Shader> getIrradianceConvolutionShader() const;
 		std::shared_ptr<Shader> getPrefilterShader() const;
 		std::shared_ptr<Shader> getBrdfLutShader() const;
+		std::shared_ptr<Shader> getIblDebugShader() const;
 
 	private:
 		std::shared_ptr<Shader> createShader(const char* vertexPath, const char* fragmentPath);
@@ -30,5 +31,6 @@ namespace GLframework
 		std::shared_ptr<Shader> mIrradianceConvolutionShader{ nullptr };
 		std::shared_ptr<Shader> mPrefilterShader{ nullptr };
 		std::shared_ptr<Shader> mBrdfLutShader{ nullptr };
+		std::shared_ptr<Shader> mIblDebugShader{ nullptr };
 	};
 }

@@ -1505,3 +1505,17 @@ Renderer 内部 pass plan 已接入 profile 化配置：
 - `--verify-pbr` 会强制重置 renderer pass profile 为内建默认值，避免本地实验配置影响 PBR 验证证据。
 
 这一步把上一轮的 renderer pass builder 从“内部工具函数”推进为“可实验的渲染路径配置”。后续新增 `PBRShadowAtlas`、`GBuffer`、`IBLDebug` 或 clustered lighting pass 后，可以先通过 local profile 组合验证不同 pass 顺序，再决定是否固化为默认路径。
+
+### 2026-05-21 IBL Debug Renderer Pass
+
+Renderer 已新增第一个可选 PBR / IBL 诊断 pass：
+
+- 新增 `IBLDebugPass`，在当前 scene color target 中绘制 IBL debug fullscreen view。
+- 新增 `shaders/diagnostics/ibl_debug.*`，支持显示 environment cubemap、irradiance cubemap、prefilter cubemap 和 BRDF LUT。
+- `ShaderLibrary` 新增 IBL debug shader 管理入口。
+- `RendererFramePassRegistry` 新增可选 pass key `IBLDebug`。默认 pass order 不包含它，因此默认渲染行为不变；本地 profile 可以把 `IBLDebug` 加到 `defaultPassOrder` 末尾以显示 IBL debug view。
+- `RendererFramePassProfile` 新增 `iblDebugMode`、`iblDebugMipLevel`、`iblDebugIntensity`，Debug UI 和 `config/renderer_frame_pass.example.ini` 均可配置。
+- `RendererFrameStats` 新增 `iblDebugDrawCalls`，Debug UI 可直接观察 IBL debug pass 是否实际执行。
+- 新增 `--verify-pbr-ibl-debug` 验证入口，使用 PBR verification scene 但临时插入 `IBLDebug` pass，导出 `out/pbr_ibl_debug_verification.ppm`。
+
+这一步不是最终 IBL 可视化工具，而是先把“PBR 环境资源可诊断”接入 renderer pass 系统。后续如果 BRDF、prefilter mip、irradiance 或 environment 资源出现问题，可以通过 pass profile 直接切换可视化对象，而不是靠猜测 shader binding 是否正确。

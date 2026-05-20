@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "FrameRenderState.h"
+#include "IBLDebugPass.h"
 #include "MaterialBindingContext.h"
 #include "PBRDepthPrepass.h"
 #include "PBRSceneRenderPass.h"
@@ -44,6 +45,14 @@ namespace
 	{
 		static const std::vector<std::shared_ptr<PointLight>> emptyPointLights{};
 		return context.pointLights ? *context.pointLights : emptyPointLights;
+	}
+
+	const std::vector<RendererFramePassDefinition>& optionalPasses()
+	{
+		static const std::vector<RendererFramePassDefinition> passes{
+			{ RendererFramePassKey::IBLDebug, "IBLDebug", "IBL Debug" }
+		};
+		return passes;
 	}
 
 	MaterialBindingContext createMaterialBindingContext(const RendererFrameContext& context)
@@ -191,6 +200,20 @@ namespace
 		);
 	}
 
+	void renderIBLDebug(RendererFrameContext& context)
+	{
+		if (!context.iblDebugPass || !context.environmentTargets || !context.framePassProfile || !context.shaderLibrary || !context.stats)
+		{
+			return;
+		}
+
+		context.stats->iblDebugDrawCalls += context.iblDebugPass->render(
+			*context.environmentTargets,
+			*context.framePassProfile,
+			*context.shaderLibrary
+		);
+	}
+
 	bool containsPassKey(
 		const std::vector<const RendererFramePassDefinition*>& passes,
 		RendererFramePassKey key
@@ -261,6 +284,14 @@ const RendererFramePassDefinition* RendererFramePassRegistry::findPassByKey(cons
 		}
 	}
 
+	for (const auto& pass : optionalPasses())
+	{
+		if (normalizedKey == pass.keyName || normalizedKey == pass.debugName)
+		{
+			return &pass;
+		}
+	}
+
 	return nullptr;
 }
 
@@ -324,6 +355,9 @@ void RendererFramePassRegistry::executePass(const RendererFramePassDefinition& p
 		break;
 	case RendererFramePassKey::PBRTransparentScene:
 		renderPBRTransparentScene(context);
+		break;
+	case RendererFramePassKey::IBLDebug:
+		renderIBLDebug(context);
 		break;
 	default:
 		break;

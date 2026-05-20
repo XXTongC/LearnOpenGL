@@ -15,6 +15,9 @@ void RendererFramePassProfile::resetToDefaults()
 {
 	defaultPassOrder = RendererFramePassRegistry::defaultPassOrder();
 	globalMaterialOverridePassOrder = RendererFramePassRegistry::globalMaterialOverridePassOrder();
+	iblDebugMode = 0;
+	iblDebugMipLevel = 0.0f;
+	iblDebugIntensity = 1.0f;
 }
 
 void RendererFramePassProfile::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
@@ -24,8 +27,13 @@ void RendererFramePassProfile::visitEditableProperties(GL_EDITOR::PropertyBuilde
 	builder.addConfigString("globalMaterialOverridePassOrder", "Global Material Override Pass Order", &globalMaterialOverridePassOrder);
 	builder.addText(
 		"Available Pass Keys",
-		"BeginFrame, ShadowMaps, GlobalMaterialScene, PBRDepthPrepass, LegacyOpaqueScene, PBROpaqueScene, LegacyTransparentScene, PBRTransparentScene"
+		"BeginFrame, ShadowMaps, GlobalMaterialScene, PBRDepthPrepass, LegacyOpaqueScene, PBROpaqueScene, LegacyTransparentScene, PBRTransparentScene, IBLDebug"
 	);
+	builder.addSection("IBL Debug Pass");
+	builder.addConfigInt("iblDebugMode", "IBL Debug Mode", &iblDebugMode, 0, 3);
+	builder.addConfigFloat("iblDebugMipLevel", "IBL Debug Mip Level", &iblDebugMipLevel, 0.0f, 8.0f);
+	builder.addConfigFloat("iblDebugIntensity", "IBL Debug Intensity", &iblDebugIntensity, 0.0f, 8.0f);
+	builder.addText("IBL Debug Modes", "0 = Environment, 1 = Irradiance, 2 = Prefilter, 3 = BRDF LUT");
 }
 
 std::string RendererFramePassProfileStorage::defaultPath()

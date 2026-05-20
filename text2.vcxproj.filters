@@ -136,6 +136,9 @@
     <Filter Include="资源文件\shaders\depth">
       <UniqueIdentifier>{2cec1c60-4ce4-4559-9f38-49d1542bf882}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\shaders\diagnostics">
+      <UniqueIdentifier>{f39a773d-b0a1-478d-ae70-075ce05c690b}</UniqueIdentifier>
+    </Filter>
     <Filter Include="cppfile\GLframework\framebuffer">
       <UniqueIdentifier>{413f87ae-5003-483d-8387-6ee764261afa}</UniqueIdentifier>
     </Filter>
@@ -463,6 +466,9 @@
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
     <ClCompile Include="renderer\FrameRenderTargets.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\IBLDebugPass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
     <ClCompile Include="renderer\IBLPrecomputePass.cpp">
@@ -813,6 +819,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\FrameRenderTargets.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\IBLDebugPass.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\IBLPrecomputePass.h">
@@ -2541,6 +2550,12 @@
     </None>
     <None Include="shaders\depth\depth.vert">
       <Filter>资源文件\shaders\depth</Filter>
+    </None>
+    <None Include="shaders\diagnostics\ibl_debug.frag">
+      <Filter>资源文件\shaders\diagnostics</Filter>
+    </None>
+    <None Include="shaders\diagnostics\ibl_debug.vert">
+      <Filter>资源文件\shaders\diagnostics</Filter>
     </None>
     <None Include="shaders\cube\cube.frag">
       <Filter>资源文件\shaders\cube</Filter>
