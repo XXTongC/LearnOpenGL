@@ -177,16 +177,26 @@ bool GL_CONFIG::loadPropertyConfig(const std::string& path, const GL_EDITOR::Pro
 {
 	return readKeyValueFile(path, [&builder](const std::string& key, const std::string& value)
 	{
-		for (const auto& property : builder.getProperties())
-		{
-			const size_t configKeyIndex = findConfigKeyIndex(property, key);
-			if (configKeyIndex != invalidConfigKeyIndex)
-			{
-				applyPropertyValue(property, value, configKeyIndex);
-				return;
-			}
-		}
+		applyPropertyConfigValue(key, value, builder);
 	});
+}
+
+bool GL_CONFIG::applyPropertyConfigValue(
+	const std::string& key,
+	const std::string& value,
+	const GL_EDITOR::PropertyBuilder& builder
+)
+{
+	for (const auto& property : builder.getProperties())
+	{
+		const size_t configKeyIndex = findConfigKeyIndex(property, key);
+		if (configKeyIndex != invalidConfigKeyIndex)
+		{
+			return applyPropertyValue(property, value, configKeyIndex);
+		}
+	}
+
+	return false;
 }
 
 bool GL_CONFIG::savePropertyConfig(

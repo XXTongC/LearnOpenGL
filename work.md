@@ -1000,3 +1000,14 @@ PBR preview 配置读写已迁移到 `ProfileConfigIO`：
 - `PBRPreviewProfileStorage::loadFromFile(...)` / `saveToFile(...)` 不再维护手写 key 分支和手写输出逻辑。
 
 这一步把 `PostProcessSettings`、`EnvironmentProfile` 和 `PBRPreviewProfile` 都推进到 schema-driven 配置读写。下一步更有价值的重复点是 `PBRExperimentProfile`：它仍然手写 `environment.*`、`postprocess.*`、`pbrPreview.*` 的 prefixed key 应用逻辑，应该改为复用各 profile 的 schema。
+
+### 2026-05-20 PBRExperimentProfile Schema 覆盖
+
+PBR experiment preset 的 prefixed key 应用逻辑已开始复用 profile schema：
+
+- `ProfileConfigIO` 新增 `applyPropertyConfigValue(...)`，允许调用方把单个 key-value 应用到已有 `PropertyBuilder`。
+- `loadPropertyConfig(...)` 内部也复用同一个单 key 应用函数，避免普通 profile load 与 experiment preset 形成两套行为。
+- `PBRExperimentProfileStorage::loadFromFile(...)` 现在为 environment、postprocess 和 PBR preview 的临时副本分别构建 schema，再把 `environment.*`、`postprocess.*`、`pbrPreview.*` 去掉前缀后交给对应 schema。
+- 删除了 `PBRExperimentProfile.cpp` 中重复维护的 environment / postprocess / PBR preview 字段分支。
+
+这一步让单 profile local ini 与高层 experiment ini 共用字段来源。后续如果新增 PBR material 参数，正常路径应该是先在 profile schema 增加 descriptor，然后 local profile、Debug UI 和 experiment preset 同时获得该字段能力。
