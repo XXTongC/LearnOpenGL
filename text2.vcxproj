@@ -662,6 +662,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="config\environment_profile.example.ini" />
+    <None Include="config\pbr_material.example.ini" />
     <None Include="config\pbr_experiment.example.ini" />
     <None Include="config\pbr_preview.example.ini" />
     <None Include="config\postprocess_settings.example.ini" />

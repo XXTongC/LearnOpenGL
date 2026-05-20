@@ -1864,6 +1864,9 @@
     <None Include="config\environment_profile.example.ini">
       <Filter>资源文件\config</Filter>
     </None>
+    <None Include="config\pbr_material.example.ini">
+      <Filter>资源文件\config</Filter>
+    </None>
     <None Include="config\pbr_experiment.example.ini">
       <Filter>资源文件\config</Filter>
     </None>

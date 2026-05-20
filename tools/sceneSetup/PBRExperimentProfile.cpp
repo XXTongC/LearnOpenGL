@@ -98,6 +98,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 
 	environmentProfile = loadedEnvironmentProfile;
 	postProcessSettings = loadedPostProcessSettings;
+	PBRPreviewProfileStorage::applyMaterialProfileReference(loadedPBRPreviewProfile);
 	pbrPreviewProfile = loadedPBRPreviewProfile;
 	return true;
 }

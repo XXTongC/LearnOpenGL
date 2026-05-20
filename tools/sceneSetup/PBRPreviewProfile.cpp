@@ -9,6 +9,11 @@ namespace
 	{
 		return static_cast<int>(unit);
 	}
+
+	bool hasMaterialProfilePath(const GL_SCENE::PBRPreviewProfile& profile)
+	{
+		return !profile.materialProfilePath.empty();
+	}
 }
 
 GL_SCENE::PBRPreviewProfile::PBRPreviewProfile()
@@ -49,6 +54,9 @@ void GL_SCENE::PBRPreviewProfile::visitEditableProperties(GL_EDITOR::PropertyBui
 	builder.addConfigFloat("gridRoughnessMin", "Grid Roughness Min", &gridRoughnessMin, 0.04f, 1.0f);
 	builder.addConfigFloat("gridRoughnessMax", "Grid Roughness Max", &gridRoughnessMax, 0.04f, 1.0f);
 
+	builder.addSection("Material Preset");
+	builder.addConfigString("materialProfilePath", "Material Profile Path", &materialProfilePath);
+
 	material.visitEditableProperties(builder);
 
 	builder.addSection("Textures");
@@ -74,6 +82,7 @@ bool GL_SCENE::PBRPreviewProfileStorage::loadFromFile(const std::string& path, P
 		return false;
 	}
 
+	PBRPreviewProfileStorage::applyMaterialProfileReference(loadedProfile);
 	profile = loadedProfile;
 	return true;
 }
@@ -88,4 +97,14 @@ bool GL_SCENE::PBRPreviewProfileStorage::saveToFile(const std::string& path, con
 		"# Local PBR preview profile for material and IBL experiments",
 		builder
 	);
+}
+
+bool GL_SCENE::PBRPreviewProfileStorage::applyMaterialProfileReference(PBRPreviewProfile& profile)
+{
+	if (!hasMaterialProfilePath(profile))
+	{
+		return false;
+	}
+
+	return GLframework::PBRMaterialProfileStorage::loadFromFile(profile.materialProfilePath, profile.material);
 }

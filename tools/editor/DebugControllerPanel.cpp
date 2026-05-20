@@ -143,6 +143,7 @@ namespace
 		}
 
 		static std::string lastConfigStatus{};
+		static std::string lastMaterialConfigStatus{};
 		const std::string configPath = profilePath ? *profilePath : GL_SCENE::PBRPreviewProfileStorage::defaultPath();
 		if (ImGui::CollapsingHeader("PBR Preview Profile"))
 		{
@@ -170,6 +171,38 @@ namespace
 			if (!lastConfigStatus.empty())
 			{
 				ImGui::TextWrapped("%s", lastConfigStatus.c_str());
+			}
+
+			const std::string materialConfigPath = profile->materialProfilePath.empty()
+				? GLframework::PBRMaterialProfileStorage::defaultPath()
+				: profile->materialProfilePath;
+			ImGui::Separator();
+			ImGui::TextWrapped("Material Preset File: %s", materialConfigPath.c_str());
+			if (ImGui::Button("Save PBR Material Profile"))
+			{
+				if (profile->materialProfilePath.empty())
+				{
+					profile->materialProfilePath = materialConfigPath;
+				}
+				lastMaterialConfigStatus = GLframework::PBRMaterialProfileStorage::saveToFile(materialConfigPath, profile->material)
+					? "PBR material profile saved."
+					: "PBR material profile save failed.";
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Reload PBR Material Profile"))
+			{
+				if (profile->materialProfilePath.empty())
+				{
+					profile->materialProfilePath = materialConfigPath;
+				}
+				lastMaterialConfigStatus = GLframework::PBRMaterialProfileStorage::loadFromFile(materialConfigPath, profile->material)
+					? "PBR material profile reloaded."
+					: "PBR material profile reload failed.";
+			}
+
+			if (!lastMaterialConfigStatus.empty())
+			{
+				ImGui::TextWrapped("%s", lastMaterialConfigStatus.c_str());
 			}
 		}
 	}

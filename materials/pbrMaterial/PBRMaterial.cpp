@@ -2,7 +2,9 @@
 
 #include <cstddef>
 
+#include "tools/config/ProfileConfigIO.h"
 #include "tools/inspector/MaterialInspector.h"
+#include "tools/inspector/PropertySchema.h"
 
 using namespace GLframework;
 
@@ -155,6 +157,38 @@ void PBRMaterialProfile::visitEditableProperties(GL_EDITOR::PropertyBuilder& bui
 {
 	addMaterialProfileSurfaceProperties(builder, *this);
 	addMaterialProfileIblProperties(builder, *this);
+}
+
+std::string PBRMaterialProfileStorage::defaultPath()
+{
+	return "config/pbr_material.local.ini";
+}
+
+bool PBRMaterialProfileStorage::loadFromFile(const std::string& path, PBRMaterialProfile& profile)
+{
+	PBRMaterialProfile loadedProfile = profile;
+	GL_EDITOR::PropertyBuilder builder{};
+	loadedProfile.visitEditableProperties(builder);
+	const bool loaded = GL_CONFIG::loadPropertyConfig(path, builder);
+	if (!loaded)
+	{
+		return false;
+	}
+
+	profile = loadedProfile;
+	return true;
+}
+
+bool PBRMaterialProfileStorage::saveToFile(const std::string& path, const PBRMaterialProfile& profile)
+{
+	PBRMaterialProfile snapshot = profile;
+	GL_EDITOR::PropertyBuilder builder{};
+	snapshot.visitEditableProperties(builder);
+	return GL_CONFIG::savePropertyConfig(
+		path,
+		"# Local PBR material profile for material and IBL experiments",
+		builder
+	);
 }
 
 PBRMaterial::PBRMaterial()

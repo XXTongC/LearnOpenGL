@@ -31,6 +31,7 @@ namespace GL_SCENE
 		float gridRoughnessMin{ 0.08f };
 		float gridRoughnessMax{ 1.0f };
 
+		std::string materialProfilePath{};
 		GLframework::PBRMaterialProfile material{};
 
 		std::string normalMapPath{ "Texture/normal/normal_map.png" };
@@ -45,5 +46,6 @@ namespace GL_SCENE
 		static std::string defaultPath();
 		static bool loadFromFile(const std::string& path, PBRPreviewProfile& profile);
 		static bool saveToFile(const std::string& path, const PBRPreviewProfile& profile);
+		static bool applyMaterialProfileReference(PBRPreviewProfile& profile);
 	};
 }

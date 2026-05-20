@@ -1070,3 +1070,16 @@ Camera input / 临时 FOV 交互已从 `main.cpp` 拆出：
 - `RuntimeInputController.cpp/.h` 已加入 Visual Studio 工程和 Application filter。
 
 这一步继续降低主入口复杂度。后续如果引入 editor camera、game camera、preview orbit camera 或 PBR 材质调试专用相机，应把输入路由扩展在 runtime input 边界内，而不是继续把 camera-specific 分支写回 `main.cpp`。
+
+### 2026-05-20 PBR Material Preset Files
+
+PBR material preset 已从 preview profile 中拆出独立文件入口：
+
+- `PBRMaterialProfile` 新增 `PBRMaterialProfileStorage`，支持通过同一份 property schema 保存 / 加载 `config/pbr_material.local.ini`。
+- 新增 `config/pbr_material.example.ini`，作为独立材质 preset 示例，并加入 Visual Studio 的 `资源文件\config` filter。
+- `PBRPreviewProfile` 新增 `materialProfilePath`，可以在 preview profile 或 experiment profile 中引用独立材质 preset。
+- `PBRPreviewProfileStorage::loadFromFile(...)` 加载 preview profile 后会应用 `materialProfilePath` 指向的材质 preset；`PBRExperimentProfileStorage::loadFromFile(...)` 也会在应用 `pbrPreview.*` 字段后解析同一引用。
+- `DebugControllerPanel` 的 PBR Preview Profile 区域新增 `Save PBR Material Profile` / `Reload PBR Material Profile` 按钮；当 `materialProfilePath` 为空时，保存会默认使用 `config/pbr_material.local.ini`。
+- `config/pbr_preview.example.ini` 和 `config/pbr_experiment.example.ini` 已补充 `materialProfilePath` 示例字段。
+
+这一步让“材质参数 preset”和“preview 几何 / grid / normal map 设置”分离。后续新增 ORM packed texture、clearcoat 或 transmission 参数时，应先扩展 `PBRMaterialProfile` schema，然后独立 material preset、preview profile、experiment preset 和 Debug UI 会共享同一套字段来源。
