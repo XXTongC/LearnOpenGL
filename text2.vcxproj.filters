@@ -315,6 +315,9 @@
     <ClCompile Include="application\RuntimeProfileLoader.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeScenePreparer.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeViewport.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -573,6 +576,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeProfileLoader.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeScenePreparer.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeViewport.h">

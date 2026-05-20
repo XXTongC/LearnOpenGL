@@ -9,6 +9,7 @@
 #include "RuntimeBootstrapper.h"
 #include "RuntimeInputController.h"
 #include "RuntimeProfileLoader.h"
+#include "RuntimeScenePreparer.h"
 #include "RuntimeViewport.h"
 #include "tools/tools.h"
 #include "shader.h"
@@ -61,7 +62,6 @@
 #include "tools/sceneSetup/PBRCameraRigProfile.h"
 #include "tools/sceneSetup/PBRExperimentProfile.h"
 #include "tools/sceneSetup/PBRLightRigProfile.h"
-#include "tools/sceneSetup/SceneSetup.h"
 int GLframework::PointLightShadow::MAX_POINT_LIGHTS = 2;
 /*
  * refer to ColorBlend, there are still some problem should be solve such as opacity order, look up OIT and Depth Peeling
@@ -83,11 +83,8 @@ bool initializeApplication();
 void runFrame();
 void printOpenGLCapabilities();
 void cleanupRuntime();
-GL_EXPERIMENTS::RuntimeContext makeLegacyExperimentContext();
-GL_SCENE::SetupContext makeSceneSetupContext();
+GL_RUNTIME::RuntimeScenePrepareConfig makeScenePrepareConfig();
 GL_EDITOR::DebugControllerContext makeDebugControllerContext();
-void prepareLegacyExperiments();
-void updateLegacyExperiments();
 
 //
 void prepareCamera();
@@ -96,7 +93,6 @@ GL_EDITOR::EditorPanelContext makeEditorPanelContext();
 //
 void initIMGUI();
 void prepareState();
-void prepare();
 
 //IMGUI
 void renderIMGUI();
@@ -179,7 +175,7 @@ bool initializeApplication()
 
 	prepareCamera();
 	GL_RUNTIME::RuntimeProfileLoader::loadAll(gAppRuntime);
-	prepare();
+	GL_RUNTIME::RuntimeScenePreparer::prepare(gAppRuntime, gLegacyExperiments, makeScenePrepareConfig());
 	initIMGUI();
 	printOpenGLCapabilities();
 
@@ -190,7 +186,7 @@ void runFrame()
 {
 	cameracontrol->update();
 	renderer->setClearColor(clearColor);
-	updateLegacyExperiments();
+	GL_RUNTIME::RuntimeScenePreparer::updateLegacyExperiments(gAppRuntime, gLegacyExperiments);
 	//moveit();
 
 	// pass 1: off-screen color attachment
@@ -240,42 +236,14 @@ void cleanupRuntime()
 	camera = nullptr;
 }
 
-GL_EXPERIMENTS::RuntimeContext makeLegacyExperimentContext()
+GL_RUNTIME::RuntimeScenePrepareConfig makeScenePrepareConfig()
 {
 	return {
-		renderer,
-		sceneOffScreen,
-		grassMaterial,
-		skyBoxMesh,
-		movePlane,
-		csmShadowMaterial,
-		dirLight,
-		pointLights
-	};
-}
-
-GL_SCENE::SetupContext makeSceneSetupContext()
-{
-	return {
-		renderer,
-		sceneOffScreen,
-		sceneInScreen,
-		frameRenderTargets,
-		bloom,
-		screenQuad,
-		skyBoxMesh,
-		textD,
-		ScreenMat,
-		ambientLight,
-		dirLight,
-		spotLight,
-		pointLights,
 		width,
 		height,
 		TexturePath,
-		environmentProfile,
-		pbrPreviewProfile,
-		pbrLightRigProfile
+		rNum,
+		cNum
 	};
 }
 
@@ -300,35 +268,6 @@ GL_EDITOR::DebugControllerContext makeDebugControllerContext()
 		camera,
 		&m_time
 	};
-}
-
-void prepare()
-{
-	auto sceneSetupContext = makeSceneSetupContext();
-	GL_SCENE::prepareDefaultScene(sceneSetupContext);
-	prepareLegacyExperiments();
-
-	LogInfo(":\n Renderer Prepared\n SceneInScreen Prepared\n SceneOffScreen Prepared \n FramebufferMultisample Prepared\n FramebufferResolve Prepared\n PointLightShadow initialized\n Lights Ready \n Objects Ready");
-}
-
-void prepareLegacyExperiments()
-{
-	auto context = makeLegacyExperimentContext();
-
-	// Re-enable legacy experiments here with a few focused calls.
-	// gLegacyExperiments.enableSolarSystem(context);
-	// gLegacyExperiments.enableGrassField(context, rNum, cNum);
-	// gLegacyExperiments.enableEnvironmentSphere(context);
-	// gLegacyExperiments.enableCsmPlane(context);
-	// gLegacyExperiments.enableBackpackModel(context);
-	// gLegacyExperiments.enableShadowPreview(context);
-	// gLegacyExperiments.enableOrbitingPointLight(0, 3.0f, 3.0f);
-}
-
-void updateLegacyExperiments()
-{
-	auto context = makeLegacyExperimentContext();
-	gLegacyExperiments.update(context);
 }
 
 GL_EDITOR::EditorPanelContext makeEditorPanelContext()

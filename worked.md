@@ -1121,6 +1121,18 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera control / shadow camera double-to-float `C4244` warning，本轮未引入 runtime profile loader warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+188. 完成第九十四轮 runtime scene preparer：
+   - 新增 [application/RuntimeScenePreparer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeScenePreparer.h) 与 [application/RuntimeScenePreparer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeScenePreparer.cpp)，集中构建 `GL_SCENE::SetupContext` 并调用 `GL_SCENE::prepareDefaultScene(...)`。
+   - 将 legacy experiment 的 `RuntimeContext` 构建、默认注释启用点和每帧 update 入口移入 `RuntimeScenePreparer`，保留默认不启用 legacy experiments 的旧行为。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，删除本地 `makeSceneSetupContext()`、`makeLegacyExperimentContext()`、`prepareLegacyExperiments()`、`updateLegacyExperiments()` 和 `prepare()`，`initializeApplication()` 改为调用 `RuntimeScenePreparer::prepare(...)`。
+   - 新增 `RuntimeScenePrepareConfig`，把窗口尺寸、skybox texture path 和 legacy grass grid 参数作为 scene preparation 的过渡输入。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 runtime scene preparer 加入 VS 工程和 Application filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 scene preparation 阶段已从主入口收敛到 application 层。
+189. 完成第八十五次 runtime scene preparer 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeScenePreparer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeScenePreparer.cpp) 与 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera / shadow camera double-to-float `C4244` warning，本轮未引入 runtime scene preparer warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1174,5 +1186,6 @@
 - 当前 profile loading 阶段已从 `main.cpp` 拆出到 `RuntimeProfileLoader`，environment、postprocess、PBR preview 和 PBR experiment 的分层加载顺序集中在 application 层。
 - 当前 runtime resize 边界已从 `main.cpp` 拆出到 `RuntimeViewport`，窗口尺寸变化会统一同步 viewport、PerspectiveCamera aspect、FrameRenderTargets 和 ScreenMaterial postprocess 输入贴图。
 - 当前 runtime input 边界已从 `main.cpp` 拆出到 `RuntimeInputController`，CameraControl 输入分发和中键临时 FOV 缩放不再由主入口直接维护。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担 scene preparation、frame orchestration、ImGui startup 和 callback glue。
-- 下一步建议目标：继续抽 `RuntimeScenePreparer`，把 scene setup、legacy experiment preparation 和相关 context 构建从 `main.cpp` 移出；或者把 `runFrame()` 的 frame orchestration 移入 runtime frame runner。
+- 当前 runtime scene preparation 边界已从 `main.cpp` 拆出到 `RuntimeScenePreparer`，scene setup、legacy experiment preparation 和相关 context 构建集中在 application 层。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担 frame orchestration、ImGui startup 和 callback glue。
+- 下一步建议目标：继续抽 `RuntimeFrameRunner`，把 `runFrame()` 的 offscreen render、MSAA resolve、Bloom、screen composite 和 UI 绘制从主入口移出；或者先抽 `RuntimeGuiHost` 收敛 ImGui startup / frame UI。

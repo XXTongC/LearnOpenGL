@@ -1141,3 +1141,14 @@ Profile loading 阶段已从 `main.cpp` 拆出：
 - `initializeApplication()` 不再直接维护四个 profile load 函数，只在 camera 准备完成后调用 profile loader 阶段。
 
 这一步把 PBR 实验配置恢复逻辑收敛到 application 层。下一步可以继续抽 `RuntimeScenePreparer`，把 scene setup、legacy experiment preparation 和相关 context 构建从 `main.cpp` 移出；也可以先抽 `RuntimeGuiStartup`，把 ImGui 初始化和 frame UI 绘制入口拆清楚。
+
+### 2026-05-20 Runtime Scene Preparer
+
+Scene preparation 阶段已开始从 `main.cpp` 拆出：
+
+- 新增 `RuntimeScenePreparer`，集中构建 `GL_SCENE::SetupContext` 并调用 `prepareDefaultScene(...)`。
+- Legacy experiment 的运行时 context 构建和 update 入口也移动到 `RuntimeScenePreparer`，`main.cpp` 不再直接知道 legacy experiment 需要哪些 renderer / scene / material / light 字段。
+- `RuntimeScenePrepareConfig` 保留窗口尺寸、skybox texture path 和 legacy grass grid 参数，作为从旧入口向 application 层传递准备参数的过渡结构。
+- 默认 legacy experiment 仍保持注释禁用状态，避免这次结构重构改变启动行为。
+
+这一步让 `initializeApplication()` 的场景准备阶段收敛成单一 application-level 调用。后续更合理的拆分是继续抽 `RuntimeFrameRunner`，把 `runFrame()` 中的 offscreen render、MSAA resolve、Bloom、screen composite 和 UI 绘制从主入口移出；之后再考虑更正式的 `FramePipeline` / `RenderPipeline` 结构。
