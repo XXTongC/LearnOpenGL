@@ -141,6 +141,7 @@
     <ClCompile Include="application\RuntimeCameraLifecycle.cpp" />
     <ClCompile Include="application\RuntimeEditorPanelCoordinator.cpp" />
     <ClCompile Include="application\RuntimeFramePipeline.cpp" />
+    <ClCompile Include="application\RuntimeFramePasses.cpp" />
     <ClCompile Include="application\RuntimeFrameRunner.cpp" />
     <ClCompile Include="application\RuntimeGuiHost.cpp" />
     <ClCompile Include="application\RuntimeInputController.cpp" />
@@ -297,6 +298,7 @@
     <ClInclude Include="application\RuntimeCameraLifecycle.h" />
     <ClInclude Include="application\RuntimeEditorPanelCoordinator.h" />
     <ClInclude Include="application\RuntimeFramePipeline.h" />
+    <ClInclude Include="application\RuntimeFramePasses.h" />
     <ClInclude Include="application\RuntimeFrameRunner.h" />
     <ClInclude Include="application\RuntimeGuiHost.h" />
     <ClInclude Include="application\RuntimeInputController.h" />

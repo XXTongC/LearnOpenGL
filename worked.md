@@ -1229,6 +1229,18 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 runtime application shell warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+206. 完成第一百零三轮 runtime frame pass types：
+   - 新增 [application/RuntimeFramePasses.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePasses.h) 与 [application/RuntimeFramePasses.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePasses.cpp)，定义 `RuntimeSceneColorPass`、`RuntimeSceneResolvePass`、`RuntimeBloomPass` 和 `RuntimeScreenCompositePass`。
+   - 更新 [application/RuntimeFramePipeline.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipeline.cpp)，只负责排列 pass 顺序，不再直接包含各 pass 的具体执行代码。
+   - 更新 [application/RuntimeFramePipeline.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipeline.h)，移除私有静态 pass 方法声明。
+   - 当前 frame pass 行为保持不变：scene color 写入 MSAA target，resolve 到 HDR target，按 postprocess settings 运行 Bloom，再进行 screen composite。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 runtime frame passes 加入 VS 工程和 Application filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 frame pipeline 当前步骤已拆成显式 pass 类型。
+207. 完成第九十四次 runtime frame pass types 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeFramePasses.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePasses.cpp) 与 [application/RuntimeFramePipeline.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipeline.cpp)，结果通过。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 runtime frame pass warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1291,5 +1303,6 @@
 - 当前 runtime window lifecycle 已从 `main.cpp` 拆出到 `RuntimeWindowLifecycle`，window setup 和 Application callback glue 集中在 application 层。
 - 当前 `main.cpp` 的 runtime field alias 和未使用 legacy 参数已清理，启动参数集中到本地 `MainStartupConfig`。
 - 当前 runtime startup sequence 已聚合到 `RuntimeApplicationShell`，`main.cpp` 基本只保留程序入口职责。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`RuntimeFramePipeline` 内部 pass 仍是硬编码方法调用。
-- 下一步建议目标：把 `RuntimeFramePipeline` 内的 pass 细化为可替换 pass 类型；或者补 PBR pipeline feature toggle / profile。
+- 当前 `RuntimeFramePipeline` 的步骤已拆成显式 pass 类型，PBR pipeline 后续可以按 pass 类型继续扩展。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；pipeline feature toggle / profile 还未接入。
+- 下一步建议目标：补 PBR pipeline feature toggle / profile；或者继续把 pass 类型从静态类演进为可组合 pass list。

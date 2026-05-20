@@ -1243,3 +1243,14 @@ Runtime startup sequence 已从 `main.cpp` 聚合到 application shell：
 - 原本散落在 `main.cpp` 的 window init、camera init、profile load、scene prepare、GUI init、frame run、camera cleanup 和 destroy 顺序集中到 `RuntimeApplicationShell`。
 
 这一步让主入口基本从 runtime orchestration 中退出。后续更值得继续推进的是把 `RuntimeFramePipeline` 的 pass 细化为可替换组件，或者补一层 PBR pipeline profile / pipeline feature toggle。
+
+### 2026-05-20 Runtime Frame Pass Types
+
+Runtime frame pipeline 的当前步骤已拆成显式 pass 类型：
+
+- 新增 `RuntimeFramePasses`，包含 `RuntimeSceneColorPass`、`RuntimeSceneResolvePass`、`RuntimeBloomPass` 和 `RuntimeScreenCompositePass`。
+- `RuntimeFramePipeline::render(...)` 现在只排列 pass 顺序，不再直接包含每个 pass 的具体执行细节。
+- 当前 pass 行为保持不变：scene color 写入 MSAA target，resolve 到 HDR target，按 postprocess settings 运行 Bloom，再进行 screen composite。
+- `RuntimeFramePipelineConfig` 继续作为 pipeline 层配置传给需要 framebuffer 尺寸的 screen composite pass。
+
+这一步把 PBR pipeline 的扩展点从“函数内部某段代码”提升为“独立 pass 类型”。后续增加 depth prepass、PBR forward pass、G-buffer、shadow atlas、SSR/TAA 或透明 pass 时，可以按同一模式添加新的 pass 类型并调整 pipeline 顺序。

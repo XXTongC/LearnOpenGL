@@ -321,6 +321,9 @@
     <ClCompile Include="application\RuntimeFramePipeline.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeFramePasses.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeFrameRunner.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -603,6 +606,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeFramePipeline.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeFramePasses.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeFrameRunner.h">

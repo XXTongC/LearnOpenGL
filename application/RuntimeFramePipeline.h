@@ -17,14 +17,5 @@ namespace GL_RUNTIME
 			GLframework::AppRuntimeContext& context,
 			const RuntimeFramePipelineConfig& config
 		);
-
-	private:
-		static void renderSceneToMultisampleTarget(GLframework::AppRuntimeContext& context);
-		static void resolveSceneColor(GLframework::AppRuntimeContext& context);
-		static void runBloom(GLframework::AppRuntimeContext& context);
-		static void renderScreenComposite(
-			GLframework::AppRuntimeContext& context,
-			const RuntimeFramePipelineConfig& config
-		);
 	};
 }
