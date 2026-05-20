@@ -25,6 +25,11 @@ namespace GL_SCENE
 	struct PBRPreviewProfile;
 }
 
+namespace GL_RUNTIME
+{
+	struct RuntimeFramePipelineProfile;
+}
+
 namespace GL_EDITOR
 {
 	struct DebugControllerContext
@@ -34,6 +39,8 @@ namespace GL_EDITOR
 		std::shared_ptr<GLframework::SpotLight>* spotLight{ nullptr };
 		std::vector<std::shared_ptr<GLframework::PointLight>>* pointLights{ nullptr };
 		std::shared_ptr<GLframework::Mesh> textObject{ nullptr };
+		GL_RUNTIME::RuntimeFramePipelineProfile* framePipelineProfile{ nullptr };
+		const std::string* framePipelineProfilePath{ nullptr };
 		GLframework::PostProcessSettings* postProcessSettings{ nullptr };
 		const std::string* postProcessSettingsPath{ nullptr };
 		std::shared_ptr<GLframework::Renderer> renderer{ nullptr };

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "RuntimeFramePipelineProfile.h"
 #include "../renderer/EnvironmentProfile.h"
 #include "../renderer/FrameRenderTargets.h"
 #include "../renderer/PostProcessPass.h"
@@ -48,6 +49,8 @@ namespace GLframework
 		std::shared_ptr<ScreenMaterial> screenMaterial{ nullptr };
 		std::shared_ptr<PhongCSMShadowMaterial> csmShadowMaterial{ nullptr };
 		PostProcessPass postProcessPass{};
+		GL_RUNTIME::RuntimeFramePipelineProfile framePipelineProfile{};
+		std::string framePipelineProfilePath{ GL_RUNTIME::RuntimeFramePipelineProfileStorage::defaultPath() };
 		PostProcessSettings postProcessSettings{};
 		std::string postProcessSettingsPath{ PostProcessSettingsStorage::defaultPath() };
 		EnvironmentProfile environmentProfile{};

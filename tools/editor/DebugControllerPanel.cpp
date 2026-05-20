@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "../../application/RuntimeFramePipelineProfile.h"
 #include "../../renderer/EnvironmentProfile.h"
 #include "../../renderer/renderer.h"
 #include "../../light/directionalLight.h"
@@ -126,6 +127,48 @@ namespace
 				lastConfigStatus = GLframework::PostProcessSettingsStorage::loadFromFile(configPath, *settings)
 					? "Post process profile reloaded."
 					: "Post process profile reload failed.";
+			}
+
+			if (!lastConfigStatus.empty())
+			{
+				ImGui::TextWrapped("%s", lastConfigStatus.c_str());
+			}
+		}
+	}
+
+	void drawFramePipelineControls(
+		GL_RUNTIME::RuntimeFramePipelineProfile* profile,
+		const std::string* profilePath
+	)
+	{
+		if (!profile)
+		{
+			return;
+		}
+
+		static std::string lastConfigStatus{};
+		const std::string configPath = profilePath ? *profilePath : GL_RUNTIME::RuntimeFramePipelineProfileStorage::defaultPath();
+		if (ImGui::CollapsingHeader("Runtime Frame Pipeline"))
+		{
+			ImGui::TextWrapped("Profile File: %s", configPath.c_str());
+			ImGui::TextWrapped("These toggles are intended for render-path debugging. Disabling required passes may leave stale frame textures visible.");
+
+			GL_EDITOR::PropertyBuilder builder{};
+			profile->visitEditableProperties(builder);
+			GL_EDITOR::drawProperties(builder);
+
+			if (ImGui::Button("Save Frame Pipeline Profile"))
+			{
+				lastConfigStatus = GL_RUNTIME::RuntimeFramePipelineProfileStorage::saveToFile(configPath, *profile)
+					? "Frame pipeline profile saved."
+					: "Frame pipeline profile save failed.";
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Reload Frame Pipeline Profile"))
+			{
+				lastConfigStatus = GL_RUNTIME::RuntimeFramePipelineProfileStorage::loadFromFile(configPath, *profile)
+					? "Frame pipeline profile reloaded."
+					: "Frame pipeline profile reload failed.";
 			}
 
 			if (!lastConfigStatus.empty())
@@ -329,6 +372,7 @@ void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
 	}
 
 	drawPostProcessControls(context.postProcessSettings, context.postProcessSettingsPath);
+	drawFramePipelineControls(context.framePipelineProfile, context.framePipelineProfilePath);
 	drawPBRPreviewControls(context.pbrPreviewProfile, context.pbrPreviewProfilePath);
 	drawPBRExperimentControls(context);
 	drawEnvironmentControls(context.renderer, context.environmentProfile, context.environmentProfilePath);

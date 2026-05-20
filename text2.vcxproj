@@ -141,6 +141,7 @@
     <ClCompile Include="application\RuntimeCameraLifecycle.cpp" />
     <ClCompile Include="application\RuntimeEditorPanelCoordinator.cpp" />
     <ClCompile Include="application\RuntimeFramePipeline.cpp" />
+    <ClCompile Include="application\RuntimeFramePipelineProfile.cpp" />
     <ClCompile Include="application\RuntimeFramePasses.cpp" />
     <ClCompile Include="application\RuntimeFrameRunner.cpp" />
     <ClCompile Include="application\RuntimeGuiHost.cpp" />
@@ -298,6 +299,7 @@
     <ClInclude Include="application\RuntimeCameraLifecycle.h" />
     <ClInclude Include="application\RuntimeEditorPanelCoordinator.h" />
     <ClInclude Include="application\RuntimeFramePipeline.h" />
+    <ClInclude Include="application\RuntimeFramePipelineProfile.h" />
     <ClInclude Include="application\RuntimeFramePasses.h" />
     <ClInclude Include="application\RuntimeFrameRunner.h" />
     <ClInclude Include="application\RuntimeGuiHost.h" />
@@ -693,6 +695,7 @@
     <None Include="config\pbr_experiment.example.ini" />
     <None Include="config\pbr_preview.example.ini" />
     <None Include="config\postprocess_settings.example.ini" />
+    <None Include="config\runtime_frame_pipeline.example.ini" />
     <None Include="cubeSphere.frag" />
     <None Include="cubeSphere.vert" />
     <None Include="fbx\bag\backpack.mtl" />

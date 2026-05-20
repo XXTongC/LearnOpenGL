@@ -1241,6 +1241,21 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 runtime frame pass warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+208. 完成第一百零四轮 runtime frame pipeline profile：
+   - 新增 [application/RuntimeFramePipelineProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipelineProfile.h) 与 [application/RuntimeFramePipelineProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipelineProfile.cpp)，定义当前 frame pass 的启用开关和 schema 驱动的本地 ini 读写。
+   - 更新 [application/AppRuntimeContext.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\AppRuntimeContext.h)，在 runtime context 中保存 frame pipeline profile 与默认 local 配置路径。
+   - 更新 [application/RuntimeProfileLoader.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeProfileLoader.cpp)，启动时加载 `config/runtime_frame_pipeline.local.ini`；缺失时保持全部 pass 默认开启。
+   - 更新 [application/RuntimeFramePipeline.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipeline.cpp)，每帧按 profile 决定 scene color、resolve、Bloom、screen composite 是否执行。
+   - 更新 [tools/editor/DebugControllerPanel.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.h)、[tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp) 与 [application/RuntimeEditorPanelCoordinator.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorPanelCoordinator.cpp)，Debug UI 支持运行时切换、保存和重载 frame pipeline profile。
+   - 新增 [config/runtime_frame_pipeline.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\runtime_frame_pipeline.example.ini)，记录可复制到 local 配置的 pass toggle 字段。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将新增 source/header/example config 加入 VS 工程和对应 filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 runtime frame pipeline profile 的职责边界和下一步 pass list 建议。
+209. 完成第九十五次 runtime frame pipeline profile 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeFramePipelineProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipelineProfile.cpp)、[application/RuntimeFramePipeline.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipeline.cpp)、[application/RuntimeProfileLoader.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeProfileLoader.cpp)、[tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)、[application/RuntimeEditorPanelCoordinator.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorPanelCoordinator.cpp) 和 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 编译并运行临时 roundtrip 测试，验证 `RuntimeFramePipelineProfileStorage::saveToFile()` / `loadFromFile()` 能正确保存和恢复四个 bool toggle；测试后已清理临时源文件和产物。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；新增 `RuntimeFramePipelineProfile.cpp` 已正确进入 VS 工程。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1304,5 +1319,6 @@
 - 当前 `main.cpp` 的 runtime field alias 和未使用 legacy 参数已清理，启动参数集中到本地 `MainStartupConfig`。
 - 当前 runtime startup sequence 已聚合到 `RuntimeApplicationShell`，`main.cpp` 基本只保留程序入口职责。
 - 当前 `RuntimeFramePipeline` 的步骤已拆成显式 pass 类型，PBR pipeline 后续可以按 pass 类型继续扩展。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；pipeline feature toggle / profile 还未接入。
-- 下一步建议目标：补 PBR pipeline feature toggle / profile；或者继续把 pass 类型从静态类演进为可组合 pass list。
+- 当前 `RuntimeFramePipelineProfile` 已接入 runtime context、profile loader、Debug UI 和本地 ini 读写，scene color / resolve / Bloom / screen composite pass 可运行时切换并保存。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；frame pipeline 仍是静态 pass 顺序，还不是可组合 pass list。
+- 下一步建议目标：把 `RuntimeFramePipeline` 从静态 if 顺序演进为 pass list / pass registry；或者先抽出 PBR 专用 pass profile，为 depth prepass、shadow atlas、PBR forward 和 IBL debug pass 留出稳定扩展点。

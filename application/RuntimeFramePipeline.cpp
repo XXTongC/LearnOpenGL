@@ -9,9 +9,24 @@ namespace GL_RUNTIME
 		const RuntimeFramePipelineConfig& config
 	)
 	{
-		RuntimeSceneColorPass::execute(context);
-		RuntimeSceneResolvePass::execute(context);
-		RuntimeBloomPass::execute(context);
-		RuntimeScreenCompositePass::execute(context, config);
+		if (context.framePipelineProfile.sceneColorPassEnabled)
+		{
+			RuntimeSceneColorPass::execute(context);
+		}
+
+		if (context.framePipelineProfile.sceneResolvePassEnabled)
+		{
+			RuntimeSceneResolvePass::execute(context);
+		}
+
+		if (context.framePipelineProfile.bloomPassEnabled)
+		{
+			RuntimeBloomPass::execute(context);
+		}
+
+		if (context.framePipelineProfile.screenCompositePassEnabled)
+		{
+			RuntimeScreenCompositePass::execute(context, config);
+		}
 	}
 }

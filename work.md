@@ -1254,3 +1254,16 @@ Runtime frame pipeline 的当前步骤已拆成显式 pass 类型：
 - `RuntimeFramePipelineConfig` 继续作为 pipeline 层配置传给需要 framebuffer 尺寸的 screen composite pass。
 
 这一步把 PBR pipeline 的扩展点从“函数内部某段代码”提升为“独立 pass 类型”。后续增加 depth prepass、PBR forward pass、G-buffer、shadow atlas、SSR/TAA 或透明 pass 时，可以按同一模式添加新的 pass 类型并调整 pipeline 顺序。
+
+### 2026-05-20 Runtime Frame Pipeline Profile
+
+Runtime frame pipeline 已新增第一层 profile / feature toggle：
+
+- 新增 `RuntimeFramePipelineProfile`，保存 scene color、resolve、Bloom、screen composite 四个当前 pass 的启用状态。
+- 新增 `RuntimeFramePipelineProfileStorage`，通过 `PropertySchema` / `ProfileConfigIO` 读写 `config/runtime_frame_pipeline.local.ini`。
+- 新增 `config/runtime_frame_pipeline.example.ini`，作为本地实验配置字段示例。
+- `RuntimeProfileLoader` 启动时会加载 frame pipeline profile；没有 local 配置时保持全部 pass 默认开启，当前渲染行为不变。
+- `RuntimeFramePipeline::render(...)` 每帧按 profile 决定 pass 是否执行，方便隔离 PBR 后续新增 pass 或排查后处理链路。
+- `DebugControllerPanel` 新增 Runtime Frame Pipeline 控制区，可运行时切换、保存和重载 pass toggles。
+
+这一步不是最终的 pipeline 架构，只是先把“是否启用某个 pass”从代码常量移到 profile。下一步更合理的方向是把静态 pass 类型演进为可组合 pass list / pass registry：PBR depth prepass、shadow atlas、PBR forward、IBL debug、transparency、postprocess 都能按 profile 创建和排序，而不是继续在 `RuntimeFramePipeline::render(...)` 中堆 if。

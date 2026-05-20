@@ -26,6 +26,17 @@ namespace
 		LogInfo("Postprocess settings config not found, using defaults: " + context.postProcessSettingsPath);
 	}
 
+	void loadFramePipelineProfile(GLframework::AppRuntimeContext& context)
+	{
+		if (GL_RUNTIME::RuntimeFramePipelineProfileStorage::loadFromFile(context.framePipelineProfilePath, context.framePipelineProfile))
+		{
+			LogInfo("Runtime frame pipeline profile loaded from " + context.framePipelineProfilePath);
+			return;
+		}
+
+		LogInfo("Runtime frame pipeline profile config not found, using defaults: " + context.framePipelineProfilePath);
+	}
+
 	void loadPBRPreviewProfile(GLframework::AppRuntimeContext& context)
 	{
 		if (GL_SCENE::PBRPreviewProfileStorage::loadFromFile(context.pbrPreviewProfilePath, context.pbrPreviewProfile))
@@ -61,6 +72,7 @@ void GL_RUNTIME::RuntimeProfileLoader::loadAll(GLframework::AppRuntimeContext& c
 {
 	loadEnvironmentProfile(context);
 	loadPostProcessSettings(context);
+	loadFramePipelineProfile(context);
 	loadPBRPreviewProfile(context);
 	loadPBRExperimentProfile(context);
 }

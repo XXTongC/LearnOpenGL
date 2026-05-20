@@ -13,6 +13,8 @@ namespace GL_RUNTIME
 			&context.spotLight,
 			&context.pointLights,
 			context.textD,
+			&context.framePipelineProfile,
+			&context.framePipelineProfilePath,
 			&context.postProcessSettings,
 			&context.postProcessSettingsPath,
 			context.renderer,

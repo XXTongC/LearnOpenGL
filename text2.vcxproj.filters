@@ -321,6 +321,9 @@
     <ClCompile Include="application\RuntimeFramePipeline.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeFramePipelineProfile.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeFramePasses.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -606,6 +609,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeFramePipeline.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeFramePipelineProfile.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeFramePasses.h">
@@ -1955,6 +1961,9 @@
       <Filter>资源文件\config</Filter>
     </None>
     <None Include="config\postprocess_settings.example.ini">
+      <Filter>资源文件\config</Filter>
+    </None>
+    <None Include="config\runtime_frame_pipeline.example.ini">
       <Filter>资源文件\config</Filter>
     </None>
     <None Include="third_party\imgui\imgui.natstepfilter">
