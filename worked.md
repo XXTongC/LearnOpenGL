@@ -1267,6 +1267,20 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；新增 `RuntimeFramePassRegistry.cpp` 已正确进入 VS 工程。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+212. 完成第一百零六轮 runtime PBR verification mode：
+   - 新增 [application/RuntimePBRVerification.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.h) 与 [application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)，提供 `--verify-pbr` 使用的 deterministic PBR runtime profile、scene stats 输出和 default framebuffer PPM capture。
+   - 更新 [application/RuntimeApplicationShell.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationShell.h) 与 [application/RuntimeApplicationShell.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationShell.cpp)，支持关闭 GUI、限制验证帧数、在指定帧导出 capture，并在 scene prepare 后报告 PBR scene stats。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，新增 `--verify-pbr` 参数；该模式使用 1280x720 窗口、禁用 ImGui，并启用 `out/pbr_verification.ppm` capture。
+   - 验证 profile 会强制启用 procedural environment / IBL precompute、5x5 PBR material grid、normal map、PBR light rig、camera rig、postprocess 和全部 runtime frame pipeline pass，避免只验证旧 Phong 房间场景。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 runtime PBR verification source/header 加入 VS 工程和 Application filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PBR 验证模式、命令和验证边界。
+213. 完成第九十七次 PBR verification mode 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)、[application/RuntimeApplicationShell.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationShell.cpp) 和 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；新增 `RuntimePBRVerification.cpp` 已正确进入 VS 工程。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，验证模式自动退出并输出 `PBR verification scene stats: objects=33, meshes=32, pbrMeshes=25, pbrPreviewMeshes=25, iblReady=yes`。
+   - `--verify-pbr` 导出 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm)，文件头为 `P6 1280 720 255`，大小 `2764816` bytes。
+   - 对导出的 PPM 做像素统计：`921600` 个像素，非黑像素 `921600`，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`，可排除空黑 framebuffer 或只启动旧场景的情况。
+   - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1332,5 +1346,6 @@
 - 当前 `RuntimeFramePipeline` 的步骤已拆成显式 pass 类型，PBR pipeline 后续可以按 pass 类型继续扩展。
 - 当前 `RuntimeFramePipelineProfile` 已接入 runtime context、profile loader、Debug UI 和本地 ini 读写，scene color / resolve / Bloom / screen composite pass 可运行时切换并保存。
 - 当前 `RuntimeFramePipeline` 已改为遍历 `RuntimeFramePassRegistry::defaultPasses()`，pass 的启用条件和执行入口集中到 registry，pipeline 主流程不再直接依赖具体 pass toggle 字段。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；frame pipeline pass list 当前仍是固定默认列表，还不能由 profile 动态构建。
+- 当前已新增 `--verify-pbr` 验证模式，可强制构建 procedural IBL + 5x5 PBR material grid，并导出 default framebuffer PPM；后续 PBR 改动不能再只用旧 Phong 短启动作为验证。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；frame pipeline pass list 当前仍是固定默认列表，还不能由 profile 动态构建。
 - 下一步建议目标：把固定 `defaultPasses()` 继续推进为由 profile 构建的 pass plan；或者先补 PBR 专用 pass/profile，为 depth prepass、shadow atlas、PBR forward 和 IBL debug pass 留出稳定扩展点。

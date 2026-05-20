@@ -339,6 +339,9 @@
     <ClCompile Include="application\RuntimeInputController.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimePBRVerification.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeProfileLoader.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -630,6 +633,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeInputController.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimePBRVerification.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeProfileLoader.h">

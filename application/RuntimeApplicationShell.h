@@ -6,6 +6,7 @@
 #include "RuntimeBootstrapper.h"
 #include "RuntimeCameraLifecycle.h"
 #include "RuntimeFrameRunner.h"
+#include "RuntimePBRVerification.h"
 #include "RuntimeScenePreparer.h"
 #include "RuntimeWindowLifecycle.h"
 #include "../tools/editor/EditorPanels.h"
@@ -20,6 +21,8 @@ namespace GL_RUNTIME
 		int legacyGrassRows{ 30 };
 		int legacyGrassColumns{ 30 };
 		float editorOrbitAngle{ 0.0f };
+		bool enableGui{ true };
+		RuntimePBRVerificationConfig pbrVerification{};
 	};
 
 	class RuntimeApplicationShell
@@ -42,11 +45,14 @@ namespace GL_RUNTIME
 		RuntimeScenePrepareConfig makeScenePrepareConfig() const;
 		void renderFrameUi();
 		void drawEditorPanels();
+		void captureVerificationFrameIfNeeded();
 		void printOpenGLCapabilities() const;
 
 		GLframework::AppRuntimeContext mRuntime{};
 		GL_EDITOR::SelectionContext mEditorSelection{};
 		GL_EXPERIMENTS::LegacyExperimentRunner mLegacyExperiments{};
 		RuntimeApplicationShellConfig mConfig{};
+		int mRenderedFrameCount{ 0 };
+		bool mVerificationCaptureWritten{ false };
 	};
 }

@@ -1279,3 +1279,21 @@ Runtime frame pipeline 已从硬编码 `if` 顺序推进到 pass registry：
 - VS 工程已加入 `RuntimeFramePassRegistry.cpp/.h`，保持物理文件和工程 filter 一致。
 
 这一步让 PBR 扩展的主要修改点更明确：新增 PBR pass 时，优先新增 pass 类型与 registry 条目；如果需要用户配置，再扩展 profile/schema。后续可以继续把 `defaultPasses()` 从固定静态列表演进成由 profile 构建的 pass plan，这样 PBR forward、shadow atlas、IBL debug、transparent、postprocess 等路径可以按实验 preset 创建不同 pass 组合。
+
+### 2026-05-20 Runtime PBR Verification Mode
+
+针对“不能只验证旧 Phong 实验场景”的问题，新增可复现 PBR 验证模式：
+
+- `main()` 支持 `--verify-pbr` 参数，使用独立 `RuntimeApplicationShellConfig` 启动 1280x720 验证窗口。
+- 验证模式会关闭 ImGui，避免 UI overlay 干扰 framebuffer 证据。
+- 新增 `RuntimePBRVerification`，启动时直接覆盖 runtime profile：启用 procedural environment / IBL precompute、5x5 PBR material grid、normal map、PBR light rig、camera rig、postprocess 和所有 frame pipeline pass。
+- scene prepare 完成后会输出 PBR 验证统计：object / mesh / PBR mesh / PBR preview mesh 数量，以及 `iblReady` 状态。
+- 验证模式会在指定帧读取 default framebuffer 并导出 `out/pbr_verification.ppm`，用于确认实际渲染输出，而不是只看进程能否启动。
+
+当前验证命令：
+
+```powershell
+x64\Debug\text2.exe --verify-pbr
+```
+
+本轮实际验证结果显示：`pbrMeshes=25`、`pbrPreviewMeshes=25`、`iblReady=yes`，并导出 1280x720 PPM framebuffer。后续涉及 PBR 渲染路径的改动，应该优先运行这个验证模式；普通短启动只能作为“程序没崩”的补充证据，不能代替 PBR 场景验证。

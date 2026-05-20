@@ -45,8 +45,19 @@ namespace GL_RUNTIME
 
 		RuntimeCameraLifecycle::initializeDefaultCamera(mRuntime, makeCameraConfig());
 		RuntimeProfileLoader::loadAll(mRuntime);
+		if (mConfig.pbrVerification.enabled)
+		{
+			RuntimePBRVerification::applyProfile(mRuntime);
+		}
 		RuntimeScenePreparer::prepare(mRuntime, mLegacyExperiments, makeScenePrepareConfig());
-		RuntimeGuiHost::initialize({ GL_APP->getWindow() });
+		if (mConfig.pbrVerification.enabled)
+		{
+			RuntimePBRVerification::reportPreparedScene(mRuntime);
+		}
+		if (mConfig.enableGui)
+		{
+			RuntimeGuiHost::initialize({ GL_APP->getWindow() });
+		}
 		printOpenGLCapabilities();
 
 		return true;
@@ -54,17 +65,30 @@ namespace GL_RUNTIME
 
 	bool RuntimeApplicationShell::shouldContinue()
 	{
+		if (mConfig.pbrVerification.enabled && mRenderedFrameCount >= mConfig.pbrVerification.maxFrames)
+		{
+			return false;
+		}
+
 		return GL_APP->update();
 	}
 
 	void RuntimeApplicationShell::runFrame()
 	{
+		RuntimeFrameCallbacks callbacks{};
+		if (mConfig.enableGui)
+		{
+			callbacks.renderUi = [this]() { renderFrameUi(); };
+		}
+
 		RuntimeFrameRunner::run(
 			mRuntime,
 			mLegacyExperiments,
 			makeFrameConfig(),
-			{ [this]() { renderFrameUi(); } }
+			callbacks
 		);
+		++mRenderedFrameCount;
+		captureVerificationFrameIfNeeded();
 	}
 
 	void RuntimeApplicationShell::cleanup()
@@ -112,6 +136,24 @@ namespace GL_RUNTIME
 	void RuntimeApplicationShell::drawEditorPanels()
 	{
 		RuntimeEditorPanelCoordinator::drawPanels(mRuntime, mEditorSelection, &mConfig.editorOrbitAngle);
+	}
+
+	void RuntimeApplicationShell::captureVerificationFrameIfNeeded()
+	{
+		if (
+			!mConfig.pbrVerification.enabled ||
+			mVerificationCaptureWritten ||
+			mRenderedFrameCount < mConfig.pbrVerification.captureFrame
+		)
+		{
+			return;
+		}
+
+		mVerificationCaptureWritten = RuntimePBRVerification::captureDefaultFramebuffer(
+			mConfig.pbrVerification.capturePath,
+			static_cast<unsigned int>(GL_APP->getWidth()),
+			static_cast<unsigned int>(GL_APP->getHeight())
+		);
 	}
 
 	void RuntimeApplicationShell::printOpenGLCapabilities() const
