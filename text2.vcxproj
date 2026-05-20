@@ -778,6 +778,7 @@
     <None Include="shaders\pbr\pbr_deferred_lighting.vert" />
     <None Include="shaders\pbr\pbr_gbuffer.frag" />
     <None Include="shaders\pbr\pbr_gbuffer.vert" />
+    <None Include="shaders\pbr\pbr_lighting.glsl" />
     <None Include="shaders\phong.vert" />
     <None Include="shaders\phongCSMShadow\phongCSMShadow.frag" />
     <None Include="shaders\phongCSMShadow\phongCSMShadow.vert" />

@@ -1559,3 +1559,14 @@ Renderer 已新增最小 deferred PBR lighting consumer：
 - `RuntimePBRVerification` 新增 `--verify-pbr-deferred`，导出 `out/pbr_deferred_verification.ppm`，用于证明 G-buffer 可以进入实际 lighting consumer，而不只是进入 debug view。
 
 这一步不是最终 deferred PBR renderer，而是把关键的 producer-consumer 闭环打通：PBR opaque mesh 可以进入 G-buffer，再由单独 lighting pass 读取并输出最终 HDR scene color。后续要补的主要是 shadow atlas / shadow sampling、透明 forward fallback、material feature parity，以及把 light data 从逐 uniform 绑定演进为 UBO / SSBO / clustered light list。
+
+### 2026-05-21 Shared PBR Lighting Shader Include
+
+Forward PBR 与 deferred PBR 已共享同一套 BRDF / IBL shader 函数：
+
+- 新增 `shaders/pbr/pbr_lighting.glsl`，集中保存 GGX distribution、Smith geometry、Schlick Fresnel、direct PBR lighting 和 IBL ambient 计算。
+- `shaders/pbr/pbr.frag` 删除重复 BRDF / IBL 函数，改为在声明 PBR / IBL uniforms 后 `#include "pbr_lighting.glsl"`。
+- `shaders/pbr/pbr_deferred_lighting.frag` 删除同一套重复函数，也改为 include 共享实现。
+- VS 工程已加入 `pbr_lighting.glsl`，保证物理文件与工程 filter 可见结构一致。
+
+这一步降低 forward / deferred PBR 之间的 shader 分叉风险。后续修改 BRDF、IBL energy compensation、Fresnel、multi-scattering 或 tone-space 前置处理时，优先改共享 include，而不是分别改 forward shader 和 deferred shader。

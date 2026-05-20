@@ -1628,6 +1628,21 @@
    - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-gbuffer`，G-buffer 验证保持 `rendererPasses=8`、`pbrGBufferDrawCalls=25`、`pbrGBufferReady=yes`、`pbrGBufferSize=1280x720`。
    - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-gbuffer-debug`，G-buffer debug 验证保持 `rendererPasses=9` 与 `pbrGBufferDebugDrawCalls=1`，导出图非黑比例约 `22.0009%`。
    - 补充执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-ibl-debug`，已有 IBL debug 验证仍保持 `rendererPasses=8` 与 `iblDebugDrawCalls=1`，导出图非黑比例 `100%`。
+258. 完成第一百二十九轮共享 PBR lighting shader include：
+   - 新增 [shaders/pbr/pbr_lighting.glsl](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr_lighting.glsl)，集中保存 GGX distribution、Smith geometry、Schlick Fresnel、direct PBR lighting 和 IBL ambient 计算。
+   - 更新 [shaders/pbr/pbr.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr.frag)，删除 forward PBR shader 中重复的 BRDF / IBL 函数，改为在 PBR / IBL uniforms 后 include `pbr_lighting.glsl`。
+   - 更新 [shaders/pbr/pbr_deferred_lighting.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr_deferred_lighting.frag)，删除 deferred shader 中同一套重复函数，改为 include 共享实现。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，把 `pbr_lighting.glsl` 加入 VS 工程和 PBR shader filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 forward / deferred PBR shader 共享 lighting math 的后续维护边界。
+259. 完成第一百二十次共享 PBR lighting shader include 验证：
+   - 执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行 `Debug|x64` + `LinkIncremental=false` 构建通过，新增 [shaders/pbr/pbr_lighting.glsl](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr_lighting.glsl) 已进入 VS 工程。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，forward PBR shader include 路径正常，renderer stats 保持 `rendererPasses=7`、`pbrDepthPrepassDrawCalls=25`、`pbrDrawCalls=25`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-deferred`，deferred PBR shader include 路径正常，renderer stats 保持 `rendererPasses=5`、`pbrDrawCalls=0`、`pbrGBufferDrawCalls=25`、`pbrDeferredLightingDrawCalls=1`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-gbuffer-debug`，G-buffer debug 验证保持 `rendererPasses=9`、`pbrGBufferDrawCalls=25`、`pbrGBufferDebugDrawCalls=1`。
+   - [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 非黑比例 `100%`，RGB 均值约 `160.99 / 123.69 / 83.49`。
+   - [out/pbr_deferred_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_deferred_verification.ppm) 非黑比例约 `22.0043%`，RGB 均值约 `26.76 / 21.96 / 17.89`。
+   - [out/pbr_gbuffer_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_gbuffer_debug_verification.ppm) 非黑比例约 `22.0009%`，RGB 均值约 `44.22 / 34.54 / 24.64`。
 
 ### 当前状态
 
@@ -1710,6 +1725,7 @@
 - 当前 PBR shadow 资源绑定已收敛到 `PBRShadowResourceBinder`，PBRMaterialBinder 不再直接依赖通用 CSM shadow binder 和固定 shadow texture unit。
 - 当前 PBR object-level uniforms 已收敛到 `PBRObjectUniformBinder`，PBRMaterialBinder 只保留 PBR forward binding 编排职责。
 - 当前 PBR scene pass 已直接调用 `PBRMaterialBinder`，默认 PBR forward path 不再经过通用 `MaterialBinder` switch。
+- 当前 forward PBR 与 deferred PBR 已共享 `shaders/pbr/pbr_lighting.glsl`，BRDF / IBL lighting math 不再各自维护一份重复实现。
 - 当前 PBR G-buffer 生产点已接入 renderer pass 系统，`--verify-pbr-gbuffer` 已验证 `pbrGBufferDrawCalls=25`、`pbrGBufferReady=yes` 和 `pbrGBufferSize=1280x720`。
 - 当前 PBR G-buffer debug consumer 已接入 renderer pass 系统，`--verify-pbr-gbuffer-debug` 已验证 `pbrGBufferDebugDrawCalls=1`，且导出的 debug capture 非黑比例约 `22.0009%`。
 - 当前 PBR deferred lighting consumer 已接入 renderer pass 系统，`--verify-pbr-deferred` 已验证 `pbrDrawCalls=0`、`pbrGBufferDrawCalls=25`、`pbrDeferredLightingDrawCalls=1`，且导出的 deferred capture 非黑比例约 `22.0043%`。
