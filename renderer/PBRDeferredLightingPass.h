@@ -4,6 +4,7 @@
 
 #include "MaterialBindingContext.h"
 #include "mesh/mesh.h"
+#include "renderer/PBRDeferredLightBuffer.h"
 
 namespace GLframework
 {
@@ -17,6 +18,9 @@ namespace GLframework
 		int drawCalls{ 0 };
 		bool csmShadowBound{ false };
 		int csmLayerCount{ 0 };
+		bool lightBufferBound{ false };
+		int lightBufferPointLightCount{ 0 };
+		int lightBufferMaxPointLightCount{ 0 };
 	};
 
 	class PBRDeferredLightingPass
@@ -30,11 +34,11 @@ namespace GLframework
 		);
 
 	private:
-		bool bindFrameUniforms(
+		PBRDeferredLightingPassStats bindFrameUniforms(
 			const std::shared_ptr<Shader>& shader,
 			const MaterialBindingContext& context,
 			const RendererFramePassProfile& profile
-		) const;
+		);
 		void bindGBufferTextures(
 			const std::shared_ptr<Shader>& shader,
 			const PBRGBufferRenderTargets& targets
@@ -42,5 +46,6 @@ namespace GLframework
 		void ensureLightingQuad(const std::shared_ptr<Shader>& shader);
 
 		std::shared_ptr<Mesh> mLightingQuad{ nullptr };
+		PBRDeferredLightBuffer mLightBuffer{};
 	};
 }

@@ -179,6 +179,9 @@ namespace
 		context.stats->pbrDeferredLightingDrawCalls += stats.drawCalls;
 		context.stats->pbrDeferredCsmShadowBound = context.stats->pbrDeferredCsmShadowBound || stats.csmShadowBound;
 		context.stats->pbrDeferredCsmShadowLayers = std::max(context.stats->pbrDeferredCsmShadowLayers, stats.csmLayerCount);
+		context.stats->pbrDeferredLightBufferBound = context.stats->pbrDeferredLightBufferBound || stats.lightBufferBound;
+		context.stats->pbrDeferredLightBufferPointLights = std::max(context.stats->pbrDeferredLightBufferPointLights, stats.lightBufferPointLightCount);
+		context.stats->pbrDeferredLightBufferMaxPointLights = std::max(context.stats->pbrDeferredLightBufferMaxPointLights, stats.lightBufferMaxPointLightCount);
 	}
 
 	void renderPBRGBufferDebug(RendererFrameContext& context)

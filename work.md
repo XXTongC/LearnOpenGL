@@ -1582,3 +1582,14 @@ Deferred PBR lighting 已接入现有 CSM shadow sampling：
 - `PBRDeferredLightingPass` 返回 shadow binding stats；`RendererFrameStats`、Debug UI 和 `--verify-pbr-deferred` 会输出 deferred CSM shadow 是否绑定以及 layer 数。
 
 这一步仍不是最终 shadow atlas 方案，但 deferred PBR 不再只是无阴影 lighting consumer。当前策略是先复用现有 CSM shadow 资源，保持 renderer pass 架构继续前进；后续如果要做 PBR shadow atlas，可以把资源布局替换到新的 pass / binder 中，而不需要再改 deferred lighting 的主流程边界。
+
+### 2026-05-21 PBR Deferred Light Buffer
+
+Deferred PBR lighting 的 light data 已从逐 uniform 写入推进到 SSBO：
+
+- 新增 `PBRDeferredLightBuffer`，把 directional light、ambient light 和最多 16 个 point lights 打包到 `GL_SHADER_STORAGE_BUFFER`。
+- `shaders/pbr/pbr_deferred_lighting.frag` 删除 `DirectionalLight` / `PointLight` uniform 数组，改为通过 `layout(std430, binding = 3)` 读取 deferred light buffer。
+- `PBRDeferredLightingPass` 不再逐字段写 point light uniforms，而是每帧绑定一次 light buffer；当前仍保留 camera、IBL、shadow 等非 light-list uniforms。
+- `RendererFrameStats`、Debug UI 和 `--verify-pbr-deferred` 会输出 deferred light buffer 是否绑定以及 point light count / capacity。
+
+这一步不是 clustered lighting 的最终实现，但它把 deferred path 从“少量 uniform light list”推进到“buffer-backed light data”。后续可以在同一边界上继续扩展为 SSBO light list、tile/cluster index list 或 GPU culling，而不需要再改 fullscreen deferred lighting pass 的基础数据入口。

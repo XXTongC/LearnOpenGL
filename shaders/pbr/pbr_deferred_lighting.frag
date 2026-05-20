@@ -1,22 +1,6 @@
 #version 460 core
 
-const int MAX_POINT_LIGHTS = 4;
-
-struct DirectionalLight
-{
-	vec3 color;
-	vec3 direction;
-	float intensity;
-};
-
-struct PointLight
-{
-	vec3 color;
-	vec3 position;
-	float k2;
-	float k1;
-	float k0;
-};
+const int MAX_POINT_LIGHTS = 16;
 
 in vec2 uv;
 out vec4 FragColor;
@@ -26,10 +10,6 @@ uniform sampler2D normalMetallicTexture;
 uniform sampler2D albedoAoTexture;
 uniform sampler2D depthTexture;
 
-uniform DirectionalLight directionalLight;
-uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform int POINT_LIGHT_NUM;
-uniform vec3 ambientColor;
 uniform vec3 cameraPosition;
 
 uniform samplerCube irradianceMap;
@@ -40,6 +20,17 @@ uniform float iblDiffuseStrength;
 uniform float iblSpecularStrength;
 uniform float iblMaxReflectionLod;
 uniform float pbrDeferredLightingIntensity;
+
+layout(std430, binding = 3) readonly buffer PBRDeferredLightBuffer
+{
+	vec4 deferredDirectionalColorIntensity;
+	vec4 deferredDirectionalDirectionEnabled;
+	vec4 deferredAmbientColor;
+	ivec4 deferredPointLightMeta;
+	vec4 deferredPointLightColorIntensity[MAX_POINT_LIGHTS];
+	vec4 deferredPointLightPositionEnabled[MAX_POINT_LIGHTS];
+	vec4 deferredPointLightAttenuation[MAX_POINT_LIGHTS];
+};
 
 #include "pbr_lighting.glsl"
 #include "pbr_csm_shadow.glsl"
@@ -65,24 +56,29 @@ void main()
 	float ao = clamp(albedoAo.a, 0.0, 1.0);
 	vec3 v = normalize(cameraPosition - worldPosition);
 
-	vec3 color = ambientColor * albedo * ao;
+	vec3 color = deferredAmbientColor.rgb * albedo * ao;
 	if (useIBL == 1)
 	{
 		color = calculateIblAmbient(n, v, albedo, metallic, roughness, ao);
 	}
 
-	vec3 dirLightDirection = normalize(-directionalLight.direction);
-	vec3 dirRadiance = directionalLight.color * directionalLight.intensity;
+	float directionalEnabled = deferredDirectionalDirectionEnabled.w;
+	vec3 dirLightDirection = normalize(-deferredDirectionalDirectionEnabled.xyz);
+	vec3 dirRadiance = deferredDirectionalColorIntensity.rgb * deferredDirectionalColorIntensity.a * directionalEnabled;
 	float directionalShadow = calculateCsmShadow(worldPosition, n, dirLightDirection);
 	color += calculatePbrLight(dirRadiance, dirLightDirection, n, v, albedo, metallic, roughness) * (1.0 - directionalShadow);
 
-	for (int i = 0; i < POINT_LIGHT_NUM && i < MAX_POINT_LIGHTS; ++i)
+	int pointLightCount = clamp(deferredPointLightMeta.x, 0, MAX_POINT_LIGHTS);
+	for (int i = 0; i < pointLightCount; ++i)
 	{
-		vec3 l = pointLights[i].position - worldPosition;
+		vec3 l = deferredPointLightPositionEnabled[i].xyz - worldPosition;
 		float distance = length(l);
 		l = normalize(l);
-		float attenuation = 1.0 / max(pointLights[i].k2 * distance * distance + pointLights[i].k1 * distance + pointLights[i].k0, 0.0001);
-		color += calculatePbrLight(pointLights[i].color * attenuation, l, n, v, albedo, metallic, roughness);
+		vec3 attenuationTerms = deferredPointLightAttenuation[i].xyz;
+		float attenuation = 1.0 / max(attenuationTerms.x * distance * distance + attenuationTerms.y * distance + attenuationTerms.z, 0.0001);
+		vec4 pointColorIntensity = deferredPointLightColorIntensity[i];
+		float pointEnabled = deferredPointLightPositionEnabled[i].w;
+		color += calculatePbrLight(pointColorIntensity.rgb * pointColorIntensity.a * attenuation * pointEnabled, l, n, v, albedo, metallic, roughness);
 	}
 
 	FragColor = vec4(color * max(pbrDeferredLightingIntensity, 0.0), 1.0);

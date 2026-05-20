@@ -1,14 +1,8 @@
 #include "PBRDeferredLightingPass.h"
 
-#include <algorithm>
-#include <string>
-
 #include "camera/camera.h"
 #include "core.h"
 #include "framework/geometry.h"
-#include "light/ambientLight.h"
-#include "light/directionalLight.h"
-#include "light/pointLight.h"
 #include "renderer/EnvironmentRenderTargets.h"
 #include "renderer/MeshDraw.h"
 #include "renderer/PBRGBufferRenderTargets.h"
@@ -20,8 +14,6 @@ using namespace GLframework;
 
 namespace
 {
-	constexpr int kMaxDeferredPointLights = 4;
-
 	void bindTexture2D(unsigned int texture, unsigned int unit)
 	{
 		glActiveTexture(GL_TEXTURE0 + unit);
@@ -74,9 +66,7 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::render(
 
 	shader->begin();
 	bindGBufferTextures(shader, targets);
-	PBRDeferredLightingPassStats stats{};
-	stats.csmShadowBound = bindFrameUniforms(shader, context, profile);
-	stats.csmLayerCount = stats.csmShadowBound ? PBRShadowResourceBinder::getCsmLayerCount(context) : 0;
+	PBRDeferredLightingPassStats stats = bindFrameUniforms(shader, context, profile);
 
 	const bool drawn = MeshDraw::drawIndexed(mLightingQuad);
 	stats.drawCalls = drawn ? 1 : 0;
@@ -89,58 +79,23 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::render(
 	return stats;
 }
 
-bool PBRDeferredLightingPass::bindFrameUniforms(
+PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 	const std::shared_ptr<Shader>& shader,
 	const MaterialBindingContext& context,
 	const RendererFramePassProfile& profile
-) const
+)
 {
+	PBRDeferredLightingPassStats stats{};
 	shader->setVector3("cameraPosition", context.camera->mPosition);
 	shader->setMat4("viewMatrix", context.camera->getViewMatrix());
 	shader->setFloat("pbrDeferredLightingIntensity", profile.pbrDeferredLightingIntensity);
-	const bool csmShadowBound = PBRShadowResourceBinder::bind(shader, context);
+	stats.csmShadowBound = PBRShadowResourceBinder::bind(shader, context);
+	stats.csmLayerCount = stats.csmShadowBound ? PBRShadowResourceBinder::getCsmLayerCount(context) : 0;
 
-	if (context.ambient)
-	{
-		shader->setVector3("ambientColor", context.ambient->getColor());
-	}
-	else
-	{
-		shader->setVector3("ambientColor", glm::vec3{ 0.0f });
-	}
-
-	if (context.dirLight)
-	{
-		shader->setVector3("directionalLight.color", context.dirLight->getColor());
-		shader->setVector3("directionalLight.direction", context.dirLight->getDirection());
-		shader->setFloat("directionalLight.intensity", context.dirLight->getIntensity());
-	}
-	else
-	{
-		shader->setVector3("directionalLight.color", glm::vec3{ 0.0f });
-		shader->setVector3("directionalLight.direction", glm::vec3{ 0.0f, -1.0f, 0.0f });
-		shader->setFloat("directionalLight.intensity", 0.0f);
-	}
-
-	static const std::vector<std::shared_ptr<PointLight>> emptyPointLights{};
-	const auto& pointLights = context.pointLights ? *context.pointLights : emptyPointLights;
-	const int pointLightCount = std::min(static_cast<int>(pointLights.size()), kMaxDeferredPointLights);
-	shader->setInt("POINT_LIGHT_NUM", pointLightCount);
-	for (int index = 0; index < pointLightCount; ++index)
-	{
-		const auto& pointLight = pointLights[static_cast<std::size_t>(index)];
-		if (!pointLight)
-		{
-			continue;
-		}
-
-		const std::string baseName = "pointLights[" + std::to_string(index) + "]";
-		shader->setVector3(baseName + ".color", pointLight->getColor());
-		shader->setVector3(baseName + ".position", pointLight->getPosition());
-		shader->setFloat(baseName + ".k2", pointLight->getK2());
-		shader->setFloat(baseName + ".k1", pointLight->getK1());
-		shader->setFloat(baseName + ".k0", pointLight->getK0());
-	}
+	const PBRDeferredLightBufferStats lightBufferStats = mLightBuffer.bind(context);
+	stats.lightBufferBound = lightBufferStats.bound;
+	stats.lightBufferPointLightCount = lightBufferStats.pointLightCount;
+	stats.lightBufferMaxPointLightCount = lightBufferStats.maxPointLightCount;
 
 	const bool useIBL = context.environmentTargets
 		&& context.environmentTargets->isInitialized()
@@ -150,7 +105,7 @@ bool PBRDeferredLightingPass::bindFrameUniforms(
 	shader->setFloat("iblSpecularStrength", profile.pbrDeferredIblSpecularStrength);
 	if (!useIBL)
 	{
-		return csmShadowBound;
+		return stats;
 	}
 
 	const unsigned int maxMipLevels = context.environmentTargets->getMaxPrefilterMipLevels();
@@ -161,7 +116,7 @@ bool PBRDeferredLightingPass::bindFrameUniforms(
 	bindTextureOrDefault(context.environmentTargets->getIrradianceMap(), GL_TEXTURE_CUBE_MAP, 4);
 	bindTextureOrDefault(context.environmentTargets->getPrefilterMap(), GL_TEXTURE_CUBE_MAP, 5);
 	bindTextureOrDefault(context.environmentTargets->getBrdfLut(), GL_TEXTURE_2D, 6);
-	return csmShadowBound;
+	return stats;
 }
 
 void PBRDeferredLightingPass::bindGBufferTextures(
