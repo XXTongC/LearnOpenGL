@@ -146,6 +146,12 @@ void Renderer::render(
 		return;
 	}
 
+	mLastFrameStats.pbrDepthPrepassDrawCalls = mPbrDepthPrepass.render(
+		mRenderQueue.getPbrOpacityObjects(),
+		camera,
+		mShaderLibrary
+	);
+
 	mLastFrameStats.legacySceneDrawCalls = mSceneRenderPass.render(
 		mRenderQueue.getLegacyOpacityObjects(),
 		{},

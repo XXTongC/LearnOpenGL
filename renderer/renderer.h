@@ -8,6 +8,7 @@
 #include "EnvironmentRenderTargets.h"
 #include "FrameRenderState.h"
 #include "IBLPrecomputePass.h"
+#include "PBRDepthPrepass.h"
 #include "PBRSceneRenderPass.h"
 #include "RenderQueue.h"
 #include "SceneRenderPass.h"
@@ -25,6 +26,7 @@ namespace GLframework
 	struct RendererFrameStats
 	{
 		int shadowCasterCount{ 0 };
+		int pbrDepthPrepassDrawCalls{ 0 };
 		int legacySceneDrawCalls{ 0 };
 		int pbrSceneDrawCalls{ 0 };
 	};
@@ -69,6 +71,7 @@ private:
 		RenderQueue mRenderQueue{};
 		ShadowRenderer mShadowRenderer{};
 		SceneRenderPass mSceneRenderPass{};
+		PBRDepthPrepass mPbrDepthPrepass{};
 		PBRSceneRenderPass mPbrSceneRenderPass{};
 		EnvironmentRenderTargets mEnvironmentRenderTargets{};
 		IBLPrecomputePass mIblPrecomputePass{};

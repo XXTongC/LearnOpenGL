@@ -1324,3 +1324,16 @@ Renderer 内部已开始拆出真实 PBR 渲染边界：
 - `--verify-pbr` 会在 capture 帧输出 renderer stats，用于证明 PBR mesh 实际走了 PBR 专用 pass。
 
 本轮验证显示 `pbrMeshes=25` 且 `pbrDrawCalls=25`，说明 PBR preview grid 已经不再只是混在旧 scene pass 里渲染。后续可以继续把 PBR 专用 pass 拆成更细的 `PBRDepthPrepass`、`PBRShadowAtlas`、`PBRForward` 或 IBL debug pass。
+
+### 2026-05-20 Renderer PBR Depth Prepass
+
+PBR 路径已新增第一个真实前向渲染前置 pass：
+
+- 新增 `PBRDepthPrepass`，只接收 PBR opaque mesh。
+- depth prepass 使用现有 `DepthMaterial` shader 写 depth，关闭 color write，结束后恢复 color write。
+- `Renderer` 在 shadow pass 之后、legacy / PBR scene pass 之前执行 PBR depth prepass。
+- `RendererFrameStats` 新增 `pbrDepthPrepassDrawCalls`，用于验证 PBR depth prepass 实际绘制数量。
+- `--verify-pbr` 输出 renderer stats 时会包含 `pbrDepthPrepassDrawCalls`。
+- `mGlobalMaterial` override 路径继续跳过 PBR 专用 pass，保持旧的全局材质调试行为。
+
+本轮验证显示 `pbrDepthPrepassDrawCalls=25` 且 `pbrDrawCalls=25`，说明 5x5 PBR preview grid 同时经过 depth prepass 和 PBR scene pass。后续如果要做 PBR shadow atlas、deferred G-buffer 或 clustered lighting，这个 depth prepass 可以继续扩展为深度资源生产点。
