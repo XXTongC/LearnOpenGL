@@ -12,10 +12,17 @@ namespace GLframework
 	class Shader;
 	class ShaderLibrary;
 
+	struct PBRDeferredLightingPassStats
+	{
+		int drawCalls{ 0 };
+		bool csmShadowBound{ false };
+		int csmLayerCount{ 0 };
+	};
+
 	class PBRDeferredLightingPass
 	{
 	public:
-		int render(
+		PBRDeferredLightingPassStats render(
 			const PBRGBufferRenderTargets& targets,
 			const MaterialBindingContext& context,
 			const RendererFramePassProfile& profile,
@@ -23,7 +30,7 @@ namespace GLframework
 		);
 
 	private:
-		void bindFrameUniforms(
+		bool bindFrameUniforms(
 			const std::shared_ptr<Shader>& shader,
 			const MaterialBindingContext& context,
 			const RendererFramePassProfile& profile

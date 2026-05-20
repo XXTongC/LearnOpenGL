@@ -268,6 +268,9 @@ namespace GL_RUNTIME
 		if (stats.pbrDeferredLightingDrawCalls > 0)
 		{
 			statsLine += ", pbrDeferredLightingDrawCalls=" + std::to_string(stats.pbrDeferredLightingDrawCalls);
+			statsLine += ", pbrDeferredCsmShadowBound=";
+			statsLine += (stats.pbrDeferredCsmShadowBound ? "yes" : "no");
+			statsLine += ", pbrDeferredCsmShadowLayers=" + std::to_string(stats.pbrDeferredCsmShadowLayers);
 		}
 		if (stats.pbrGBufferDebugDrawCalls > 0)
 		{

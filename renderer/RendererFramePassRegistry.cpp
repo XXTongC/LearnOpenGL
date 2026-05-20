@@ -170,12 +170,15 @@ namespace
 			return;
 		}
 
-		context.stats->pbrDeferredLightingDrawCalls += context.pbrDeferredLightingPass->render(
+		const auto stats = context.pbrDeferredLightingPass->render(
 			*context.pbrGBufferTargets,
 			createMaterialBindingContext(context),
 			*context.framePassProfile,
 			*context.shaderLibrary
 		);
+		context.stats->pbrDeferredLightingDrawCalls += stats.drawCalls;
+		context.stats->pbrDeferredCsmShadowBound = context.stats->pbrDeferredCsmShadowBound || stats.csmShadowBound;
+		context.stats->pbrDeferredCsmShadowLayers = std::max(context.stats->pbrDeferredCsmShadowLayers, stats.csmLayerCount);
 	}
 
 	void renderPBRGBufferDebug(RendererFrameContext& context)

@@ -1643,6 +1643,26 @@
    - [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 非黑比例 `100%`，RGB 均值约 `160.99 / 123.69 / 83.49`。
    - [out/pbr_deferred_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_deferred_verification.ppm) 非黑比例约 `22.0043%`，RGB 均值约 `26.76 / 21.96 / 17.89`。
    - [out/pbr_gbuffer_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_gbuffer_debug_verification.ppm) 非黑比例约 `22.0009%`，RGB 均值约 `44.22 / 34.54 / 24.64`。
+260. 完成第一百三十轮 PBR deferred CSM shadow sampling：
+   - 新增 [shaders/pbr/pbr_csm_shadow.glsl](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr_csm_shadow.glsl)，集中保存 CSM layer selection、shadow bias 和 3x3 PCF sampling。
+   - 更新 [shaders/pbr/pbr.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr.frag)，删除 forward PBR shader 中原本内嵌的 CSM helper，改为 include `pbr_csm_shadow.glsl`。
+   - 更新 [shaders/pbr/pbr_deferred_lighting.frag](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr_deferred_lighting.frag)，include `pbr_csm_shadow.glsl`，并用 `calculateCsmShadow(...)` 调制 directional light direct lighting。
+   - 更新 [renderer/PBRDeferredLightingPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredLightingPass.cpp) 和 [renderer/PBRDeferredLightingPass.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredLightingPass.h)，deferred lighting pass 现在写入 `viewMatrix`，复用 `PBRShadowResourceBinder` 绑定已有 CSM shadow resources，并返回 shadow binding stats。
+   - 更新 [renderer/PBRShadowResourceBinder.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRShadowResourceBinder.h) 和 [renderer/PBRShadowResourceBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRShadowResourceBinder.cpp)，新增 `getCsmLayerCount(...)`，让 verification / stats 能直接报告 deferred path 使用的 CSM layer 数。
+   - 更新 [renderer/RendererFrameStats.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFrameStats.h)、[renderer/RendererFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.cpp)、[tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp) 和 [application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)，Debug UI 与 `--verify-pbr-deferred` 可显示 `pbrDeferredCsmShadowBound` 和 `pbrDeferredCsmShadowLayers`。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，把 `pbr_csm_shadow.glsl` 加入 VS 工程和 PBR shader filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 deferred PBR 当前复用现有 CSM shadow 资源、后续再演进 shadow atlas 的边界。
+261. 完成第一百二十一次 PBR deferred CSM shadow sampling 验证：
+   - 执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行 `Debug|x64` + `LinkIncremental=false` 构建通过，新增 [shaders/pbr/pbr_csm_shadow.glsl](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\shaders\pbr\pbr_csm_shadow.glsl) 已进入 VS 工程。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-deferred`，输出 `rendererPasses=5`、`pbrDrawCalls=0`、`pbrGBufferDrawCalls=25`、`pbrDeferredLightingDrawCalls=1`、`pbrDeferredCsmShadowBound=yes`、`pbrDeferredCsmShadowLayers=5`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，forward PBR 验证保持 `rendererPasses=7`、`pbrDepthPrepassDrawCalls=25`、`pbrDrawCalls=25`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-gbuffer-debug`，G-buffer debug 验证保持 `rendererPasses=9`、`pbrGBufferDrawCalls=25`、`pbrGBufferDebugDrawCalls=1`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-ibl-debug`，IBL debug 验证保持 `rendererPasses=8` 与 `iblDebugDrawCalls=1`。
+   - [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 非黑比例 `100%`，RGB 均值约 `160.99 / 123.69 / 83.49`。
+   - [out/pbr_deferred_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_deferred_verification.ppm) 非黑比例约 `22.0043%`，RGB 均值约 `26.76 / 21.96 / 17.89`。
+   - [out/pbr_gbuffer_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_gbuffer_debug_verification.ppm) 非黑比例约 `22.0009%`，RGB 均值约 `44.22 / 34.54 / 24.64`。
+   - [out/pbr_ibl_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_ibl_debug_verification.ppm) 非黑比例 `100%`，RGB 均值约 `145.33 / 154.29 / 165.66`。
 
 ### 当前状态
 
@@ -1725,9 +1745,9 @@
 - 当前 PBR shadow 资源绑定已收敛到 `PBRShadowResourceBinder`，PBRMaterialBinder 不再直接依赖通用 CSM shadow binder 和固定 shadow texture unit。
 - 当前 PBR object-level uniforms 已收敛到 `PBRObjectUniformBinder`，PBRMaterialBinder 只保留 PBR forward binding 编排职责。
 - 当前 PBR scene pass 已直接调用 `PBRMaterialBinder`，默认 PBR forward path 不再经过通用 `MaterialBinder` switch。
-- 当前 forward PBR 与 deferred PBR 已共享 `shaders/pbr/pbr_lighting.glsl`，BRDF / IBL lighting math 不再各自维护一份重复实现。
+- 当前 forward PBR 与 deferred PBR 已共享 `shaders/pbr/pbr_lighting.glsl` 和 `shaders/pbr/pbr_csm_shadow.glsl`，BRDF / IBL lighting math 与 CSM shadow sampling 不再各自维护重复实现。
 - 当前 PBR G-buffer 生产点已接入 renderer pass 系统，`--verify-pbr-gbuffer` 已验证 `pbrGBufferDrawCalls=25`、`pbrGBufferReady=yes` 和 `pbrGBufferSize=1280x720`。
 - 当前 PBR G-buffer debug consumer 已接入 renderer pass 系统，`--verify-pbr-gbuffer-debug` 已验证 `pbrGBufferDebugDrawCalls=1`，且导出的 debug capture 非黑比例约 `22.0009%`。
-- 当前 PBR deferred lighting consumer 已接入 renderer pass 系统，`--verify-pbr-deferred` 已验证 `pbrDrawCalls=0`、`pbrGBufferDrawCalls=25`、`pbrDeferredLightingDrawCalls=1`，且导出的 deferred capture 非黑比例约 `22.0043%`。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR deferred path 已有 G-buffer producer / debug consumer / lighting consumer，但 shadow atlas、shadow sampling、透明 forward fallback 和 clustered/SSBO light data 还未实现。
+- 当前 PBR deferred lighting consumer 已接入 renderer pass 系统并复用现有 CSM shadow resources，`--verify-pbr-deferred` 已验证 `pbrDrawCalls=0`、`pbrGBufferDrawCalls=25`、`pbrDeferredLightingDrawCalls=1`、`pbrDeferredCsmShadowBound=yes`、`pbrDeferredCsmShadowLayers=5`，且导出的 deferred capture 非黑比例约 `22.0043%`。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR deferred path 已有 G-buffer producer / debug consumer / lighting consumer 和 CSM shadow sampling，但 shadow atlas、透明 forward fallback、material feature parity 和 clustered/SSBO light data 还未实现。
 - 下一步建议目标：继续推进 PBR shadow atlas 资源布局，或把 deferred lighting 的逐 uniform light binding 演进为 light buffer / clustered light list。

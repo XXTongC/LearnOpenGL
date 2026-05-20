@@ -12,6 +12,7 @@
 #include "renderer/EnvironmentRenderTargets.h"
 #include "renderer/MeshDraw.h"
 #include "renderer/PBRGBufferRenderTargets.h"
+#include "renderer/PBRShadowResourceBinder.h"
 #include "renderer/RendererFramePassProfile.h"
 #include "renderer/ShaderLibrary.h"
 
@@ -38,7 +39,7 @@ namespace
 	}
 }
 
-int PBRDeferredLightingPass::render(
+PBRDeferredLightingPassStats PBRDeferredLightingPass::render(
 	const PBRGBufferRenderTargets& targets,
 	const MaterialBindingContext& context,
 	const RendererFramePassProfile& profile,
@@ -47,19 +48,19 @@ int PBRDeferredLightingPass::render(
 {
 	if (!targets.isComplete() || context.camera == nullptr)
 	{
-		return 0;
+		return {};
 	}
 
 	const auto shader = shaderLibrary.getPbrDeferredLightingShader();
 	if (!shader)
 	{
-		return 0;
+		return {};
 	}
 
 	ensureLightingQuad(shader);
 	if (!mLightingQuad)
 	{
-		return 0;
+		return {};
 	}
 
 	glDisable(GL_DEPTH_TEST);
@@ -73,26 +74,31 @@ int PBRDeferredLightingPass::render(
 
 	shader->begin();
 	bindGBufferTextures(shader, targets);
-	bindFrameUniforms(shader, context, profile);
+	PBRDeferredLightingPassStats stats{};
+	stats.csmShadowBound = bindFrameUniforms(shader, context, profile);
+	stats.csmLayerCount = stats.csmShadowBound ? PBRShadowResourceBinder::getCsmLayerCount(context) : 0;
 
 	const bool drawn = MeshDraw::drawIndexed(mLightingQuad);
+	stats.drawCalls = drawn ? 1 : 0;
 	shader->end();
 
 	glDepthMask(GL_TRUE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
 
-	return drawn ? 1 : 0;
+	return stats;
 }
 
-void PBRDeferredLightingPass::bindFrameUniforms(
+bool PBRDeferredLightingPass::bindFrameUniforms(
 	const std::shared_ptr<Shader>& shader,
 	const MaterialBindingContext& context,
 	const RendererFramePassProfile& profile
 ) const
 {
 	shader->setVector3("cameraPosition", context.camera->mPosition);
+	shader->setMat4("viewMatrix", context.camera->getViewMatrix());
 	shader->setFloat("pbrDeferredLightingIntensity", profile.pbrDeferredLightingIntensity);
+	const bool csmShadowBound = PBRShadowResourceBinder::bind(shader, context);
 
 	if (context.ambient)
 	{
@@ -144,7 +150,7 @@ void PBRDeferredLightingPass::bindFrameUniforms(
 	shader->setFloat("iblSpecularStrength", profile.pbrDeferredIblSpecularStrength);
 	if (!useIBL)
 	{
-		return;
+		return csmShadowBound;
 	}
 
 	const unsigned int maxMipLevels = context.environmentTargets->getMaxPrefilterMipLevels();
@@ -155,6 +161,7 @@ void PBRDeferredLightingPass::bindFrameUniforms(
 	bindTextureOrDefault(context.environmentTargets->getIrradianceMap(), GL_TEXTURE_CUBE_MAP, 4);
 	bindTextureOrDefault(context.environmentTargets->getPrefilterMap(), GL_TEXTURE_CUBE_MAP, 5);
 	bindTextureOrDefault(context.environmentTargets->getBrdfLut(), GL_TEXTURE_2D, 6);
+	return csmShadowBound;
 }
 
 void PBRDeferredLightingPass::bindGBufferTextures(

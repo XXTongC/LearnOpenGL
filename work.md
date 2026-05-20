@@ -1570,3 +1570,15 @@ Forward PBR 与 deferred PBR 已共享同一套 BRDF / IBL shader 函数：
 - VS 工程已加入 `pbr_lighting.glsl`，保证物理文件与工程 filter 可见结构一致。
 
 这一步降低 forward / deferred PBR 之间的 shader 分叉风险。后续修改 BRDF、IBL energy compensation、Fresnel、multi-scattering 或 tone-space 前置处理时，优先改共享 include，而不是分别改 forward shader 和 deferred shader。
+
+### 2026-05-21 Shared PBR CSM Shadow Include
+
+Deferred PBR lighting 已接入现有 CSM shadow sampling：
+
+- 新增 `shaders/pbr/pbr_csm_shadow.glsl`，集中保存 CSM layer selection、bias 计算和 3x3 PCF shadow sampling。
+- `shaders/pbr/pbr.frag` 删除原本内嵌的 CSM helper，forward PBR 改为 include 共享 CSM shadow 实现。
+- `shaders/pbr/pbr_deferred_lighting.frag` include 同一份 CSM shadow 实现，并用 `calculateCsmShadow(...)` 调制 directional light direct lighting。
+- `PBRDeferredLightingPass` 现在写入 `viewMatrix`，并复用 `PBRShadowResourceBinder` 绑定已有 directional CSM shadow map、cascade layers 和 light matrices。
+- `PBRDeferredLightingPass` 返回 shadow binding stats；`RendererFrameStats`、Debug UI 和 `--verify-pbr-deferred` 会输出 deferred CSM shadow 是否绑定以及 layer 数。
+
+这一步仍不是最终 shadow atlas 方案，但 deferred PBR 不再只是无阴影 lighting consumer。当前策略是先复用现有 CSM shadow 资源，保持 renderer pass 架构继续前进；后续如果要做 PBR shadow atlas，可以把资源布局替换到新的 pass / binder 中，而不需要再改 deferred lighting 的主流程边界。

@@ -42,6 +42,7 @@ uniform float iblMaxReflectionLod;
 uniform float pbrDeferredLightingIntensity;
 
 #include "pbr_lighting.glsl"
+#include "pbr_csm_shadow.glsl"
 
 void main()
 {
@@ -72,7 +73,8 @@ void main()
 
 	vec3 dirLightDirection = normalize(-directionalLight.direction);
 	vec3 dirRadiance = directionalLight.color * directionalLight.intensity;
-	color += calculatePbrLight(dirRadiance, dirLightDirection, n, v, albedo, metallic, roughness);
+	float directionalShadow = calculateCsmShadow(worldPosition, n, dirLightDirection);
+	color += calculatePbrLight(dirRadiance, dirLightDirection, n, v, albedo, metallic, roughness) * (1.0 - directionalShadow);
 
 	for (int i = 0; i < POINT_LIGHT_NUM && i < MAX_POINT_LIGHTS; ++i)
 	{

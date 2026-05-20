@@ -14,5 +14,6 @@ namespace GLframework
 			const std::shared_ptr<Shader>& shader,
 			const MaterialBindingContext& context
 		);
+		static int getCsmLayerCount(const MaterialBindingContext& context);
 	};
 }

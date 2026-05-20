@@ -1,6 +1,7 @@
 #include "PBRShadowResourceBinder.h"
 
 #include "light/directionalLight.h"
+#include "light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
 #include "renderer/ShadowResourceBinder.h"
 
 using namespace GLframework;
@@ -26,6 +27,12 @@ bool PBRShadowResourceBinder::bind(
 		return false;
 	}
 
+	if (getCsmLayerCount(context) <= 0)
+	{
+		shader->setInt("csmLayerCount", 0);
+		return false;
+	}
+
 	ShadowResourceBinder::bindCSMShadowResources(
 		shader,
 		context.camera,
@@ -33,4 +40,15 @@ bool PBRShadowResourceBinder::bind(
 		pbrCsmShadowTextureUnit
 	);
 	return true;
+}
+
+int PBRShadowResourceBinder::getCsmLayerCount(const MaterialBindingContext& context)
+{
+	if (context.camera == nullptr || !context.dirLight || !context.dirLight->getShadow())
+	{
+		return 0;
+	}
+
+	const auto dirCSMShadow = std::dynamic_pointer_cast<DirectionalLightCSMShadow>(context.dirLight->getShadow());
+	return dirCSMShadow ? dirCSMShadow->getLayerCount() : 0;
 }

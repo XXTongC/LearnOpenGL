@@ -2695,6 +2695,9 @@
     <None Include="shaders\pbr\pbr_gbuffer.vert">
       <Filter>资源文件\shaders\pbr</Filter>
     </None>
+    <None Include="shaders\pbr\pbr_csm_shadow.glsl">
+      <Filter>资源文件\shaders\pbr</Filter>
+    </None>
     <None Include="shaders\pbr\pbr_lighting.glsl">
       <Filter>资源文件\shaders\pbr</Filter>
     </None>

@@ -17,6 +17,8 @@ namespace GLframework
 		int pbrGBufferHeight{ 0 };
 		bool pbrGBufferReady{ false };
 		int pbrDeferredLightingDrawCalls{ 0 };
+		bool pbrDeferredCsmShadowBound{ false };
+		int pbrDeferredCsmShadowLayers{ 0 };
 		int pbrGBufferDebugDrawCalls{ 0 };
 		int legacySceneDrawCalls{ 0 };
 		int pbrSceneDrawCalls{ 0 };
