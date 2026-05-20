@@ -11,20 +11,15 @@ using namespace GLframework;
 int SceneRenderPass::render(
 	const std::vector<std::shared_ptr<Mesh>>& opacityObjects,
 	const std::vector<std::shared_ptr<Mesh>>& transparentObjects,
-	Camera* camera,
-	const std::shared_ptr<DirectionalLight>& dirLight,
-	const std::shared_ptr<SpotLight>& spotLight,
-	const std::vector<std::shared_ptr<PointLight>>& pointLights,
-	const std::shared_ptr<AmbientLight>& ambient,
 	const std::shared_ptr<Material>& globalMaterial,
 	const ShaderLibrary& shaderLibrary,
-	const EnvironmentRenderTargets* environmentTargets
+	const MaterialBindingContext& bindingContext
 ) const
 {
 	int drawCalls = 0;
 	for (const auto& mesh : opacityObjects)
 	{
-		if (renderObject(mesh, camera, dirLight, spotLight, pointLights, ambient, globalMaterial, shaderLibrary, environmentTargets))
+		if (renderObject(mesh, globalMaterial, shaderLibrary, bindingContext))
 		{
 			++drawCalls;
 		}
@@ -32,7 +27,7 @@ int SceneRenderPass::render(
 
 	for (const auto& mesh : transparentObjects)
 	{
-		if (renderObject(mesh, camera, dirLight, spotLight, pointLights, ambient, globalMaterial, shaderLibrary, environmentTargets))
+		if (renderObject(mesh, globalMaterial, shaderLibrary, bindingContext))
 		{
 			++drawCalls;
 		}
@@ -43,14 +38,9 @@ int SceneRenderPass::render(
 
 bool SceneRenderPass::renderObject(
 	const std::shared_ptr<Mesh>& mesh,
-	Camera* camera,
-	const std::shared_ptr<DirectionalLight>& dirLight,
-	const std::shared_ptr<SpotLight>& spotLight,
-	const std::vector<std::shared_ptr<PointLight>>& pointLights,
-	const std::shared_ptr<AmbientLight>& ambient,
 	const std::shared_ptr<Material>& globalMaterial,
 	const ShaderLibrary& shaderLibrary,
-	const EnvironmentRenderTargets* environmentTargets
+	const MaterialBindingContext& bindingContext
 ) const
 {
 	const std::shared_ptr<Material> material = globalMaterial != nullptr ? globalMaterial : mesh->getMaterial();
@@ -68,7 +58,7 @@ bool SceneRenderPass::renderObject(
 	}
 
 	shader->begin();
-	if (!MaterialBinder::bind(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient, environmentTargets))
+	if (!MaterialBinder::bind(shader, material, mesh, bindingContext))
 	{
 		std::cout << "SceneRenderPass: unsupported material\n";
 	}

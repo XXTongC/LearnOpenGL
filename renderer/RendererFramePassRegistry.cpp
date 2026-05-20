@@ -1,6 +1,7 @@
 #include "RendererFramePassRegistry.h"
 
 #include "FrameRenderState.h"
+#include "MaterialBindingContext.h"
 #include "PBRDepthPrepass.h"
 #include "PBRSceneRenderPass.h"
 #include "RenderQueue.h"
@@ -21,6 +22,18 @@ namespace
 	{
 		static const std::vector<std::shared_ptr<PointLight>> emptyPointLights{};
 		return context.pointLights ? *context.pointLights : emptyPointLights;
+	}
+
+	MaterialBindingContext createMaterialBindingContext(const RendererFrameContext& context)
+	{
+		return MaterialBindingContext{
+			context.camera,
+			context.dirLight,
+			context.spotLight,
+			context.pointLights,
+			context.ambient,
+			context.environmentTargets
+		};
 	}
 
 	void beginFrame(RendererFrameContext& context)
@@ -74,14 +87,9 @@ namespace
 		context.stats->legacySceneDrawCalls = context.sceneRenderPass->render(
 			context.renderQueue->getOpacityObjects(),
 			context.renderQueue->getTransparentObjects(),
-			context.camera,
-			context.dirLight,
-			context.spotLight,
-			pointLightsOrEmpty(context),
-			context.ambient,
 			context.globalMaterial,
 			*context.shaderLibrary,
-			context.environmentTargets
+			createMaterialBindingContext(context)
 		);
 	}
 
@@ -109,14 +117,9 @@ namespace
 		context.stats->legacySceneDrawCalls += context.sceneRenderPass->render(
 			context.renderQueue->getLegacyOpacityObjects(),
 			{},
-			context.camera,
-			context.dirLight,
-			context.spotLight,
-			pointLightsOrEmpty(context),
-			context.ambient,
 			nullptr,
 			*context.shaderLibrary,
-			context.environmentTargets
+			createMaterialBindingContext(context)
 		);
 	}
 
@@ -130,13 +133,8 @@ namespace
 		context.stats->pbrSceneDrawCalls += context.pbrSceneRenderPass->render(
 			context.renderQueue->getPbrOpacityObjects(),
 			{},
-			context.camera,
-			context.dirLight,
-			context.spotLight,
-			pointLightsOrEmpty(context),
-			context.ambient,
 			*context.shaderLibrary,
-			context.environmentTargets
+			createMaterialBindingContext(context)
 		);
 	}
 
@@ -150,14 +148,9 @@ namespace
 		context.stats->legacySceneDrawCalls += context.sceneRenderPass->render(
 			{},
 			context.renderQueue->getLegacyTransparentObjects(),
-			context.camera,
-			context.dirLight,
-			context.spotLight,
-			pointLightsOrEmpty(context),
-			context.ambient,
 			nullptr,
 			*context.shaderLibrary,
-			context.environmentTargets
+			createMaterialBindingContext(context)
 		);
 	}
 
@@ -171,13 +164,8 @@ namespace
 		context.stats->pbrSceneDrawCalls += context.pbrSceneRenderPass->render(
 			{},
 			context.renderQueue->getPbrTransparentObjects(),
-			context.camera,
-			context.dirLight,
-			context.spotLight,
-			pointLightsOrEmpty(context),
-			context.ambient,
 			*context.shaderLibrary,
-			context.environmentTargets
+			createMaterialBindingContext(context)
 		);
 	}
 }

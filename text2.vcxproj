@@ -289,6 +289,7 @@
     <ClInclude Include="renderer\FrameRenderTargets.h" />
     <ClInclude Include="renderer\IBLPrecomputePass.h" />
     <ClInclude Include="renderer\LightResourceBinder.h" />
+    <ClInclude Include="renderer\MaterialBindingContext.h" />
     <ClInclude Include="renderer\MaterialBinder.h" />
     <ClInclude Include="renderer\MeshDraw.h" />
     <ClInclude Include="renderer\PBRMaterialBinder.h" />

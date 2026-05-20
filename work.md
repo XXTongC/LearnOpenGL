@@ -1408,3 +1408,14 @@ PBR 材质绑定已从通用 `MaterialBinder` 中拆出：
 - `IBLPrecomputePass` 的 cubemap capture 与 BRDF LUT draw 也复用 `MeshDraw`。
 
 这一步的目标是让后续 PBR shadow atlas、IBL debug pass、G-buffer 或 clustered depth pass 不再复制 VAO / instancing 绘制细节。pass 只负责绑定资源、shader 和 per-object uniform；mesh draw 行为由 renderer 层统一入口负责。
+
+### 2026-05-20 Material Binding Context
+
+材质绑定参数组已从长参数列表收敛为上下文对象：
+
+- 新增 `MaterialBindingContext`，集中承载当前 frame 的 camera、directional light、spot light、point light list、ambient light 和 environment targets。
+- `SceneRenderPass` 与 `PBRSceneRenderPass` 不再逐项接收并转发 camera / lights / environment。
+- `MaterialBinder::bind(...)` 与 `PBRMaterialBinder::bind(...)` 的外部接口改为接收 `MaterialBindingContext`。
+- `RendererFramePassRegistry` 在执行 scene pass 时由 `RendererFrameContext` 构造 binding context，再传给具体 pass。
+
+这一步为后续 PBR 专用资源布局做准备：如果要把 PBR light buffer、IBL debug resources、shadow atlas 或 material debug flags 接入绑定阶段，可以扩展 `MaterialBindingContext` 或派生新的 PBR binding context，而不是继续扩大每个 pass / binder 的参数列表。

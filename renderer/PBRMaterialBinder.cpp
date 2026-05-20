@@ -1,5 +1,6 @@
 #include "PBRMaterialBinder.h"
 
+#include "camera/camera.h"
 #include "renderer/EnvironmentRenderTargets.h"
 #include "renderer/LightResourceBinder.h"
 #include "renderer/ShadowResourceBinder.h"
@@ -112,26 +113,21 @@ bool PBRMaterialBinder::bind(
 	const std::shared_ptr<Shader>& shader,
 	const std::shared_ptr<PBRMaterial>& material,
 	const std::shared_ptr<Mesh>& mesh,
-	Camera* camera,
-	const std::shared_ptr<DirectionalLight>& dirLight,
-	const std::shared_ptr<SpotLight>& spotLight,
-	const std::vector<std::shared_ptr<PointLight>>& pointLights,
-	const std::shared_ptr<AmbientLight>& ambient,
-	const EnvironmentRenderTargets* environmentTargets
+	const MaterialBindingContext& context
 )
 {
-	if (!shader || !material || !mesh || camera == nullptr)
+	if (!shader || !material || !mesh || context.camera == nullptr)
 	{
 		return false;
 	}
 
-	const bool useIBL = canUseIBL(material, environmentTargets);
-	setCommonMaterialUniforms(shader, material, camera);
-	setMVPMatrices(shader, mesh, camera);
+	const bool useIBL = canUseIBL(material, context.environmentTargets);
+	setCommonMaterialUniforms(shader, material, context.camera);
+	setMVPMatrices(shader, mesh, context.camera);
 	setNormalMatrix(shader, mesh);
-	LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
-	ShadowResourceBinder::bindCSMShadowResources(shader, camera, dirLight, 8);
+	LightResourceBinder::bindForwardLights(shader, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
+	ShadowResourceBinder::bindCSMShadowResources(shader, context.camera, context.dirLight, 8);
 	bindPBRSurfaceUniforms(shader, material);
-	bindPBRIBLUniforms(shader, material, environmentTargets, useIBL);
+	bindPBRIBLUniforms(shader, material, context.environmentTargets, useIBL);
 	return true;
 }

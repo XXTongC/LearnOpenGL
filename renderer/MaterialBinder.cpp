@@ -1,5 +1,6 @@
 #include "MaterialBinder.h"
 
+#include "camera/camera.h"
 #include "materials/cubeMaterial.h"
 #include "materials/cubeSphereMaterial.h"
 #include "materials/depthMaterial.h"
@@ -320,24 +321,14 @@ namespace
 		const std::shared_ptr<Shader>& shader,
 		const std::shared_ptr<Material>& material,
 		const std::shared_ptr<Mesh>& mesh,
-		Camera* camera,
-		const std::shared_ptr<DirectionalLight>& dirLight,
-		const std::shared_ptr<SpotLight>& spotLight,
-		const std::vector<std::shared_ptr<PointLight>>& pointLights,
-		const std::shared_ptr<AmbientLight>& ambient,
-		const EnvironmentRenderTargets* environmentTargets
+		const MaterialBindingContext& context
 	)
 	{
 		PBRMaterialBinder::bind(
 			shader,
 			std::static_pointer_cast<PBRMaterial>(material),
 			mesh,
-			camera,
-			dirLight,
-			spotLight,
-			pointLights,
-			ambient,
-			environmentTargets
+			context
 		);
 	}
 
@@ -415,63 +406,58 @@ bool MaterialBinder::bind(
 	const std::shared_ptr<Shader>& shader,
 	const std::shared_ptr<Material>& material,
 	const std::shared_ptr<Mesh>& mesh,
-	Camera* camera,
-	const std::shared_ptr<DirectionalLight>& dirLight,
-	const std::shared_ptr<SpotLight>& spotLight,
-	const std::vector<std::shared_ptr<PointLight>>& pointLights,
-	const std::shared_ptr<AmbientLight>& ambient,
-	const EnvironmentRenderTargets* environmentTargets
+	const MaterialBindingContext& context
 )
 {
 	switch (material->getMaterialType())
 	{
 	case MaterialType::WhiteMaterial:
-		bindWhiteMaterial(shader, mesh, camera);
+		bindWhiteMaterial(shader, mesh, context.camera);
 		return true;
 	case MaterialType::DepthMaterial:
-		bindDepthMaterial(shader, mesh, camera);
+		bindDepthMaterial(shader, mesh, context.camera);
 		return true;
 	case MaterialType::CubeMaterial:
-		bindCubeMaterial(shader, material, mesh, camera);
+		bindCubeMaterial(shader, material, mesh, context.camera);
 		return true;
 	case MaterialType::CubeSphereMaterial:
-		bindCubeSphereMaterial(shader, material, mesh, camera);
+		bindCubeSphereMaterial(shader, material, mesh, context.camera);
 		return true;
 	case MaterialType::OpacityMaskMaterial:
-		bindOpacityMaskMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		bindOpacityMaskMaterial(shader, material, mesh, context.camera, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 		return true;
 	case MaterialType::PhongEnvMaterial:
-		bindPhongEnvMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		bindPhongEnvMaterial(shader, material, mesh, context.camera, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 		return true;
 	case MaterialType::PhongEnvSphereMaterial:
-		bindPhongEnvSphereMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		bindPhongEnvSphereMaterial(shader, material, mesh, context.camera, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 		return true;
 	case MaterialType::PhongInstanceMaterial:
-		bindPhongInstanceMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		bindPhongInstanceMaterial(shader, material, mesh, context.camera, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 		return true;
 	case MaterialType::GrassInstanceMaterial:
-		bindGrassInstanceMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		bindGrassInstanceMaterial(shader, material, mesh, context.camera, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 		return true;
 	case MaterialType::PhongMaterial:
-		bindPhongMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		bindPhongMaterial(shader, material, mesh, context.camera, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 		return true;
 	case MaterialType::PhongNormalMaterial:
-		bindPhongNormalMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		bindPhongNormalMaterial(shader, material, mesh, context.camera, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 		return true;
 	case MaterialType::PhongParallaxMaterial:
-		bindPhongParallaxMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		bindPhongParallaxMaterial(shader, material, mesh, context.camera, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 		return true;
 	case MaterialType::PBRMaterial:
-		bindPBRMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient, environmentTargets);
+		bindPBRMaterial(shader, material, mesh, context);
 		return true;
 	case MaterialType::PhongShadowMaterial:
-		bindPhongShadowMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		bindPhongShadowMaterial(shader, material, mesh, context.camera, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 		return true;
 	case MaterialType::PhongCSMShadowMaterial:
-		bindPhongCSMShadowMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		bindPhongCSMShadowMaterial(shader, material, mesh, context.camera, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 		return true;
 	case MaterialType::PhongPointShadowMaterial:
-		bindPhongPointShadowMaterial(shader, material, mesh, camera, dirLight, spotLight, pointLights, ambient);
+		bindPhongPointShadowMaterial(shader, material, mesh, context.camera, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
 		return true;
 	default:
 		return false;

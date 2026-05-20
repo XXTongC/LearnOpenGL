@@ -755,6 +755,9 @@
     <ClInclude Include="renderer\MaterialBinder.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
+    <ClInclude Include="renderer\MaterialBindingContext.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
     <ClInclude Include="renderer\MeshDraw.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
