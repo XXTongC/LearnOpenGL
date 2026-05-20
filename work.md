@@ -1449,3 +1449,14 @@ PBR surface resource binding 已从 `PBRMaterialBinder` 中拆出：
 - PBR surface schema 仍来自 `PBRMaterial`，Debug UI、profile 和 shader binding 继续共享同一组 slot 描述。
 
 这一步为后续 BRDF 参数布局调整和材质贴图槽扩展做准备。新增 clearcoat、anisotropy、transmission 等 PBR 参数时，主要改动点应集中在 `PBRMaterial` schema 与 `PBRSurfaceResourceBinder`。
+
+### 2026-05-21 PBR Shadow Resource Binder
+
+PBR shadow resource binding 已从 `PBRMaterialBinder` 中拆出：
+
+- 新增 `PBRShadowResourceBinder`，作为 PBR 材质侧 shadow resource binding 的唯一入口。
+- 当前实现继续复用已有 CSM shadow resources，但固定 PBR shadow texture unit `8` 不再散落在 `PBRMaterialBinder` 中。
+- 当当前 frame 没有可用 directional shadow 时，binder 会写入 `csmLayerCount = 0`，让 PBR shader 走无 shadow 分支。
+- `PBRMaterialBinder` 现在只组合 common uniforms、light binder、PBR shadow binder、surface binder 和 IBL binder。
+
+这一步为 `PBRShadowAtlas` 做准备。后续如果替换 shadow atlas、增加 PBR 专用 cascade 布局或新增 shadow debug view，优先修改 `PBRShadowResourceBinder`，而不是改动 PBR 材质主绑定流程。

@@ -1475,6 +1475,20 @@
    - `--verify-pbr` renderer stats 输出保持为 `rendererPasses=7, shadowCasters=32, directionalShadowLayers=5, directionalShadowDrawCalls=160, pointShadowLights=2, pointShadowFaces=12, pointShadowDrawCalls=384, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`。
    - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
    - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+240. 完成第一百二十轮 PBR shadow resource binder：
+   - 新增 [renderer/PBRShadowResourceBinder.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRShadowResourceBinder.h) 与 [renderer/PBRShadowResourceBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRShadowResourceBinder.cpp)，建立 PBR 专用 shadow resource binding 入口。
+   - `PBRShadowResourceBinder` 当前委托 [renderer/ShadowResourceBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShadowResourceBinder.cpp) 的 CSM shadow 绑定，并集中维护 PBR shadow texture unit `8`。
+   - 当缺少 camera、directional light 或 directional shadow 时，`PBRShadowResourceBinder` 会显式写入 `csmLayerCount = 0`，让 PBR shader 跳过 shadow sampling。
+   - 更新 [renderer/PBRMaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRMaterialBinder.cpp)，PBR material binding 不再直接调用通用 `ShadowResourceBinder::bindCSMShadowResources(...)`。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `PBRShadowResourceBinder.cpp/.h` 加入 VS 工程和 renderer filter。
+241. 完成第一百一十一次 PBR shadow resource binder 验证：
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 使用 MSVC `cl /Zs` 检查 [renderer/PBRShadowResourceBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRShadowResourceBinder.cpp)、[renderer/PBRMaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRMaterialBinder.cpp)、[renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)、[renderer/PBRSceneRenderPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRSceneRenderPass.cpp) 和 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，结果通过。
+   - 执行 `Debug|x64` + `LinkIncremental=false` 构建通过，新增 `PBRShadowResourceBinder.cpp` 已进入 VS 工程。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，验证模式自动退出并输出 `PBR verification scene stats: objects=33, meshes=32, pbrMeshes=25, pbrPreviewMeshes=25, iblReady=yes`。
+   - `--verify-pbr` renderer stats 输出保持为 `rendererPasses=7, shadowCasters=32, directionalShadowLayers=5, directionalShadowDrawCalls=160, pointShadowLights=2, pointShadowFaces=12, pointShadowDrawCalls=384, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`。
+   - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
+   - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1554,5 +1568,6 @@
 - 当前 PBR depth prepass 的 depth shader frame/object uniform 写入已收敛到 `DepthPrepassBinder`，后续 G-buffer / depth-only PBR pass 可以复用该绑定边界。
 - 当前 PBR IBL 资源绑定已收敛到 `PBRIBLResourceBinder`，PBRMaterialBinder 不再直接维护 irradiance / prefilter / BRDF LUT 贴图绑定细节。
 - 当前 PBR surface 参数和贴图绑定已收敛到 `PBRSurfaceResourceBinder`，PBRMaterialBinder 进一步收敛为 PBR 材质绑定编排器。
+- 当前 PBR shadow 资源绑定已收敛到 `PBRShadowResourceBinder`，PBRMaterialBinder 不再直接依赖通用 CSM shadow binder 和固定 shadow texture unit。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR path 已有 depth / scene pass 边界，但 shadow atlas 和 IBL debug pass 还未拆出。
 - 下一步建议目标：继续补 PBR shadow atlas / IBL debug pass 的具体槽位，或把 PBR verification capture 加入更明确的视觉检查流程。

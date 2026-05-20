@@ -3,8 +3,8 @@
 #include "camera/camera.h"
 #include "renderer/LightResourceBinder.h"
 #include "renderer/PBRIBLResourceBinder.h"
+#include "renderer/PBRShadowResourceBinder.h"
 #include "renderer/PBRSurfaceResourceBinder.h"
-#include "renderer/ShadowResourceBinder.h"
 
 using namespace GLframework;
 
@@ -48,7 +48,7 @@ bool PBRMaterialBinder::bind(
 	setMVPMatrices(shader, mesh, context.camera);
 	setNormalMatrix(shader, mesh);
 	LightResourceBinder::bindForwardLights(shader, context.dirLight, context.spotLight, context.getPointLights(), context.ambient);
-	ShadowResourceBinder::bindCSMShadowResources(shader, context.camera, context.dirLight, 8);
+	PBRShadowResourceBinder::bind(shader, context);
 	PBRSurfaceResourceBinder::bind(shader, material);
 	PBRIBLResourceBinder::bind(shader, material, context.environmentTargets);
 	return true;
