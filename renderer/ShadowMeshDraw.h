@@ -12,6 +12,6 @@ namespace GLframework
 	{
 	public:
 		static bool isPostProcessPass(const std::vector<std::shared_ptr<Mesh>>& meshes);
-		static void draw(const std::shared_ptr<Mesh>& mesh);
+		static bool draw(const std::shared_ptr<Mesh>& mesh);
 	};
 }

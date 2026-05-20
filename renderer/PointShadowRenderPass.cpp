@@ -75,8 +75,10 @@ ShadowRenderStats PointShadowRenderPass::render(
 			for (const auto& mesh : meshes)
 			{
 				shadowDistanceShader->setMat4("modelMatrix", mesh->getModelMatrix());
-				ShadowMeshDraw::draw(mesh);
-				++stats.pointDrawCalls;
+				if (ShadowMeshDraw::draw(mesh))
+				{
+					++stats.pointDrawCalls;
+				}
 			}
 
 			shadowDistanceShader->end();

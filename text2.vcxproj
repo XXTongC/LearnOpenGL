@@ -196,6 +196,7 @@
     <ClCompile Include="renderer\IBLPrecomputePass.cpp" />
     <ClCompile Include="renderer\LightResourceBinder.cpp" />
     <ClCompile Include="renderer\MaterialBinder.cpp" />
+    <ClCompile Include="renderer\MeshDraw.cpp" />
     <ClCompile Include="renderer\PBRMaterialBinder.cpp" />
     <ClCompile Include="renderer\PBRDepthPrepass.cpp" />
     <ClCompile Include="renderer\PBRSceneRenderPass.cpp" />
@@ -289,6 +290,7 @@
     <ClInclude Include="renderer\IBLPrecomputePass.h" />
     <ClInclude Include="renderer\LightResourceBinder.h" />
     <ClInclude Include="renderer\MaterialBinder.h" />
+    <ClInclude Include="renderer\MeshDraw.h" />
     <ClInclude Include="renderer\PBRMaterialBinder.h" />
     <ClInclude Include="renderer\PBRDepthPrepass.h" />
     <ClInclude Include="renderer\PBRSceneRenderPass.h" />

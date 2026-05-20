@@ -54,8 +54,10 @@ ShadowRenderStats DirectionalShadowRenderPass::render(
 		for (const auto& mesh : meshes)
 		{
 			shadowShader->setMat4("modelMatrix", mesh->getModelMatrix());
-			ShadowMeshDraw::draw(mesh);
-			++stats.directionalDrawCalls;
+			if (ShadowMeshDraw::draw(mesh))
+			{
+				++stats.directionalDrawCalls;
+			}
 		}
 		shadowShader->end();
 	}

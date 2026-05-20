@@ -1396,3 +1396,15 @@ PBR 材质绑定已从通用 `MaterialBinder` 中拆出：
 - VS 工程已加入 `PBRMaterialBinder.cpp/.h`。
 
 这一步为后续 PBR 专用 shader binding path 做准备。后续如果要让 PBR 使用独立 light buffer、IBL debug view、shadow atlas 或不同 BRDF 参数布局，可以优先修改 `PBRMaterialBinder`，而不是继续扩大通用 `MaterialBinder` 的 switch 分支。
+
+### 2026-05-20 Renderer Mesh Draw Helper
+
+底层 mesh draw 入口已从各 render pass 中收敛出来：
+
+- 新增 `MeshDraw::drawIndexed(...)`，统一处理空 mesh / 空 geometry 检查、VAO 绑定、普通 indexed draw 和 instanced indexed draw。
+- `SceneRenderPass`、`PBRSceneRenderPass`、`PBRDepthPrepass` 删除各自重复的 `drawMesh(...)` 实现。
+- `ShadowMeshDraw` 继续保留 shadow 专用的 postprocess-pass 判断，但实际 draw 动作转发到 `MeshDraw`。
+- `DirectionalShadowRenderPass` 和 `PointShadowRenderPass` 现在只在 draw 成功后增加 draw call 统计。
+- `IBLPrecomputePass` 的 cubemap capture 与 BRDF LUT draw 也复用 `MeshDraw`。
+
+这一步的目标是让后续 PBR shadow atlas、IBL debug pass、G-buffer 或 clustered depth pass 不再复制 VAO / instancing 绘制细节。pass 只负责绑定资源、shader 和 per-object uniform；mesh draw 行为由 renderer 层统一入口负责。

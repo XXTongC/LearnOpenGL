@@ -48,6 +48,5 @@ namespace GLframework
 			unsigned int captureSize,
 			unsigned int mipLevel = 0
 		) const;
-		bool drawMesh(const std::shared_ptr<Mesh>& mesh) const;
 	};
 }

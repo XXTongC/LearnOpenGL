@@ -45,6 +45,5 @@ namespace GLframework
 			const EnvironmentRenderTargets* environmentTargets
 		) const;
 
-		void drawMesh(const std::shared_ptr<Mesh>& mesh) const;
 	};
 }

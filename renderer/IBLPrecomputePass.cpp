@@ -1,5 +1,7 @@
 #include "IBLPrecomputePass.h"
 
+#include "renderer/MeshDraw.h"
+
 using namespace GLframework;
 
 namespace
@@ -181,7 +183,7 @@ bool IBLPrecomputePass::computeBrdfLut(
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	shader->begin();
-	const bool rendered = drawMesh(screenQuad);
+	const bool rendered = MeshDraw::drawIndexed(screenQuad);
 	shader->end();
 	return rendered;
 }
@@ -220,25 +222,11 @@ bool IBLPrecomputePass::renderCubemapFaces(
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shader->setMat4("viewMatrix", views[face]);
 
-		if (!drawMesh(captureCube))
+		if (!MeshDraw::drawIndexed(captureCube))
 		{
 			return false;
 		}
 	}
 
-	return true;
-}
-
-bool IBLPrecomputePass::drawMesh(const std::shared_ptr<Mesh>& mesh) const
-{
-	if (!mesh || !mesh->getGeometry())
-	{
-		return false;
-	}
-
-	const auto geometry = mesh->getGeometry();
-	glBindVertexArray(geometry->getVao());
-	glDrawElements(GL_TRIANGLES, geometry->getIndicesCount(), GL_UNSIGNED_INT, nullptr);
-	glBindVertexArray(0);
 	return true;
 }

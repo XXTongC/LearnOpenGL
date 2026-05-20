@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-#include "mesh/instancedMesh.h"
 #include "renderer/MaterialBinder.h"
+#include "renderer/MeshDraw.h"
 #include "renderer/RenderState.h"
 
 using namespace GLframework;
@@ -73,31 +73,7 @@ bool SceneRenderPass::renderObject(
 		std::cout << "SceneRenderPass: unsupported material\n";
 	}
 
-	drawMesh(mesh);
+	const bool drawn = MeshDraw::drawIndexed(mesh);
 	shader->end();
-	return true;
-}
-
-void SceneRenderPass::drawMesh(const std::shared_ptr<Mesh>& mesh) const
-{
-	auto geometry = mesh->getGeometry();
-	glBindVertexArray(geometry->getVao());
-
-	if (mesh->getType() == ObjectType::InstancedMesh)
-	{
-		std::shared_ptr<InstancedMesh> instancedMesh = std::static_pointer_cast<InstancedMesh>(mesh);
-		glDrawElementsInstanced(
-			GL_TRIANGLES,
-			geometry->getIndicesCount(),
-			GL_UNSIGNED_INT,
-			nullptr,
-			instancedMesh->getInstanceCount()
-		);
-	}
-	else
-	{
-		glDrawElements(GL_TRIANGLES, geometry->getIndicesCount(), GL_UNSIGNED_INT, nullptr);
-	}
-
-	glBindVertexArray(0);
+	return drawn;
 }

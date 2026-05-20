@@ -1,7 +1,7 @@
 #include "PBRDepthPrepass.h"
 
 #include "materials/material.h"
-#include "mesh/instancedMesh.h"
+#include "renderer/MeshDraw.h"
 
 using namespace GLframework;
 
@@ -59,30 +59,5 @@ bool PBRDepthPrepass::renderObject(
 	}
 
 	shader->setMat4("modelMatrix", mesh->getModelMatrix());
-	drawMesh(mesh);
-	return true;
-}
-
-void PBRDepthPrepass::drawMesh(const std::shared_ptr<Mesh>& mesh) const
-{
-	auto geometry = mesh->getGeometry();
-	glBindVertexArray(geometry->getVao());
-
-	if (mesh->getType() == ObjectType::InstancedMesh)
-	{
-		const auto instancedMesh = std::static_pointer_cast<InstancedMesh>(mesh);
-		glDrawElementsInstanced(
-			GL_TRIANGLES,
-			geometry->getIndicesCount(),
-			GL_UNSIGNED_INT,
-			nullptr,
-			instancedMesh->getInstanceCount()
-		);
-	}
-	else
-	{
-		glDrawElements(GL_TRIANGLES, geometry->getIndicesCount(), GL_UNSIGNED_INT, nullptr);
-	}
-
-	glBindVertexArray(0);
+	return MeshDraw::drawIndexed(mesh);
 }
