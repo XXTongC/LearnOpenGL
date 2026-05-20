@@ -1011,3 +1011,14 @@ PBR experiment preset 的 prefixed key 应用逻辑已开始复用 profile schem
 - 删除了 `PBRExperimentProfile.cpp` 中重复维护的 environment / postprocess / PBR preview 字段分支。
 
 这一步让单 profile local ini 与高层 experiment ini 共用字段来源。后续如果新增 PBR material 参数，正常路径应该是先在 profile schema 增加 descriptor，然后 local profile、Debug UI 和 experiment preset 同时获得该字段能力。
+
+### 2026-05-20 PBR Texture Slot Schema
+
+PBR 材质贴图槽开始从手写绑定收敛到声明式描述：
+
+- `PBRMaterial` 新增 `PBRTextureSlot` / `PBRConstTextureSlot`，集中描述每个 PBR texture slot 的 Inspector label、sampler uniform、use flag uniform 和 texture 指针。
+- `PBRMaterial::getTextureSlots()` 通过一份内部 metadata 表生成 slot 列表，避免 sampler 名称和 use flag 名称散落在 binder / inspector 多处。
+- `PBRMaterial::visitEditableProperties(...)` 现在遍历 texture slot 列表生成贴图状态文本，不再为 albedo / metallic / roughness / AO / normal / emissive 各写一行。
+- `MaterialBinder::bindPBRMaterial(...)` 现在遍历同一份 texture slot 列表绑定可选贴图和对应 use flag，不再手写 6 组 `bindOptionalTexture(...)`。
+
+这一步没有改变 shader uniform 名称和现有视觉输出，但建立了正式的 PBR texture slot 边界。后续新增 clearcoat、sheen、transmission 或 ORM packed texture 时，应先扩展 slot metadata，再处理 shader 采样逻辑。

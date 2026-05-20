@@ -1,15 +1,35 @@
 #pragma once
 
+#include <array>
+
 #include "../material.h"
 #include "../../framework/texture.h"
 
 namespace GLframework
 {
+	struct PBRTextureSlot
+	{
+		const char* label{ "" };
+		const char* samplerUniform{ "" };
+		const char* useFlagUniform{ "" };
+		std::shared_ptr<Texture>* texture{ nullptr };
+	};
+
+	struct PBRConstTextureSlot
+	{
+		const char* label{ "" };
+		const char* samplerUniform{ "" };
+		const char* useFlagUniform{ "" };
+		const std::shared_ptr<Texture>* texture{ nullptr };
+	};
+
 	class PBRMaterial : public Material
 	{
 	public:
 		PBRMaterial();
 		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder) override;
+		std::array<PBRTextureSlot, 6> getTextureSlots();
+		std::array<PBRConstTextureSlot, 6> getTextureSlots() const;
 
 	public:
 		std::shared_ptr<Texture> mAlbedoMap{ nullptr };

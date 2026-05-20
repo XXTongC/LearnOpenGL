@@ -405,12 +405,15 @@ namespace
 		shader->setFloat("iblDiffuseStrength", pbrMat->mIblDiffuseStrength);
 		shader->setFloat("iblSpecularStrength", pbrMat->mIblSpecularStrength);
 
-		bindOptionalTexture(shader, "albedoMap", "useAlbedoMap", pbrMat->mAlbedoMap);
-		bindOptionalTexture(shader, "metallicMap", "useMetallicMap", pbrMat->mMetallicMap);
-		bindOptionalTexture(shader, "roughnessMap", "useRoughnessMap", pbrMat->mRoughnessMap);
-		bindOptionalTexture(shader, "aoMap", "useAoMap", pbrMat->mAoMap);
-		bindOptionalTexture(shader, "normalMap", "useNormalMap", pbrMat->mNormalMap);
-		bindOptionalTexture(shader, "emissiveMap", "useEmissiveMap", pbrMat->mEmissiveMap);
+		for (const auto& slot : pbrMat->getTextureSlots())
+		{
+			bindOptionalTexture(
+				shader,
+				slot.samplerUniform,
+				slot.useFlagUniform,
+				slot.texture ? *slot.texture : nullptr
+			);
+		}
 
 		if (!useIBL)
 		{

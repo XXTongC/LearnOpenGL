@@ -1,12 +1,66 @@
 #include "PBRMaterial.h"
 
+#include <cstddef>
+
 #include "tools/inspector/MaterialInspector.h"
 
 using namespace GLframework;
 
+namespace
+{
+	struct PBRTextureSlotMetadata
+	{
+		const char* label{ "" };
+		const char* samplerUniform{ "" };
+		const char* useFlagUniform{ "" };
+		std::shared_ptr<Texture> PBRMaterial::* texture{ nullptr };
+	};
+
+	constexpr std::array<PBRTextureSlotMetadata, 6> pbrTextureSlotMetadata{
+		PBRTextureSlotMetadata{ "Albedo Map", "albedoMap", "useAlbedoMap", &PBRMaterial::mAlbedoMap },
+		PBRTextureSlotMetadata{ "Metallic Map", "metallicMap", "useMetallicMap", &PBRMaterial::mMetallicMap },
+		PBRTextureSlotMetadata{ "Roughness Map", "roughnessMap", "useRoughnessMap", &PBRMaterial::mRoughnessMap },
+		PBRTextureSlotMetadata{ "AO Map", "aoMap", "useAoMap", &PBRMaterial::mAoMap },
+		PBRTextureSlotMetadata{ "Normal Map", "normalMap", "useNormalMap", &PBRMaterial::mNormalMap },
+		PBRTextureSlotMetadata{ "Emissive Map", "emissiveMap", "useEmissiveMap", &PBRMaterial::mEmissiveMap },
+	};
+}
+
 PBRMaterial::PBRMaterial()
 {
 	setMaterialType(MaterialType::PBRMaterial);
+}
+
+std::array<PBRTextureSlot, 6> PBRMaterial::getTextureSlots()
+{
+	std::array<PBRTextureSlot, 6> slots{};
+	for (std::size_t index = 0; index < pbrTextureSlotMetadata.size(); ++index)
+	{
+		const auto& metadata = pbrTextureSlotMetadata[index];
+		slots[index] = PBRTextureSlot{
+			metadata.label,
+			metadata.samplerUniform,
+			metadata.useFlagUniform,
+			&(this->*metadata.texture)
+		};
+	}
+	return slots;
+}
+
+std::array<PBRConstTextureSlot, 6> PBRMaterial::getTextureSlots() const
+{
+	std::array<PBRConstTextureSlot, 6> slots{};
+	for (std::size_t index = 0; index < pbrTextureSlotMetadata.size(); ++index)
+	{
+		const auto& metadata = pbrTextureSlotMetadata[index];
+		slots[index] = PBRConstTextureSlot{
+			metadata.label,
+			metadata.samplerUniform,
+			metadata.useFlagUniform,
+			&(this->*metadata.texture)
+		};
+	}
+	return slots;
 }
 
 void PBRMaterial::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
@@ -26,10 +80,12 @@ void PBRMaterial::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
 	builder.addFloat("IBL Diffuse Strength", &mIblDiffuseStrength, 0.0f, 5.0f);
 	builder.addFloat("IBL Specular Strength", &mIblSpecularStrength, 0.0f, 5.0f);
 
-	builder.addText("Albedo Map", [this]() { return GL_EDITOR::describeTexture(mAlbedoMap); });
-	builder.addText("Metallic Map", [this]() { return GL_EDITOR::describeTexture(mMetallicMap); });
-	builder.addText("Roughness Map", [this]() { return GL_EDITOR::describeTexture(mRoughnessMap); });
-	builder.addText("AO Map", [this]() { return GL_EDITOR::describeTexture(mAoMap); });
-	builder.addText("Normal Map", [this]() { return GL_EDITOR::describeTexture(mNormalMap); });
-	builder.addText("Emissive Map", [this]() { return GL_EDITOR::describeTexture(mEmissiveMap); });
+	builder.addSection("PBR Textures");
+	for (const auto& slot : getTextureSlots())
+	{
+		builder.addText(slot.label, [texture = slot.texture]()
+		{
+			return GL_EDITOR::describeTexture(texture ? *texture : nullptr);
+		});
+	}
 }
