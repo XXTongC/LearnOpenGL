@@ -1329,6 +1329,19 @@
    - `--verify-pbr` renderer stats 输出：`shadowCasters=32, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`，证明 25 个 PBR preview mesh 已进入 PBR depth prepass 和 PBR scene pass。
    - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 仍为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
    - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+220. 完成第一百一十轮 renderer frame stats Debug UI：
+   - 更新 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，新增 `Renderer Frame Stats` UI 区块。
+   - Debug UI 现在直接读取 `Renderer::getLastFrameStats()`，显示 `PBR Path Active`、shadow caster 数、legacy scene draw call 数、PBR depth prepass draw call 数和 PBR scene draw call 数。
+   - 这让普通运行时也能观察当前场景是否真实进入 PBR 专用 depth / scene pass，不再只依赖旧 Phong 场景短启动或 `--verify-pbr` stdout。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 renderer frame stats Debug UI 的定位和验证边界。
+221. 完成第一百零一次 renderer frame stats Debug UI 验证：
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 使用 MSVC `cl /Zs` 检查 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)、[application/RuntimeEditorPanelCoordinator.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorPanelCoordinator.cpp) 和 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；`DebugControllerPanel.cpp` 已进入 VS/MSBuild 构建路径。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，验证模式自动退出并输出 `PBR verification scene stats: objects=33, meshes=32, pbrMeshes=25, pbrPreviewMeshes=25, iblReady=yes`。
+   - `--verify-pbr` renderer stats 输出：`shadowCasters=32, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`，证明当前验证场景确实经过 PBR depth prepass 和 PBR scene pass。
+   - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
+   - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1398,5 +1411,6 @@
 - 当前 `RuntimeFramePipeline` 已从固定 `defaultPasses()` 推进为 profile-driven pass plan，`RuntimeFramePipelineProfile::passOrder` 可以控制当前 pass key 顺序，无效配置会回退默认顺序。
 - 当前 renderer 已新增 PBR 专用 scene pass，PBR mesh 从 render queue 分类到 PBR 子队列后由 `PBRSceneRenderPass` 渲染；`--verify-pbr` 已验证 `pbrDrawCalls=25`。
 - 当前 renderer 已新增 PBR depth prepass，`--verify-pbr` 已验证 `pbrDepthPrepassDrawCalls=25` 且 `pbrDrawCalls=25`。
+- 当前 renderer frame stats 已接入 Debug UI，普通运行时可以直接观察 PBR depth / scene pass 是否实际执行。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR path 已有 depth / scene pass 边界，但 shadow atlas 和 IBL debug pass 还未拆出。
-- 下一步建议目标：继续补 PBR shadow atlas / IBL debug pass 的具体槽位，或先把 renderer stats 接入 Debug UI 便于人工验证。
+- 下一步建议目标：继续补 PBR shadow atlas / IBL debug pass 的具体槽位，或把 PBR verification capture 加入更明确的视觉检查流程。

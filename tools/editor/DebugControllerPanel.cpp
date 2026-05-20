@@ -178,6 +178,27 @@ namespace
 		}
 	}
 
+	void drawRendererFrameStats(const std::shared_ptr<GLframework::Renderer>& renderer)
+	{
+		if (!renderer)
+		{
+			return;
+		}
+
+		if (ImGui::CollapsingHeader("Renderer Frame Stats", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			const GLframework::RendererFrameStats& stats = renderer->getLastFrameStats();
+			const bool pbrPathActive = stats.pbrDepthPrepassDrawCalls > 0 || stats.pbrSceneDrawCalls > 0;
+
+			ImGui::Text("PBR Path Active: %s", pbrPathActive ? "Yes" : "No");
+			ImGui::Text("Shadow Casters: %d", stats.shadowCasterCount);
+			ImGui::Text("Legacy Scene Draw Calls: %d", stats.legacySceneDrawCalls);
+			ImGui::Text("PBR Depth Prepass Draw Calls: %d", stats.pbrDepthPrepassDrawCalls);
+			ImGui::Text("PBR Scene Draw Calls: %d", stats.pbrSceneDrawCalls);
+			ImGui::TextWrapped("Use these values to verify whether the current scene is actually using the PBR render path.");
+		}
+	}
+
 	void drawPBRPreviewControls(
 		GL_SCENE::PBRPreviewProfile* profile,
 		const std::string* profilePath
@@ -373,6 +394,7 @@ void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
 
 	drawPostProcessControls(context.postProcessSettings, context.postProcessSettingsPath);
 	drawFramePipelineControls(context.framePipelineProfile, context.framePipelineProfilePath);
+	drawRendererFrameStats(context.renderer);
 	drawPBRPreviewControls(context.pbrPreviewProfile, context.pbrPreviewProfilePath);
 	drawPBRExperimentControls(context);
 	drawEnvironmentControls(context.renderer, context.environmentProfile, context.environmentProfilePath);

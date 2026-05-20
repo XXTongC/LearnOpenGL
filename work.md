@@ -1337,3 +1337,13 @@ PBR 路径已新增第一个真实前向渲染前置 pass：
 - `mGlobalMaterial` override 路径继续跳过 PBR 专用 pass，保持旧的全局材质调试行为。
 
 本轮验证显示 `pbrDepthPrepassDrawCalls=25` 且 `pbrDrawCalls=25`，说明 5x5 PBR preview grid 同时经过 depth prepass 和 PBR scene pass。后续如果要做 PBR shadow atlas、deferred G-buffer 或 clustered lighting，这个 depth prepass 可以继续扩展为深度资源生产点。
+
+### 2026-05-20 Renderer Frame Stats Debug UI
+
+Renderer 的 PBR 路径验证信息已接入 Debug UI：
+
+- `DebugControllerPanel` 新增 `Renderer Frame Stats` 区块，直接读取 `Renderer::getLastFrameStats()`。
+- UI 会显示 `PBR Path Active`、shadow caster 数、legacy scene draw call 数、PBR depth prepass draw call 数和 PBR scene draw call 数。
+- 这让普通运行时也能确认当前场景是否实际经过 PBR 专用 depth / scene pass，而不是只能依赖 `--verify-pbr` stdout。
+
+这一步的目的不是替代 `--verify-pbr`，而是补上人工调试入口：命令行验证负责可复现证据，Debug UI 负责运行时观察和切换实验配置时的即时反馈。
