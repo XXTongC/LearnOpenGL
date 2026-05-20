@@ -516,6 +516,9 @@
     <ClCompile Include="tools\sceneSetup\PBRExperimentProfile.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\sceneSetup\PBRCameraRigProfile.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\sceneSetup\PBRLightRigProfile.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -1830,6 +1833,9 @@
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\sceneSetup\PBRExperimentProfile.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\sceneSetup\PBRCameraRigProfile.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\sceneSetup\PBRLightRigProfile.h">

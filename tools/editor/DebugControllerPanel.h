@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+class Camera;
+
 namespace GLframework
 {
 	class DirectionalLight;
@@ -18,6 +20,7 @@ namespace GLframework
 
 namespace GL_SCENE
 {
+	struct PBRCameraRigProfile;
 	struct PBRLightRigProfile;
 	struct PBRPreviewProfile;
 }
@@ -40,6 +43,8 @@ namespace GL_EDITOR
 		const std::string* pbrPreviewProfilePath{ nullptr };
 		const std::string* pbrExperimentProfilePath{ nullptr };
 		GL_SCENE::PBRLightRigProfile* lightRigProfile{ nullptr };
+		GL_SCENE::PBRCameraRigProfile* cameraRigProfile{ nullptr };
+		Camera* mainCamera{ nullptr };
 		float* orbitAngle{ nullptr };
 	};
 

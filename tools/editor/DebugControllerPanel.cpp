@@ -11,6 +11,7 @@
 #include "../../renderer/PostProcessSettings.h"
 #include "../../third_party/imgui/imgui.h"
 #include "../inspector/PropertyInspector.h"
+#include "../sceneSetup/PBRCameraRigProfile.h"
 #include "../sceneSetup/PBRExperimentProfile.h"
 #include "../sceneSetup/PBRLightRigProfile.h"
 #include "../sceneSetup/PBRPreviewProfile.h"
@@ -216,6 +217,7 @@ namespace
 			!context.postProcessSettings ||
 			!context.pbrPreviewProfile ||
 			!context.lightRigProfile ||
+			!context.cameraRigProfile ||
 			!context.ambientLight ||
 			!context.directionalLight ||
 			!context.spotLight ||
@@ -232,7 +234,7 @@ namespace
 		if (ImGui::CollapsingHeader("PBR Experiment Preset"))
 		{
 			ImGui::TextWrapped("Preset File: %s", configPath.c_str());
-			ImGui::TextWrapped("Saves or reloads the combined environment, postprocess, and PBR preview profile.");
+			ImGui::TextWrapped("Saves or reloads the combined environment, postprocess, PBR preview, light rig, and camera rig profile.");
 
 			if (ImGui::Button("Save PBR Experiment Preset"))
 			{
@@ -242,12 +244,14 @@ namespace
 					*context.spotLight,
 					*context.pointLights
 				);
+				context.cameraRigProfile->copyFrom(context.mainCamera);
 				lastConfigStatus = GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 					configPath,
 					*context.environmentProfile,
 					*context.postProcessSettings,
 					*context.pbrPreviewProfile,
-					*context.lightRigProfile
+					*context.lightRigProfile,
+					*context.cameraRigProfile
 				)
 					? "PBR experiment preset saved."
 					: "PBR experiment preset save failed.";
@@ -260,7 +264,8 @@ namespace
 					*context.environmentProfile,
 					*context.postProcessSettings,
 					*context.pbrPreviewProfile,
-					*context.lightRigProfile
+					*context.lightRigProfile,
+					*context.cameraRigProfile
 				)
 					? "PBR experiment preset reloaded."
 					: "PBR experiment preset reload failed.";
@@ -272,6 +277,7 @@ namespace
 						*context.spotLight,
 						*context.pointLights
 					);
+					context.cameraRigProfile->applyTo(context.mainCamera);
 				}
 			}
 

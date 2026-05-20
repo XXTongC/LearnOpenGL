@@ -38,7 +38,8 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	GLframework::EnvironmentProfile& environmentProfile,
 	GLframework::PostProcessSettings& postProcessSettings,
 	PBRPreviewProfile& pbrPreviewProfile,
-	PBRLightRigProfile& lightRigProfile
+	PBRLightRigProfile& lightRigProfile,
+	PBRCameraRigProfile& cameraRigProfile
 )
 {
 	bool enabled{ true };
@@ -46,6 +47,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	auto loadedPostProcessSettings = postProcessSettings;
 	auto loadedPBRPreviewProfile = pbrPreviewProfile;
 	auto loadedLightRigProfile = lightRigProfile;
+	auto loadedCameraRigProfile = cameraRigProfile;
 
 	GL_EDITOR::PropertyBuilder environmentBuilder{};
 	loadedEnvironmentProfile.visitEditableProperties(environmentBuilder);
@@ -55,13 +57,16 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	loadedPBRPreviewProfile.visitEditableProperties(pbrPreviewBuilder);
 	GL_EDITOR::PropertyBuilder lightRigBuilder{};
 	loadedLightRigProfile.visitEditableProperties(lightRigBuilder);
+	GL_EDITOR::PropertyBuilder cameraRigBuilder{};
+	loadedCameraRigProfile.visitEditableProperties(cameraRigBuilder);
 
 	const bool loaded = GL_CONFIG::readKeyValueFile(path, [
 		&enabled,
 		&environmentBuilder,
 		&postProcessBuilder,
 		&pbrPreviewBuilder,
-		&lightRigBuilder
+		&lightRigBuilder,
+		&cameraRigBuilder
 	](
 		const std::string& key,
 		const std::string& value
@@ -77,6 +82,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 		constexpr auto postProcessPrefix = "postprocess.";
 		constexpr auto pbrPreviewPrefix = "pbrPreview.";
 		constexpr auto lightRigPrefix = "lightRig.";
+		constexpr auto cameraRigPrefix = "cameraRig.";
 
 		if (GL_CONFIG::startsWith(key, environmentPrefix))
 		{
@@ -99,6 +105,12 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 		if (GL_CONFIG::startsWith(key, lightRigPrefix))
 		{
 			applyPrefixedPropertyConfigValue(key, value, lightRigPrefix, lightRigBuilder);
+			return;
+		}
+
+		if (GL_CONFIG::startsWith(key, cameraRigPrefix))
+		{
+			applyPrefixedPropertyConfigValue(key, value, cameraRigPrefix, cameraRigBuilder);
 		}
 	});
 	if (!loaded)
@@ -116,6 +128,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	PBRPreviewProfileStorage::applyMaterialProfileReference(loadedPBRPreviewProfile);
 	pbrPreviewProfile = loadedPBRPreviewProfile;
 	lightRigProfile = loadedLightRigProfile;
+	cameraRigProfile = loadedCameraRigProfile;
 	return true;
 }
 
@@ -124,7 +137,8 @@ bool GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 	const GLframework::EnvironmentProfile& environmentProfile,
 	const GLframework::PostProcessSettings& postProcessSettings,
 	const PBRPreviewProfile& pbrPreviewProfile,
-	const PBRLightRigProfile& lightRigProfile
+	const PBRLightRigProfile& lightRigProfile,
+	const PBRCameraRigProfile& cameraRigProfile
 )
 {
 	const std::filesystem::path filePath{ path };
@@ -149,6 +163,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 	auto postProcessSnapshot = postProcessSettings;
 	auto pbrPreviewSnapshot = pbrPreviewProfile;
 	auto lightRigSnapshot = lightRigProfile;
+	auto cameraRigSnapshot = cameraRigProfile;
 
 	GL_EDITOR::PropertyBuilder environmentBuilder{};
 	environmentSnapshot.visitEditableProperties(environmentBuilder);
@@ -158,9 +173,11 @@ bool GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 	pbrPreviewSnapshot.visitEditableProperties(pbrPreviewBuilder);
 	GL_EDITOR::PropertyBuilder lightRigBuilder{};
 	lightRigSnapshot.visitEditableProperties(lightRigBuilder);
+	GL_EDITOR::PropertyBuilder cameraRigBuilder{};
+	cameraRigSnapshot.visitEditableProperties(cameraRigBuilder);
 
 	output
-		<< "# Local PBR experiment preset for environment, postprocess, PBR preview, and light rig\n"
+		<< "# Local PBR experiment preset for environment, postprocess, PBR preview, light rig, and camera rig\n"
 		<< "enabled=1\n\n";
 	GL_CONFIG::writePropertyConfig(output, "environment.", environmentBuilder);
 	output << '\n';
@@ -169,6 +186,8 @@ bool GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 	GL_CONFIG::writePropertyConfig(output, "pbrPreview.", pbrPreviewBuilder);
 	output << '\n';
 	GL_CONFIG::writePropertyConfig(output, "lightRig.", lightRigBuilder);
+	output << '\n';
+	GL_CONFIG::writePropertyConfig(output, "cameraRig.", cameraRigBuilder);
 
 	return true;
 }

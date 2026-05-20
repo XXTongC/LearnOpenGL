@@ -55,6 +55,7 @@
 #include "tools/editor/DebugControllerPanel.h"
 #include "tools/editor/EditorPanels.h"
 #include "tools/legacyExperiments/LegacyExperimentRunner.h"
+#include "tools/sceneSetup/PBRCameraRigProfile.h"
 #include "tools/sceneSetup/PBRExperimentProfile.h"
 #include "tools/sceneSetup/PBRLightRigProfile.h"
 #include "tools/sceneSetup/SceneSetup.h"
@@ -132,6 +133,7 @@ struct AppRuntimeContext
 	std::string environmentProfilePath{ GLframework::EnvironmentProfileStorage::defaultPath() };
 	GL_SCENE::PBRPreviewProfile pbrPreviewProfile{};
 	GL_SCENE::PBRLightRigProfile pbrLightRigProfile{};
+	GL_SCENE::PBRCameraRigProfile pbrCameraRigProfile{};
 	std::string pbrPreviewProfilePath{ GL_SCENE::PBRPreviewProfileStorage::defaultPath() };
 	std::string pbrExperimentProfilePath{ GL_SCENE::PBRExperimentProfileStorage::defaultPath() };
 	Camera* camera{ nullptr };
@@ -166,6 +168,7 @@ auto& environmentProfile = gAppRuntime.environmentProfile;
 auto& environmentProfilePath = gAppRuntime.environmentProfilePath;
 auto& pbrPreviewProfile = gAppRuntime.pbrPreviewProfile;
 auto& pbrLightRigProfile = gAppRuntime.pbrLightRigProfile;
+auto& pbrCameraRigProfile = gAppRuntime.pbrCameraRigProfile;
 auto& pbrPreviewProfilePath = gAppRuntime.pbrPreviewProfilePath;
 auto& pbrExperimentProfilePath = gAppRuntime.pbrExperimentProfilePath;
 Camera*& camera = gAppRuntime.camera;
@@ -335,6 +338,8 @@ GL_EDITOR::DebugControllerContext makeDebugControllerContext()
 		&pbrPreviewProfilePath,
 		&pbrExperimentProfilePath,
 		&pbrLightRigProfile,
+		&pbrCameraRigProfile,
+		camera,
 		&m_time
 	};
 }
@@ -408,9 +413,11 @@ void loadPBRExperimentProfile()
 		environmentProfile,
 		postProcessSettings,
 		pbrPreviewProfile,
-		pbrLightRigProfile
+		pbrLightRigProfile,
+		pbrCameraRigProfile
 	))
 	{
+		pbrCameraRigProfile.applyTo(camera);
 		LogInfo("PBR experiment profile loaded from " + pbrExperimentProfilePath);
 		return;
 	}

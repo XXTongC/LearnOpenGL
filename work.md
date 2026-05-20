@@ -1107,3 +1107,15 @@ PBR experiment preset 已纳入 light rig 维度：
 - `DebugControllerContext` 中 light owner 改为指向 `shared_ptr` owner 的指针，避免 reload preset 时只修改 context 内部副本，确保 light rig reload 能真正更新运行时灯光对象。
 
 这一步让一次 PBR experiment preset 能恢复 environment、postprocess、preview/material 和 light rig。下一步更合理的是补 camera rig profile，把观察位置、FOV 和 near/far 也纳入实验恢复范围；之后再继续把 application lifecycle 从 `main.cpp` 拆到 runtime bootstrapper。
+
+### 2026-05-20 PBR Camera Rig Profile
+
+PBR experiment preset 已纳入主相机视角维度：
+
+- 新增 `PBRCameraRigProfile`，集中描述主相机 position、up、right、fovy、nearPlane 和 farPlane。
+- `cameraRig.*` 字段接入 `PBRExperimentProfileStorage`，可以跟 environment、postprocess、preview/material 和 light rig 一起保存 / 加载。
+- `PBRCameraRigProfile::applyTo(...)` 只恢复视角和裁剪参数，不写入 aspect；aspect 仍由窗口尺寸和 `RuntimeViewport` 负责，避免 preset 与 resize 逻辑冲突。
+- Debug UI 保存 PBR experiment preset 前会从当前主相机回写 camera rig，重载 preset 后会应用到当前主相机。
+- 启动时 `loadPBRExperimentProfile()` 在读取 experiment preset 后也会应用 camera rig，因此同一 preset 可以稳定恢复观察位置和 PBR 比较视角。
+
+这一步补齐了 PBR 实验可复现性的关键维度。后续更值得处理的是 `main.cpp` 仍然持有大量 runtime context 和初始化编排；下一步应把 application lifecycle 拆到 runtime bootstrapper，而不是继续在主入口堆新的 profile 字段。
