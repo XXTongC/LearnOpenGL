@@ -1196,3 +1196,14 @@ Camera lifecycle 已开始从 `main.cpp` 拆出：
 - `main.cpp` 不再直接 include `perspectivecamera.h`、`orthographiccamera.h` 或 `gamecameracontrol.h`。
 
 这一步让 camera 的创建策略具备独立扩展点。后续如果 PBR 预览需要 orbit camera、editor camera、preview camera 或从 preset 恢复不同 camera controller，应优先扩展 runtime camera lifecycle / camera factory，而不是回到主入口硬编码具体 camera 类型。
+
+### 2026-05-20 Runtime Frame Pipeline
+
+Frame render pipeline 已从 `RuntimeFrameRunner` 中拆出：
+
+- 新增 `RuntimeFramePipeline`，集中执行 scene-to-MSAA target、scene color resolve、Bloom、screen composite 四个当前 frame pass。
+- `RuntimeFrameRunner` 只保留 per-frame 高层顺序：camera control update、legacy experiment update、frame pipeline render、UI callback。
+- `RuntimeFramePipelineConfig` 当前只携带 default framebuffer 尺寸，保持 pipeline 不直接依赖 `GL_APP`。
+- 现有渲染行为不变，仍然先渲染 offscreen scene，再 resolve HDR color，按 `PostProcessSettings` 决定是否跑 Bloom，最后做 screen composite。
+
+这一步为 PBR 渲染路径准备了更明确的 pass 边界。后续新增 PBR depth prepass、shadow atlas、deferred G-buffer、SSR/TAA 或透明 pass 时，应扩展 `RuntimeFramePipeline` 或继续拆出专门的 pass 类型，而不是把具体 pass 放回 frame runner 或 main。
