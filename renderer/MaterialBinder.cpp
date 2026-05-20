@@ -395,15 +395,21 @@ namespace
 		setLightingUniforms(shader, dirLight, spotLight, pointLights, ambient);
 		ShadowResourceBinder::bindCSMShadowResources(shader, camera, dirLight, 8);
 
-		shader->setVector3("pbrAlbedo", pbrMat->mAlbedo);
-		shader->setFloat("pbrMetallic", pbrMat->mMetallic);
-		shader->setFloat("pbrRoughness", pbrMat->mRoughness);
-		shader->setFloat("pbrAo", pbrMat->mAo);
-		shader->setVector3("pbrEmissiveColor", pbrMat->mEmissiveColor);
-		shader->setFloat("pbrEmissiveIntensity", pbrMat->mEmissiveIntensity);
+		for (const auto& slot : pbrMat->getVec3UniformSlots())
+		{
+			shader->setVector3(slot.uniformName, slot.value ? *slot.value : glm::vec3{ 0.0f });
+		}
+
+		for (const auto& slot : pbrMat->getSurfaceFloatUniformSlots())
+		{
+			shader->setFloat(slot.uniformName, slot.value ? *slot.value : 0.0f);
+		}
+
 		shader->setInt("useIBL", useIBL ? 1 : 0);
-		shader->setFloat("iblDiffuseStrength", pbrMat->mIblDiffuseStrength);
-		shader->setFloat("iblSpecularStrength", pbrMat->mIblSpecularStrength);
+		for (const auto& slot : pbrMat->getIblFloatUniformSlots())
+		{
+			shader->setFloat(slot.uniformName, slot.value ? *slot.value : 0.0f);
+		}
 
 		for (const auto& slot : pbrMat->getTextureSlots())
 		{

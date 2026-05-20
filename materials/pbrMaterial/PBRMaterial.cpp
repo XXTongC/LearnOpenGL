@@ -16,6 +16,22 @@ namespace
 		std::shared_ptr<Texture> PBRMaterial::* texture{ nullptr };
 	};
 
+	struct PBRVec3UniformMetadata
+	{
+		const char* label{ "" };
+		const char* uniformName{ "" };
+		glm::vec3 PBRMaterial::* value{ nullptr };
+	};
+
+	struct PBRFloatUniformMetadata
+	{
+		const char* label{ "" };
+		const char* uniformName{ "" };
+		float PBRMaterial::* value{ nullptr };
+		float minValue{ 0.0f };
+		float maxValue{ 1.0f };
+	};
+
 	constexpr std::array<PBRTextureSlotMetadata, 6> pbrTextureSlotMetadata{
 		PBRTextureSlotMetadata{ "Albedo Map", "albedoMap", "useAlbedoMap", &PBRMaterial::mAlbedoMap },
 		PBRTextureSlotMetadata{ "Metallic Map", "metallicMap", "useMetallicMap", &PBRMaterial::mMetallicMap },
@@ -24,6 +40,70 @@ namespace
 		PBRTextureSlotMetadata{ "Normal Map", "normalMap", "useNormalMap", &PBRMaterial::mNormalMap },
 		PBRTextureSlotMetadata{ "Emissive Map", "emissiveMap", "useEmissiveMap", &PBRMaterial::mEmissiveMap },
 	};
+
+	constexpr std::array<PBRVec3UniformMetadata, 2> pbrVec3UniformMetadata{
+		PBRVec3UniformMetadata{ "Albedo", "pbrAlbedo", &PBRMaterial::mAlbedo },
+		PBRVec3UniformMetadata{ "Emissive Color", "pbrEmissiveColor", &PBRMaterial::mEmissiveColor },
+	};
+
+	constexpr std::array<PBRFloatUniformMetadata, 4> pbrSurfaceFloatUniformMetadata{
+		PBRFloatUniformMetadata{ "Metallic", "pbrMetallic", &PBRMaterial::mMetallic, 0.0f, 1.0f },
+		PBRFloatUniformMetadata{ "Roughness", "pbrRoughness", &PBRMaterial::mRoughness, 0.04f, 1.0f },
+		PBRFloatUniformMetadata{ "AO", "pbrAo", &PBRMaterial::mAo, 0.0f, 1.0f },
+		PBRFloatUniformMetadata{ "Emissive Intensity", "pbrEmissiveIntensity", &PBRMaterial::mEmissiveIntensity, 0.0f, 20.0f },
+	};
+
+	constexpr std::array<PBRFloatUniformMetadata, 2> pbrIblFloatUniformMetadata{
+		PBRFloatUniformMetadata{ "IBL Diffuse Strength", "iblDiffuseStrength", &PBRMaterial::mIblDiffuseStrength, 0.0f, 5.0f },
+		PBRFloatUniformMetadata{ "IBL Specular Strength", "iblSpecularStrength", &PBRMaterial::mIblSpecularStrength, 0.0f, 5.0f },
+	};
+
+	template <std::size_t SlotCount>
+	std::array<PBRFloatUniformSlot, SlotCount> makeFloatUniformSlots(
+		PBRMaterial& material,
+		const std::array<PBRFloatUniformMetadata, SlotCount>& metadataList
+	)
+	{
+		std::array<PBRFloatUniformSlot, SlotCount> slots{};
+		for (std::size_t index = 0; index < metadataList.size(); ++index)
+		{
+			const auto& metadata = metadataList[index];
+			slots[index] = PBRFloatUniformSlot{
+				metadata.label,
+				metadata.uniformName,
+				&(material.*metadata.value),
+				metadata.minValue,
+				metadata.maxValue
+			};
+		}
+		return slots;
+	}
+
+	template <std::size_t SlotCount>
+	std::array<PBRConstFloatUniformSlot, SlotCount> makeFloatUniformSlots(
+		const PBRMaterial& material,
+		const std::array<PBRFloatUniformMetadata, SlotCount>& metadataList
+	)
+	{
+		std::array<PBRConstFloatUniformSlot, SlotCount> slots{};
+		for (std::size_t index = 0; index < metadataList.size(); ++index)
+		{
+			const auto& metadata = metadataList[index];
+			slots[index] = PBRConstFloatUniformSlot{
+				metadata.label,
+				metadata.uniformName,
+				&(material.*metadata.value),
+				metadata.minValue,
+				metadata.maxValue
+			};
+		}
+		return slots;
+	}
+
+	void addFloatUniformProperty(GL_EDITOR::PropertyBuilder& builder, const PBRFloatUniformSlot& slot)
+	{
+		builder.addFloat(slot.label, slot.value, slot.minValue, slot.maxValue);
+	}
 }
 
 PBRMaterial::PBRMaterial()
@@ -63,22 +143,76 @@ std::array<PBRConstTextureSlot, 6> PBRMaterial::getTextureSlots() const
 	return slots;
 }
 
+std::array<PBRVec3UniformSlot, 2> PBRMaterial::getVec3UniformSlots()
+{
+	std::array<PBRVec3UniformSlot, 2> slots{};
+	for (std::size_t index = 0; index < pbrVec3UniformMetadata.size(); ++index)
+	{
+		const auto& metadata = pbrVec3UniformMetadata[index];
+		slots[index] = PBRVec3UniformSlot{
+			metadata.label,
+			metadata.uniformName,
+			&(this->*metadata.value)
+		};
+	}
+	return slots;
+}
+
+std::array<PBRConstVec3UniformSlot, 2> PBRMaterial::getVec3UniformSlots() const
+{
+	std::array<PBRConstVec3UniformSlot, 2> slots{};
+	for (std::size_t index = 0; index < pbrVec3UniformMetadata.size(); ++index)
+	{
+		const auto& metadata = pbrVec3UniformMetadata[index];
+		slots[index] = PBRConstVec3UniformSlot{
+			metadata.label,
+			metadata.uniformName,
+			&(this->*metadata.value)
+		};
+	}
+	return slots;
+}
+
+std::array<PBRFloatUniformSlot, 4> PBRMaterial::getSurfaceFloatUniformSlots()
+{
+	return makeFloatUniformSlots(*this, pbrSurfaceFloatUniformMetadata);
+}
+
+std::array<PBRConstFloatUniformSlot, 4> PBRMaterial::getSurfaceFloatUniformSlots() const
+{
+	return makeFloatUniformSlots(*this, pbrSurfaceFloatUniformMetadata);
+}
+
+std::array<PBRFloatUniformSlot, 2> PBRMaterial::getIblFloatUniformSlots()
+{
+	return makeFloatUniformSlots(*this, pbrIblFloatUniformMetadata);
+}
+
+std::array<PBRConstFloatUniformSlot, 2> PBRMaterial::getIblFloatUniformSlots() const
+{
+	return makeFloatUniformSlots(*this, pbrIblFloatUniformMetadata);
+}
+
 void PBRMaterial::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
 {
 	Material::visitEditableProperties(builder);
 
 	builder.addSection("PBR Surface");
-	builder.addColor3("Albedo", &mAlbedo);
-	builder.addFloat("Metallic", &mMetallic, 0.0f, 1.0f);
-	builder.addFloat("Roughness", &mRoughness, 0.04f, 1.0f);
-	builder.addFloat("AO", &mAo, 0.0f, 1.0f);
-	builder.addColor3("Emissive Color", &mEmissiveColor);
-	builder.addFloat("Emissive Intensity", &mEmissiveIntensity, 0.0f, 20.0f);
+	const auto vec3UniformSlots = getVec3UniformSlots();
+	const auto surfaceFloatUniformSlots = getSurfaceFloatUniformSlots();
+	builder.addColor3(vec3UniformSlots[0].label, vec3UniformSlots[0].value);
+	addFloatUniformProperty(builder, surfaceFloatUniformSlots[0]);
+	addFloatUniformProperty(builder, surfaceFloatUniformSlots[1]);
+	addFloatUniformProperty(builder, surfaceFloatUniformSlots[2]);
+	builder.addColor3(vec3UniformSlots[1].label, vec3UniformSlots[1].value);
+	addFloatUniformProperty(builder, surfaceFloatUniformSlots[3]);
 
 	builder.addSection("PBR IBL");
 	builder.addBool("Use IBL", &mUseIBL);
-	builder.addFloat("IBL Diffuse Strength", &mIblDiffuseStrength, 0.0f, 5.0f);
-	builder.addFloat("IBL Specular Strength", &mIblSpecularStrength, 0.0f, 5.0f);
+	for (const auto& slot : getIblFloatUniformSlots())
+	{
+		addFloatUniformProperty(builder, slot);
+	}
 
 	builder.addSection("PBR Textures");
 	for (const auto& slot : getTextureSlots())

@@ -23,6 +23,38 @@ namespace GLframework
 		const std::shared_ptr<Texture>* texture{ nullptr };
 	};
 
+	struct PBRVec3UniformSlot
+	{
+		const char* label{ "" };
+		const char* uniformName{ "" };
+		glm::vec3* value{ nullptr };
+	};
+
+	struct PBRConstVec3UniformSlot
+	{
+		const char* label{ "" };
+		const char* uniformName{ "" };
+		const glm::vec3* value{ nullptr };
+	};
+
+	struct PBRFloatUniformSlot
+	{
+		const char* label{ "" };
+		const char* uniformName{ "" };
+		float* value{ nullptr };
+		float minValue{ 0.0f };
+		float maxValue{ 1.0f };
+	};
+
+	struct PBRConstFloatUniformSlot
+	{
+		const char* label{ "" };
+		const char* uniformName{ "" };
+		const float* value{ nullptr };
+		float minValue{ 0.0f };
+		float maxValue{ 1.0f };
+	};
+
 	class PBRMaterial : public Material
 	{
 	public:
@@ -30,6 +62,12 @@ namespace GLframework
 		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder) override;
 		std::array<PBRTextureSlot, 6> getTextureSlots();
 		std::array<PBRConstTextureSlot, 6> getTextureSlots() const;
+		std::array<PBRVec3UniformSlot, 2> getVec3UniformSlots();
+		std::array<PBRConstVec3UniformSlot, 2> getVec3UniformSlots() const;
+		std::array<PBRFloatUniformSlot, 4> getSurfaceFloatUniformSlots();
+		std::array<PBRConstFloatUniformSlot, 4> getSurfaceFloatUniformSlots() const;
+		std::array<PBRFloatUniformSlot, 2> getIblFloatUniformSlots();
+		std::array<PBRConstFloatUniformSlot, 2> getIblFloatUniformSlots() const;
 
 	public:
 		std::shared_ptr<Texture> mAlbedoMap{ nullptr };

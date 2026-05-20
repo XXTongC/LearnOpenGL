@@ -995,6 +995,16 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera / shadow camera double-to-float `C4244` warning，本轮未引入新的 PBR texture slot warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+168. 完成第八十四轮 PBR uniform slot schema：
+   - 更新 [materials/pbrMaterial/PBRMaterial.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.h)，新增 `PBRVec3UniformSlot` / `PBRFloatUniformSlot` 及 const 版本，用于描述 PBR 参数的 Inspector label、shader uniform 名、字段指针和 float UI 范围。
+   - 更新 [materials/pbrMaterial/PBRMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.cpp)，通过内部 metadata 表生成 vec3、surface float 和 IBL float uniform slot，并让 `visitEditableProperties(...)` 复用这些 slot 生成 PBR surface / IBL UI。
+   - 更新 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，让 `bindPBRMaterial(...)` 遍历 uniform slot 写入 `pbrAlbedo`、`pbrMetallic`、`pbrRoughness`、`pbrAo`、`pbrEmissive*` 和 IBL strength uniform，不再手写这组 shader uniform。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PBR uniform slot schema 边界；`useIBL` 因依赖 environment readiness 暂时仍保留在 Binder 计算。
+169. 完成第七十五次 PBR uniform slot schema 验证：
+   - 针对 [materials/pbrMaterial/PBRMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.cpp) 与 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp) 执行 MSVC `cl /Zs`，结果通过。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera / shadow camera double-to-float `C4244` warning，本轮未引入新的 PBR uniform slot warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1030,7 +1040,7 @@
 - 当前默认 `PBR Preview Sphere` 会请求 IBL；environment 未 ready 时 shader 侧自动关闭，environment ready 后可直接验证 PBR IBL 采样链路。
 - 当前 `PBR Preview Sphere` 已由 `PBRPreviewProfile` 驱动，可通过 `config/pbr_preview.local.ini` 调整位置、几何细分、PBR surface 参数、IBL 强度和 normal map，而不需要修改 `SceneSetup.cpp`。
 - 当前 `PBRPreviewProfile` 支持 material grid，可按 metallic / roughness 范围生成多球阵列，在同一 environment / postprocess 下批量比较 PBR 参数。
-- 当前 `PBRMaterial` 已提供 texture slot schema，PBR Inspector 贴图状态和 `MaterialBinder` 可选贴图绑定共享同一份 slot 描述。
+- 当前 `PBRMaterial` 已提供 texture slot schema 与 uniform slot schema，PBR Inspector 字段和 `MaterialBinder` shader 写入共享材质侧声明。
 - 当前 `PropertySchema` 已从 `PropertyInspector` 拆出，profile 数据层不再依赖 ImGui 绘制层；`EnvironmentProfile`、`PostProcessSettings` 和 `PBRPreviewProfile` 已能通过 property descriptor 自动生成 Debug UI。
 - 当前 `PBRExperimentProfile` 支持用 `config/pbr_experiment.local.ini` 统一覆盖 environment、postprocess 和 PBR preview grid，并已复用各 profile 的 property schema 应用 prefixed key。
 - 当前 profile 配置解析基础设施已收敛到 `ProfileConfigParser`；`ProfileConfigIO` 已开始让 descriptor 同时驱动 UI 与 ini load/save，当前已迁移 `PostProcessSettings`、`EnvironmentProfile` 和 `PBRPreviewProfile`。
@@ -1039,4 +1049,4 @@
 - 当前 `EnvironmentProfile` 的本地保存 / 加载路径已迁移到 `ProfileConfigIO` schema 驱动，Environment / IBL UI 与 ini 字段共享同一份 descriptor。
 - 当前 `PBRPreviewProfile` 的本地保存 / 加载路径已迁移到 `ProfileConfigIO` schema 驱动，Position / Albedo 这类 vec3 UI 字段继续兼容拆分 ini key。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
-- 下一步建议目标：继续为 PBR 材质参数建立 uniform schema，把 baseColor / metallic / roughness / AO / emissive / IBL strength 的 shader uniform 写入也从 `MaterialBinder` 手写列表中剥离。
+- 下一步建议目标：开始把 PBR 材质 preset/profile 与 `PBRMaterial` schema 连接，或者先抽出 runtime resize / camera 控制边界，继续降低 `main.cpp` 耦合。

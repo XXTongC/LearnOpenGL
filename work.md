@@ -1022,3 +1022,14 @@ PBR 材质贴图槽开始从手写绑定收敛到声明式描述：
 - `MaterialBinder::bindPBRMaterial(...)` 现在遍历同一份 texture slot 列表绑定可选贴图和对应 use flag，不再手写 6 组 `bindOptionalTexture(...)`。
 
 这一步没有改变 shader uniform 名称和现有视觉输出，但建立了正式的 PBR texture slot 边界。后续新增 clearcoat、sheen、transmission 或 ORM packed texture 时，应先扩展 slot metadata，再处理 shader 采样逻辑。
+
+### 2026-05-20 PBR Uniform Slot Schema
+
+PBR 材质参数 uniform 也开始从手写绑定收敛到声明式描述：
+
+- `PBRMaterial` 新增 `PBRVec3UniformSlot` / `PBRFloatUniformSlot` 及 const 版本，集中描述 Inspector label、shader uniform 名、字段指针和 float UI 范围。
+- `PBRMaterial::getVec3UniformSlots()`、`getSurfaceFloatUniformSlots()`、`getIblFloatUniformSlots()` 都由内部 metadata 表生成。
+- `PBRMaterial::visitEditableProperties(...)` 复用 uniform slot 生成 PBR surface / IBL 参数 UI，避免 UI label、范围和字段指针分散维护。
+- `MaterialBinder::bindPBRMaterial(...)` 复用同一份 uniform slot 写入 `pbrAlbedo`、`pbrMetallic`、`pbrRoughness`、`pbrAo`、`pbrEmissive*` 和 IBL strength uniform。
+
+这一步继续保持现有 shader uniform 名称不变，目标是降低新增 PBR 参数时的重复修改点。当前 `useIBL` 仍由 Binder 根据材质开关与 environment readiness 计算，因此暂时不纳入普通 bool slot。
