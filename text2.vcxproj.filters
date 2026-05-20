@@ -306,6 +306,9 @@
     <ClCompile Include="application\Application.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationShell.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeBootstrapper.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -585,6 +588,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\AppRuntimeContext.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationShell.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeBootstrapper.h">

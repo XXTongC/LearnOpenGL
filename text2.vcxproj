@@ -136,6 +136,7 @@
     <ClCompile Include="third_party\src\glad.c" />
     <ClCompile Include="light\ambientLight.cpp" />
     <ClCompile Include="application\Application.cpp" />
+    <ClCompile Include="application\RuntimeApplicationShell.cpp" />
     <ClCompile Include="application\RuntimeBootstrapper.cpp" />
     <ClCompile Include="application\RuntimeCameraLifecycle.cpp" />
     <ClCompile Include="application\RuntimeEditorPanelCoordinator.cpp" />
@@ -291,6 +292,7 @@
     <ClInclude Include="wrapper\GL_ERROR_FIND.h" />
     <ClInclude Include="application\AppRuntimeContext.h" />
     <ClInclude Include="application\Application.h" />
+    <ClInclude Include="application\RuntimeApplicationShell.h" />
     <ClInclude Include="application\RuntimeBootstrapper.h" />
     <ClInclude Include="application\RuntimeCameraLifecycle.h" />
     <ClInclude Include="application\RuntimeEditorPanelCoordinator.h" />

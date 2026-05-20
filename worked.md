@@ -1216,6 +1216,19 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 main cleanup warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+204. 完成第一百零二轮 runtime application shell：
+   - 新增 [application/RuntimeApplicationShell.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationShell.h) 与 [application/RuntimeApplicationShell.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationShell.cpp)，集中持有 `AppRuntimeContext`、editor selection、legacy experiment runner 和 startup config。
+   - `RuntimeApplicationShell::makeCallbacks()` 生成 `RuntimeBootstrapperCallbacks`，统一绑定 initialize / shouldContinue / runFrame / cleanup / destroy 生命周期。
+   - 将原本在 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 的 window init、camera init、profile load、scene prepare、GUI init、frame run、camera cleanup 和 destroy 顺序移动到 `RuntimeApplicationShell`。
+   - [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 现在只设置日志等级、创建 shell 并把 callbacks 交给 `RuntimeBootstrapper`。
+   - `RuntimeFrameCallbacks::renderUi` 与 `RuntimeGuiFrameContext::drawPanels` 从函数指针升级为 `std::function`，支持 shell 使用成员函数 callback。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 runtime application shell 加入 VS 工程和 Application filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 runtime startup sequence 已聚合到 application shell。
+205. 完成第九十三次 runtime application shell 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeApplicationShell.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationShell.cpp)、[application/RuntimeFrameRunner.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFrameRunner.cpp)、[application/RuntimeGuiHost.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeGuiHost.cpp) 与 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 runtime application shell warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1277,5 +1290,6 @@
 - 当前 runtime frame pipeline 已从 `RuntimeFrameRunner` 拆出到 `RuntimeFramePipeline`，当前 frame pass 顺序具备独立扩展边界。
 - 当前 runtime window lifecycle 已从 `main.cpp` 拆出到 `RuntimeWindowLifecycle`，window setup 和 Application callback glue 集中在 application 层。
 - 当前 `main.cpp` 的 runtime field alias 和未使用 legacy 参数已清理，启动参数集中到本地 `MainStartupConfig`。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍保留 startup sequence 和少量 callback wrapper。
-- 下一步建议目标：把 startup sequence 聚合成 `RuntimeApplicationShell`；或者继续把 `RuntimeFramePipeline` 内的 pass 细化为可替换的 pass 类型。
+- 当前 runtime startup sequence 已聚合到 `RuntimeApplicationShell`，`main.cpp` 基本只保留程序入口职责。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`RuntimeFramePipeline` 内部 pass 仍是硬编码方法调用。
+- 下一步建议目标：把 `RuntimeFramePipeline` 内的 pass 细化为可替换 pass 类型；或者补 PBR pipeline feature toggle / profile。

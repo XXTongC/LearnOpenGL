@@ -1231,3 +1231,15 @@ Window setup 和输入 callback glue 已从 `main.cpp` 拆出：
 - 精简 `main.cpp` include 列表，只保留当前入口实际需要的 runtime/application/editor 类型。
 
 这一步让 `main.cpp` 更接近“程序入口 + startup config + callback wrapper”。后续如果继续收口，可以把 startup sequence 聚合成 `RuntimeApplicationShell`，或把 `RuntimeFramePipeline` 内部 pass 继续拆成可替换对象。
+
+### 2026-05-20 Runtime Application Shell
+
+Runtime startup sequence 已从 `main.cpp` 聚合到 application shell：
+
+- 新增 `RuntimeApplicationShell`，持有 `AppRuntimeContext`、editor selection、legacy experiment runner 和 startup config。
+- Shell 负责 initialize / shouldContinue / runFrame / cleanup / destroy 的具体 wiring，并通过 `makeCallbacks()` 生成 `RuntimeBootstrapperCallbacks`。
+- `main.cpp` 现在只负责设置日志等级、创建 shell、把 shell callbacks 交给 `RuntimeBootstrapper`。
+- `RuntimeFrameCallbacks::renderUi` 与 `RuntimeGuiFrameContext::drawPanels` 从函数指针升级为 `std::function`，支持 shell 以成员函数形式提供 UI callback。
+- 原本散落在 `main.cpp` 的 window init、camera init、profile load、scene prepare、GUI init、frame run、camera cleanup 和 destroy 顺序集中到 `RuntimeApplicationShell`。
+
+这一步让主入口基本从 runtime orchestration 中退出。后续更值得继续推进的是把 `RuntimeFramePipeline` 的 pass 细化为可替换组件，或者补一层 PBR pipeline profile / pipeline feature toggle。

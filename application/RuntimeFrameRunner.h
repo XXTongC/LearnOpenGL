@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "AppRuntimeContext.h"
 #include "../tools/legacyExperiments/LegacyExperimentRunner.h"
 
@@ -13,7 +15,7 @@ namespace GL_RUNTIME
 
 	struct RuntimeFrameCallbacks
 	{
-		void (*renderUi)(){ nullptr };
+		std::function<void()> renderUi{};
 	};
 
 	class RuntimeFrameRunner

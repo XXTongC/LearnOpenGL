@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 struct GLFWwindow;
 
 namespace GL_RUNTIME
@@ -13,7 +15,7 @@ namespace GL_RUNTIME
 	struct RuntimeGuiFrameContext
 	{
 		GLFWwindow* window{ nullptr };
-		void (*drawPanels)(){ nullptr };
+		std::function<void()> drawPanels{};
 	};
 
 	class RuntimeGuiHost
