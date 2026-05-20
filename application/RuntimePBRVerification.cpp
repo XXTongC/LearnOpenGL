@@ -277,6 +277,8 @@ namespace GL_RUNTIME
 			statsLine += ", pbrDeferredCsmShadowBound=";
 			statsLine += (stats.pbrDeferredCsmShadowBound ? "yes" : "no");
 			statsLine += ", pbrDeferredCsmShadowLayers=" + std::to_string(stats.pbrDeferredCsmShadowLayers);
+			statsLine += ", pbrDeferredCsmShadowAtlasBound=";
+			statsLine += (stats.pbrDeferredCsmShadowAtlasBound ? "yes" : "no");
 			statsLine += ", pbrDeferredLightBufferBound=";
 			statsLine += (stats.pbrDeferredLightBufferBound ? "yes" : "no");
 			statsLine += ", pbrDeferredLightBufferPointLights=" + std::to_string(stats.pbrDeferredLightBufferPointLights);

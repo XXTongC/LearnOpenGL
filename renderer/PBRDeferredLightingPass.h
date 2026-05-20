@@ -18,6 +18,7 @@ namespace GLframework
 		int drawCalls{ 0 };
 		bool csmShadowBound{ false };
 		int csmLayerCount{ 0 };
+		bool csmShadowAtlasBound{ false };
 		bool lightBufferBound{ false };
 		int lightBufferPointLightCount{ 0 };
 		int lightBufferMaxPointLightCount{ 0 };

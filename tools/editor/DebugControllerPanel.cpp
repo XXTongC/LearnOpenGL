@@ -261,6 +261,7 @@ namespace
 			ImGui::Text("PBR Deferred Lighting Draw Calls: %d", stats.pbrDeferredLightingDrawCalls);
 			ImGui::Text("PBR Deferred CSM Shadow Bound: %s", stats.pbrDeferredCsmShadowBound ? "Yes" : "No");
 			ImGui::Text("PBR Deferred CSM Shadow Layers: %d", stats.pbrDeferredCsmShadowLayers);
+			ImGui::Text("PBR Deferred CSM Shadow Atlas Bound: %s", stats.pbrDeferredCsmShadowAtlasBound ? "Yes" : "No");
 			ImGui::Text("PBR Deferred Light Buffer Bound: %s", stats.pbrDeferredLightBufferBound ? "Yes" : "No");
 			ImGui::Text("PBR Deferred Light Buffer Point Lights: %d / %d", stats.pbrDeferredLightBufferPointLights, stats.pbrDeferredLightBufferMaxPointLights);
 			ImGui::Text("PBR GBuffer Debug Draw Calls: %d", stats.pbrGBufferDebugDrawCalls);

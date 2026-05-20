@@ -1615,3 +1615,15 @@ PBR shadow atlas 已从“只创建资源”推进到“实际写入”：
 - `RendererFrameStats`、Debug UI 和 `--verify-pbr*` 会输出 atlas directional / point draw calls 与 point faces rendered。
 
 这一步让 shadow atlas 具备可验证的生产链路，但还没有切换 shader sampling。下一步可以把 `PBRShadowResourceBinder` 从旧 CSM texture 迁移到 atlas resources，或者先把 atlas pass 改成可选 profile pass 以控制额外 shadow 渲染成本。
+
+### 2026-05-21 PBR Shadow Atlas Sampling Binding
+
+PBR directional CSM shadow sampling 已从“只写 atlas”推进到“优先采样 atlas”：
+
+- `MaterialBindingContext` 新增 `pbrShadowAtlasTargets`，让 PBR material / deferred pass 的资源绑定层可以看到 renderer 持有的 PBR atlas targets。
+- `PBRShadowResourceBinder::bindDetailed(...)` 现在会优先检查 `PBRShadowAtlasRenderTargets` 的 directional depth texture array；atlas ready 时绑定 atlas texture，atlas 不可用时 fallback 到旧 `ShadowResourceBinder::bindCSMShadowResources(...)`。
+- atlas 采样仍复用 `pbr_csm_shadow.glsl` 的 CSM layer selection、light matrices、bias 和 PCF 逻辑；这一步只替换 directional depth texture 的来源，不改变 shader 侧 shadow math。
+- `PBRDeferredLightingPass` 新增 atlas shadow binding stats，`RendererFrameStats`、Debug UI 和 `--verify-pbr-deferred` 会输出 `pbrDeferredCsmShadowAtlasBound`。
+- Forward PBR 与 deferred PBR 共享 `PBRShadowResourceBinder`，因此默认 forward PBR pass 在 `ShadowMaps` pass 已写入 atlas 后也会优先绑定 atlas directional CSM texture。
+
+这一步完成了 PBR directional shadow atlas 的 producer-consumer 闭环。当前仍未处理的是 point shadow atlas sampling：point atlas 已写入，但 PBR shading 还没有从 atlas 中读取 point light shadow faces。

@@ -10,6 +10,7 @@ namespace GLframework
 	class AmbientLight;
 	class DirectionalLight;
 	class EnvironmentRenderTargets;
+	class PBRShadowAtlasRenderTargets;
 	class PointLight;
 	class SpotLight;
 
@@ -21,6 +22,7 @@ namespace GLframework
 		const std::vector<std::shared_ptr<PointLight>>* pointLights{ nullptr };
 		std::shared_ptr<AmbientLight> ambient{ nullptr };
 		const EnvironmentRenderTargets* environmentTargets{ nullptr };
+		const PBRShadowAtlasRenderTargets* pbrShadowAtlasTargets{ nullptr };
 
 		const std::vector<std::shared_ptr<PointLight>>& getPointLights() const
 		{

@@ -89,8 +89,10 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 	shader->setVector3("cameraPosition", context.camera->mPosition);
 	shader->setMat4("viewMatrix", context.camera->getViewMatrix());
 	shader->setFloat("pbrDeferredLightingIntensity", profile.pbrDeferredLightingIntensity);
-	stats.csmShadowBound = PBRShadowResourceBinder::bind(shader, context);
-	stats.csmLayerCount = stats.csmShadowBound ? PBRShadowResourceBinder::getCsmLayerCount(context) : 0;
+	const PBRShadowResourceBindResult shadowStats = PBRShadowResourceBinder::bindDetailed(shader, context);
+	stats.csmShadowBound = shadowStats.bound;
+	stats.csmLayerCount = shadowStats.csmLayerCount;
+	stats.csmShadowAtlasBound = shadowStats.source == PBRShadowResourceSource::PBRShadowAtlas;
 
 	const PBRDeferredLightBufferStats lightBufferStats = mLightBuffer.bind(context);
 	stats.lightBufferBound = lightBufferStats.bound;
