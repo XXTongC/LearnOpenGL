@@ -5,6 +5,7 @@
 #include <typeinfo>
 #include "GL_ERROR_FIND.h"
 #include "Application.h"
+#include "RuntimeViewport.h"
 #include "tools/tools.h"
 #include "shader.h"
 #include "texture.h"
@@ -80,7 +81,6 @@ void loadEnvironmentProfile();
 void loadPostProcessSettings();
 void loadPBRPreviewProfile();
 void loadPBRExperimentProfile();
-void refreshPostProcessInputTextures();
 GL_EXPERIMENTS::RuntimeContext makeLegacyExperimentContext();
 GL_SCENE::SetupContext makeSceneSetupContext();
 GL_EDITOR::DebugControllerContext makeDebugControllerContext();
@@ -206,7 +206,7 @@ bool initializeApplication()
 	std::cout << "Please set the window as x * y" << std::endl;
 	if (!setAndInitWindow(width, height)) return false;
 
-	GL_CALL(glViewport(0, 0, width, height));
+	GL_RUNTIME::RuntimeViewport::applyViewport(width, height);
 	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 
 	prepareCamera();
@@ -408,18 +408,6 @@ void loadPBRExperimentProfile()
 	LogInfo("PBR experiment profile config not found, using layered defaults: " + pbrExperimentProfilePath);
 }
 
-void refreshPostProcessInputTextures()
-{
-	if (ScreenMat == nullptr)
-	{
-		return;
-	}
-
-	ScreenMat->mScreenTexture = frameRenderTargets.getResolvedColorAttachment();
-	ScreenMat->mDepthStencilTexture = frameRenderTargets.getResolvedDepthStencilAttachment();
-	ScreenMat->mBloomTexture = frameRenderTargets.getBloomPongColorAttachment();
-}
-
 GL_EDITOR::EditorPanelContext makeEditorPanelContext()
 {
 	GL_EDITOR::EditorPanelContext context{};
@@ -469,7 +457,7 @@ void renderIMGUI()
 	ImGui::Render();
 	int display_w, display_h;
 	glfwGetFramebufferSize(GL_APP->getWindow(), &display_w, &display_h);
-	glViewport(0, 0, display_w, display_h);
+	GL_RUNTIME::RuntimeViewport::applyViewport(display_w, display_h);
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	
 
@@ -515,27 +503,17 @@ void OnScroll(double offset)
 
 void OnResize(int newWidth, int newHeight)
 {
-	if (newWidth <= 0 || newHeight <= 0)
-	{
-		return;
-	}
-
-	width = newWidth;
-	height = newHeight;
-	GL_CALL(glViewport(0, 0, newWidth, newHeight));
-
-	if (auto perspectiveCamera = dynamic_cast<PerspectiveCamera*>(camera))
-	{
-		perspectiveCamera->mAspect = static_cast<float>(newWidth) / static_cast<float>(newHeight);
-	}
-
-	if (frameRenderTargets.resize(static_cast<unsigned int>(newWidth), static_cast<unsigned int>(newHeight)))
-	{
-		refreshPostProcessInputTextures();
-	}
+	const auto result = GL_RUNTIME::RuntimeViewport::applyResize(
+		newWidth,
+		newHeight,
+		{ &width, &height, camera, &frameRenderTargets, ScreenMat }
+	);
 
 #ifdef _DEBUG
-	std::cout << "OnResize" << std::endl;
+	if (result.accepted)
+	{
+		std::cout << "OnResize" << std::endl;
+	}
 #endif
 
 }

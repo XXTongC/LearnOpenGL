@@ -136,6 +136,7 @@
     <ClCompile Include="third_party\src\glad.c" />
     <ClCompile Include="light\ambientLight.cpp" />
     <ClCompile Include="application\Application.cpp" />
+    <ClCompile Include="application\RuntimeViewport.cpp" />
     <ClCompile Include="application\assimpInstanceLoader.cpp" />
     <ClCompile Include="application\assimpLoader.cpp" />
     <ClCompile Include="camera\camera.cpp" />
@@ -277,6 +278,7 @@
     <ClInclude Include="framework\shader.h" />
     <ClInclude Include="wrapper\GL_ERROR_FIND.h" />
     <ClInclude Include="application\Application.h" />
+    <ClInclude Include="application\RuntimeViewport.h" />
     <ClInclude Include="light\spotLight.h" />
     <ClInclude Include="third_party\stb_image\stb_image.h" />
     <ClInclude Include="framework\texture.h" />

@@ -1046,3 +1046,15 @@ PBR preview preset 已开始复用正式的材质 profile：
 - `config/pbr_preview.example.ini` 和 `config/pbr_experiment.example.ini` 已补齐 emissive 字段示例。
 
 这一步把“实验 preset 的材质参数”和“运行时 PBRMaterial”之间的边界明确下来。后续如果做独立材质库或 material preset 文件，可以直接复用 `PBRMaterialProfile`，不需要重新定义一套字段。
+
+### 2026-05-20 Runtime Viewport Boundary
+
+窗口 resize / camera aspect / postprocess 输入贴图刷新已从 `main.cpp` 拆出：
+
+- 新增 `RuntimeViewport`，集中处理运行时 framebuffer 尺寸校验、OpenGL viewport 同步、PerspectiveCamera aspect 同步。
+- `RuntimeViewport::applyResize(...)` 接收一个轻量 `RuntimeResizeContext`，统一更新应用级宽高、重建 `FrameRenderTargets`，并在 render target 重建后刷新 `ScreenMaterial` 的 resolved HDR、depth stencil 和 bloom 输入贴图。
+- `main.cpp` 的 `OnResize(...)` 不再直接操作 `glViewport`、`PerspectiveCamera::mAspect`、`FrameRenderTargets::resize(...)` 或 screen material 贴图字段，只负责把窗口回调参数转交给 runtime viewport 边界。
+- 初始化 viewport 和 ImGui 绘制前的 default framebuffer viewport 设置也统一通过 `RuntimeViewport::applyViewport(...)` 执行。
+- `RuntimeViewport.cpp/.h` 已加入 Visual Studio 工程和 filters，保持 VS 分类与物理文件一致。
+
+这一步降低了主入口对渲染目标和 camera 类型的直接耦合。后续 PBR 路径如果新增更多 resize-sensitive 资源，例如 clustered light grid、screen-space reflection history、temporal accumulation target，应继续挂到 runtime resize 协调边界，而不是回到 `main.cpp`。

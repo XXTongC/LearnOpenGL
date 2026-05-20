@@ -306,6 +306,9 @@
     <ClCompile Include="application\Application.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeViewport.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="framework\texture.cpp">
       <Filter>cppfile\GLframework</Filter>
     </ClCompile>
@@ -543,6 +546,9 @@
       <Filter>include\GLframework</Filter>
     </ClInclude>
     <ClInclude Include="application\Application.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeViewport.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="framework\texture.h">
