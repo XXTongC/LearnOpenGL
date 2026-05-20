@@ -1185,3 +1185,14 @@ Editor panel 数据装配已开始从 `main.cpp` 拆出：
 - 这一步没有改变 DebugControllerPanel、EditorPanels 的内部 UI 行为，只移动数据 wiring 边界。
 
 这一步进一步降低 `main.cpp` 对 PBR debug UI / selection inspector 的了解程度。后续可以继续处理启动和回调边界：把 window/camera lifecycle 与 GLFW callback glue 收敛到 runtime application shell，让 PBR pipeline 扩展基本不再触碰主入口。
+
+### 2026-05-20 Runtime Camera Lifecycle
+
+Camera lifecycle 已开始从 `main.cpp` 拆出：
+
+- 新增 `RuntimeCameraLifecycle`，集中创建默认 `PerspectiveCamera` 和 `GameCameraControl`。
+- 新增 `RuntimeCameraConfig`，用窗口 width / height 计算初始 aspect，并保留 fovy / near / far 的默认配置入口。
+- `cleanupRuntime()` 改为调用 `RuntimeCameraLifecycle::cleanup(...)`，主入口不再直接 delete camera / camera control。
+- `main.cpp` 不再直接 include `perspectivecamera.h`、`orthographiccamera.h` 或 `gamecameracontrol.h`。
+
+这一步让 camera 的创建策略具备独立扩展点。后续如果 PBR 预览需要 orbit camera、editor camera、preview camera 或从 preset 恢复不同 camera controller，应优先扩展 runtime camera lifecycle / camera factory，而不是回到主入口硬编码具体 camera 类型。

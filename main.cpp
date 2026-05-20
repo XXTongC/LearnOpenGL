@@ -7,6 +7,7 @@
 #include "AppRuntimeContext.h"
 #include "Application.h"
 #include "RuntimeBootstrapper.h"
+#include "RuntimeCameraLifecycle.h"
 #include "RuntimeEditorPanelCoordinator.h"
 #include "RuntimeFrameRunner.h"
 #include "RuntimeGuiHost.h"
@@ -17,13 +18,10 @@
 #include "tools/tools.h"
 #include "shader.h"
 #include "texture.h"
-#include "perspectivecamera.h"
-#include "orthographiccamera.h"
 #include "trackBallCameraControl.h"
 #include "opacityMaskMatetial.h"
 #include "cubeMaterial.h"
 #include "screenMaterial.h"
-#include "gamecameracontrol.h"
 #include "geometry.h"
 #include "mesh/mesh.h"
 #include "phongMaterial.h"
@@ -81,10 +79,8 @@ void runFrame();
 void printOpenGLCapabilities();
 void cleanupRuntime();
 GL_RUNTIME::RuntimeFrameConfig makeFrameConfig();
+GL_RUNTIME::RuntimeCameraConfig makeCameraConfig();
 GL_RUNTIME::RuntimeScenePrepareConfig makeScenePrepareConfig();
-
-//
-void prepareCamera();
 
 //
 void prepareState();
@@ -168,7 +164,7 @@ bool initializeApplication()
 	GL_RUNTIME::RuntimeViewport::applyViewport(width, height);
 	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 
-	prepareCamera();
+	GL_RUNTIME::RuntimeCameraLifecycle::initializeDefaultCamera(gAppRuntime, makeCameraConfig());
 	GL_RUNTIME::RuntimeProfileLoader::loadAll(gAppRuntime);
 	GL_RUNTIME::RuntimeScenePreparer::prepare(gAppRuntime, gLegacyExperiments, makeScenePrepareConfig());
 	GL_RUNTIME::RuntimeGuiHost::initialize({ GL_APP->getWindow() });
@@ -199,11 +195,7 @@ void printOpenGLCapabilities()
 
 void cleanupRuntime()
 {
-	delete cameracontrol;
-	cameracontrol = nullptr;
-
-	delete camera;
-	camera = nullptr;
+	GL_RUNTIME::RuntimeCameraLifecycle::cleanup(gAppRuntime);
 }
 
 GL_RUNTIME::RuntimeScenePrepareConfig makeScenePrepareConfig()
@@ -214,6 +206,14 @@ GL_RUNTIME::RuntimeScenePrepareConfig makeScenePrepareConfig()
 		TexturePath,
 		rNum,
 		cNum
+	};
+}
+
+GL_RUNTIME::RuntimeCameraConfig makeCameraConfig()
+{
+	return {
+		static_cast<int>(GL_APP->getWidth()),
+		static_cast<int>(GL_APP->getHeight())
 	};
 }
 
@@ -246,24 +246,6 @@ void renderFrameUi()
 void drawEditorPanels()
 {
 	GL_RUNTIME::RuntimeEditorPanelCoordinator::drawPanels(gAppRuntime, gEditorSelection, &m_time);
-}
-
-void prepareCamera() 
-{
-	LogInfo(static_cast<std::string>(__func__)+ "(): " + "Camera preparing...");
-	camera = new PerspectiveCamera(
-		60.0f,
-		static_cast<float>(GL_APP->getWidth()) / static_cast<float>(GL_APP->getHeight()),
-		0.1f,
-		1000.0f
-	);
-	//std::cout << "APP SIZE : " << GL_APP->getWidth() << ":" << GL_APP->getHeight() << std::endl;
-	//float size = 10.0f;
-	//camera = new OrthographicCamera(-size,size,size,-size,size,-size);
-	
-	cameracontrol = new GameCameraControl();
-	cameracontrol->setCamera(camera);
-	LogInfo("Camera prepared");
 }
 
 #pragma region 回调函数

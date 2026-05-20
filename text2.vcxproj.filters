@@ -309,6 +309,9 @@
     <ClCompile Include="application\RuntimeBootstrapper.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeCameraLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeEditorPanelCoordinator.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -579,6 +582,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeBootstrapper.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeCameraLifecycle.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeEditorPanelCoordinator.h">

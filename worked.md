@@ -1168,6 +1168,18 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 runtime editor panel coordinator warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+196. 完成第九十八轮 runtime camera lifecycle：
+   - 新增 [application/RuntimeCameraLifecycle.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeCameraLifecycle.h) 与 [application/RuntimeCameraLifecycle.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeCameraLifecycle.cpp)，集中创建默认 `PerspectiveCamera` 和 `GameCameraControl`。
+   - 新增 `RuntimeCameraConfig`，从窗口 width / height 计算初始 aspect，并保留 fovy / near / far 默认参数入口。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，删除本地 `prepareCamera()` 和直接 camera / camera control delete 逻辑，改为调用 `RuntimeCameraLifecycle::initializeDefaultCamera(...)` 与 `RuntimeCameraLifecycle::cleanup(...)`。
+   - [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 不再直接 include `perspectivecamera.h`、`orthographiccamera.h` 或 `gamecameracontrol.h`。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 runtime camera lifecycle 加入 VS 工程和 Application filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 camera lifecycle 已从主入口移动到 application 层。
+197. 完成第八十九次 runtime camera lifecycle 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeCameraLifecycle.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeCameraLifecycle.cpp) 与 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 runtime camera lifecycle warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1225,5 +1237,6 @@
 - 当前 runtime frame orchestration 边界已从 `main.cpp` 拆出到 `RuntimeFrameRunner`，每帧 render / postprocess / UI callback 顺序集中在 application 层。
 - 当前 runtime gui host 边界已从 `main.cpp` 拆出到 `RuntimeGuiHost`，ImGui backend 初始化和每帧 host 生命周期集中在 application 层。
 - 当前 runtime editor panel coordinator 已从 `main.cpp` 拆出到 `RuntimeEditorPanelCoordinator`，Debug UI / hierarchy / selection inspector 的 context wiring 集中在 application 层。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担 window/camera lifecycle 和 GLFW callback glue。
-- 下一步建议目标：继续抽 window/camera lifecycle 与 callback glue；或者进一步把 `RuntimeFrameRunner` 拆成可扩展的 `FramePipeline` pass 列表。
+- 当前 runtime camera lifecycle 已从 `main.cpp` 拆出到 `RuntimeCameraLifecycle`，默认 camera / camera control 创建与清理集中在 application 层。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担 window setup 和 GLFW callback glue。
+- 下一步建议目标：继续抽 window setup 与 callback glue；或者进一步把 `RuntimeFrameRunner` 拆成可扩展的 `FramePipeline` pass 列表。
