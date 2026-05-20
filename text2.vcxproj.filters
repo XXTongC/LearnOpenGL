@@ -453,6 +453,9 @@
     <ClCompile Include="renderer\PBRDepthPrepass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\PBRGBufferDebugPass.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\PBRGBufferPass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -810,6 +813,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRDepthPrepass.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\PBRGBufferDebugPass.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRGBufferPass.h">
@@ -2567,6 +2573,12 @@
       <Filter>资源文件\shaders\diagnostics</Filter>
     </None>
     <None Include="shaders\diagnostics\ibl_debug.vert">
+      <Filter>资源文件\shaders\diagnostics</Filter>
+    </None>
+    <None Include="shaders\diagnostics\pbr_gbuffer_debug.frag">
+      <Filter>资源文件\shaders\diagnostics</Filter>
+    </None>
+    <None Include="shaders\diagnostics\pbr_gbuffer_debug.vert">
       <Filter>资源文件\shaders\diagnostics</Filter>
     </None>
     <None Include="shaders\cube\cube.frag">

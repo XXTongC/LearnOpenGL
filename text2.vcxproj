@@ -205,6 +205,7 @@
     <ClCompile Include="renderer\PBRShadowResourceBinder.cpp" />
     <ClCompile Include="renderer\PBRSurfaceResourceBinder.cpp" />
     <ClCompile Include="renderer\PBRDepthPrepass.cpp" />
+    <ClCompile Include="renderer\PBRGBufferDebugPass.cpp" />
     <ClCompile Include="renderer\PBRGBufferPass.cpp" />
     <ClCompile Include="renderer\PBRGBufferRenderTargets.cpp" />
     <ClCompile Include="renderer\PBRSceneRenderPass.cpp" />
@@ -309,6 +310,7 @@
     <ClInclude Include="renderer\PBRShadowResourceBinder.h" />
     <ClInclude Include="renderer\PBRSurfaceResourceBinder.h" />
     <ClInclude Include="renderer\PBRDepthPrepass.h" />
+    <ClInclude Include="renderer\PBRGBufferDebugPass.h" />
     <ClInclude Include="renderer\PBRGBufferPass.h" />
     <ClInclude Include="renderer\PBRGBufferRenderTargets.h" />
     <ClInclude Include="renderer\PBRSceneRenderPass.h" />
@@ -755,6 +757,8 @@
     <None Include="shaders\depth\depth.vert" />
     <None Include="shaders\diagnostics\ibl_debug.frag" />
     <None Include="shaders\diagnostics\ibl_debug.vert" />
+    <None Include="shaders\diagnostics\pbr_gbuffer_debug.frag" />
+    <None Include="shaders\diagnostics\pbr_gbuffer_debug.vert" />
     <None Include="shaders\fragment.glsl" />
     <None Include="shaders\grassInstance\grassInstance.frag" />
     <None Include="shaders\grassInstance\grassInstance.vert" />

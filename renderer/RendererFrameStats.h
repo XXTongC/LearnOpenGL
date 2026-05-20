@@ -16,6 +16,7 @@ namespace GLframework
 		int pbrGBufferWidth{ 0 };
 		int pbrGBufferHeight{ 0 };
 		bool pbrGBufferReady{ false };
+		int pbrGBufferDebugDrawCalls{ 0 };
 		int legacySceneDrawCalls{ 0 };
 		int pbrSceneDrawCalls{ 0 };
 		int iblDebugDrawCalls{ 0 };

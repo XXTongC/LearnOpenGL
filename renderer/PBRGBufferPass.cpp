@@ -74,13 +74,25 @@ PBRGBufferPassStats PBRGBufferPass::render(
 
 	glBindFramebuffer(GL_FRAMEBUFFER, targets.getFbo());
 	glViewport(0, 0, targets.getWidth(), targets.getHeight());
+	const unsigned int attachments[3]{
+		GL_COLOR_ATTACHMENT0,
+		GL_COLOR_ATTACHMENT1,
+		GL_COLOR_ATTACHMENT2
+	};
+	glDrawBuffers(3, attachments);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glDepthMask(GL_TRUE);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glDisable(GL_BLEND);
 	glDisable(GL_STENCIL_TEST);
 	glDisable(GL_CULL_FACE);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	const float clearColor[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
+	const float clearDepth{ 1.0f };
+	glClearBufferfv(GL_COLOR, 0, clearColor);
+	glClearBufferfv(GL_COLOR, 1, clearColor);
+	glClearBufferfv(GL_COLOR, 2, clearColor);
+	glClearBufferfv(GL_DEPTH, 0, &clearDepth);
 
 	shader->begin();
 	for (const auto& mesh : meshes)

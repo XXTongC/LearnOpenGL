@@ -11,6 +11,7 @@
 #include "IBLDebugPass.h"
 #include "PBRDepthPrepass.h"
 #include "PBRGBufferPass.h"
+#include "PBRGBufferDebugPass.h"
 #include "PBRGBufferRenderTargets.h"
 #include "PBRSceneRenderPass.h"
 #include "RenderQueue.h"
@@ -72,6 +73,7 @@ private:
 		SceneRenderPass mSceneRenderPass{};
 		PBRDepthPrepass mPbrDepthPrepass{};
 		PBRGBufferPass mPbrGBufferPass{};
+		PBRGBufferDebugPass mPbrGBufferDebugPass{};
 		PBRSceneRenderPass mPbrSceneRenderPass{};
 		IBLDebugPass mIblDebugPass{};
 		PBRGBufferRenderTargets mPbrGBufferTargets{};

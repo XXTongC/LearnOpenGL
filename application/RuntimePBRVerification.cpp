@@ -114,7 +114,7 @@ namespace GL_RUNTIME
 		applyRendererPassProfile(context, config);
 
 		context.pbrPreviewProfile.enabled = true;
-		context.pbrPreviewProfile.position = { 0.0f, -3.7f, 1.2f };
+		context.pbrPreviewProfile.position = { 0.0f, 0.0f, 1.2f };
 		context.pbrPreviewProfile.segments = 32;
 		context.pbrPreviewProfile.rings = 16;
 		context.pbrPreviewProfile.useMaterialGrid = true;
@@ -161,6 +161,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + PBR G-buffer pass";
 		}
+		if (config.enablePbrGBufferDebugPass)
+		{
+			profileLine += " + PBR G-buffer debug pass";
+		}
 		if (config.enableIblDebugPass)
 		{
 			profileLine += " + IBL debug pass";
@@ -180,10 +184,17 @@ namespace GL_RUNTIME
 
 		auto& rendererPassProfile = context.renderer->getFramePassProfile();
 		rendererPassProfile.resetToDefaults();
-		if (config.enablePbrGBufferPass)
+		if (config.enablePbrGBufferPass || config.enablePbrGBufferDebugPass)
 		{
 			rendererPassProfile.defaultPassOrder =
 				"BeginFrame,ShadowMaps,PBRDepthPrepass,PBRGBuffer,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene";
+		}
+
+		if (config.enablePbrGBufferDebugPass)
+		{
+			rendererPassProfile.defaultPassOrder += ",PBRGBufferDebug";
+			rendererPassProfile.pbrGBufferDebugMode = 0;
+			rendererPassProfile.pbrGBufferDebugIntensity = 1.0f;
 		}
 
 		if (config.enableIblDebugPass)
@@ -241,6 +252,10 @@ namespace GL_RUNTIME
 			statsLine += (stats.pbrGBufferReady ? "yes" : "no");
 			statsLine += ", pbrGBufferSize=" + std::to_string(stats.pbrGBufferWidth)
 				+ "x" + std::to_string(stats.pbrGBufferHeight);
+		}
+		if (stats.pbrGBufferDebugDrawCalls > 0)
+		{
+			statsLine += ", pbrGBufferDebugDrawCalls=" + std::to_string(stats.pbrGBufferDebugDrawCalls);
 		}
 		reportLine(statsLine);
 	}

@@ -1,9 +1,9 @@
 #version 460 core
 
-in vec3 aPos;
-in vec2 aUV;
-in vec3 aNormal;
-in vec3 aTangent;
+layout(location = 0) in vec3 aPos;
+layout(location = 2) in vec2 aUV;
+layout(location = 3) in vec3 aNormal;
+layout(location = 4) in vec3 aTangent;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;

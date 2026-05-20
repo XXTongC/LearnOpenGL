@@ -1532,3 +1532,17 @@ Renderer 已新增可选 PBR G-buffer pass：
 - `RendererFrameStats` 和 Debug UI 新增 G-buffer ready、size、draw calls，可直接确认 pass 是否真的执行。
 
 这一步不是要立刻切换到 deferred PBR，而是先把 PBR 几何缓冲生产点接入现有 renderer pass 系统。后续 deferred lighting、G-buffer debug view、clustered lighting 或 SSR/TAA 都可以消费 `PBRGBufferRenderTargets`，而不是重新从 forward pass 里拆数据。
+
+### 2026-05-21 PBR GBuffer Debug Consumer
+
+Renderer 已新增第一个 G-buffer consumer pass：
+
+- 新增 `PBRGBufferDebugPass`，从 `PBRGBufferRenderTargets` 读取 position/roughness、normal/metallic、albedo/AO 和 depth texture，并绘制 fullscreen debug view。
+- 新增 `shaders/diagnostics/pbr_gbuffer_debug.*`，支持 `Albedo`、`Normal`、`Roughness`、`Metallic`、`AO`、`Depth`、`World Position` 多种 G-buffer debug mode。
+- `RendererFramePassRegistry` 新增可选 pass key `PBRGBufferDebug`；它不生产 G-buffer，因此需要和 `PBRGBuffer` 同时插入 pass order。
+- `RendererFramePassProfile` 新增 `pbrGBufferDebugMode` 与 `pbrGBufferDebugIntensity`，Debug UI 和 renderer pass profile ini 共用同一套字段。
+- `RuntimePBRVerification` 新增 `--verify-pbr-gbuffer-debug`，验证模式会插入 `PBRGBuffer` 与 `PBRGBufferDebug`，并导出 `out/pbr_gbuffer_debug_verification.ppm`。
+- PBR verification scene 的 material grid 从视锥下方移动到相机视野中心，避免只统计 `pbrDrawCalls=25` 但最终 capture 仍主要是 legacy/Phong 场景的弱验证。
+- `shaders/pbr/pbr.vert` 与 `shaders/pbr/pbr_gbuffer.vert` 固定 PBR attribute layout，使 PBR forward pass 与 G-buffer pass 共享同一套 VAO attribute convention。
+
+这一步把 G-buffer 从“只写不读”的准备状态推进到“可诊断、可验证”的状态。后续如果要做 deferred lighting pass，可以直接复用同一个 `PBRGBufferRenderTargets` 输入；如果 G-buffer 某个 channel 异常，也可以先用 `PBRGBufferDebug` 定位，而不是猜测 pass 是否真的写入了 attachment。

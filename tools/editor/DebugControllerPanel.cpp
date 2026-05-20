@@ -254,6 +254,7 @@ namespace
 			ImGui::Text("PBR GBuffer Ready: %s", stats.pbrGBufferReady ? "Yes" : "No");
 			ImGui::Text("PBR GBuffer Size: %d x %d", stats.pbrGBufferWidth, stats.pbrGBufferHeight);
 			ImGui::Text("PBR GBuffer Draw Calls: %d", stats.pbrGBufferDrawCalls);
+			ImGui::Text("PBR GBuffer Debug Draw Calls: %d", stats.pbrGBufferDebugDrawCalls);
 			ImGui::Text("PBR Scene Draw Calls: %d", stats.pbrSceneDrawCalls);
 			ImGui::Text("IBL Debug Draw Calls: %d", stats.iblDebugDrawCalls);
 			ImGui::TextWrapped("Use these values to verify whether the current scene is actually using the PBR render path.");
