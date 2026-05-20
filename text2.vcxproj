@@ -136,6 +136,7 @@
     <ClCompile Include="third_party\src\glad.c" />
     <ClCompile Include="light\ambientLight.cpp" />
     <ClCompile Include="application\Application.cpp" />
+    <ClCompile Include="application\RuntimeBootstrapper.cpp" />
     <ClCompile Include="application\RuntimeInputController.cpp" />
     <ClCompile Include="application\RuntimeViewport.cpp" />
     <ClCompile Include="application\assimpInstanceLoader.cpp" />
@@ -280,7 +281,9 @@
     <ClInclude Include="materials\screenMaterial.h" />
     <ClInclude Include="framework\shader.h" />
     <ClInclude Include="wrapper\GL_ERROR_FIND.h" />
+    <ClInclude Include="application\AppRuntimeContext.h" />
     <ClInclude Include="application\Application.h" />
+    <ClInclude Include="application\RuntimeBootstrapper.h" />
     <ClInclude Include="application\RuntimeInputController.h" />
     <ClInclude Include="application\RuntimeViewport.h" />
     <ClInclude Include="light\spotLight.h" />

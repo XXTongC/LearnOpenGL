@@ -1096,6 +1096,18 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera control / shadow camera double-to-float `C4244` warning，本轮未引入 PBR camera rig warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+184. 完成第九十二轮 runtime bootstrapper boundary：
+   - 新增 [application/AppRuntimeContext.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\AppRuntimeContext.h)，将 renderer、scene、postprocess、environment、PBR preview、light rig、camera rig、camera、light 和 editor 相关运行时状态从 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 的本地 struct 移到 application 层。
+   - 新增 [application/RuntimeBootstrapper.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeBootstrapper.h) 与 [application/RuntimeBootstrapper.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeBootstrapper.cpp)，集中执行 initialize、update loop、per-frame render、cleanup 和 destroy 生命周期骨架。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，让 `main()` 只设置日志等级并把 initialize / shouldContinue / runFrame / cleanup / destroy 回调交给 `RuntimeBootstrapper`。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 runtime context 与 bootstrapper 加入 VS 工程和 Application filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 application lifecycle 第一层边界；具体 profile load、scene prepare 和 frame orchestration 暂时保留在 `main.cpp` 作为后续拆分目标。
+185. 完成第八十三次 runtime bootstrapper boundary 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeBootstrapper.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeBootstrapper.cpp) 与 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 临时编译并运行 `__codex_tmp_runtime_bootstrapper_test.cpp`，验证 bootstrapper 的 initialize -> shouldContinue / frame loop -> cleanup -> destroy 顺序，以及 initialize 失败时保持旧行为不执行 cleanup / destroy；测试输出 `runtime bootstrapper lifecycle ok`，测试源文件和编译产物已删除。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera control / shadow camera double-to-float `C4244` warning，本轮未引入 runtime bootstrapper warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1144,7 +1156,9 @@
 - 当前 `PBRExperimentProfile` 已支持 `config/pbr_experiment.local.ini` 保存 / 加载 environment、postprocess、PBR preview、light rig 和 camera rig，并已接入 DebugControllerPanel 的组合 preset save/reload 入口。
 - 当前 `PBRLightRigProfile` 已接管默认场景灯光初始化，Debug UI 保存 experiment preset 前会从运行时灯光回写 profile，重载后会应用到运行时灯光对象。
 - 当前 `PBRCameraRigProfile` 已接入 experiment preset，Debug UI 保存 preset 前会从主相机回写 profile，重载后会应用到主相机；aspect 仍由 `RuntimeViewport` 根据窗口尺寸维护。
+- 当前 runtime context 已从 `main.cpp` 的本地 struct 移出到 `AppRuntimeContext`，主入口不再直接定义所有 runtime state 类型。
+- 当前 application lifecycle 骨架已从 `main.cpp` 拆出到 `RuntimeBootstrapper`，`main()` 只负责日志等级与生命周期回调绑定。
 - 当前 runtime resize 边界已从 `main.cpp` 拆出到 `RuntimeViewport`，窗口尺寸变化会统一同步 viewport、PerspectiveCamera aspect、FrameRenderTargets 和 ScreenMaterial postprocess 输入贴图。
 - 当前 runtime input 边界已从 `main.cpp` 拆出到 `RuntimeInputController`，CameraControl 输入分发和中键临时 FOV 缩放不再由主入口直接维护。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担应用生命周期编排和全局 runtime context 创建。
-- 下一步建议目标：继续把 application lifecycle 从 `main.cpp` 收敛到更明确的 runtime bootstrapper，减少主入口持有 profile、renderer、scene、UI 和回调编排的耦合。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担 profile loading、scene preparation、frame orchestration、ImGui startup 和 callback glue。
+- 下一步建议目标：继续把 `initializeApplication()` 拆成 profile loading、scene preparation 和 ImGui startup 阶段，或者把 `runFrame()` 的 frame orchestration 移入 runtime frame runner。

@@ -1119,3 +1119,14 @@ PBR experiment preset 已纳入主相机视角维度：
 - 启动时 `loadPBRExperimentProfile()` 在读取 experiment preset 后也会应用 camera rig，因此同一 preset 可以稳定恢复观察位置和 PBR 比较视角。
 
 这一步补齐了 PBR 实验可复现性的关键维度。后续更值得处理的是 `main.cpp` 仍然持有大量 runtime context 和初始化编排；下一步应把 application lifecycle 拆到 runtime bootstrapper，而不是继续在主入口堆新的 profile 字段。
+
+### 2026-05-20 Runtime Bootstrapper Boundary
+
+Application lifecycle 已开始从 `main.cpp` 拆出：
+
+- 新增 `AppRuntimeContext`，把 renderer、scene、postprocess、environment、PBR preview、light rig、camera rig、camera、light 和 editor 相关运行时状态从 `main.cpp` 的本地 struct 移到 application 层。
+- 新增 `RuntimeBootstrapper`，集中执行 initialize -> update loop -> per-frame render -> cleanup -> destroy 的生命周期骨架。
+- `main()` 现在只负责设置日志等级，并把 initialize、shouldContinue、runFrame、cleanup 和 destroy 回调交给 bootstrapper。
+- 这一步没有移动具体的 prepare / profile load / render pass 细节，目的是先建立稳定边界，避免一次性改动过大。
+
+下一步可以继续把 `initializeApplication()` 拆成 `RuntimeStartupSequence` 或更具体的 profile loading / scene preparation / ImGui startup 阶段；也可以把 `runFrame()` 的 frame orchestration 移入 runtime frame runner，使 `main.cpp` 最终只保留 callback glue 和少量兼容旧接口的过渡代码。

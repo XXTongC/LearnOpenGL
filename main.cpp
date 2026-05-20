@@ -4,7 +4,9 @@
 #include <vector>
 #include <typeinfo>
 #include "GL_ERROR_FIND.h"
+#include "AppRuntimeContext.h"
 #include "Application.h"
+#include "RuntimeBootstrapper.h"
 #include "RuntimeInputController.h"
 #include "RuntimeViewport.h"
 #include "tools/tools.h"
@@ -110,41 +112,7 @@ float brigtnesee = 1.0f;
 
 //GLuint vao;
 float angle = 0.0f;
-struct AppRuntimeContext
-{
-	std::shared_ptr<GLframework::Renderer> renderer{ nullptr };
-	std::shared_ptr<GLframework::Scene> sceneOffScreen{ nullptr };
-	std::shared_ptr<GLframework::Scene> sceneInScreen{ nullptr };
-	std::shared_ptr<GLframework::Mesh> meshPointLight{ nullptr };
-	std::shared_ptr<GLframework::Mesh> screenQuad{ nullptr };
-	std::shared_ptr<GLframework::AmbientLight> ambientLight{ nullptr };
-	GLframework::FrameRenderTargets frameRenderTargets{};
-	std::shared_ptr<GLframework::Bloom> bloom{ nullptr };
-	std::shared_ptr<GLframework::GrassInstanceMaterial> grassMaterial{ nullptr };
-	std::shared_ptr<GLframework::Mesh> skyBoxMesh{ nullptr };
-	std::shared_ptr<GLframework::Mesh> movePlane{ nullptr };
-	std::shared_ptr<GLframework::Mesh> textD{ nullptr };
-	std::shared_ptr<GLframework::ScreenMaterial> screenMaterial{ nullptr };
-	std::shared_ptr<GLframework::PhongCSMShadowMaterial> csmShadowMaterial{ nullptr };
-	GLframework::PostProcessPass postProcessPass{};
-	GLframework::PostProcessSettings postProcessSettings{};
-	std::string postProcessSettingsPath{ GLframework::PostProcessSettingsStorage::defaultPath() };
-	GLframework::EnvironmentProfile environmentProfile{};
-	std::string environmentProfilePath{ GLframework::EnvironmentProfileStorage::defaultPath() };
-	GL_SCENE::PBRPreviewProfile pbrPreviewProfile{};
-	GL_SCENE::PBRLightRigProfile pbrLightRigProfile{};
-	GL_SCENE::PBRCameraRigProfile pbrCameraRigProfile{};
-	std::string pbrPreviewProfilePath{ GL_SCENE::PBRPreviewProfileStorage::defaultPath() };
-	std::string pbrExperimentProfilePath{ GL_SCENE::PBRExperimentProfileStorage::defaultPath() };
-	Camera* camera{ nullptr };
-	CameraControl* cameracontrol{ nullptr };
-	glm::vec3 clearColor{};
-	std::shared_ptr<GLframework::DirectionalLight> dirLight{ nullptr };
-	std::shared_ptr<GLframework::SpotLight> spotLight{ nullptr };
-	std::vector<std::shared_ptr<GLframework::PointLight>> pointLights{};
-};
-
-AppRuntimeContext gAppRuntime{};
+GLframework::AppRuntimeContext gAppRuntime{};
 GL_EDITOR::SelectionContext gEditorSelection{};
 
 auto& renderer = gAppRuntime.renderer;
@@ -195,17 +163,13 @@ float m_time = 0.0f;
 int main()
 {
 	LogManager::getInstance().setMinLevel(LogManager::Level::info);
-	if (!initializeApplication()) return -1;
-	
-	while (GL_APP->update())
-	{
-		runFrame();
-	}
-
-	cleanupRuntime();
-	GL_APP->destroy();
-
-	return 0;
+	return GL_RUNTIME::RuntimeBootstrapper::run({
+		[]() { return initializeApplication(); },
+		[]() { return GL_APP->update(); },
+		[]() { runFrame(); },
+		[]() { cleanupRuntime(); },
+		[]() { GL_APP->destroy(); }
+	});
 }
 
 bool initializeApplication()
