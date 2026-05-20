@@ -1502,6 +1502,18 @@
    - `--verify-pbr` renderer stats 输出保持为 `rendererPasses=7, shadowCasters=32, directionalShadowLayers=5, directionalShadowDrawCalls=160, pointShadowLights=2, pointShadowFaces=12, pointShadowDrawCalls=384, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`。
    - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
    - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+244. 完成第一百二十二轮 PBR scene pass direct binder：
+   - 更新 [renderer/PBRSceneRenderPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRSceneRenderPass.cpp)，PBR scene pass 不再通过通用 `MaterialBinder::bind(...)` switch 间接进入 PBR binding。
+   - `PBRSceneRenderPass` 在确认 mesh 材质类型为 `PBRMaterial` 后，直接调用 `PBRMaterialBinder::bind(...)`。
+   - 通用 [renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp) 仍保留 PBR 分支，用于 global material override 或 legacy scene pass 的兼容路径。
+245. 完成第一百一十三次 PBR scene pass direct binder 验证：
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 使用 MSVC `cl /Zs` 检查 [renderer/PBRSceneRenderPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRSceneRenderPass.cpp)、[renderer/PBRMaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRMaterialBinder.cpp)、[renderer/MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp) 和 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，结果通过。
+   - 执行 `Debug|x64` + `LinkIncremental=false` 构建通过。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，验证模式自动退出并输出 `PBR verification scene stats: objects=33, meshes=32, pbrMeshes=25, pbrPreviewMeshes=25, iblReady=yes`。
+   - `--verify-pbr` renderer stats 输出保持为 `rendererPasses=7, shadowCasters=32, directionalShadowLayers=5, directionalShadowDrawCalls=160, pointShadowLights=2, pointShadowFaces=12, pointShadowDrawCalls=384, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`。
+   - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
+   - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1583,5 +1595,6 @@
 - 当前 PBR surface 参数和贴图绑定已收敛到 `PBRSurfaceResourceBinder`，PBRMaterialBinder 进一步收敛为 PBR 材质绑定编排器。
 - 当前 PBR shadow 资源绑定已收敛到 `PBRShadowResourceBinder`，PBRMaterialBinder 不再直接依赖通用 CSM shadow binder 和固定 shadow texture unit。
 - 当前 PBR object-level uniforms 已收敛到 `PBRObjectUniformBinder`，PBRMaterialBinder 只保留 PBR forward binding 编排职责。
+- 当前 PBR scene pass 已直接调用 `PBRMaterialBinder`，默认 PBR forward path 不再经过通用 `MaterialBinder` switch。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR path 已有 depth / scene pass 边界，但 shadow atlas 和 IBL debug pass 还未拆出。
 - 下一步建议目标：继续补 PBR shadow atlas / IBL debug pass 的具体槽位，或把 PBR verification capture 加入更明确的视觉检查流程。

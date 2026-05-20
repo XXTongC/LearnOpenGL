@@ -2,9 +2,9 @@
 
 #include <iostream>
 
-#include "materials/material.h"
-#include "renderer/MaterialBinder.h"
+#include "materials/pbrMaterial/PBRMaterial.h"
 #include "renderer/MeshDraw.h"
+#include "renderer/PBRMaterialBinder.h"
 #include "renderer/RenderState.h"
 
 using namespace GLframework;
@@ -56,9 +56,14 @@ bool PBRSceneRenderPass::renderObject(
 	}
 
 	shader->begin();
-	if (!MaterialBinder::bind(shader, material, mesh, bindingContext))
+	if (!PBRMaterialBinder::bind(
+		shader,
+		std::static_pointer_cast<PBRMaterial>(material),
+		mesh,
+		bindingContext
+	))
 	{
-		std::cout << "PBRSceneRenderPass: unsupported PBR material\n";
+		std::cout << "PBRSceneRenderPass: PBR material binding failed\n";
 	}
 
 	const bool drawn = MeshDraw::drawIndexed(mesh);

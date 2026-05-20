@@ -1470,3 +1470,13 @@ PBR object-level uniform binding 已从 `PBRMaterialBinder` 中拆出：
 - 这让 PBR forward binding 的各类资源边界基本成型：object uniforms、lights、shadow、surface、IBL 均有独立入口。
 
 这一步为后续 G-buffer、PBR debug view 和 shader layout 变体做准备。不同 PBR pass 可以复用 object uniform binder，也可以替换为 G-buffer 专用 object binder，而不用修改主材质绑定编排。
+
+### 2026-05-21 PBR Scene Pass Direct Binder
+
+PBR scene pass 已绕过通用材质 switch：
+
+- `PBRSceneRenderPass` 在确认 mesh 使用 `PBRMaterial` 后，直接调用 `PBRMaterialBinder::bind(...)`。
+- 默认 PBR forward path 不再经过 `MaterialBinder::bind(...)` 的历史材质 switch。
+- `MaterialBinder` 仍保留 PBR 分支，用于 global material override 或 legacy scene pass 的兼容路径。
+
+这一步进一步明确 PBR forward pass 的 ownership：PBR pass 负责 PBR material binding，legacy scene pass 负责通用 / 历史材质绑定。后续添加 G-buffer 或 PBR debug pass 时，可以直接复用 PBR 专用 binder，而不是通过通用材质 switch 间接调用。
