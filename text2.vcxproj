@@ -207,6 +207,7 @@
     <ClCompile Include="tools\editor\EditorPanels.cpp" />
     <ClCompile Include="tools\Logger\Logger.cpp" />
     <ClCompile Include="tools\Logger\LogManager.cpp" />
+    <ClCompile Include="tools\sceneSetup\PBRExperimentProfile.cpp" />
     <ClCompile Include="tools\sceneSetup\PBRPreviewProfile.cpp" />
     <ClCompile Include="tools\sceneSetup\SceneSetup.cpp" />
     <ClCompile Include="tools\tools.cpp" />
@@ -639,6 +640,7 @@
     <ClInclude Include="tools\editor\EditorPanels.h" />
     <ClInclude Include="tools\Logger\Logger.h" />
     <ClInclude Include="tools\Logger\LogManager.h" />
+    <ClInclude Include="tools\sceneSetup\PBRExperimentProfile.h" />
     <ClInclude Include="tools\sceneSetup\PBRPreviewProfile.h" />
     <ClInclude Include="tools\sceneSetup\SceneSetup.h" />
     <ClInclude Include="tools\ObjectPool\ObjectPool.h" />
@@ -649,6 +651,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="config\environment_profile.example.ini" />
+    <None Include="config\pbr_experiment.example.ini" />
     <None Include="config\pbr_preview.example.ini" />
     <None Include="config\postprocess_settings.example.ini" />
     <None Include="cubeSphere.frag" />

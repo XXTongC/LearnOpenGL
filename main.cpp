@@ -53,6 +53,7 @@
 #include "tools/editor/DebugControllerPanel.h"
 #include "tools/editor/EditorPanels.h"
 #include "tools/legacyExperiments/LegacyExperimentRunner.h"
+#include "tools/sceneSetup/PBRExperimentProfile.h"
 #include "tools/sceneSetup/SceneSetup.h"
 int GLframework::PointLightShadow::MAX_POINT_LIGHTS = 2;
 /*
@@ -78,6 +79,7 @@ void cleanupRuntime();
 void loadEnvironmentProfile();
 void loadPostProcessSettings();
 void loadPBRPreviewProfile();
+void loadPBRExperimentProfile();
 void refreshPostProcessInputTextures();
 GL_EXPERIMENTS::RuntimeContext makeLegacyExperimentContext();
 GL_SCENE::SetupContext makeSceneSetupContext();
@@ -128,6 +130,7 @@ struct AppRuntimeContext
 	std::string environmentProfilePath{ GLframework::EnvironmentProfileStorage::defaultPath() };
 	GL_SCENE::PBRPreviewProfile pbrPreviewProfile{};
 	std::string pbrPreviewProfilePath{ GL_SCENE::PBRPreviewProfileStorage::defaultPath() };
+	std::string pbrExperimentProfilePath{ GL_SCENE::PBRExperimentProfileStorage::defaultPath() };
 	Camera* camera{ nullptr };
 	CameraControl* cameracontrol{ nullptr };
 	glm::vec3 clearColor{};
@@ -160,6 +163,7 @@ auto& environmentProfile = gAppRuntime.environmentProfile;
 auto& environmentProfilePath = gAppRuntime.environmentProfilePath;
 auto& pbrPreviewProfile = gAppRuntime.pbrPreviewProfile;
 auto& pbrPreviewProfilePath = gAppRuntime.pbrPreviewProfilePath;
+auto& pbrExperimentProfilePath = gAppRuntime.pbrExperimentProfilePath;
 Camera*& camera = gAppRuntime.camera;
 CameraControl*& cameracontrol = gAppRuntime.cameracontrol;
 glm::vec3& clearColor = gAppRuntime.clearColor;
@@ -209,6 +213,7 @@ bool initializeApplication()
 	loadEnvironmentProfile();
 	loadPostProcessSettings();
 	loadPBRPreviewProfile();
+	loadPBRExperimentProfile();
 	prepare();
 	initIMGUI();
 	printOpenGLCapabilities();
@@ -383,6 +388,22 @@ void loadPBRPreviewProfile()
 	}
 
 	LogInfo("PBR preview profile config not found, using defaults: " + pbrPreviewProfilePath);
+}
+
+void loadPBRExperimentProfile()
+{
+	if (GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
+		pbrExperimentProfilePath,
+		environmentProfile,
+		postProcessSettings,
+		pbrPreviewProfile
+	))
+	{
+		LogInfo("PBR experiment profile loaded from " + pbrExperimentProfilePath);
+		return;
+	}
+
+	LogInfo("PBR experiment profile config not found, using layered defaults: " + pbrExperimentProfilePath);
 }
 
 void refreshPostProcessInputTextures()

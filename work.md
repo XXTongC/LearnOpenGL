@@ -907,3 +907,15 @@ PBR preview profile 现在支持材质对比阵列：
 - `config/pbr_preview.example.ini` 已启用 5x5 示例阵列，用户复制为 local profile 后即可在同一 environment / postprocess 下比较 PBR 参数。
 
 这一步让 PBR / IBL 验证从单点观察推进到批量对比。下一步更有价值的是把这组 preview 对象的运行时 UI 暴露出来，或者把 environment / postprocess / preview 三类 profile 合并成一个更高层的 experiment preset。
+
+### 2026-05-20 PBR Experiment Profile
+
+PBR 实验配置现在有一个高层覆盖入口：
+
+- 新增 `PBRExperimentProfileStorage`，默认读取 `config/pbr_experiment.local.ini`。
+- experiment preset 使用 `environment.*`、`postprocess.*`、`pbrPreview.*` 三类前缀，能在一个文件中覆盖 environment source / IBL precompute、HDR postprocess 和 PBR preview grid。
+- 启动流程仍先加载原有 `environment_profile.local.ini`、`postprocess_settings.local.ini`、`pbr_preview.local.ini`，再加载 `pbr_experiment.local.ini` 作为最终覆盖层。
+- 仓库新增 `config/pbr_experiment.example.ini`，提供 procedural IBL + postprocess + 5x5 PBR material grid 的组合示例。
+- `enabled=0` 时 experiment preset 会被读取但不应用，方便临时保留配置文件。
+
+这一步解决的是实验配置分散的问题。后续如果继续推进，建议把 `PBRExperimentProfile` 接入 Debug UI 的 Load/Reload/Save 或 preset 下拉，避免运行时仍需要手动编辑 local ini。

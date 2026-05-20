@@ -504,6 +504,9 @@
     <ClCompile Include="tools\Logger\LogManager.cpp">
       <Filter>cppfile\GLframework\tools\Logger</Filter>
     </ClCompile>
+    <ClCompile Include="tools\sceneSetup\PBRExperimentProfile.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\sceneSetup\PBRPreviewProfile.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -1796,6 +1799,9 @@
     <ClInclude Include="tools\Logger\LogManager.h">
       <Filter>include\GLframework\tools\Logger</Filter>
     </ClInclude>
+    <ClInclude Include="tools\sceneSetup\PBRExperimentProfile.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
     <ClInclude Include="tools\sceneSetup\PBRPreviewProfile.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
@@ -1820,6 +1826,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="config\environment_profile.example.ini">
+      <Filter>资源文件\config</Filter>
+    </None>
+    <None Include="config\pbr_experiment.example.ini">
       <Filter>资源文件\config</Filter>
     </None>
     <None Include="config\pbr_preview.example.ini">

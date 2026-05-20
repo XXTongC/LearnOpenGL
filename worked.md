@@ -872,6 +872,19 @@
    - 默认短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
    - 临时创建被 `.gitignore` 覆盖的 [config/pbr_preview.local.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\pbr_preview.local.ini) 和 [config/environment_profile.local.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\environment_profile.local.ini)，启用 `4x4` material grid 与 procedural IBL precompute 后短启动约 `10` 秒；错误关键字扫描为空。
    - 验证结束后已移除两个临时 local profile，避免改变用户后续手动运行的默认环境。
+147. 完成第七十四轮 PBR Experiment Profile：
+   - 新增 [tools/sceneSetup/PBRExperimentProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRExperimentProfile.h) 与 [tools/sceneSetup/PBRExperimentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRExperimentProfile.cpp)，提供高层 `config/pbr_experiment.local.ini` 覆盖入口。
+   - experiment preset 支持 `environment.*`、`postprocess.*`、`pbrPreview.*` 前缀，可在一个文件中覆盖 procedural IBL、postprocess 参数和 PBR preview grid。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，启动时仍先加载原有三个 local profile，再加载 `PBRExperimentProfileStorage::defaultPath()` 作为最终覆盖层。
+   - 新增 [config/pbr_experiment.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\pbr_experiment.example.ini)，提供 procedural IBL + postprocess + 5x5 PBR material grid 的组合示例。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将新 profile 源文件、头文件和 example config 纳入 VS 工程分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录高层 experiment preset 的加载顺序和后续 Debug UI 接入方向。
+148. 完成第六十四次构建、默认启动 smoke 与 PBR experiment preset smoke 验证：
+   - 针对 PBR Experiment Profile 执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行全量 `Debug|x64 Build`，构建结果：成功，`0` error；因为此前清理过构建目录，本次重新编译暴露既有 camera double-to-float `C4244` warning，新增 `PBRExperimentProfile.obj` 已参与链接。
+   - 默认短启动 `x64\Debug\text2.exe` 约 `6` 秒，stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+   - 临时创建被 `.gitignore` 覆盖的 [config/pbr_experiment.local.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\pbr_experiment.local.ini)，用单个文件启用 procedural IBL、postprocess 和 `4x4` PBR material grid 后短启动约 `10` 秒；错误关键字扫描为空。
+   - 验证结束后已移除临时 experiment local profile。
 
 ### 当前状态
 
@@ -907,7 +920,8 @@
 - 当前默认 `PBR Preview Sphere` 会请求 IBL；environment 未 ready 时 shader 侧自动关闭，environment ready 后可直接验证 PBR IBL 采样链路。
 - 当前 `PBR Preview Sphere` 已由 `PBRPreviewProfile` 驱动，可通过 `config/pbr_preview.local.ini` 调整位置、几何细分、PBR surface 参数、IBL 强度和 normal map，而不需要修改 `SceneSetup.cpp`。
 - 当前 `PBRPreviewProfile` 支持 material grid，可按 metallic / roughness 范围生成多球阵列，在同一 environment / postprocess 下批量比较 PBR 参数。
+- 当前 `PBRExperimentProfile` 支持用 `config/pbr_experiment.local.ini` 统一覆盖 environment、postprocess 和 PBR preview grid，减少维护多个 local ini 的成本。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
 - 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例。
-- 当前剩余明显问题：PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；environment / postprocess / PBR preview 现在是三个独立 profile，还没有更高层的 experiment preset 统一管理；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
-- 下一步建议目标：新增高层 PBR experiment preset，把 environment、postprocess 和 PBR preview grid 组合成一份可切换实验配置，减少验证不同 PBR 场景时需要同时维护多个 local ini 的成本。
+- 当前剩余明显问题：PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
+- 下一步建议目标：把 PBR experiment preset 接入 Debug UI 的 Load/Reload 或 preset 下拉，或者继续把 camera/runtime resize 行为从 `main.cpp` 中拆出。
