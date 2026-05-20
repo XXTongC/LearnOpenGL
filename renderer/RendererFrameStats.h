@@ -11,6 +11,12 @@ namespace GLframework
 		int pointShadowLightCount{ 0 };
 		int pointShadowFaceCount{ 0 };
 		int pointShadowDrawCalls{ 0 };
+		bool pbrShadowAtlasReady{ false };
+		int pbrShadowAtlasDirectionalLayers{ 0 };
+		int pbrShadowAtlasPointLights{ 0 };
+		int pbrShadowAtlasPointFaces{ 0 };
+		int pbrShadowAtlasDirectionalResolution{ 0 };
+		int pbrShadowAtlasPointResolution{ 0 };
 		int pbrDepthPrepassDrawCalls{ 0 };
 		int pbrGBufferDrawCalls{ 0 };
 		int pbrGBufferWidth{ 0 };

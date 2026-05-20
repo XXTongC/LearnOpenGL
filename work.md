@@ -1593,3 +1593,14 @@ Deferred PBR lighting 的 light data 已从逐 uniform 写入推进到 SSBO：
 - `RendererFrameStats`、Debug UI 和 `--verify-pbr-deferred` 会输出 deferred light buffer 是否绑定以及 point light count / capacity。
 
 这一步不是 clustered lighting 的最终实现，但它把 deferred path 从“少量 uniform light list”推进到“buffer-backed light data”。后续可以在同一边界上继续扩展为 SSBO light list、tile/cluster index list 或 GPU culling，而不需要再改 fullscreen deferred lighting pass 的基础数据入口。
+
+### 2026-05-21 PBR Shadow Atlas Resource Layout
+
+Renderer 已新增 PBR shadow atlas 的资源布局层：
+
+- 新增 `PBRShadowAtlasRenderTargets`，集中管理后续 PBR shadow atlas pass 会使用的 FBO、directional CSM depth texture array 和 point shadow depth texture array。
+- 当前 directional atlas 按现有 `DirectionalLightCSMShadow` 的 cascade layer 数创建 depth array，point atlas 按当前有效 point light 数创建 `pointLightCount * 6` 个 face layers。
+- `RendererFrameContext` 和 `Renderer` 已持有 `PBRShadowAtlasRenderTargets`，`ShadowMaps` pass 会 prepare atlas resources 并写入 `RendererFrameStats`。
+- Debug UI 与 `--verify-pbr*` 输出新增 `pbrShadowAtlasReady`、directional layer count 和 point face count。
+
+这一步暂时不替换现有 shadow 渲染和采样资源，目的是先把 PBR shadow atlas 的所有权、生命周期和可观测状态接进 renderer。后续可以把 directional / point shadow pass 逐步改为写入这组 atlas targets，再切换 PBR forward / deferred shader sampling。

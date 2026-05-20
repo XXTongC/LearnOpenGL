@@ -249,6 +249,9 @@ namespace
 			ImGui::Text("Point Shadow Lights: %d", stats.pointShadowLightCount);
 			ImGui::Text("Point Shadow Faces: %d", stats.pointShadowFaceCount);
 			ImGui::Text("Point Shadow Draw Calls: %d", stats.pointShadowDrawCalls);
+			ImGui::Text("PBR Shadow Atlas Ready: %s", stats.pbrShadowAtlasReady ? "Yes" : "No");
+			ImGui::Text("PBR Shadow Atlas Directional Layers: %d @ %d", stats.pbrShadowAtlasDirectionalLayers, stats.pbrShadowAtlasDirectionalResolution);
+			ImGui::Text("PBR Shadow Atlas Point Faces: %d @ %d", stats.pbrShadowAtlasPointFaces, stats.pbrShadowAtlasPointResolution);
 			ImGui::Text("Legacy Scene Draw Calls: %d", stats.legacySceneDrawCalls);
 			ImGui::Text("PBR Depth Prepass Draw Calls: %d", stats.pbrDepthPrepassDrawCalls);
 			ImGui::Text("PBR GBuffer Ready: %s", stats.pbrGBufferReady ? "Yes" : "No");

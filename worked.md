@@ -1681,6 +1681,24 @@
    - [out/pbr_deferred_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_deferred_verification.ppm) 非黑比例约 `22.0043%`，RGB 均值约 `26.76 / 21.96 / 17.89`。
    - [out/pbr_gbuffer_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_gbuffer_debug_verification.ppm) 非黑比例约 `22.0009%`，RGB 均值约 `44.22 / 34.54 / 24.64`。
    - [out/pbr_ibl_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_ibl_debug_verification.ppm) 非黑比例 `100%`，RGB 均值约 `145.33 / 154.29 / 165.66`。
+264. 完成第一百三十二轮 PBR shadow atlas resource layout：
+   - 新增 [renderer/PBRShadowAtlasRenderTargets.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRShadowAtlasRenderTargets.h) 和 [renderer/PBRShadowAtlasRenderTargets.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRShadowAtlasRenderTargets.cpp)，集中管理后续 PBR shadow atlas pass 会使用的 FBO、directional CSM depth texture array 和 point shadow depth texture array。
+   - 更新 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h)、[renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp) 和 [renderer/RendererFrameContext.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFrameContext.h)，把 `PBRShadowAtlasRenderTargets` 挂入 renderer lifetime 和 frame context。
+   - 更新 [renderer/RendererFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.cpp)，`ShadowMaps` pass 会 prepare atlas resources，并把当前 directional layer count / point face count 写入 frame stats。
+   - 更新 [renderer/RendererFrameStats.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFrameStats.h)、[tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp) 和 [application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)，Debug UI 与 `--verify-pbr*` 可观察 `pbrShadowAtlasReady`、directional layers 和 point faces。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，把 `PBRShadowAtlasRenderTargets` 加入 VS 工程和 renderer filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录本轮只建立 PBR shadow atlas 资源所有权和可观测状态，暂不替换现有 shadow 渲染/采样。
+265. 完成第一百二十三次 PBR shadow atlas resource layout 验证：
+   - 执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行 `Debug|x64` + `LinkIncremental=false` 构建通过，新增 [renderer/PBRShadowAtlasRenderTargets.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRShadowAtlasRenderTargets.cpp) 已进入 VS 工程。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-deferred`，输出 `pbrShadowAtlasReady=yes`、`pbrShadowAtlasDirectionalLayers=5`、`pbrShadowAtlasPointFaces=12`，同时 deferred path 保持 `pbrDeferredLightingDrawCalls=1`、`pbrDeferredCsmShadowBound=yes`、`pbrDeferredLightBufferBound=yes`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，forward PBR 验证保持 `rendererPasses=7`、`pbrDepthPrepassDrawCalls=25`、`pbrDrawCalls=25`，并输出 `pbrShadowAtlasReady=yes`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-gbuffer-debug`，G-buffer debug 验证保持 `rendererPasses=9`、`pbrGBufferDrawCalls=25`、`pbrGBufferDebugDrawCalls=1`，并输出 `pbrShadowAtlasReady=yes`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-ibl-debug`，IBL debug 验证保持 `rendererPasses=8` 与 `iblDebugDrawCalls=1`，并输出 `pbrShadowAtlasReady=yes`。
+   - [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 非黑比例 `100%`，RGB 均值约 `160.99 / 123.69 / 83.49`。
+   - [out/pbr_deferred_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_deferred_verification.ppm) 非黑比例约 `22.0043%`，RGB 均值约 `26.76 / 21.96 / 17.89`。
+   - [out/pbr_gbuffer_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_gbuffer_debug_verification.ppm) 非黑比例约 `22.0009%`，RGB 均值约 `44.22 / 34.54 / 24.64`。
+   - [out/pbr_ibl_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_ibl_debug_verification.ppm) 非黑比例 `100%`，RGB 均值约 `145.33 / 154.29 / 165.66`。
 
 ### 当前状态
 
@@ -1767,5 +1785,6 @@
 - 当前 PBR G-buffer 生产点已接入 renderer pass 系统，`--verify-pbr-gbuffer` 已验证 `pbrGBufferDrawCalls=25`、`pbrGBufferReady=yes` 和 `pbrGBufferSize=1280x720`。
 - 当前 PBR G-buffer debug consumer 已接入 renderer pass 系统，`--verify-pbr-gbuffer-debug` 已验证 `pbrGBufferDebugDrawCalls=1`，且导出的 debug capture 非黑比例约 `22.0009%`。
 - 当前 PBR deferred lighting consumer 已接入 renderer pass 系统，复用现有 CSM shadow resources，并使用 SSBO-backed deferred light buffer；`--verify-pbr-deferred` 已验证 `pbrDrawCalls=0`、`pbrGBufferDrawCalls=25`、`pbrDeferredLightingDrawCalls=1`、`pbrDeferredCsmShadowBound=yes`、`pbrDeferredCsmShadowLayers=5`、`pbrDeferredLightBufferBound=yes`、`pbrDeferredLightBufferPointLights=2/16`，且导出的 deferred capture 非黑比例约 `22.0043%`。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR deferred path 已有 G-buffer producer / debug consumer / lighting consumer、CSM shadow sampling 和 SSBO light buffer，但 shadow atlas、透明 forward fallback、material feature parity 和 clustered light culling / tile index list 还未实现。
-- 下一步建议目标：继续推进 PBR shadow atlas 资源布局，或在当前 SSBO light buffer 边界上增加 clustered/tiled light index list。
+- 当前 renderer 已持有 PBR shadow atlas resource layout，`--verify-pbr*` 已验证当前 scene 下 `pbrShadowAtlasReady=yes`、`pbrShadowAtlasDirectionalLayers=5`、`pbrShadowAtlasPointFaces=12`。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR deferred path 已有 G-buffer producer / debug consumer / lighting consumer、CSM shadow sampling、SSBO light buffer 和 shadow atlas resource layout，但 shadow atlas 写入/采样替换、透明 forward fallback、material feature parity 和 clustered light culling / tile index list 还未实现。
+- 下一步建议目标：把 directional / point shadow pass 逐步改为写入 `PBRShadowAtlasRenderTargets`，或在当前 SSBO light buffer 边界上增加 clustered/tiled light index list。

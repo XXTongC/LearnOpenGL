@@ -12,6 +12,7 @@
 #include "PBRGBufferDebugPass.h"
 #include "PBRGBufferPass.h"
 #include "PBRSceneRenderPass.h"
+#include "PBRShadowAtlasRenderTargets.h"
 #include "RenderQueue.h"
 #include "RendererFrameContext.h"
 #include "SceneRenderPass.h"
@@ -111,6 +112,20 @@ namespace
 			context.stats->pointShadowLightCount = stats.pointLightCount;
 			context.stats->pointShadowFaceCount = stats.pointFaceCount;
 			context.stats->pointShadowDrawCalls = stats.pointDrawCalls;
+		}
+
+		if (context.pbrShadowAtlasTargets && context.stats)
+		{
+			const auto atlasStats = context.pbrShadowAtlasTargets->prepare(
+				context.dirLight,
+				pointLightsOrEmpty(context)
+			);
+			context.stats->pbrShadowAtlasReady = atlasStats.ready;
+			context.stats->pbrShadowAtlasDirectionalLayers = atlasStats.directionalLayerCount;
+			context.stats->pbrShadowAtlasPointLights = atlasStats.pointLightCount;
+			context.stats->pbrShadowAtlasPointFaces = atlasStats.pointFaceCount;
+			context.stats->pbrShadowAtlasDirectionalResolution = atlasStats.directionalResolution;
+			context.stats->pbrShadowAtlasPointResolution = atlasStats.pointResolution;
 		}
 	}
 
