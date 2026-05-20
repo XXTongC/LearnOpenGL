@@ -1191,6 +1191,19 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 runtime frame pipeline warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+200. 完成第一百轮 runtime window lifecycle：
+   - 新增 [application/RuntimeWindowLifecycle.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeWindowLifecycle.h) 与 [application/RuntimeWindowLifecycle.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeWindowLifecycle.cpp)，集中执行 `GL_APP->init(...)`、callback context 绑定和 Application callback 注册。
+   - 由于 `Application` 仍使用 C 风格函数指针，`RuntimeWindowLifecycle.cpp` 内部保存 `RuntimeWindowCallbackContext`，再由内部静态回调转发 resize / keyboard / mouse / cursor / scroll。
+   - Resize callback 继续走 `RuntimeViewport::applyResize(...)`，同步 width / height、viewport、camera aspect、FrameRenderTargets 和 ScreenMaterial postprocess 输入贴图。
+   - 输入 callback 继续走 `RuntimeInputController`，保留原有 scroll、keyboard、mouse 和 cursor 行为。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，删除 `setAndInitWindow()`、`OnScroll()`、`OnResize()`、`OnKeyboardCallback()`、`OnMouseCallback()`、`OnCursor()`、旧 `processInput()` 和旧 `keyCallBack()`；初始化改为调用 `RuntimeWindowLifecycle::initialize(...)`。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 runtime window lifecycle 加入 VS 工程和 Application filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 window setup / callback glue 已从主入口移动到 application 层。
+201. 完成第九十一次 runtime window lifecycle 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeWindowLifecycle.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeWindowLifecycle.cpp) 与 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 runtime window lifecycle warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1250,5 +1263,6 @@
 - 当前 runtime editor panel coordinator 已从 `main.cpp` 拆出到 `RuntimeEditorPanelCoordinator`，Debug UI / hierarchy / selection inspector 的 context wiring 集中在 application 层。
 - 当前 runtime camera lifecycle 已从 `main.cpp` 拆出到 `RuntimeCameraLifecycle`，默认 camera / camera control 创建与清理集中在 application 层。
 - 当前 runtime frame pipeline 已从 `RuntimeFrameRunner` 拆出到 `RuntimeFramePipeline`，当前 frame pass 顺序具备独立扩展边界。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担 window setup 和 GLFW callback glue。
-- 下一步建议目标：继续抽 window setup 与 callback glue；或者继续把 `RuntimeFramePipeline` 内的 pass 细化为可替换的 pass 类型。
+- 当前 runtime window lifecycle 已从 `main.cpp` 拆出到 `RuntimeWindowLifecycle`，window setup 和 Application callback glue 集中在 application 层。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍保留较多全局 alias / legacy 参数和 startup callback wrapper。
+- 下一步建议目标：清理 `main.cpp` 剩余全局 alias / legacy 参数；或者继续把 `RuntimeFramePipeline` 内的 pass 细化为可替换的 pass 类型。

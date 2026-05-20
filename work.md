@@ -1207,3 +1207,15 @@ Frame render pipeline 已从 `RuntimeFrameRunner` 中拆出：
 - 现有渲染行为不变，仍然先渲染 offscreen scene，再 resolve HDR color，按 `PostProcessSettings` 决定是否跑 Bloom，最后做 screen composite。
 
 这一步为 PBR 渲染路径准备了更明确的 pass 边界。后续新增 PBR depth prepass、shadow atlas、deferred G-buffer、SSR/TAA 或透明 pass 时，应扩展 `RuntimeFramePipeline` 或继续拆出专门的 pass 类型，而不是把具体 pass 放回 frame runner 或 main。
+
+### 2026-05-20 Runtime Window Lifecycle
+
+Window setup 和输入 callback glue 已从 `main.cpp` 拆出：
+
+- 新增 `RuntimeWindowLifecycle`，集中执行 `GL_APP->init(...)`、callback context 绑定和 Application callback 注册。
+- 由于 `Application` 当前只接受 C 风格函数指针，`RuntimeWindowLifecycle.cpp` 内部用一个 runtime callback context 保存 `AppRuntimeContext`、window width 和 height 指针，再由内部静态回调转发到 `RuntimeInputController` / `RuntimeViewport`。
+- Resize callback 继续负责更新 runtime width / height、viewport、camera aspect、FrameRenderTargets 和 ScreenMaterial postprocess 输入贴图。
+- Keyboard / mouse / cursor / scroll callback 继续转发到 `RuntimeInputController`，旧行为保持不变。
+- `main.cpp` 不再定义 `OnScroll`、`OnResize`、`OnKeyboardCallback`、`OnMouseCallback`、`OnCursor`、`setAndInitWindow` 或旧的 `processInput` / `keyCallBack` 函数。
+
+这一步把窗口初始化和输入回调 wiring 从主入口移出。后续可以继续清理 `main.cpp` 剩余的全局 alias / legacy 参数，或者把 runtime startup sequence 聚合成一个更完整的 application shell。

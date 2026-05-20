@@ -11,10 +11,10 @@
 #include "RuntimeEditorPanelCoordinator.h"
 #include "RuntimeFrameRunner.h"
 #include "RuntimeGuiHost.h"
-#include "RuntimeInputController.h"
 #include "RuntimeProfileLoader.h"
 #include "RuntimeScenePreparer.h"
 #include "RuntimeViewport.h"
+#include "RuntimeWindowLifecycle.h"
 #include "tools/tools.h"
 #include "shader.h"
 #include "texture.h"
@@ -62,18 +62,6 @@ int GLframework::PointLightShadow::MAX_POINT_LIGHTS = 2;
  * refer to ColorBlend, there are still some problem should be solve such as opacity order, look up OIT and Depth Peeling
 */
 
-#pragma region ���ֻص�����
-void OnScroll(double offset);
-void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods);
-void processInput(GLFWwindow* window);
-void OnResize(int newWidth, int newHeight);
-void OnKeyboardCallback(int key, int action, int mods);
-void OnMouseCallback(int button, int action, int mods);
-void OnCursor(double xpos, double ypos);
-//void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-#pragma endregion
-
-bool setAndInitWindow(int width = 1200,int height = 900);
 bool initializeApplication();
 void runFrame();
 void printOpenGLCapabilities();
@@ -81,9 +69,6 @@ void cleanupRuntime();
 GL_RUNTIME::RuntimeFrameConfig makeFrameConfig();
 GL_RUNTIME::RuntimeCameraConfig makeCameraConfig();
 GL_RUNTIME::RuntimeScenePrepareConfig makeScenePrepareConfig();
-
-//
-void prepareState();
 
 void renderFrameUi();
 void drawEditorPanels();
@@ -123,8 +108,6 @@ auto& pbrLightRigProfile = gAppRuntime.pbrLightRigProfile;
 auto& pbrCameraRigProfile = gAppRuntime.pbrCameraRigProfile;
 auto& pbrPreviewProfilePath = gAppRuntime.pbrPreviewProfilePath;
 auto& pbrExperimentProfilePath = gAppRuntime.pbrExperimentProfilePath;
-Camera*& camera = gAppRuntime.camera;
-CameraControl*& cameracontrol = gAppRuntime.cameracontrol;
 glm::vec3& clearColor = gAppRuntime.clearColor;
 auto& dirLight = gAppRuntime.dirLight;
 auto& spotLight = gAppRuntime.spotLight;
@@ -159,7 +142,10 @@ int main()
 bool initializeApplication()
 {
 	std::cout << "Please set the window as x * y" << std::endl;
-	if (!setAndInitWindow(width, height)) return false;
+	if (!GL_RUNTIME::RuntimeWindowLifecycle::initialize(
+		{ width, height },
+		{ &gAppRuntime, &width, &height }
+	)) return false;
 
 	GL_RUNTIME::RuntimeViewport::applyViewport(width, height);
 	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
@@ -217,27 +203,6 @@ GL_RUNTIME::RuntimeCameraConfig makeCameraConfig()
 	};
 }
 
-bool setAndInitWindow(int width, int height)
-{
-	LogInfo("Window Initializing...");
-	if (!GL_APP->init(width,height)) return false;
-	GL_APP->setResizeCallback(OnResize);
-	GL_APP->setKeyboardCallback(OnKeyboardCallback);
-	GL_APP->setMouseCallback(OnMouseCallback);
-	GL_APP->setCursorCallback(OnCursor);
-	GL_APP->setScrollCallback(OnScroll);
-	
-	//glClearDepth(0.0);
-	LogInfo("Window Initialized");
-	return true;
-}
-
-void prepareState()
-{
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-}
-
 void renderFrameUi()
 {
 	GL_RUNTIME::RuntimeGuiHost::renderFrame({ GL_APP->getWindow(), drawEditorPanels });
@@ -247,79 +212,4 @@ void drawEditorPanels()
 {
 	GL_RUNTIME::RuntimeEditorPanelCoordinator::drawPanels(gAppRuntime, gEditorSelection, &m_time);
 }
-
-#pragma region 回调函数
-//�����֣��������ص�����
-void OnScroll(double offset)
-{
-	GL_RUNTIME::RuntimeInputController::handleScroll(offset, { camera, cameracontrol });
-}
-
-void OnResize(int newWidth, int newHeight)
-{
-	const auto result = GL_RUNTIME::RuntimeViewport::applyResize(
-		newWidth,
-		newHeight,
-		{ &width, &height, camera, &frameRenderTargets, ScreenMat }
-	);
-
-#ifdef _DEBUG
-	if (result.accepted)
-	{
-		std::cout << "OnResize" << std::endl;
-	}
-#endif
-
-}
-
-void OnKeyboardCallback(int key, int action, int mods)
-{
-	GL_RUNTIME::RuntimeInputController::handleKey(key, action, mods, { camera, cameracontrol });
-#ifdef _DEBUG
-	std::cout << "OnKeyboardCallback Pressed: " << key << " " << action << " " << mods << std::endl;
-#endif
-}
-
-void OnMouseCallback(int button, int action, int mods)
-{
-	double x, y;
-	GL_APP->getCursorPosition(&x, &y);
-#ifdef _DEBUG
-	std::cout << "OnMouseCallback : " << button << " " << action << " " << mods << std::endl;
-#endif
-	GL_RUNTIME::RuntimeInputController::handleMouse(button, action, x, y, { camera, cameracontrol });
-	
-}
-
-
-
-void processInput(GLFWwindow* window)
-{
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
-}
-
-void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-#ifdef _DEBUG
-	if (action == GLFW_PRESS)
-		std::cout << "press the bottom" << std::endl;
-	else if (action == GLFW_RELEASE)
-		std::cout << "release the bottom" << std::endl;
-	if (mods == GLFW_MOD_CONTROL)
-		std::cout << "press the ctrl and key" << std::endl;
-	std::cout << "Pressed: " << key << std::endl;
-	std::cout << "Action: " << action << std::endl;
-	std::cout << "Mods: " << mods << std::endl;
-#endif
-
-}
-
-void OnCursor(double xpos, double ypos)
-{
-	//std::cout << "(" << xpos << ", " << ypos << ")" << std::endl;
-	GL_RUNTIME::RuntimeInputController::handleCursor(xpos, ypos, { camera, cameracontrol });
-}
-#pragma endregion
-
 
