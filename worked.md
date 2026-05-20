@@ -895,6 +895,16 @@
    - 针对 ProfileConfigParser 收敛执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - C 盘剩余空间约 `200MB`，不足以可靠执行完整 MSBuild 并生成 `text2/`、`x64/` 输出；本轮改用 MSVC `cl /Zs` 对 [tools/config/ProfileConfigParser.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigParser.cpp)、[renderer/EnvironmentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\EnvironmentProfile.cpp)、[renderer/PostProcessSettings.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessSettings.cpp)、[tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)、[tools/sceneSetup/PBRExperimentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRExperimentProfile.cpp) 做无输出语法检查。
    - `cl /Zs` 结果：通过，未生成 obj/link 产物；本轮未执行完整运行时 smoke，原因是磁盘空间不足。
+151. 完成第七十六轮冗余第三方归档清理：
+   - 检查 [third_party.zip](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\third_party.zip) 的 Git 跟踪状态，确认它是已提交的大体积二进制归档。
+   - 清理前使用 `rg -n "third_party\\.zip|third_party.zip" . -g '!third_party/**'` 搜索仓库引用，结果为空；当前工程直接使用解压后的 [third_party](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\third_party) 目录。
+   - 从 Git 跟踪中删除未引用的 `third_party.zip`，释放本地空间并减少后续分支体积；保留 `third_party/` 目录和现有 include / lib 引用。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录这次清理对后续 PBR build / smoke 验证的意义。
+152. 完成第六十六次清理验证：
+   - 清理前确认工作树只有既有 [imgui.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\imgui.ini) 本地运行噪声。
+   - 清理后 C 盘剩余空间从约 `1.95GB` 提升到约 `2.00GB`。
+   - 清理后再次搜索 `third_party.zip`，除 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md) 与 [worked.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\worked.md) 的记录外，没有代码、工程文件或配置引用。
+   - 本轮未修改运行时代码，因此不执行完整 MSBuild；后续进入 profile schema / 自动 UI 重构前再执行针对性构建和 smoke。
 
 ### 当前状态
 
@@ -934,5 +944,5 @@
 - 当前 profile 配置解析基础设施已收敛到 `ProfileConfigParser`，后续新增 PBR material preset / experiment preset 不需要再复制 trim/parse/key-value 遍历逻辑。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
 - 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例。
-- 当前剩余明显问题：C 盘空间不足会阻塞完整 MSBuild / runtime smoke；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
-- 下一步建议目标：优先释放或迁移构建输出目录以恢复完整 build/smoke 验证能力，然后把 PBR experiment preset 接入 Debug UI 的 Load/Reload 或 preset 下拉。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
+- 下一步建议目标：开始 profile schema / 自动 UI 重构，让配置文件、Debug UI 和 inspector 共享字段描述，减少新增 PBR 材质参数时的重复 wiring。

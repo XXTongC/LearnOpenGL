@@ -930,3 +930,13 @@ Profile 解析的重复基础设施已收敛：
 - VS 工程已纳入 `ProfileConfigParser.cpp/.h`，后续新增 PBR material preset 或 experiment preset 不需要再复制解析工具。
 
 这一步降低了继续扩展 PBR 配置体系的维护成本。后续更合理的方向是进一步把字段映射做成声明式 schema，让配置文件、Debug UI 和 inspector 可以共享同一份属性描述。
+
+### 2026-05-20 Redundant third_party Archive Cleanup
+
+仓库清理了未引用的 `third_party.zip`：
+
+- `third_party.zip` 是已跟踪的大体积归档文件，但当前工程已经直接使用解压后的 `third_party/` 目录。
+- 通过全文搜索确认仓库代码、工程文件和配置没有引用 `third_party.zip`。
+- 删除归档不改变构建输入，只减少仓库体积并释放本地 C 盘空间。
+
+这一步不是渲染功能重构，但它恢复后续完整 build / smoke 的可靠性。当前 PBR 路径重构已经开始依赖频繁编译和短启动验证，保留冗余二进制归档会让每轮验证更容易被磁盘空间阻塞。
