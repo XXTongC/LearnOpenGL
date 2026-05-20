@@ -905,6 +905,23 @@
    - 清理后 C 盘剩余空间从约 `1.95GB` 提升到约 `2.00GB`。
    - 清理后再次搜索 `third_party.zip`，除 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md) 与 [worked.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\worked.md) 的记录外，没有代码、工程文件或配置引用。
    - 本轮未修改运行时代码，因此不执行完整 MSBuild；后续进入 profile schema / 自动 UI 重构前再执行针对性构建和 smoke。
+153. 完成第七十七轮 PropertyInspector 与 PBR Preview 自动 UI：
+   - 新增 [tools/inspector/PropertyInspector.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\PropertyInspector.h)，从 [tools/inspector/MaterialInspector.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialInspector.h) 拆出通用 `PropertyBuilder`、`PropertyDescriptor` 和 `drawProperties(...)`。
+   - `PropertyInspector` 新增可编辑 string 属性，路径类字段可以通过 descriptor 自动绘制 `InputText`，后续不需要每个面板手写固定 char buffer。
+   - 更新 [tools/inspector/MaterialInspector.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialInspector.h)，保留材质类型名、贴图描述和材质 inspector 入口，通用属性绘制逻辑改为复用 `PropertyInspector`。
+   - 更新 [tools/sceneSetup/PBRPreviewProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.h) 与 [tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)，新增 `visitEditableProperties(...)`，集中描述 enabled、position、geometry、material grid、PBR surface、IBL 和 normal map 配置。
+   - 更新 [tools/editor/DebugControllerPanel.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.h)、[tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp) 与 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，把 `PBRPreviewProfile` 接入 Debug 面板并自动绘制 profile UI，支持保存 / 重载 `config/pbr_preview.local.ini`。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 `PropertyInspector.h` 与既有 `MaterialInspector.h` 纳入 VS 工程分类。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录自动 UI 第一层落地和后续 schema 合并方向。
+154. 完成第六十七次轻量语法验证：
+   - 第一次 `cl /Zs` 因手动 include path 不完整失败，缺少 `Application.h` / `framebuffer.h` 等工程 include 路径；这不是代码错误。
+   - 按 VS 工程 include 目录补齐 `application`、`camera`、`framework`、`framebuffer`、`light`、`materials`、`mesh`、`renderer`、`wrapper`、`legacy`、`third_party` 和 `third_party/stb_image` 后，使用 MSVC `cl /Zs` 检查 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)、[tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)、[tools/sceneSetup/PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)、[materials/material.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\material.cpp)、[materials/pbrMaterial/PBRMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.cpp)。
+   - `cl /Zs` 结果：通过，未生成 obj/link 产物。
+155. 完成第六十八次完整构建与短启动 smoke 验证：
+   - 针对 PropertyInspector 与 PBR Preview 自动 UI 执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera / shadow camera double-to-float `C4244` warning，本轮新增代码未引入构建错误。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+   - 构建输出目录 [text2](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2) 约 `158MB`、[x64](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64) 约 `113MB`，均为 ignored generated output；验证结束后已校验路径位于当前 workspace 内并清理，C 盘剩余空间恢复到约 `1.99GB`。
 
 ### 当前状态
 
@@ -940,9 +957,10 @@
 - 当前默认 `PBR Preview Sphere` 会请求 IBL；environment 未 ready 时 shader 侧自动关闭，environment ready 后可直接验证 PBR IBL 采样链路。
 - 当前 `PBR Preview Sphere` 已由 `PBRPreviewProfile` 驱动，可通过 `config/pbr_preview.local.ini` 调整位置、几何细分、PBR surface 参数、IBL 强度和 normal map，而不需要修改 `SceneSetup.cpp`。
 - 当前 `PBRPreviewProfile` 支持 material grid，可按 metallic / roughness 范围生成多球阵列，在同一 environment / postprocess 下批量比较 PBR 参数。
+- 当前 `PropertyInspector` 已从 `MaterialInspector` 拆出，`PBRPreviewProfile` 已能通过 property descriptor 自动生成 Debug UI。
 - 当前 `PBRExperimentProfile` 支持用 `config/pbr_experiment.local.ini` 统一覆盖 environment、postprocess 和 PBR preview grid，减少维护多个 local ini 的成本。
 - 当前 profile 配置解析基础设施已收敛到 `ProfileConfigParser`，后续新增 PBR material preset / experiment preset 不需要再复制 trim/parse/key-value 遍历逻辑。
 - 当前 `FrameRenderTargets` 已支持窗口 resize 后重建 MSAA scene target、resolved HDR target 和 Bloom targets，并刷新 screen material 的 postprocess 输入贴图。
 - 当前 `PostProcessSettings` 已支持 `config/postprocess_settings.local.ini` 本地保存 / 加载，UI 可保存和重载 profile；仓库保留 `config/postprocess_settings.example.ini` 作为字段示例。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；PBR experiment preset 暂未接入 Debug UI，运行时切换仍需要编辑 local ini；camera/runtime resize 行为仍在 `main.cpp` 中，尚未拆成独立模块。
-- 下一步建议目标：开始 profile schema / 自动 UI 重构，让配置文件、Debug UI 和 inspector 共享字段描述，减少新增 PBR 材质参数时的重复 wiring。
+- 下一步建议目标：继续把 `EnvironmentProfile` 和 `PostProcessSettings` 迁移到 `PropertyInspector` / schema 体系，让配置文件、Debug UI 和 inspector 共享字段描述，减少新增 PBR 材质参数时的重复 wiring。

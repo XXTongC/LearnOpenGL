@@ -11,6 +11,8 @@
 #include "../../mesh/mesh.h"
 #include "../../renderer/PostProcessSettings.h"
 #include "../../third_party/imgui/imgui.h"
+#include "../inspector/PropertyInspector.h"
+#include "../sceneSetup/PBRPreviewProfile.h"
 
 namespace
 {
@@ -180,6 +182,48 @@ namespace
 			}
 		}
 	}
+
+	void drawPBRPreviewControls(
+		GL_SCENE::PBRPreviewProfile* profile,
+		const std::string* profilePath
+	)
+	{
+		if (!profile)
+		{
+			return;
+		}
+
+		static std::string lastConfigStatus{};
+		const std::string configPath = profilePath ? *profilePath : GL_SCENE::PBRPreviewProfileStorage::defaultPath();
+		if (ImGui::CollapsingHeader("PBR Preview Profile"))
+		{
+			ImGui::TextWrapped("Profile File: %s", configPath.c_str());
+			ImGui::TextWrapped("Geometry and grid edits are applied when the preview scene is prepared. Save the profile and restart/reprepare to rebuild preview objects.");
+
+			GL_EDITOR::PropertyBuilder builder{};
+			profile->visitEditableProperties(builder);
+			GL_EDITOR::drawProperties(builder);
+
+			if (ImGui::Button("Save PBR Preview Profile"))
+			{
+				lastConfigStatus = GL_SCENE::PBRPreviewProfileStorage::saveToFile(configPath, *profile)
+					? "PBR preview profile saved."
+					: "PBR preview profile save failed.";
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Reload PBR Preview Profile"))
+			{
+				lastConfigStatus = GL_SCENE::PBRPreviewProfileStorage::loadFromFile(configPath, *profile)
+					? "PBR preview profile reloaded."
+					: "PBR preview profile reload failed.";
+			}
+
+			if (!lastConfigStatus.empty())
+			{
+				ImGui::TextWrapped("%s", lastConfigStatus.c_str());
+			}
+		}
+	}
 }
 
 void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
@@ -222,6 +266,7 @@ void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
 	}
 
 	drawPostProcessControls(context.postProcessSettings, context.postProcessSettingsPath);
+	drawPBRPreviewControls(context.pbrPreviewProfile, context.pbrPreviewProfilePath);
 	drawEnvironmentControls(context.renderer, context.environmentProfile, context.environmentProfilePath);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

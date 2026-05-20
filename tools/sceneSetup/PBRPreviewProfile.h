@@ -4,6 +4,11 @@
 
 #include "../../third_party/glm/glm.hpp"
 
+namespace GL_EDITOR
+{
+	class PropertyBuilder;
+}
+
 namespace GL_SCENE
 {
 	struct PBRPreviewProfile
@@ -33,6 +38,8 @@ namespace GL_SCENE
 
 		std::string normalMapPath{ "Texture/normal/normal_map.png" };
 		unsigned int normalMapUnit{ 4 };
+
+		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder);
 	};
 
 	class PBRPreviewProfileStorage

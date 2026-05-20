@@ -14,6 +14,11 @@ namespace GLframework
 	class Renderer;
 }
 
+namespace GL_SCENE
+{
+	struct PBRPreviewProfile;
+}
+
 namespace GL_EDITOR
 {
 	struct DebugControllerContext
@@ -26,6 +31,8 @@ namespace GL_EDITOR
 		std::shared_ptr<GLframework::Renderer> renderer{ nullptr };
 		GLframework::EnvironmentProfile* environmentProfile{ nullptr };
 		const std::string* environmentProfilePath{ nullptr };
+		GL_SCENE::PBRPreviewProfile* pbrPreviewProfile{ nullptr };
+		const std::string* pbrPreviewProfilePath{ nullptr };
 		float* orbitAngle{ nullptr };
 	};
 

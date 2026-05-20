@@ -640,6 +640,8 @@
     <ClInclude Include="tools\config\ProfileConfigParser.h" />
     <ClInclude Include="tools\editor\DebugControllerPanel.h" />
     <ClInclude Include="tools\editor\EditorPanels.h" />
+    <ClInclude Include="tools\inspector\MaterialInspector.h" />
+    <ClInclude Include="tools\inspector\PropertyInspector.h" />
     <ClInclude Include="tools\Logger\Logger.h" />
     <ClInclude Include="tools\Logger\LogManager.h" />
     <ClInclude Include="tools\sceneSetup\PBRExperimentProfile.h" />

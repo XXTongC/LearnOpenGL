@@ -4,10 +4,63 @@
 #include <fstream>
 
 #include "../config/ProfileConfigParser.h"
+#include "../inspector/PropertyInspector.h"
+
+namespace
+{
+	int toEditableTextureUnit(unsigned int unit)
+	{
+		return static_cast<int>(unit);
+	}
+}
 
 std::string GL_SCENE::PBRPreviewProfileStorage::defaultPath()
 {
 	return "config/pbr_preview.local.ini";
+}
+
+void GL_SCENE::PBRPreviewProfile::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
+{
+	builder.addSection("PBR Preview");
+	builder.addBool("Enabled", &enabled);
+	builder.addVec3("Position", &position);
+
+	builder.addSection("Geometry");
+	builder.addFloat("Radius", &radius, 0.05f, 5.0f);
+	builder.addInt("Segments", &segments, 8, 128);
+	builder.addInt("Rings", &rings, 4, 128);
+
+	builder.addSection("Material Grid");
+	builder.addBool("Use Material Grid", &useMaterialGrid);
+	builder.addInt("Grid Columns", &gridColumns, 1, 10);
+	builder.addInt("Grid Rows", &gridRows, 1, 10);
+	builder.addFloat("Grid Spacing", &gridSpacing, 0.1f, 5.0f);
+	builder.addFloat("Grid Radius", &gridRadius, 0.05f, 2.0f);
+	builder.addFloat("Grid Metallic Min", &gridMetallicMin, 0.0f, 1.0f);
+	builder.addFloat("Grid Metallic Max", &gridMetallicMax, 0.0f, 1.0f);
+	builder.addFloat("Grid Roughness Min", &gridRoughnessMin, 0.04f, 1.0f);
+	builder.addFloat("Grid Roughness Max", &gridRoughnessMax, 0.04f, 1.0f);
+
+	builder.addSection("PBR Surface");
+	builder.addColor3("Albedo", &albedo);
+	builder.addFloat("Metallic", &metallic, 0.0f, 1.0f);
+	builder.addFloat("Roughness", &roughness, 0.04f, 1.0f);
+	builder.addFloat("AO", &ao, 0.0f, 1.0f);
+
+	builder.addSection("IBL");
+	builder.addBool("Use IBL", &useIBL);
+	builder.addFloat("IBL Diffuse Strength", &iblDiffuseStrength, 0.0f, 5.0f);
+	builder.addFloat("IBL Specular Strength", &iblSpecularStrength, 0.0f, 5.0f);
+
+	builder.addSection("Textures");
+	builder.addString("Normal Map Path", &normalMapPath);
+	builder.addInt(
+		"Normal Map Unit",
+		[this]() { return toEditableTextureUnit(normalMapUnit); },
+		[this](int value) { normalMapUnit = value < 0 ? 0u : static_cast<unsigned int>(value); },
+		0,
+		31
+	);
 }
 
 bool GL_SCENE::PBRPreviewProfileStorage::loadFromFile(const std::string& path, PBRPreviewProfile& profile)

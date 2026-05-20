@@ -286,6 +286,9 @@
     <Filter Include="include\GLframework\renderer\Bloom">
       <UniqueIdentifier>{16494be9-6553-4ceb-9f4e-463ac82395d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\GLframework\tools\inspector">
+      <UniqueIdentifier>{53b6ea34-1a18-4f91-9ea2-a899fb4d9598}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -1816,6 +1819,12 @@
     </ClInclude>
     <ClInclude Include="tools\editor\DebugControllerPanel.h">
       <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\inspector\MaterialInspector.h">
+      <Filter>include\GLframework\tools\inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\inspector\PropertyInspector.h">
+      <Filter>include\GLframework\tools\inspector</Filter>
     </ClInclude>
     <ClInclude Include="tools\ObjectPool\ObjectPool.h">
       <Filter>include\GLframework\tools\ObjectPool</Filter>

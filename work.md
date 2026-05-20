@@ -940,3 +940,16 @@ Profile 解析的重复基础设施已收敛：
 - 删除归档不改变构建输入，只减少仓库体积并释放本地 C 盘空间。
 
 这一步不是渲染功能重构，但它恢复后续完整 build / smoke 的可靠性。当前 PBR 路径重构已经开始依赖频繁编译和短启动验证，保留冗余二进制归档会让每轮验证更容易被磁盘空间阻塞。
+
+### 2026-05-20 PropertyInspector 与 PBR Preview 自动 UI
+
+PBR preview profile 已开始接入系统化属性 UI：
+
+- 从 `MaterialInspector` 中拆出通用 `PropertyInspector`，集中维护 `PropertyBuilder`、`PropertyDescriptor` 和 `drawProperties(...)`。
+- `PropertyInspector` 新增可编辑 string 字段，后续路径类配置不需要再手写固定 char buffer。
+- `MaterialInspector` 保留材质专属的类型名和贴图描述逻辑，只复用通用属性绘制器。
+- `PBRPreviewProfile` 新增 `visitEditableProperties(...)`，用同一组 descriptor 描述 enabled、position、geometry、material grid、PBR surface、IBL 和 normal map 配置。
+- `DebugControllerPanel` 新增 `PBR Preview Profile` 折叠区，直接消费 `PBRPreviewProfile::visitEditableProperties(...)` 生成 UI，并支持保存 / 重载 `config/pbr_preview.local.ini`。
+- 当前 geometry / grid 修改仍在 scene prepare 时生效，运行时 UI 会明确提示需要保存后重启或重新 prepare 才会重建 preview objects。
+
+这一步是自动 UI 的第一层落地：新增 PBR preview profile 字段时，不再需要在 Debug 面板中重复写一组 `ImGui::Slider...`。后续更合理的推进方式是把 `EnvironmentProfile` 和 `PostProcessSettings` 也迁移到同一套 property descriptor，再把 descriptor 与 ini load/save 的 key schema 合并。
