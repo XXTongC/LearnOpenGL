@@ -93,6 +93,8 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 	stats.csmShadowBound = shadowStats.bound;
 	stats.csmLayerCount = shadowStats.csmLayerCount;
 	stats.csmShadowAtlasBound = shadowStats.source == PBRShadowResourceSource::PBRShadowAtlas;
+	stats.pointShadowAtlasBound = shadowStats.pointShadowAtlasBound;
+	stats.pointShadowAtlasLightCount = shadowStats.pointShadowAtlasLightCount;
 
 	const PBRDeferredLightBufferStats lightBufferStats = mLightBuffer.bind(context);
 	stats.lightBufferBound = lightBufferStats.bound;

@@ -1,7 +1,11 @@
 #include "PBRShadowResourceBinder.h"
 
+#include <array>
+
 #include "light/directionalLight.h"
+#include "light/pointLight.h"
 #include "light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
+#include "light/shadow/pointLightShadow/pointLightShadow.h"
 #include "renderer/PBRShadowAtlasRenderTargets.h"
 #include "renderer/ShadowResourceBinder.h"
 
@@ -10,6 +14,19 @@ using namespace GLframework;
 namespace
 {
 	constexpr int pbrCsmShadowTextureUnit = 8;
+	constexpr int pbrPointShadowTextureUnit = 9;
+
+	struct PBRPointShadowAtlasUniforms
+	{
+		int shaderLightCount{ 0 };
+		int shadowLightCount{ 0 };
+		std::array<float, PBRShadowAtlasRenderTargets::maxPointLights()> enabled{};
+		std::array<float, PBRShadowAtlasRenderTargets::maxPointLights()> layerBase{};
+		std::array<float, PBRShadowAtlasRenderTargets::maxPointLights()> nearPlane{};
+		std::array<float, PBRShadowAtlasRenderTargets::maxPointLights()> farPlane{};
+		std::array<float, PBRShadowAtlasRenderTargets::maxPointLights()> bias{};
+		std::array<float, PBRShadowAtlasRenderTargets::maxPointLights()> pcfRadius{};
+	};
 
 	std::shared_ptr<DirectionalLightCSMShadow> getCsmShadow(const MaterialBindingContext& context)
 	{
@@ -52,7 +69,7 @@ namespace
 		return true;
 	}
 
-	bool canBindPbrShadowAtlas(const MaterialBindingContext& context)
+	bool canBindPbrDirectionalShadowAtlas(const MaterialBindingContext& context)
 	{
 		if (!context.pbrShadowAtlasTargets)
 		{
@@ -65,10 +82,104 @@ namespace
 			&& context.pbrShadowAtlasTargets->getDirectionalDepthTexture() != 0;
 	}
 
+	bool canBindPbrPointShadowAtlas(const MaterialBindingContext& context)
+	{
+		if (!context.pbrShadowAtlasTargets)
+		{
+			return false;
+		}
+
+		const auto& atlasStats = context.pbrShadowAtlasTargets->getLastStats();
+		return atlasStats.ready
+			&& atlasStats.pointReady
+			&& atlasStats.pointLightCount > 0
+			&& context.pbrShadowAtlasTargets->getPointDepthTexture() != 0;
+	}
+
 	void bindDepthTextureArray(unsigned int texture, int textureUnit)
 	{
 		glActiveTexture(GL_TEXTURE0 + textureUnit);
 		glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+	}
+
+	void bindPointShadowAtlasDefaults(const std::shared_ptr<Shader>& shader)
+	{
+		if (!shader)
+		{
+			return;
+		}
+
+		shader->setInt("pbrPointShadowAtlasEnabled", 0);
+		shader->setInt("pbrPointShadowAtlasLightCount", 0);
+	}
+
+	PBRPointShadowAtlasUniforms buildPointShadowAtlasUniforms(const MaterialBindingContext& context)
+	{
+		PBRPointShadowAtlasUniforms uniforms{};
+		int atlasPointIndex = 0;
+		for (const auto& pointLight : context.getPointLights())
+		{
+			if (!pointLight || uniforms.shaderLightCount >= PBRShadowAtlasRenderTargets::maxPointLights())
+			{
+				continue;
+			}
+
+			const int shaderLightIndex = uniforms.shaderLightCount;
+			++uniforms.shaderLightCount;
+
+			const auto pointShadow = std::dynamic_pointer_cast<PointLightShadow>(pointLight->getShadow());
+			if (!pointShadow || !pointShadow->mCamera || atlasPointIndex >= PBRShadowAtlasRenderTargets::maxPointLights())
+			{
+				continue;
+			}
+
+			uniforms.enabled[static_cast<std::size_t>(shaderLightIndex)] = 1.0f;
+			uniforms.layerBase[static_cast<std::size_t>(shaderLightIndex)] = static_cast<float>(atlasPointIndex * 6);
+			uniforms.nearPlane[static_cast<std::size_t>(shaderLightIndex)] = pointShadow->mCamera->mNear;
+			uniforms.farPlane[static_cast<std::size_t>(shaderLightIndex)] = pointShadow->mCamera->mFar;
+			uniforms.bias[static_cast<std::size_t>(shaderLightIndex)] = pointShadow->mBias;
+			uniforms.pcfRadius[static_cast<std::size_t>(shaderLightIndex)] = pointShadow->mPcfRadius;
+			++uniforms.shadowLightCount;
+			++atlasPointIndex;
+		}
+		return uniforms;
+	}
+
+	bool bindPbrPointShadowAtlas(
+		const std::shared_ptr<Shader>& shader,
+		const MaterialBindingContext& context,
+		PBRShadowResourceBindResult& result
+	)
+	{
+		bindPointShadowAtlasDefaults(shader);
+		if (!shader || !canBindPbrPointShadowAtlas(context))
+		{
+			return false;
+		}
+
+		PBRPointShadowAtlasUniforms uniforms = buildPointShadowAtlasUniforms(context);
+		if (uniforms.shaderLightCount <= 0 || uniforms.shadowLightCount <= 0)
+		{
+			return false;
+		}
+
+		shader->setInt("pbrPointShadowMapSampler", pbrPointShadowTextureUnit);
+		shader->setInt("pbrPointShadowAtlasEnabled", 1);
+		shader->setInt("pbrPointShadowAtlasLightCount", uniforms.shaderLightCount);
+		shader->setFloatArray("pbrPointShadowEnabled", uniforms.enabled.data(), uniforms.shaderLightCount);
+		shader->setFloatArray("pbrPointShadowLayerBase", uniforms.layerBase.data(), uniforms.shaderLightCount);
+		shader->setFloatArray("pbrPointShadowNear", uniforms.nearPlane.data(), uniforms.shaderLightCount);
+		shader->setFloatArray("pbrPointShadowFar", uniforms.farPlane.data(), uniforms.shaderLightCount);
+		shader->setFloatArray("pbrPointShadowBias", uniforms.bias.data(), uniforms.shaderLightCount);
+		shader->setFloatArray("pbrPointShadowPcfRadius", uniforms.pcfRadius.data(), uniforms.shaderLightCount);
+		bindDepthTextureArray(
+			context.pbrShadowAtlasTargets->getPointDepthTexture(),
+			pbrPointShadowTextureUnit
+		);
+
+		result.pointShadowAtlasBound = true;
+		result.pointShadowAtlasLightCount = uniforms.shadowLightCount;
+		return true;
 	}
 }
 
@@ -90,18 +201,23 @@ PBRShadowResourceBindResult PBRShadowResourceBinder::bindDetailed(
 		return {};
 	}
 
+	PBRShadowResourceBindResult result{};
+	bindPointShadowAtlasDefaults(shader);
+
 	const auto csmShadow = getCsmShadow(context);
 	if (!csmShadow || csmShadow->getLayerCount() <= 0)
 	{
 		shader->setInt("csmLayerCount", 0);
-		return {};
+		bindPbrPointShadowAtlas(shader, context, result);
+		return result;
 	}
 
-	if (canBindPbrShadowAtlas(context))
+	if (canBindPbrDirectionalShadowAtlas(context))
 	{
 		if (!bindCsmFrameUniforms(shader, context, csmShadow))
 		{
-			return {};
+			bindPbrPointShadowAtlas(shader, context, result);
+			return result;
 		}
 
 		shader->setInt("shadowMapSampler", pbrCsmShadowTextureUnit);
@@ -109,11 +225,11 @@ PBRShadowResourceBindResult PBRShadowResourceBinder::bindDetailed(
 			context.pbrShadowAtlasTargets->getDirectionalDepthTexture(),
 			pbrCsmShadowTextureUnit
 		);
-		return PBRShadowResourceBindResult{
-			true,
-			csmShadow->getLayerCount(),
-			PBRShadowResourceSource::PBRShadowAtlas
-		};
+		result.bound = true;
+		result.csmLayerCount = csmShadow->getLayerCount();
+		result.source = PBRShadowResourceSource::PBRShadowAtlas;
+		bindPbrPointShadowAtlas(shader, context, result);
+		return result;
 	}
 
 	ShadowResourceBinder::bindCSMShadowResources(
@@ -122,11 +238,11 @@ PBRShadowResourceBindResult PBRShadowResourceBinder::bindDetailed(
 		context.dirLight,
 		pbrCsmShadowTextureUnit
 	);
-	return PBRShadowResourceBindResult{
-		true,
-		csmShadow->getLayerCount(),
-		PBRShadowResourceSource::LegacyCSM
-	};
+	result.bound = true;
+	result.csmLayerCount = csmShadow->getLayerCount();
+	result.source = PBRShadowResourceSource::LegacyCSM;
+	bindPbrPointShadowAtlas(shader, context, result);
+	return result;
 }
 
 int PBRShadowResourceBinder::getCsmLayerCount(const MaterialBindingContext& context)

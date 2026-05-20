@@ -19,6 +19,8 @@ namespace GLframework
 		bool bound{ false };
 		int csmLayerCount{ 0 };
 		PBRShadowResourceSource source{ PBRShadowResourceSource::None };
+		bool pointShadowAtlasBound{ false };
+		int pointShadowAtlasLightCount{ 0 };
 	};
 
 	class PBRShadowResourceBinder

@@ -212,6 +212,8 @@ namespace
 		context.stats->pbrDeferredCsmShadowBound = context.stats->pbrDeferredCsmShadowBound || stats.csmShadowBound;
 		context.stats->pbrDeferredCsmShadowLayers = std::max(context.stats->pbrDeferredCsmShadowLayers, stats.csmLayerCount);
 		context.stats->pbrDeferredCsmShadowAtlasBound = context.stats->pbrDeferredCsmShadowAtlasBound || stats.csmShadowAtlasBound;
+		context.stats->pbrDeferredPointShadowAtlasBound = context.stats->pbrDeferredPointShadowAtlasBound || stats.pointShadowAtlasBound;
+		context.stats->pbrDeferredPointShadowAtlasLights = std::max(context.stats->pbrDeferredPointShadowAtlasLights, stats.pointShadowAtlasLightCount);
 		context.stats->pbrDeferredLightBufferBound = context.stats->pbrDeferredLightBufferBound || stats.lightBufferBound;
 		context.stats->pbrDeferredLightBufferPointLights = std::max(context.stats->pbrDeferredLightBufferPointLights, stats.lightBufferPointLightCount);
 		context.stats->pbrDeferredLightBufferMaxPointLights = std::max(context.stats->pbrDeferredLightBufferMaxPointLights, stats.lightBufferMaxPointLightCount);

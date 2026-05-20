@@ -34,6 +34,7 @@ layout(std430, binding = 3) readonly buffer PBRDeferredLightBuffer
 
 #include "pbr_lighting.glsl"
 #include "pbr_csm_shadow.glsl"
+#include "pbr_point_shadow.glsl"
 
 void main()
 {
@@ -78,7 +79,8 @@ void main()
 		float attenuation = 1.0 / max(attenuationTerms.x * distance * distance + attenuationTerms.y * distance + attenuationTerms.z, 0.0001);
 		vec4 pointColorIntensity = deferredPointLightColorIntensity[i];
 		float pointEnabled = deferredPointLightPositionEnabled[i].w;
-		color += calculatePbrLight(pointColorIntensity.rgb * pointColorIntensity.a * attenuation * pointEnabled, l, n, v, albedo, metallic, roughness);
+		float pointShadow = calculatePbrPointShadow(worldPosition, deferredPointLightPositionEnabled[i].xyz, i);
+		color += calculatePbrLight(pointColorIntensity.rgb * pointColorIntensity.a * attenuation * pointEnabled, l, n, v, albedo, metallic, roughness) * (1.0 - pointShadow);
 	}
 
 	FragColor = vec4(color * max(pbrDeferredLightingIntensity, 0.0), 1.0);

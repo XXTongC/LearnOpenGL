@@ -64,6 +64,7 @@ uniform float iblMaxReflectionLod;
 
 #include "pbr_lighting.glsl"
 #include "pbr_csm_shadow.glsl"
+#include "pbr_point_shadow.glsl"
 
 void main()
 {
@@ -111,7 +112,8 @@ void main()
 		float distance = length(l);
 		l = normalize(l);
 		float attenuation = 1.0 / max(pointLights[i].k2 * distance * distance + pointLights[i].k1 * distance + pointLights[i].k0, 0.0001);
-		color += calculatePbrLight(pointLights[i].color * attenuation, l, n, v, albedo, metallic, roughness);
+		float pointShadow = calculatePbrPointShadow(worldPosition, pointLights[i].position, i);
+		color += calculatePbrLight(pointLights[i].color * attenuation, l, n, v, albedo, metallic, roughness) * (1.0 - pointShadow);
 	}
 
 	vec3 emissive = pbrEmissiveColor * pbrEmissiveIntensity;

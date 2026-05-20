@@ -29,6 +29,8 @@ namespace GLframework
 		bool pbrDeferredCsmShadowBound{ false };
 		int pbrDeferredCsmShadowLayers{ 0 };
 		bool pbrDeferredCsmShadowAtlasBound{ false };
+		bool pbrDeferredPointShadowAtlasBound{ false };
+		int pbrDeferredPointShadowAtlasLights{ 0 };
 		bool pbrDeferredLightBufferBound{ false };
 		int pbrDeferredLightBufferPointLights{ 0 };
 		int pbrDeferredLightBufferMaxPointLights{ 0 };

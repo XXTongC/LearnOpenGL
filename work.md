@@ -1639,3 +1639,15 @@ PBR shadow atlas 写入已从 `ShadowMaps` pass 的内部副作用拆成独立 r
 - `RuntimePBRVerification` 新增 `--verify-pbr-no-atlas` 与 `--verify-pbr-deferred-no-atlas`，用于验证禁用 atlas pass 后 `pbrShadowAtlasReady=no` 且 deferred PBR 走 legacy CSM fallback。
 
 这一步把 PBR shadow atlas 从“固定跟随 ShadowMaps 执行”推进为“profile 可组合的 PBR pass”。后续可以继续把 point shadow atlas sampling 或 shadow debug view 按同样方式接入，而不用扩大 `ShadowMaps` pass 的职责。
+
+### 2026-05-21 PBR Point Shadow Atlas Sampling
+
+PBR point light shadow atlas 已从“只写入”推进到“forward / deferred PBR shader 可采样”：
+
+- 新增 `shaders/pbr/pbr_point_shadow.glsl`，集中保存 point shadow atlas 的 cube-face selection、2D array layer mapping 和 3x3 PCF sampling。
+- `PBRShadowResourceBinder` 现在会在 atlas ready 且 point atlas ready 时绑定 `pbrPointShadowMapSampler`，并写入每个 point light 对应的 layer base、near/far、bias、PCF radius 和 enabled flag。
+- `shaders/pbr/pbr.frag` 与 `shaders/pbr/pbr_deferred_lighting.frag` include 同一份 point shadow helper，并用 `calculatePbrPointShadow(...)` 调制 point light direct lighting。
+- `PBRDeferredLightingPassStats`、`RendererFrameStats`、Debug UI 与 verification 输出新增 `pbrDeferredPointShadowAtlasBound` 和 `pbrDeferredPointShadowAtlasLights`，用于确认 deferred PBR 是否实际采样 point atlas。
+- `--verify-pbr-deferred-no-atlas` 继续验证禁用 `PBRShadowAtlas` pass 时 point shadow atlas 不会绑定，shader 会回到无 point atlas shadow 的 fallback 行为。
+
+这一步完成了 PBR shadow atlas 的主要 producer-consumer 闭环：directional CSM 与 point light depth array 都已经由 PBR atlas pass 生产，并被 forward / deferred PBR shader 采样。后续重点转向透明 forward fallback、material feature parity，以及 clustered/tiled light list。
