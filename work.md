@@ -1674,3 +1674,16 @@ Deferred PBR 已补齐第一块 material feature parity：emissive。
 - 新增 `--verify-pbr-deferred-emissive`，在 verification scene 中追加一个 opaque emissive PBR probe，用于验证 emissive attachment 能进入 deferred lighting 输出。
 
 这一步让 forward PBR 已有的 emissive color / map / intensity 数据进入 deferred path。后续 material parity 还需要继续覆盖 opacity / alpha mask、clearcoat 或更多贴图通道，但 emissive 已经有独立 attachment、debug view 和 runtime verification。
+
+### 2026-05-21 PBR Deferred Material IBL Params
+
+Deferred PBR 已把 per-material IBL 参数从 forward path 补到 G-buffer / lighting path：
+
+- `PBRGBufferRenderTargets` 新增 material params attachment，G-buffer 从四张 color attachment 扩展为五张 color attachment。
+- `PBRGBufferPass` 会把 `PBRMaterial::mUseIBL`、`mIblDiffuseStrength`、`mIblSpecularStrength` 写入 `gMaterialParams`，避免 deferred lighting 只能使用 renderer profile 的全局 IBL 强度。
+- `shaders/pbr/pbr_lighting.glsl` 新增 `calculateIblAmbientWithStrength(...)`，forward PBR 继续使用材质 uniform，deferred PBR 则可以按像素读取 G-buffer 中的 IBL 强度。
+- `PBRDeferredLightingPass` 绑定 material params texture，deferred shader 在 environment ready 且 material 允许 IBL 时按像素使用 diffuse/specular strength。
+- `PBRGBufferDebugPass` 新增 debug mode `8 = IBL Params`，用于直接检查 diffuse strength、specular strength 和 useIBL 标记。
+- 新增 `--verify-pbr-deferred-material-ibl`，在 verification scene 中追加一个 opaque custom IBL PBR probe，并输出 `pbrCustomIblMeshes`。
+
+这一步让 deferred PBR 不再把所有材质的 IBL 响应压平成同一个全局强度。后续如果继续补 material parity，应优先考虑 alpha mask / opacity policy、normal-map tangent 数据一致性，以及把更多 material flags 统一编码到 G-buffer material params 或 material id buffer。

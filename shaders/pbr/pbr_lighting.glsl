@@ -55,7 +55,16 @@ vec3 calculatePbrLight(vec3 radiance, vec3 l, vec3 n, vec3 v, vec3 albedo, float
 	return (kD * albedo / PBR_PI + specular) * radiance * nDotL;
 }
 
-vec3 calculateIblAmbient(vec3 n, vec3 v, vec3 albedo, float metallic, float roughness, float ao)
+vec3 calculateIblAmbientWithStrength(
+	vec3 n,
+	vec3 v,
+	vec3 albedo,
+	float metallic,
+	float roughness,
+	float ao,
+	float diffuseStrength,
+	float specularStrength
+)
 {
 	vec3 f0 = mix(vec3(0.04), albedo, metallic);
 	float nDotV = max(dot(n, v), 0.0);
@@ -71,5 +80,19 @@ vec3 calculateIblAmbient(vec3 n, vec3 v, vec3 albedo, float metallic, float roug
 	vec2 brdf = texture(brdfLut, vec2(nDotV, roughness)).rg;
 	vec3 specular = prefilteredColor * (fresnel * brdf.x + brdf.y);
 
-	return (kD * diffuse * iblDiffuseStrength + specular * iblSpecularStrength) * ao;
+	return (kD * diffuse * diffuseStrength + specular * specularStrength) * ao;
+}
+
+vec3 calculateIblAmbient(vec3 n, vec3 v, vec3 albedo, float metallic, float roughness, float ao)
+{
+	return calculateIblAmbientWithStrength(
+		n,
+		v,
+		albedo,
+		metallic,
+		roughness,
+		ao,
+		iblDiffuseStrength,
+		iblSpecularStrength
+	);
 }

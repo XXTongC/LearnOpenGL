@@ -10,6 +10,7 @@ uniform sampler2D normalMetallicTexture;
 uniform sampler2D albedoAoTexture;
 uniform sampler2D depthTexture;
 uniform sampler2D emissiveTexture;
+uniform sampler2D materialParamsTexture;
 
 uniform vec3 cameraPosition;
 
@@ -43,6 +44,7 @@ void main()
 	vec4 normalMetallic = texture(normalMetallicTexture, uv);
 	vec4 albedoAo = texture(albedoAoTexture, uv);
 	vec3 emissive = texture(emissiveTexture, uv).rgb;
+	vec4 materialParams = texture(materialParamsTexture, uv);
 	float depth = texture(depthTexture, uv).r;
 
 	vec3 albedo = albedoAo.rgb;
@@ -60,9 +62,18 @@ void main()
 	vec3 v = normalize(cameraPosition - worldPosition);
 
 	vec3 color = deferredAmbientColor.rgb * albedo * ao;
-	if (useIBL == 1)
+	if (useIBL == 1 && materialParams.r > 0.5)
 	{
-		color = calculateIblAmbient(n, v, albedo, metallic, roughness, ao);
+		color = calculateIblAmbientWithStrength(
+			n,
+			v,
+			albedo,
+			metallic,
+			roughness,
+			ao,
+			materialParams.g,
+			materialParams.b
+		);
 	}
 
 	float directionalEnabled = deferredDirectionalDirectionEnabled.w;

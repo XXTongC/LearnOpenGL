@@ -30,6 +30,7 @@ namespace
 		int transparentMeshCount{ 0 };
 		int pbrTransparentMeshCount{ 0 };
 		int pbrEmissiveMeshCount{ 0 };
+		int pbrCustomIblMeshCount{ 0 };
 	};
 
 	void reportLine(const std::string& message)
@@ -62,6 +63,15 @@ namespace
 			if (pbrMaterial && pbrMaterial->mEmissiveIntensity > 0.0f && glm::length(pbrMaterial->mEmissiveColor) > 0.0001f)
 			{
 				++stats.pbrEmissiveMeshCount;
+			}
+			if (pbrMaterial
+				&& pbrMaterial->mUseIBL
+				&& (pbrMaterial->mIblDiffuseStrength < 0.999f
+					|| pbrMaterial->mIblDiffuseStrength > 1.001f
+					|| pbrMaterial->mIblSpecularStrength < 0.999f
+					|| pbrMaterial->mIblSpecularStrength > 1.001f))
+			{
+				++stats.pbrCustomIblMeshCount;
 			}
 		}
 		if (mesh && mesh->getMaterial() && mesh->getMaterial()->getColorBlendState())
@@ -191,6 +201,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + emissive G-buffer probe";
 		}
+		if (config.enablePbrMaterialIblProbe)
+		{
+			profileLine += " + material IBL params probe";
+		}
 		if (config.enablePbrGBufferDebugPass)
 		{
 			profileLine += " + PBR G-buffer debug pass";
@@ -265,7 +279,7 @@ namespace GL_RUNTIME
 		const RuntimePBRVerificationConfig& config
 	)
 	{
-		if ((!config.enablePbrTransparentFallbackPass && !config.enablePbrEmissiveProbe) || !context.sceneOffScreen || !context.renderer)
+		if ((!config.enablePbrTransparentFallbackPass && !config.enablePbrEmissiveProbe && !config.enablePbrMaterialIblProbe) || !context.sceneOffScreen || !context.renderer)
 		{
 			return;
 		}
@@ -278,7 +292,7 @@ namespace GL_RUNTIME
 			material->mRoughness = 0.18f;
 			material->mAo = 1.0f;
 			material->mUseIBL = true;
-			material->mIblDiffuseStrength = 0.8f;
+			material->mIblDiffuseStrength = 1.0f;
 			material->mIblSpecularStrength = 1.0f;
 			material->setColorBlendState(true);
 			material->setOpacity(0.45f);
@@ -318,6 +332,29 @@ namespace GL_RUNTIME
 			mesh->setPosition({ 0.0f, -0.7f, 2.35f });
 			context.sceneOffScreen->addChild(mesh);
 		}
+
+		if (config.enablePbrMaterialIblProbe)
+		{
+			auto material = std::make_shared<GLframework::PBRMaterial>();
+			material->mAlbedo = { 0.95f, 0.78f, 0.22f };
+			material->mMetallic = 0.0f;
+			material->mRoughness = 0.35f;
+			material->mAo = 1.0f;
+			material->mUseIBL = true;
+			material->mIblDiffuseStrength = 4.0f;
+			material->mIblSpecularStrength = 4.0f;
+
+			auto geometry = GLframework::Geometry::createSphere(
+				context.renderer->getShader(GLframework::MaterialType::PBRMaterial),
+				0.52f,
+				32,
+				16
+			);
+			auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
+			mesh->setName("PBR Deferred Material IBL Probe");
+			mesh->setPosition({ 0.0f, 0.8f, 2.35f });
+			context.sceneOffScreen->addChild(mesh);
+		}
 	}
 
 	void RuntimePBRVerification::reportPreparedScene(GLframework::AppRuntimeContext& context)
@@ -335,6 +372,7 @@ namespace GL_RUNTIME
 			+ ", transparentMeshes=" + std::to_string(stats.transparentMeshCount)
 			+ ", pbrTransparentMeshes=" + std::to_string(stats.pbrTransparentMeshCount)
 			+ ", pbrEmissiveMeshes=" + std::to_string(stats.pbrEmissiveMeshCount)
+			+ ", pbrCustomIblMeshes=" + std::to_string(stats.pbrCustomIblMeshCount)
 			+ ", iblReady=" + (environmentReady ? std::string{ "yes" } : std::string{ "no" })
 		);
 	}

@@ -33,8 +33,9 @@ namespace
 		const bool verifyPbrDeferredNoAtlas = hasArgument(argc, argv, "--verify-pbr-deferred-no-atlas");
 		const bool verifyPbrDeferredTransparent = hasArgument(argc, argv, "--verify-pbr-deferred-transparent");
 		const bool verifyPbrDeferredEmissive = hasArgument(argc, argv, "--verify-pbr-deferred-emissive");
+		const bool verifyPbrDeferredMaterialIbl = hasArgument(argc, argv, "--verify-pbr-deferred-material-ibl");
 		const bool verifyPbrNoAtlas = hasArgument(argc, argv, "--verify-pbr-no-atlas");
-		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer || verifyPbrGBufferDebug || verifyPbrDeferred || verifyPbrDeferredNoAtlas || verifyPbrDeferredTransparent || verifyPbrDeferredEmissive || verifyPbrNoAtlas)
+		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer || verifyPbrGBufferDebug || verifyPbrDeferred || verifyPbrDeferredNoAtlas || verifyPbrDeferredTransparent || verifyPbrDeferredEmissive || verifyPbrDeferredMaterialIbl || verifyPbrNoAtlas)
 		{
 			config.window = { 1280, 720 };
 			config.enableGui = false;
@@ -45,6 +46,7 @@ namespace
 			config.pbrVerification.disablePbrShadowAtlasPass = verifyPbrNoAtlas || verifyPbrDeferredNoAtlas;
 			config.pbrVerification.enablePbrTransparentFallbackPass = verifyPbrDeferredTransparent;
 			config.pbrVerification.enablePbrEmissiveProbe = verifyPbrDeferredEmissive;
+			config.pbrVerification.enablePbrMaterialIblProbe = verifyPbrDeferredMaterialIbl;
 			if (verifyPbrIblDebug)
 			{
 				config.pbrVerification.enableIblDebugPass = true;
@@ -84,6 +86,12 @@ namespace
 				config.pbrVerification.enablePbrGBufferPass = true;
 				config.pbrVerification.enablePbrDeferredLightingPass = true;
 				config.pbrVerification.capturePath = "out/pbr_deferred_emissive_verification.ppm";
+			}
+			if (verifyPbrDeferredMaterialIbl)
+			{
+				config.pbrVerification.enablePbrGBufferPass = true;
+				config.pbrVerification.enablePbrDeferredLightingPass = true;
+				config.pbrVerification.capturePath = "out/pbr_deferred_material_ibl_verification.ppm";
 			}
 		}
 

@@ -7,6 +7,7 @@ uniform sampler2D positionRoughnessTexture;
 uniform sampler2D normalMetallicTexture;
 uniform sampler2D albedoAoTexture;
 uniform sampler2D emissiveTexture;
+uniform sampler2D materialParamsTexture;
 uniform sampler2D depthTexture;
 uniform int gbufferDebugMode;
 uniform float gbufferDebugIntensity;
@@ -22,6 +23,7 @@ void main()
 	vec4 normalMetallic = texture(normalMetallicTexture, uv);
 	vec4 albedoAo = texture(albedoAoTexture, uv);
 	vec3 emissive = texture(emissiveTexture, uv).rgb;
+	vec4 materialParams = texture(materialParamsTexture, uv);
 	float depth = texture(depthTexture, uv).r;
 
 	vec3 color = albedoAo.rgb;
@@ -52,6 +54,10 @@ void main()
 	else if (gbufferDebugMode == 7)
 	{
 		color = emissive;
+	}
+	else if (gbufferDebugMode == 8)
+	{
+		color = vec3(materialParams.g, materialParams.b, materialParams.r);
 	}
 
 	FragColor = vec4(color * max(gbufferDebugIntensity, 0.0), 1.0);

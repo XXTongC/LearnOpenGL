@@ -21,6 +21,7 @@ namespace GLframework
 		unsigned int getNormalMetallicTexture() const;
 		unsigned int getAlbedoAoTexture() const;
 		unsigned int getEmissiveTexture() const;
+		unsigned int getMaterialParamsTexture() const;
 		unsigned int getDepthTexture() const;
 
 	private:
@@ -32,6 +33,7 @@ namespace GLframework
 		unsigned int mNormalMetallicTexture{ 0 };
 		unsigned int mAlbedoAoTexture{ 0 };
 		unsigned int mEmissiveTexture{ 0 };
+		unsigned int mMaterialParamsTexture{ 0 };
 		unsigned int mDepthTexture{ 0 };
 		unsigned int mWidth{ 0 };
 		unsigned int mHeight{ 0 };

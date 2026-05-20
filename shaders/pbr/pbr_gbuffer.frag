@@ -9,6 +9,7 @@ layout(location = 0) out vec4 gPositionRoughness;
 layout(location = 1) out vec4 gNormalMetallic;
 layout(location = 2) out vec4 gAlbedoAo;
 layout(location = 3) out vec4 gEmissive;
+layout(location = 4) out vec4 gMaterialParams;
 
 uniform vec3 pbrAlbedo;
 uniform float pbrMetallic;
@@ -16,6 +17,9 @@ uniform float pbrRoughness;
 uniform float pbrAo;
 uniform vec3 pbrEmissiveColor;
 uniform float pbrEmissiveIntensity;
+uniform int useIBL;
+uniform float iblDiffuseStrength;
+uniform float iblSpecularStrength;
 
 uniform sampler2D albedoMap;
 uniform sampler2D metallicMap;
@@ -73,4 +77,5 @@ void main()
 	gNormalMetallic = vec4(normalize(n), metallic);
 	gAlbedoAo = vec4(albedo, ao);
 	gEmissive = vec4(emissive, 1.0);
+	gMaterialParams = vec4(useIBL == 1 ? 1.0 : 0.0, iblDiffuseStrength, iblSpecularStrength, 0.0);
 }

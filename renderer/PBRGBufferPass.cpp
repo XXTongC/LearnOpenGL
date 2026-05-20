@@ -74,13 +74,14 @@ PBRGBufferPassStats PBRGBufferPass::render(
 
 	glBindFramebuffer(GL_FRAMEBUFFER, targets.getFbo());
 	glViewport(0, 0, targets.getWidth(), targets.getHeight());
-	const unsigned int attachments[4]{
+	const unsigned int attachments[5]{
 		GL_COLOR_ATTACHMENT0,
 		GL_COLOR_ATTACHMENT1,
 		GL_COLOR_ATTACHMENT2,
-		GL_COLOR_ATTACHMENT3
+		GL_COLOR_ATTACHMENT3,
+		GL_COLOR_ATTACHMENT4
 	};
-	glDrawBuffers(4, attachments);
+	glDrawBuffers(5, attachments);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glDepthMask(GL_TRUE);
@@ -94,6 +95,7 @@ PBRGBufferPassStats PBRGBufferPass::render(
 	glClearBufferfv(GL_COLOR, 1, clearColor);
 	glClearBufferfv(GL_COLOR, 2, clearColor);
 	glClearBufferfv(GL_COLOR, 3, clearColor);
+	glClearBufferfv(GL_COLOR, 4, clearColor);
 	glClearBufferfv(GL_DEPTH, 0, &clearDepth);
 
 	shader->begin();
@@ -110,6 +112,11 @@ PBRGBufferPassStats PBRGBufferPass::render(
 			continue;
 		}
 		PBRSurfaceResourceBinder::bind(shader, material);
+		shader->setInt("useIBL", material->mUseIBL ? 1 : 0);
+		for (const auto& slot : material->getIblFloatUniformSlots())
+		{
+			shader->setFloat(slot.uniformName, slot.value ? *slot.value : 0.0f);
+		}
 		if (MeshDraw::drawIndexed(mesh))
 		{
 			++stats.drawCalls;
