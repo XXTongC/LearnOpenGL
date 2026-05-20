@@ -1,6 +1,6 @@
 #include "RuntimeFramePipeline.h"
 
-#include "RuntimeFramePasses.h"
+#include "RuntimeFramePassRegistry.h"
 
 namespace GL_RUNTIME
 {
@@ -9,24 +9,12 @@ namespace GL_RUNTIME
 		const RuntimeFramePipelineConfig& config
 	)
 	{
-		if (context.framePipelineProfile.sceneColorPassEnabled)
+		for (const auto& pass : RuntimeFramePassRegistry::defaultPasses())
 		{
-			RuntimeSceneColorPass::execute(context);
-		}
-
-		if (context.framePipelineProfile.sceneResolvePassEnabled)
-		{
-			RuntimeSceneResolvePass::execute(context);
-		}
-
-		if (context.framePipelineProfile.bloomPassEnabled)
-		{
-			RuntimeBloomPass::execute(context);
-		}
-
-		if (context.framePipelineProfile.screenCompositePassEnabled)
-		{
-			RuntimeScreenCompositePass::execute(context, config);
+			if (pass.shouldExecute(context))
+			{
+				pass.executePass(context, config);
+			}
 		}
 	}
 }

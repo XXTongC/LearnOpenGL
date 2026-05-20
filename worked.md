@@ -1256,6 +1256,17 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；新增 `RuntimeFramePipelineProfile.cpp` 已正确进入 VS 工程。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+210. 完成第一百零五轮 runtime frame pass registry：
+   - 新增 [application/RuntimeFramePassRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePassRegistry.h) 与 [application/RuntimeFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePassRegistry.cpp)，用 `RuntimeFramePassDefinition` 描述 pass id、调试名、启用判断和统一执行函数。
+   - 更新 [application/RuntimeFramePipeline.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipeline.cpp)，主流程只遍历 `RuntimeFramePassRegistry::defaultPasses()` 并执行已启用 pass，不再直接读取 profile toggle 或调用具体 pass 类型。
+   - 当前默认 pass list 保持 Scene Color、Scene Resolve、Bloom、Screen Composite 顺序，渲染行为预期不变。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 runtime frame pass registry 加入 VS 工程和 Application filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 pass registry 的职责边界和下一步 pass plan 建议。
+211. 完成第九十六次 runtime frame pass registry 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePassRegistry.cpp)、[application/RuntimeFramePipeline.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePipeline.cpp)、[application/RuntimeFramePasses.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFramePasses.cpp) 和 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；新增 `RuntimeFramePassRegistry.cpp` 已正确进入 VS 工程。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1320,5 +1331,6 @@
 - 当前 runtime startup sequence 已聚合到 `RuntimeApplicationShell`，`main.cpp` 基本只保留程序入口职责。
 - 当前 `RuntimeFramePipeline` 的步骤已拆成显式 pass 类型，PBR pipeline 后续可以按 pass 类型继续扩展。
 - 当前 `RuntimeFramePipelineProfile` 已接入 runtime context、profile loader、Debug UI 和本地 ini 读写，scene color / resolve / Bloom / screen composite pass 可运行时切换并保存。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；frame pipeline 仍是静态 pass 顺序，还不是可组合 pass list。
-- 下一步建议目标：把 `RuntimeFramePipeline` 从静态 if 顺序演进为 pass list / pass registry；或者先抽出 PBR 专用 pass profile，为 depth prepass、shadow atlas、PBR forward 和 IBL debug pass 留出稳定扩展点。
+- 当前 `RuntimeFramePipeline` 已改为遍历 `RuntimeFramePassRegistry::defaultPasses()`，pass 的启用条件和执行入口集中到 registry，pipeline 主流程不再直接依赖具体 pass toggle 字段。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；frame pipeline pass list 当前仍是固定默认列表，还不能由 profile 动态构建。
+- 下一步建议目标：把固定 `defaultPasses()` 继续推进为由 profile 构建的 pass plan；或者先补 PBR 专用 pass/profile，为 depth prepass、shadow atlas、PBR forward 和 IBL debug pass 留出稳定扩展点。

@@ -142,6 +142,7 @@
     <ClCompile Include="application\RuntimeEditorPanelCoordinator.cpp" />
     <ClCompile Include="application\RuntimeFramePipeline.cpp" />
     <ClCompile Include="application\RuntimeFramePipelineProfile.cpp" />
+    <ClCompile Include="application\RuntimeFramePassRegistry.cpp" />
     <ClCompile Include="application\RuntimeFramePasses.cpp" />
     <ClCompile Include="application\RuntimeFrameRunner.cpp" />
     <ClCompile Include="application\RuntimeGuiHost.cpp" />
@@ -300,6 +301,7 @@
     <ClInclude Include="application\RuntimeEditorPanelCoordinator.h" />
     <ClInclude Include="application\RuntimeFramePipeline.h" />
     <ClInclude Include="application\RuntimeFramePipelineProfile.h" />
+    <ClInclude Include="application\RuntimeFramePassRegistry.h" />
     <ClInclude Include="application\RuntimeFramePasses.h" />
     <ClInclude Include="application\RuntimeFrameRunner.h" />
     <ClInclude Include="application\RuntimeGuiHost.h" />

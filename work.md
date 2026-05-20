@@ -1267,3 +1267,15 @@ Runtime frame pipeline 已新增第一层 profile / feature toggle：
 - `DebugControllerPanel` 新增 Runtime Frame Pipeline 控制区，可运行时切换、保存和重载 pass toggles。
 
 这一步不是最终的 pipeline 架构，只是先把“是否启用某个 pass”从代码常量移到 profile。下一步更合理的方向是把静态 pass 类型演进为可组合 pass list / pass registry：PBR depth prepass、shadow atlas、PBR forward、IBL debug、transparency、postprocess 都能按 profile 创建和排序，而不是继续在 `RuntimeFramePipeline::render(...)` 中堆 if。
+
+### 2026-05-20 Runtime Frame Pass Registry
+
+Runtime frame pipeline 已从硬编码 `if` 顺序推进到 pass registry：
+
+- 新增 `RuntimeFramePassRegistry`，用 `RuntimeFramePassDefinition` 描述 pass id、调试名、启用判断和统一执行函数。
+- 当前默认 pass list 包含 Scene Color、Scene Resolve、Bloom 和 Screen Composite，顺序与上一轮保持一致。
+- `RuntimeFramePipeline::render(...)` 现在只遍历 `RuntimeFramePassRegistry::defaultPasses()`，不再直接读取 profile 字段或调用具体 pass 类型。
+- 当前 profile toggle 仍然生效，但启用条件被收敛到 registry 条目内，pipeline 主流程只负责执行已启用 pass。
+- VS 工程已加入 `RuntimeFramePassRegistry.cpp/.h`，保持物理文件和工程 filter 一致。
+
+这一步让 PBR 扩展的主要修改点更明确：新增 PBR pass 时，优先新增 pass 类型与 registry 条目；如果需要用户配置，再扩展 profile/schema。后续可以继续把 `defaultPasses()` 从固定静态列表演进成由 profile 构建的 pass plan，这样 PBR forward、shadow atlas、IBL debug、transparent、postprocess 等路径可以按实验 preset 创建不同 pass 组合。
