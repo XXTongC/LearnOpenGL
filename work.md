@@ -1130,3 +1130,14 @@ Application lifecycle 已开始从 `main.cpp` 拆出：
 - 这一步没有移动具体的 prepare / profile load / render pass 细节，目的是先建立稳定边界，避免一次性改动过大。
 
 下一步可以继续把 `initializeApplication()` 拆成 `RuntimeStartupSequence` 或更具体的 profile loading / scene preparation / ImGui startup 阶段；也可以把 `runFrame()` 的 frame orchestration 移入 runtime frame runner，使 `main.cpp` 最终只保留 callback glue 和少量兼容旧接口的过渡代码。
+
+### 2026-05-20 Runtime Profile Loader
+
+Profile loading 阶段已从 `main.cpp` 拆出：
+
+- 新增 `RuntimeProfileLoader`，集中加载 environment、postprocess、PBR preview 和 PBR experiment profile。
+- `RuntimeProfileLoader::loadAll(...)` 保留现有分层顺序：先加载单独 profile，再加载高层 experiment preset 作为最终覆盖层。
+- Experiment preset 成功加载后，camera rig 仍会立即应用到当前主相机，保持启动时恢复观察视角的行为。
+- `initializeApplication()` 不再直接维护四个 profile load 函数，只在 camera 准备完成后调用 profile loader 阶段。
+
+这一步把 PBR 实验配置恢复逻辑收敛到 application 层。下一步可以继续抽 `RuntimeScenePreparer`，把 scene setup、legacy experiment preparation 和相关 context 构建从 `main.cpp` 移出；也可以先抽 `RuntimeGuiStartup`，把 ImGui 初始化和 frame UI 绘制入口拆清楚。

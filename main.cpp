@@ -8,6 +8,7 @@
 #include "Application.h"
 #include "RuntimeBootstrapper.h"
 #include "RuntimeInputController.h"
+#include "RuntimeProfileLoader.h"
 #include "RuntimeViewport.h"
 #include "tools/tools.h"
 #include "shader.h"
@@ -82,10 +83,6 @@ bool initializeApplication();
 void runFrame();
 void printOpenGLCapabilities();
 void cleanupRuntime();
-void loadEnvironmentProfile();
-void loadPostProcessSettings();
-void loadPBRPreviewProfile();
-void loadPBRExperimentProfile();
 GL_EXPERIMENTS::RuntimeContext makeLegacyExperimentContext();
 GL_SCENE::SetupContext makeSceneSetupContext();
 GL_EDITOR::DebugControllerContext makeDebugControllerContext();
@@ -181,10 +178,7 @@ bool initializeApplication()
 	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 
 	prepareCamera();
-	loadEnvironmentProfile();
-	loadPostProcessSettings();
-	loadPBRPreviewProfile();
-	loadPBRExperimentProfile();
+	GL_RUNTIME::RuntimeProfileLoader::loadAll(gAppRuntime);
 	prepare();
 	initIMGUI();
 	printOpenGLCapabilities();
@@ -335,58 +329,6 @@ void updateLegacyExperiments()
 {
 	auto context = makeLegacyExperimentContext();
 	gLegacyExperiments.update(context);
-}
-
-void loadEnvironmentProfile()
-{
-	if (GLframework::EnvironmentProfileStorage::loadFromFile(environmentProfilePath, environmentProfile))
-	{
-		LogInfo("Environment profile loaded from " + environmentProfilePath);
-		return;
-	}
-
-	LogInfo("Environment profile config not found, using defaults: " + environmentProfilePath);
-}
-
-void loadPostProcessSettings()
-{
-	if (GLframework::PostProcessSettingsStorage::loadFromFile(postProcessSettingsPath, postProcessSettings))
-	{
-		LogInfo("Postprocess settings loaded from " + postProcessSettingsPath);
-		return;
-	}
-
-	LogInfo("Postprocess settings config not found, using defaults: " + postProcessSettingsPath);
-}
-
-void loadPBRPreviewProfile()
-{
-	if (GL_SCENE::PBRPreviewProfileStorage::loadFromFile(pbrPreviewProfilePath, pbrPreviewProfile))
-	{
-		LogInfo("PBR preview profile loaded from " + pbrPreviewProfilePath);
-		return;
-	}
-
-	LogInfo("PBR preview profile config not found, using defaults: " + pbrPreviewProfilePath);
-}
-
-void loadPBRExperimentProfile()
-{
-	if (GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
-		pbrExperimentProfilePath,
-		environmentProfile,
-		postProcessSettings,
-		pbrPreviewProfile,
-		pbrLightRigProfile,
-		pbrCameraRigProfile
-	))
-	{
-		pbrCameraRigProfile.applyTo(camera);
-		LogInfo("PBR experiment profile loaded from " + pbrExperimentProfilePath);
-		return;
-	}
-
-	LogInfo("PBR experiment profile config not found, using layered defaults: " + pbrExperimentProfilePath);
 }
 
 GL_EDITOR::EditorPanelContext makeEditorPanelContext()

@@ -138,6 +138,7 @@
     <ClCompile Include="application\Application.cpp" />
     <ClCompile Include="application\RuntimeBootstrapper.cpp" />
     <ClCompile Include="application\RuntimeInputController.cpp" />
+    <ClCompile Include="application\RuntimeProfileLoader.cpp" />
     <ClCompile Include="application\RuntimeViewport.cpp" />
     <ClCompile Include="application\assimpInstanceLoader.cpp" />
     <ClCompile Include="application\assimpLoader.cpp" />
@@ -285,6 +286,7 @@
     <ClInclude Include="application\Application.h" />
     <ClInclude Include="application\RuntimeBootstrapper.h" />
     <ClInclude Include="application\RuntimeInputController.h" />
+    <ClInclude Include="application\RuntimeProfileLoader.h" />
     <ClInclude Include="application\RuntimeViewport.h" />
     <ClInclude Include="light\spotLight.h" />
     <ClInclude Include="third_party\stb_image\stb_image.h" />

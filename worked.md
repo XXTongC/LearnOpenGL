@@ -1108,6 +1108,19 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera control / shadow camera double-to-float `C4244` warning，本轮未引入 runtime bootstrapper warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+186. 完成第九十三轮 runtime profile loader：
+   - 新增 [application/RuntimeProfileLoader.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeProfileLoader.h) 与 [application/RuntimeProfileLoader.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeProfileLoader.cpp)，集中加载 environment、postprocess、PBR preview 和 PBR experiment profile。
+   - `RuntimeProfileLoader::loadAll(...)` 保持原有分层顺序：先加载独立 profile，再加载高层 experiment preset 作为最终覆盖层。
+   - Experiment preset 成功加载后，`RuntimeProfileLoader` 继续把 camera rig 应用到当前主相机，保持启动时恢复 PBR 观察视角的行为。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，删除 `loadEnvironmentProfile()`、`loadPostProcessSettings()`、`loadPBRPreviewProfile()` 和 `loadPBRExperimentProfile()` 四个本地函数，`initializeApplication()` 改为调用 `RuntimeProfileLoader::loadAll(gAppRuntime)`。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 profile loader 加入 VS 工程和 Application filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 profile loading 阶段已从主入口移入 application 层。
+187. 完成第八十四次 runtime profile loader 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeProfileLoader.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeProfileLoader.cpp) 与 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 临时编译并运行 `__codex_tmp_runtime_profile_loader_test.cpp`，验证独立 profile 先加载、experiment preset 后覆盖，并验证 experiment 中的 camera rig 会应用到主相机；测试输出 `runtime profile loader layering ok`，测试源文件和编译产物已删除。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera control / shadow camera double-to-float `C4244` warning，本轮未引入 runtime profile loader warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1158,7 +1171,8 @@
 - 当前 `PBRCameraRigProfile` 已接入 experiment preset，Debug UI 保存 preset 前会从主相机回写 profile，重载后会应用到主相机；aspect 仍由 `RuntimeViewport` 根据窗口尺寸维护。
 - 当前 runtime context 已从 `main.cpp` 的本地 struct 移出到 `AppRuntimeContext`，主入口不再直接定义所有 runtime state 类型。
 - 当前 application lifecycle 骨架已从 `main.cpp` 拆出到 `RuntimeBootstrapper`，`main()` 只负责日志等级与生命周期回调绑定。
+- 当前 profile loading 阶段已从 `main.cpp` 拆出到 `RuntimeProfileLoader`，environment、postprocess、PBR preview 和 PBR experiment 的分层加载顺序集中在 application 层。
 - 当前 runtime resize 边界已从 `main.cpp` 拆出到 `RuntimeViewport`，窗口尺寸变化会统一同步 viewport、PerspectiveCamera aspect、FrameRenderTargets 和 ScreenMaterial postprocess 输入贴图。
 - 当前 runtime input 边界已从 `main.cpp` 拆出到 `RuntimeInputController`，CameraControl 输入分发和中键临时 FOV 缩放不再由主入口直接维护。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担 profile loading、scene preparation、frame orchestration、ImGui startup 和 callback glue。
-- 下一步建议目标：继续把 `initializeApplication()` 拆成 profile loading、scene preparation 和 ImGui startup 阶段，或者把 `runFrame()` 的 frame orchestration 移入 runtime frame runner。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担 scene preparation、frame orchestration、ImGui startup 和 callback glue。
+- 下一步建议目标：继续抽 `RuntimeScenePreparer`，把 scene setup、legacy experiment preparation 和相关 context 构建从 `main.cpp` 移出；或者把 `runFrame()` 的 frame orchestration 移入 runtime frame runner。
