@@ -2,14 +2,11 @@
 
 #include <algorithm>
 #include <cmath>
-#include <filesystem>
-#include <fstream>
 #include <iostream>
-#include <sstream>
 #include <vector>
 
 #include "stb_image.h"
-#include "tools/config/ProfileConfigParser.h"
+#include "tools/config/ProfileConfigIO.h"
 #include "tools/inspector/PropertySchema.h"
 
 using namespace GLframework;
@@ -102,36 +99,39 @@ bool EnvironmentProfile::hasEnvironmentSource() const
 void EnvironmentProfile::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
 {
 	builder.addSection("Environment Source");
-	builder.addString("HDR Path", &hdrEquirectangularPath);
-	builder.addInt(
+	builder.addConfigString("hdrEquirectangularPath", "HDR Path", &hdrEquirectangularPath);
+	builder.addConfigInt(
+		"hdrTextureUnit",
 		"HDR Texture Unit",
 		[this]() { return toEditableInt(hdrTextureUnit); },
 		[this](int value) { hdrTextureUnit = value < 0 ? 0u : static_cast<unsigned int>(value); },
 		0,
 		31
 	);
-	builder.addBool("Use Procedural Environment", &useProceduralEnvironment);
-	builder.addBool("Precompute On Prepare", &precomputeOnPrepare);
+	builder.addConfigBool("useProceduralEnvironment", "Use Procedural Environment", &useProceduralEnvironment);
+	builder.addConfigBool("precomputeOnPrepare", "Precompute On Prepare", &precomputeOnPrepare);
 
 	builder.addSection("Procedural Environment");
 	builder.addText("Mode", "Generated at precompute time when Use Procedural Environment is enabled.");
-	builder.addInt(
+	builder.addConfigInt(
+		"proceduralWidth",
 		"Procedural Width",
 		[this]() { return toEditableInt(proceduralWidth); },
 		[this](int value) { proceduralWidth = value < 0 ? 0u : static_cast<unsigned int>(value); },
 		64,
 		2048
 	);
-	builder.addInt(
+	builder.addConfigInt(
+		"proceduralHeight",
 		"Procedural Height",
 		[this]() { return toEditableInt(proceduralHeight); },
 		[this](int value) { proceduralHeight = value < 0 ? 0u : static_cast<unsigned int>(value); },
 		32,
 		1024
 	);
-	builder.addFloat("Procedural Sky Intensity", &proceduralSkyIntensity, 0.0f, 10.0f);
-	builder.addFloat("Procedural Ground Intensity", &proceduralGroundIntensity, 0.0f, 2.0f);
-	builder.addFloat("Procedural Sun Intensity", &proceduralSunIntensity, 0.0f, 20.0f);
+	builder.addConfigFloat("proceduralSkyIntensity", "Procedural Sky Intensity", &proceduralSkyIntensity, 0.0f, 10.0f);
+	builder.addConfigFloat("proceduralGroundIntensity", "Procedural Ground Intensity", &proceduralGroundIntensity, 0.0f, 2.0f);
+	builder.addConfigFloat("proceduralSunIntensity", "Procedural Sun Intensity", &proceduralSunIntensity, 0.0f, 20.0f);
 }
 
 std::shared_ptr<Texture> EnvironmentTextureLoader::loadEquirectangular(const EnvironmentProfile& profile)
@@ -266,93 +266,9 @@ std::string EnvironmentProfileStorage::defaultPath()
 bool EnvironmentProfileStorage::loadFromFile(const std::string& path, EnvironmentProfile& profile)
 {
 	EnvironmentProfile loadedProfile = profile;
-	const bool loaded = GL_CONFIG::readKeyValueFile(path, [&loadedProfile](const std::string& key, const std::string& value)
-	{
-		if (key == "hdrEquirectangularPath")
-		{
-			loadedProfile.hdrEquirectangularPath = value;
-			return;
-		}
-
-		if (key == "hdrTextureUnit")
-		{
-			unsigned int parsedUnit{ loadedProfile.hdrTextureUnit };
-			if (GL_CONFIG::parseUnsigned(value, parsedUnit))
-			{
-				loadedProfile.hdrTextureUnit = parsedUnit;
-			}
-			return;
-		}
-
-		if (key == "precomputeOnPrepare")
-		{
-			bool parsedPrecompute{ loadedProfile.precomputeOnPrepare };
-			if (GL_CONFIG::parseBool(value, parsedPrecompute))
-			{
-				loadedProfile.precomputeOnPrepare = parsedPrecompute;
-			}
-			return;
-		}
-
-		if (key == "useProceduralEnvironment")
-		{
-			bool parsedUseProceduralEnvironment{ loadedProfile.useProceduralEnvironment };
-			if (GL_CONFIG::parseBool(value, parsedUseProceduralEnvironment))
-			{
-				loadedProfile.useProceduralEnvironment = parsedUseProceduralEnvironment;
-			}
-			return;
-		}
-
-		if (key == "proceduralWidth")
-		{
-			unsigned int parsedWidth{ loadedProfile.proceduralWidth };
-			if (GL_CONFIG::parseUnsigned(value, parsedWidth))
-			{
-				loadedProfile.proceduralWidth = parsedWidth;
-			}
-			return;
-		}
-
-		if (key == "proceduralHeight")
-		{
-			unsigned int parsedHeight{ loadedProfile.proceduralHeight };
-			if (GL_CONFIG::parseUnsigned(value, parsedHeight))
-			{
-				loadedProfile.proceduralHeight = parsedHeight;
-			}
-			return;
-		}
-
-		if (key == "proceduralSkyIntensity")
-		{
-			float parsedSkyIntensity{ loadedProfile.proceduralSkyIntensity };
-			if (GL_CONFIG::parseFloat(value, parsedSkyIntensity))
-			{
-				loadedProfile.proceduralSkyIntensity = parsedSkyIntensity;
-			}
-			return;
-		}
-
-		if (key == "proceduralGroundIntensity")
-		{
-			float parsedGroundIntensity{ loadedProfile.proceduralGroundIntensity };
-			if (GL_CONFIG::parseFloat(value, parsedGroundIntensity))
-			{
-				loadedProfile.proceduralGroundIntensity = parsedGroundIntensity;
-			}
-			return;
-		}
-
-		if (key == "proceduralSunIntensity")
-		{
-			float parsedSunIntensity{ loadedProfile.proceduralSunIntensity };
-			if (GL_CONFIG::parseFloat(value, parsedSunIntensity))
-			{
-				loadedProfile.proceduralSunIntensity = parsedSunIntensity;
-			}
-		}
-	});
+	GL_EDITOR::PropertyBuilder builder{};
+	loadedProfile.visitEditableProperties(builder);
+	const bool loaded = GL_CONFIG::loadPropertyConfig(path, builder);
 	if (!loaded)
 	{
 		return false;
@@ -364,33 +280,12 @@ bool EnvironmentProfileStorage::loadFromFile(const std::string& path, Environmen
 
 bool EnvironmentProfileStorage::saveToFile(const std::string& path, const EnvironmentProfile& profile)
 {
-	const std::filesystem::path filePath{ path };
-	const auto parentPath = filePath.parent_path();
-	if (!parentPath.empty())
-	{
-		std::error_code error{};
-		std::filesystem::create_directories(parentPath, error);
-		if (error)
-		{
-			return false;
-		}
-	}
-
-	std::ofstream output(path, std::ios::trunc);
-	if (!output)
-	{
-		return false;
-	}
-
-	output << "# Local environment profile for PBR / IBL experiments\n";
-	output << "hdrEquirectangularPath=" << profile.hdrEquirectangularPath << '\n';
-	output << "hdrTextureUnit=" << profile.hdrTextureUnit << '\n';
-	output << "precomputeOnPrepare=" << (profile.precomputeOnPrepare ? 1 : 0) << '\n';
-	output << "useProceduralEnvironment=" << (profile.useProceduralEnvironment ? 1 : 0) << '\n';
-	output << "proceduralWidth=" << profile.proceduralWidth << '\n';
-	output << "proceduralHeight=" << profile.proceduralHeight << '\n';
-	output << "proceduralSkyIntensity=" << profile.proceduralSkyIntensity << '\n';
-	output << "proceduralGroundIntensity=" << profile.proceduralGroundIntensity << '\n';
-	output << "proceduralSunIntensity=" << profile.proceduralSunIntensity << '\n';
-	return true;
+	EnvironmentProfile snapshot = profile;
+	GL_EDITOR::PropertyBuilder builder{};
+	snapshot.visitEditableProperties(builder);
+	return GL_CONFIG::savePropertyConfig(
+		path,
+		"# Local environment profile for PBR / IBL experiments",
+		builder
+	);
 }

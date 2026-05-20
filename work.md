@@ -977,3 +977,14 @@ Postprocess 配置读写已开始复用 property schema：
 - `ProfileConfigParser` 继续负责底层 key-value 文件读取和基础类型解析，`ProfileConfigIO` 负责把这些 key-value 应用到 descriptor。
 
 这一步先只迁移 `PostProcessSettings`，因为它字段少、无 vector 拆分、风险最低。方向验证通过后，可以继续迁移 `EnvironmentProfile`，再处理 `PBRPreviewProfile` 中 position / albedo 这类 UI 是 vec3、配置是多个 key 的字段映射。
+
+### 2026-05-20 EnvironmentProfile Schema 存取
+
+Environment profile 配置读写已迁移到 `ProfileConfigIO`：
+
+- `EnvironmentProfile::visitEditableProperties(...)` 的 HDR path、texture unit、procedural source、precompute 和 procedural intensity 字段现在同时描述 UI 与配置 key。
+- `EnvironmentProfileStorage::loadFromFile(...)` / `saveToFile(...)` 不再维护手写 key 分支和手写输出逻辑，而是通过 `ProfileConfigIO` 消费同一份 property schema。
+- `EnvironmentProfile.cpp` 删除了不再需要的 `<filesystem>`、`<fstream>` 和 `ProfileConfigParser` 直接依赖。
+- Environment / IBL Debug UI、local ini 读写和后续 preset tooling 现在共享同一份字段描述。
+
+这一步把 environment 与 postprocess 都推进到 schema-driven 配置读写。后续剩下最主要的配置重复点是 `PBRPreviewProfile` 的 position / albedo 这类 vec3 字段目前在 UI 中是一项，在 ini 中仍拆成多个 key；下一步需要给 schema 增加“一个 UI 属性对应多个 config key”的能力，或者明确把 profile 文件格式升级为 vector key。
