@@ -4,29 +4,21 @@
 #include <vector>
 
 #include "camera/camera.h"
-#include "DirectionalShadowRenderPass.h"
 #include "light/directionalLight.h"
-#include "light/pointLight.h"
 #include "mesh/mesh.h"
-#include "PointShadowRenderPass.h"
 #include "renderer/ShaderLibrary.h"
 #include "renderer/ShadowRenderStats.h"
 
 namespace GLframework
 {
-	class ShadowRenderer
+	class DirectionalShadowRenderPass
 	{
 	public:
 		ShadowRenderStats render(
 			Camera* camera,
 			const std::vector<std::shared_ptr<Mesh>>& meshes,
 			const std::shared_ptr<DirectionalLight>& dirLight,
-			const std::vector<std::shared_ptr<PointLight>>& pointLights,
 			ShaderLibrary& shaderLibrary
-		);
-
-	private:
-		DirectionalShadowRenderPass mDirectionalPass{};
-		PointShadowRenderPass mPointPass{};
+		) const;
 	};
 }

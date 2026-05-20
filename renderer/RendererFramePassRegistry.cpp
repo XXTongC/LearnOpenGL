@@ -47,13 +47,21 @@ namespace
 			return;
 		}
 
-		context.shadowRenderer->render(
+		const auto stats = context.shadowRenderer->render(
 			context.camera,
 			context.renderQueue->getOpacityObjects(),
 			context.dirLight,
 			pointLightsOrEmpty(context),
 			*context.shaderLibrary
 		);
+		if (context.stats)
+		{
+			context.stats->directionalShadowLayerCount = stats.directionalLayerCount;
+			context.stats->directionalShadowDrawCalls = stats.directionalDrawCalls;
+			context.stats->pointShadowLightCount = stats.pointLightCount;
+			context.stats->pointShadowFaceCount = stats.pointFaceCount;
+			context.stats->pointShadowDrawCalls = stats.pointDrawCalls;
+		}
 	}
 
 	void renderGlobalMaterialScene(RendererFrameContext& context)

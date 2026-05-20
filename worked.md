@@ -1360,6 +1360,24 @@
    - `--verify-pbr` renderer stats 输出：`rendererPasses=7, shadowCasters=32, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`，证明默认 renderer pass plan 已执行且 PBR depth / scene pass 仍覆盖 25 个 PBR preview mesh。
    - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
    - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+224. 完成第一百一十二轮 shadow render pass split：
+   - 新增 [renderer/DirectionalShadowRenderPass.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\DirectionalShadowRenderPass.h) 与 [renderer/DirectionalShadowRenderPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\DirectionalShadowRenderPass.cpp)，负责 directional CSM shadow layer 绘制。
+   - 新增 [renderer/PointShadowRenderPass.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PointShadowRenderPass.h) 与 [renderer/PointShadowRenderPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PointShadowRenderPass.cpp)，负责 point light cubemap array shadow face 绘制。
+   - 新增 [renderer/ShadowMeshDraw.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShadowMeshDraw.h) 与 [renderer/ShadowMeshDraw.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShadowMeshDraw.cpp)，集中处理 shadow pass 共享的 postprocess-pass 判断和 mesh / instanced mesh draw。
+   - 新增 [renderer/ShadowRenderStats.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShadowRenderStats.h)，记录 directional layer/draw call、point light/face/draw call。
+   - 更新 [renderer/ShadowRenderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShadowRenderer.h) 与 [renderer/ShadowRenderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShadowRenderer.cpp)，`ShadowRenderer` 现在只作为 facade 调度 directional / point pass，并返回合并后的 shadow stats。
+   - 更新 [renderer/RendererFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.cpp) 与 [renderer/RendererFrameStats.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFrameStats.h)，将 shadow pass stats 汇总进 renderer frame stats。
+   - 更新 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp) 与 [application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)，Debug UI 和 `--verify-pbr` 会输出 shadow layer / face / draw call stats。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将新增 shadow pass 文件加入 VS 工程和 renderer filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 shadow render pass split 对 PBR shadow atlas 的准备意义。
+225. 完成第一百零三次 shadow render pass split 验证：
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 使用 MSVC `cl /Zs` 检查 [renderer/DirectionalShadowRenderPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\DirectionalShadowRenderPass.cpp)、[renderer/PointShadowRenderPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PointShadowRenderPass.cpp)、[renderer/ShadowMeshDraw.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShadowMeshDraw.cpp)、[renderer/ShadowRenderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\ShadowRenderer.cpp)、[renderer/RendererFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.cpp)、[tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)、[application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp) 和 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 执行 `Debug|x64` + `LinkIncremental=false` 构建通过；因 C 盘空间仍低，继续关闭增量链接以避免 `.ilk` 膨胀。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，验证模式自动退出并输出 `PBR verification scene stats: objects=33, meshes=32, pbrMeshes=25, pbrPreviewMeshes=25, iblReady=yes`。
+   - `--verify-pbr` renderer stats 输出：`rendererPasses=7, shadowCasters=32, directionalShadowLayers=5, directionalShadowDrawCalls=160, pointShadowLights=2, pointShadowFaces=12, pointShadowDrawCalls=384, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`，证明 shadow pass split 后 directional / point shadow 和 PBR depth / scene pass 均仍执行。
+   - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
+   - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1431,5 +1449,6 @@
 - 当前 renderer 已新增 PBR depth prepass，`--verify-pbr` 已验证 `pbrDepthPrepassDrawCalls=25` 且 `pbrDrawCalls=25`。
 - 当前 renderer frame stats 已接入 Debug UI，普通运行时可以直接观察 PBR depth / scene pass 是否实际执行。
 - 当前 renderer 内部 pass 顺序已收敛到 `RendererFramePassRegistry`，后续 PBR shadow atlas / IBL debug / G-buffer pass 可以继续按 key 增加，而不必扩写 `Renderer::render()` 主流程。
+- 当前 directional shadow 与 point shadow 已拆成独立 render pass，`ShadowRenderer` 只保留调度 facade 职责，后续可逐步替换为 PBR shadow atlas 资源布局。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR path 已有 depth / scene pass 边界，但 shadow atlas 和 IBL debug pass 还未拆出。
 - 下一步建议目标：继续补 PBR shadow atlas / IBL debug pass 的具体槽位，或把 PBR verification capture 加入更明确的视觉检查流程。

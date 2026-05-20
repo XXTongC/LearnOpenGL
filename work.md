@@ -1361,3 +1361,16 @@ Renderer 内部每帧 pass 顺序已从 `Renderer::render()` 主函数中拆出�
 - `RendererFrameStats` 新增 `rendererPassCount`，Debug UI 和 `--verify-pbr` 都会输出本帧执行的 renderer pass 数。
 
 这一步继续降低 renderer 主函数耦合，但没有把 pass plan 暴露给用户配置。后续如果要接 `PBRShadowAtlas`、`IBLDebug`、G-buffer 或 clustered lighting，可以优先新增 `RendererFramePassKey` 和 pass 执行函数，再决定是否需要 profile-driven renderer pass plan。
+
+### 2026-05-20 Shadow Render Pass Split
+
+Shadow 渲染边界已从 `ShadowRenderer` 内部拆出：
+
+- 新增 `DirectionalShadowRenderPass`，负责 directional CSM shadow map 的 layer 生成、FBO 绑定和 mesh depth draw。
+- 新增 `PointShadowRenderPass`，负责 point light cubemap array shadow 的 face/layer 绘制。
+- 新增 `ShadowMeshDraw`，集中处理 shadow pass 共享的 postprocess-pass 判断和 mesh / instanced mesh draw。
+- 新增 `ShadowRenderStats`，记录 directional layer/draw call、point light/face/draw call。
+- `ShadowRenderer` 现在只作为 facade 调度 directional / point pass，并返回合并后的 shadow stats。
+- `RendererFrameStats`、Debug UI 和 `--verify-pbr` 输出已接入 shadow stats，后续可以直接观察 shadow pass 是否覆盖当前 PBR 场景。
+
+这一步为后续 `PBRShadowAtlas` 做准备：directional shadow、point shadow 和 mesh depth draw 已经不再绑定在一个大 `ShadowRenderer.cpp` 里，后续可以逐步替换某个 shadow pass 的资源布局，而不必重写整个 renderer frame flow。

@@ -182,6 +182,11 @@ namespace GL_RUNTIME
 		reportLine(
 			"PBR verification renderer stats: rendererPasses=" + std::to_string(stats.rendererPassCount)
 			+ ", shadowCasters=" + std::to_string(stats.shadowCasterCount)
+			+ ", directionalShadowLayers=" + std::to_string(stats.directionalShadowLayerCount)
+			+ ", directionalShadowDrawCalls=" + std::to_string(stats.directionalShadowDrawCalls)
+			+ ", pointShadowLights=" + std::to_string(stats.pointShadowLightCount)
+			+ ", pointShadowFaces=" + std::to_string(stats.pointShadowFaceCount)
+			+ ", pointShadowDrawCalls=" + std::to_string(stats.pointShadowDrawCalls)
 			+ ", pbrDepthPrepassDrawCalls=" + std::to_string(stats.pbrDepthPrepassDrawCalls)
 			+ ", legacyDrawCalls=" + std::to_string(stats.legacySceneDrawCalls)
 			+ ", pbrDrawCalls=" + std::to_string(stats.pbrSceneDrawCalls)

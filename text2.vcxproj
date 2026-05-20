@@ -190,12 +190,14 @@
     <ClCompile Include="light\pointLight.cpp" />
     <ClCompile Include="renderer\EnvironmentProfile.cpp" />
     <ClCompile Include="renderer\EnvironmentRenderTargets.cpp" />
+    <ClCompile Include="renderer\DirectionalShadowRenderPass.cpp" />
     <ClCompile Include="renderer\FrameRenderState.cpp" />
     <ClCompile Include="renderer\FrameRenderTargets.cpp" />
     <ClCompile Include="renderer\IBLPrecomputePass.cpp" />
     <ClCompile Include="renderer\MaterialBinder.cpp" />
     <ClCompile Include="renderer\PBRDepthPrepass.cpp" />
     <ClCompile Include="renderer\PBRSceneRenderPass.cpp" />
+    <ClCompile Include="renderer\PointShadowRenderPass.cpp" />
     <ClCompile Include="renderer\PostProcessPass.cpp" />
     <ClCompile Include="renderer\PostProcessSettings.cpp" />
     <ClCompile Include="renderer\RenderQueue.cpp" />
@@ -204,6 +206,7 @@
     <ClCompile Include="renderer\renderer.cpp" />
     <ClCompile Include="renderer\SceneRenderPass.cpp" />
     <ClCompile Include="renderer\ShadowResourceBinder.cpp" />
+    <ClCompile Include="renderer\ShadowMeshDraw.cpp" />
     <ClCompile Include="renderer\ShadowRenderer.cpp" />
     <ClCompile Include="renderer\ShaderLibrary.cpp" />
     <ClCompile Include="renderer\Bloom\Bloom.cpp" />
@@ -278,12 +281,14 @@
     <ClInclude Include="light\pointLight.h" />
     <ClInclude Include="renderer\EnvironmentProfile.h" />
     <ClInclude Include="renderer\EnvironmentRenderTargets.h" />
+    <ClInclude Include="renderer\DirectionalShadowRenderPass.h" />
     <ClInclude Include="renderer\FrameRenderState.h" />
     <ClInclude Include="renderer\FrameRenderTargets.h" />
     <ClInclude Include="renderer\IBLPrecomputePass.h" />
     <ClInclude Include="renderer\MaterialBinder.h" />
     <ClInclude Include="renderer\PBRDepthPrepass.h" />
     <ClInclude Include="renderer\PBRSceneRenderPass.h" />
+    <ClInclude Include="renderer\PointShadowRenderPass.h" />
     <ClInclude Include="renderer\PostProcessPass.h" />
     <ClInclude Include="renderer\PostProcessSettings.h" />
     <ClInclude Include="renderer\RenderQueue.h" />
@@ -294,6 +299,8 @@
     <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="renderer\SceneRenderPass.h" />
     <ClInclude Include="renderer\ShadowResourceBinder.h" />
+    <ClInclude Include="renderer\ShadowMeshDraw.h" />
+    <ClInclude Include="renderer\ShadowRenderStats.h" />
     <ClInclude Include="renderer\ShadowRenderer.h" />
     <ClInclude Include="renderer\ShaderLibrary.h" />
     <ClInclude Include="renderer\Bloom\Bloom.h" />

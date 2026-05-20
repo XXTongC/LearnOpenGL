@@ -193,6 +193,11 @@ namespace
 			ImGui::Text("PBR Path Active: %s", pbrPathActive ? "Yes" : "No");
 			ImGui::Text("Renderer Passes Executed: %d", stats.rendererPassCount);
 			ImGui::Text("Shadow Casters: %d", stats.shadowCasterCount);
+			ImGui::Text("Directional Shadow Layers: %d", stats.directionalShadowLayerCount);
+			ImGui::Text("Directional Shadow Draw Calls: %d", stats.directionalShadowDrawCalls);
+			ImGui::Text("Point Shadow Lights: %d", stats.pointShadowLightCount);
+			ImGui::Text("Point Shadow Faces: %d", stats.pointShadowFaceCount);
+			ImGui::Text("Point Shadow Draw Calls: %d", stats.pointShadowDrawCalls);
 			ImGui::Text("Legacy Scene Draw Calls: %d", stats.legacySceneDrawCalls);
 			ImGui::Text("PBR Depth Prepass Draw Calls: %d", stats.pbrDepthPrepassDrawCalls);
 			ImGui::Text("PBR Scene Draw Calls: %d", stats.pbrSceneDrawCalls);

@@ -411,6 +411,15 @@
     <ClCompile Include="renderer\ShadowRenderer.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\DirectionalShadowRenderPass.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\PointShadowRenderPass.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\ShadowMeshDraw.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\ShadowResourceBinder.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -717,6 +726,18 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\ShadowRenderer.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\DirectionalShadowRenderPass.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\PointShadowRenderPass.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\ShadowMeshDraw.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\ShadowRenderStats.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\ShadowResourceBinder.h">
