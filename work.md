@@ -1385,3 +1385,14 @@ Forward lighting uniform 绑定已从 `MaterialBinder` 中拆出：
 - VS 工程已加入 `LightResourceBinder.cpp/.h`。
 
 这一步为 PBR lighting path 后续演进做准备：将来如果要把 forward light uniforms 替换为 UBO、SSBO、clustered light list 或 PBR 专用 light binder，改动点可以集中在 `LightResourceBinder`，而不是在每个材质绑定函数里重复修改。
+
+### 2026-05-20 PBR Material Binder
+
+PBR 材质绑定已从通用 `MaterialBinder` 中拆出：
+
+- 新增 `PBRMaterialBinder`，集中处理 PBR surface uniforms、PBR texture slots、IBL uniforms、IBL texture binding、forward lighting 和 CSM shadow resource binding。
+- `MaterialBinder` 的 `PBRMaterial` 分支现在只负责转发到 `PBRMaterialBinder::bind(...)`，不再直接维护 PBR shader uniform 细节。
+- `PBRMaterialBinder` 仍复用 `LightResourceBinder` 和 `ShadowResourceBinder`，因此灯光、shadow、IBL 和材质参数的职责边界更清晰。
+- VS 工程已加入 `PBRMaterialBinder.cpp/.h`。
+
+这一步为后续 PBR 专用 shader binding path 做准备。后续如果要让 PBR 使用独立 light buffer、IBL debug view、shadow atlas 或不同 BRDF 参数布局，可以优先修改 `PBRMaterialBinder`，而不是继续扩大通用 `MaterialBinder` 的 switch 分支。

@@ -19,6 +19,7 @@
 #include "mesh/instancedMesh.h"
 #include "renderer/EnvironmentRenderTargets.h"
 #include "renderer/LightResourceBinder.h"
+#include "renderer/PBRMaterialBinder.h"
 #include "renderer/ShadowResourceBinder.h"
 
 using namespace GLframework;
@@ -55,23 +56,6 @@ namespace
 	{
 		bindTexture(shader, "samplerGrass", diffuse);
 		bindTexture(shader, "MaskSampler", specularMask);
-	}
-
-	void bindOptionalTexture(
-		const std::shared_ptr<Shader>& shader,
-		const char* samplerName,
-		const char* useFlagName,
-		const std::shared_ptr<Texture>& texture
-	)
-	{
-		shader->setInt(useFlagName, texture != nullptr ? 1 : 0);
-		if (!texture)
-		{
-			return;
-		}
-
-		shader->setInt(samplerName, texture->getUnit());
-		texture->Bind();
 	}
 
 	void setInstanceMatrixUniforms(const std::shared_ptr<Shader>& shader, const std::shared_ptr<InstancedMesh>& mesh)
@@ -344,54 +328,17 @@ namespace
 		const EnvironmentRenderTargets* environmentTargets
 	)
 	{
-		std::shared_ptr<PBRMaterial> pbrMat = std::static_pointer_cast<PBRMaterial>(material);
-		const bool useIBL = pbrMat->mUseIBL
-			&& environmentTargets != nullptr
-			&& environmentTargets->isInitialized()
-			&& environmentTargets->hasPrecomputedEnvironment();
-
-		setCommonMaterialUniforms(shader, material, camera);
-		setMVPMatrices(shader, mesh, camera);
-		setNormalMatrix(shader, mesh);
-		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
-		ShadowResourceBinder::bindCSMShadowResources(shader, camera, dirLight, 8);
-
-		for (const auto& slot : pbrMat->getVec3UniformSlots())
-		{
-			shader->setVector3(slot.uniformName, slot.value ? *slot.value : glm::vec3{ 0.0f });
-		}
-
-		for (const auto& slot : pbrMat->getSurfaceFloatUniformSlots())
-		{
-			shader->setFloat(slot.uniformName, slot.value ? *slot.value : 0.0f);
-		}
-
-		shader->setInt("useIBL", useIBL ? 1 : 0);
-		for (const auto& slot : pbrMat->getIblFloatUniformSlots())
-		{
-			shader->setFloat(slot.uniformName, slot.value ? *slot.value : 0.0f);
-		}
-
-		for (const auto& slot : pbrMat->getTextureSlots())
-		{
-			bindOptionalTexture(
-				shader,
-				slot.samplerUniform,
-				slot.useFlagUniform,
-				slot.texture ? *slot.texture : nullptr
-			);
-		}
-
-		if (!useIBL)
-		{
-			return;
-		}
-
-		const unsigned int maxMipLevels = environmentTargets->getMaxPrefilterMipLevels();
-		shader->setFloat("iblMaxReflectionLod", maxMipLevels > 0 ? static_cast<float>(maxMipLevels - 1) : 0.0f);
-		bindTexture(shader, "irradianceMap", environmentTargets->getIrradianceMap());
-		bindTexture(shader, "prefilterMap", environmentTargets->getPrefilterMap());
-		bindTexture(shader, "brdfLut", environmentTargets->getBrdfLut());
+		PBRMaterialBinder::bind(
+			shader,
+			std::static_pointer_cast<PBRMaterial>(material),
+			mesh,
+			camera,
+			dirLight,
+			spotLight,
+			pointLights,
+			ambient,
+			environmentTargets
+		);
 	}
 
 	void bindPhongShadowMaterial(
