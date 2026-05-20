@@ -1737,6 +1737,22 @@
    - [out/pbr_gbuffer_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_gbuffer_debug_verification.ppm) 非黑比例约 `22.0009%`，RGB 均值约 `44.22 / 34.54 / 24.64`。
    - [out/pbr_deferred_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_deferred_verification.ppm) 非黑比例约 `22.0043%`，RGB 均值约 `26.76 / 21.96 / 17.89`。
    - [out/pbr_ibl_debug_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_ibl_debug_verification.ppm) 非黑比例 `100%`，RGB 均值约 `145.33 / 154.29 / 165.66`。
+270. 完成第一百三十五轮 PBR shadow atlas pass key 拆分：
+   - 更新 [renderer/RendererFramePassRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.h) 和 [renderer/RendererFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.cpp)，新增 `PBRShadowAtlas` pass key；`ShadowMaps` pass 只负责 legacy shadow maps，PBR atlas 写入改由独立 pass 执行。
+   - 更新 [renderer/RendererFramePassProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassProfile.cpp) 和 [config/renderer_frame_pass.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\renderer_frame_pass.example.ini)，默认 renderer pass order 加入 `PBRShadowAtlas`，Debug UI 的 pass key 列表和示例配置说明可删除该 key 以关闭额外 atlas 渲染成本。
+   - 更新 [renderer/PBRShadowAtlasRenderTargets.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRShadowAtlasRenderTargets.h)、[renderer/PBRShadowAtlasRenderTargets.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRShadowAtlasRenderTargets.cpp) 和 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，每帧开始重置 atlas frame stats，避免省略 `PBRShadowAtlas` pass 后继续采样上一帧 atlas。
+   - 更新 [application/RuntimePBRVerification.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.h)、[application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp) 和 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，新增 `--verify-pbr-no-atlas` 与 `--verify-pbr-deferred-no-atlas`，用于验证 atlas pass 可关闭和 fallback 行为。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 PBR atlas 写入已从 `ShadowMaps` 内部副作用推进为 profile 可组合 pass。
+271. 完成第一百二十六次 PBR shadow atlas pass key 验证：
+   - 执行 `Debug|x64` + `LinkIncremental=false` 构建通过。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-deferred`，默认 deferred path 输出 `rendererPasses=6`、`pbrShadowAtlasReady=yes`、`pbrDeferredCsmShadowAtlasBound=yes`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-deferred-no-atlas`，禁用 atlas pass 后输出 `rendererPasses=5`、`pbrShadowAtlasReady=no`、`pbrShadowAtlasDirectionalDrawCalls=0`、`pbrDeferredCsmShadowBound=yes`、`pbrDeferredCsmShadowAtlasBound=no`，证明 fallback 到 legacy CSM 且未采样过期 atlas。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，forward PBR 默认验证保持 `pbrDepthPrepassDrawCalls=25`、`pbrDrawCalls=25`，默认 pass count 变为 `rendererPasses=8`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-gbuffer`，G-buffer producer 验证保持 `pbrGBufferDrawCalls=25`、`pbrGBufferReady=yes` 和 `pbrGBufferSize=1280x720`，默认 pass count 变为 `rendererPasses=9`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-gbuffer-debug`，G-buffer debug 验证保持 `pbrGBufferDebugDrawCalls=1`，默认 pass count 变为 `rendererPasses=10`。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr-ibl-debug`，IBL debug 验证保持 `iblDebugDrawCalls=1`，默认 pass count 变为 `rendererPasses=9`。
+   - [out/pbr_deferred_no_atlas_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_deferred_no_atlas_verification.ppm) 非黑比例约 `22.0043%`，RGB 均值约 `26.76 / 21.96 / 17.89`。
+   - 其余 PPM 输出继续非空：forward / G-buffer 非黑比例 `100%`，G-buffer debug 非黑比例约 `22.0009%`，deferred 非黑比例约 `22.0043%`，IBL debug 非黑比例 `100%`。
 
 ### 当前状态
 
@@ -1807,7 +1823,7 @@
 - 当前 renderer 已新增 PBR 专用 scene pass，PBR mesh 从 render queue 分类到 PBR 子队列后由 `PBRSceneRenderPass` 渲染；`--verify-pbr` 已验证 `pbrDrawCalls=25`。
 - 当前 renderer 已新增 PBR depth prepass，`--verify-pbr` 已验证 `pbrDepthPrepassDrawCalls=25` 且 `pbrDrawCalls=25`。
 - 当前 renderer frame stats 已接入 Debug UI，普通运行时可以直接观察 PBR depth / scene pass 是否实际执行。
-- 当前 renderer 内部 pass 顺序已收敛到 `RendererFramePassRegistry`，并已支持通过 `RendererFramePassProfile` 配置 pass order；`IBLDebug`、`PBRGBuffer`、`PBRGBufferDebug` 与 `PBRDeferredLighting` 已作为可选 PBR pass 接入，后续 PBR shadow atlas / clustered lighting 可以继续按 key 增加、插入和本地 profile 验证，而不必扩写 `Renderer::render()` 主流程。
+- 当前 renderer 内部 pass 顺序已收敛到 `RendererFramePassRegistry`，并已支持通过 `RendererFramePassProfile` 配置 pass order；`PBRShadowAtlas`、`IBLDebug`、`PBRGBuffer`、`PBRGBufferDebug` 与 `PBRDeferredLighting` 已作为可组合 PBR pass 接入，后续 clustered lighting / shadow debug 可以继续按 key 增加、插入和本地 profile 验证，而不必扩写 `Renderer::render()` 主流程。
 - 当前 directional shadow 与 point shadow 已拆成独立 render pass，`ShadowRenderer` 只保留调度 facade 职责，后续可逐步替换为 PBR shadow atlas 资源布局。
 - 当前 forward lighting uniform 绑定已从 `MaterialBinder` 拆到 `LightResourceBinder`，后续 PBR lighting 可集中演进为 UBO / SSBO / clustered light list。
 - 当前 PBR 材质 shader 绑定已从通用 `MaterialBinder` 拆到 `PBRMaterialBinder`，后续 PBR-specific uniform / IBL / shadow binding 可以独立演进。
@@ -1823,6 +1839,6 @@
 - 当前 PBR G-buffer 生产点已接入 renderer pass 系统，`--verify-pbr-gbuffer` 已验证 `pbrGBufferDrawCalls=25`、`pbrGBufferReady=yes` 和 `pbrGBufferSize=1280x720`。
 - 当前 PBR G-buffer debug consumer 已接入 renderer pass 系统，`--verify-pbr-gbuffer-debug` 已验证 `pbrGBufferDebugDrawCalls=1`，且导出的 debug capture 非黑比例约 `22.0009%`。
 - 当前 PBR deferred lighting consumer 已接入 renderer pass 系统，优先采样 PBR atlas directional CSM texture，fallback 到 legacy CSM shadow resources，并使用 SSBO-backed deferred light buffer；`--verify-pbr-deferred` 已验证 `pbrDrawCalls=0`、`pbrGBufferDrawCalls=25`、`pbrDeferredLightingDrawCalls=1`、`pbrDeferredCsmShadowBound=yes`、`pbrDeferredCsmShadowLayers=5`、`pbrDeferredCsmShadowAtlasBound=yes`、`pbrDeferredLightBufferBound=yes`、`pbrDeferredLightBufferPointLights=2/16`，且导出的 deferred capture 非黑比例约 `22.0043%`。
-- 当前 renderer 已持有、写入并优先用于 PBR directional CSM sampling 的 PBR shadow atlas，`--verify-pbr*` 已验证当前 scene 下 `pbrShadowAtlasReady=yes`、`pbrShadowAtlasDirectionalLayers=5`、`pbrShadowAtlasPointFacesRendered=12`、`pbrShadowAtlasDirectionalDrawCalls=160`、`pbrShadowAtlasPointDrawCalls=384`。
+- 当前 renderer 已持有、通过独立 `PBRShadowAtlas` pass 写入、并优先用于 PBR directional CSM sampling 的 PBR shadow atlas，`--verify-pbr*` 已验证当前 scene 下 `pbrShadowAtlasReady=yes`、`pbrShadowAtlasDirectionalLayers=5`、`pbrShadowAtlasPointFacesRendered=12`、`pbrShadowAtlasDirectionalDrawCalls=160`、`pbrShadowAtlasPointDrawCalls=384`；`--verify-pbr-deferred-no-atlas` 已验证删除 `PBRShadowAtlas` pass 后会 fallback 到 legacy CSM 而不是采样过期 atlas。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR deferred path 已有 G-buffer producer / debug consumer / lighting consumer、directional CSM atlas sampling、SSBO light buffer 和 shadow atlas 写入链路，但 point shadow atlas sampling、透明 forward fallback、material feature parity 和 clustered light culling / tile index list 还未实现。
-- 下一步建议目标：继续把 point shadow atlas sampling 接入 PBR shading，或先把 atlas render pass 变成可选 profile pass 以控制额外 shadow 渲染成本。
+- 下一步建议目标：继续把 point shadow atlas sampling 接入 PBR shading；atlas render pass 现在已经是可通过 pass profile 删除的独立 pass。

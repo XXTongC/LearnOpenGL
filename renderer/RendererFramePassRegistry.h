@@ -11,6 +11,7 @@ namespace GLframework
 	{
 		BeginFrame,
 		ShadowMaps,
+		PBRShadowAtlas,
 		GlobalMaterialScene,
 		PBRDepthPrepass,
 		PBRGBuffer,

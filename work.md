@@ -1627,3 +1627,15 @@ PBR directional CSM shadow sampling 已从“只写 atlas”推进到“优先�
 - Forward PBR 与 deferred PBR 共享 `PBRShadowResourceBinder`，因此默认 forward PBR pass 在 `ShadowMaps` pass 已写入 atlas 后也会优先绑定 atlas directional CSM texture。
 
 这一步完成了 PBR directional shadow atlas 的 producer-consumer 闭环。当前仍未处理的是 point shadow atlas sampling：point atlas 已写入，但 PBR shading 还没有从 atlas 中读取 point light shadow faces。
+
+### 2026-05-21 PBR Shadow Atlas Pass Key
+
+PBR shadow atlas 写入已从 `ShadowMaps` pass 的内部副作用拆成独立 renderer pass：
+
+- `RendererFramePassKey` 新增 `PBRShadowAtlas`，默认 pass order 变为 `BeginFrame,ShadowMaps,PBRShadowAtlas,PBRDepthPrepass,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene`。
+- `ShadowMaps` pass 现在只负责 legacy directional / point shadow maps；`PBRShadowAtlas` pass 单独负责写入 PBR directional CSM depth array 和 point shadow depth array。
+- `config/renderer_frame_pass.example.ini` 和 Debug UI 的 pass key 列表已包含 `PBRShadowAtlas`。本地 profile 可以删除该 key 来跳过额外 atlas 渲染成本，PBR shadow binder 会自动 fallback 到 legacy CSM resources。
+- `PBRShadowAtlasRenderTargets::resetFrameStats()` 会在每帧 render 开始清空 atlas ready 状态，避免禁用 `PBRShadowAtlas` pass 后继续采样上一帧 atlas。
+- `RuntimePBRVerification` 新增 `--verify-pbr-no-atlas` 与 `--verify-pbr-deferred-no-atlas`，用于验证禁用 atlas pass 后 `pbrShadowAtlasReady=no` 且 deferred PBR 走 legacy CSM fallback。
+
+这一步把 PBR shadow atlas 从“固定跟随 ShadowMaps 执行”推进为“profile 可组合的 PBR pass”。后续可以继续把 point shadow atlas sampling 或 shadow debug view 按同样方式接入，而不用扩大 `ShadowMaps` pass 的职责。

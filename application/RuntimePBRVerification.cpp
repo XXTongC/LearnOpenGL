@@ -173,6 +173,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + IBL debug pass";
 		}
+		if (config.disablePbrShadowAtlasPass)
+		{
+			profileLine += " + PBR shadow atlas disabled";
+		}
 		reportLine(profileLine);
 	}
 
@@ -188,10 +192,18 @@ namespace GL_RUNTIME
 
 		auto& rendererPassProfile = context.renderer->getFramePassProfile();
 		rendererPassProfile.resetToDefaults();
+		const std::string shadowPrefix = config.disablePbrShadowAtlasPass
+			? "BeginFrame,ShadowMaps,"
+			: "BeginFrame,ShadowMaps,PBRShadowAtlas,";
+		if (config.disablePbrShadowAtlasPass)
+		{
+			rendererPassProfile.defaultPassOrder =
+				"BeginFrame,ShadowMaps,PBRDepthPrepass,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene";
+		}
 		if (config.enablePbrDeferredLightingPass)
 		{
 			rendererPassProfile.defaultPassOrder =
-				"BeginFrame,ShadowMaps,PBRDepthPrepass,PBRGBuffer,PBRDeferredLighting";
+				shadowPrefix + "PBRDepthPrepass,PBRGBuffer,PBRDeferredLighting";
 			rendererPassProfile.pbrDeferredLightingIntensity = 1.0f;
 			rendererPassProfile.pbrDeferredIblDiffuseStrength = 1.0f;
 			rendererPassProfile.pbrDeferredIblSpecularStrength = 1.0f;
@@ -199,7 +211,7 @@ namespace GL_RUNTIME
 		else if (config.enablePbrGBufferPass || config.enablePbrGBufferDebugPass)
 		{
 			rendererPassProfile.defaultPassOrder =
-				"BeginFrame,ShadowMaps,PBRDepthPrepass,PBRGBuffer,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene";
+				shadowPrefix + "PBRDepthPrepass,PBRGBuffer,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene";
 		}
 
 		if (config.enablePbrGBufferDebugPass)

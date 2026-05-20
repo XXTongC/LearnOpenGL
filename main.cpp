@@ -30,7 +30,9 @@ namespace
 		const bool verifyPbrGBuffer = hasArgument(argc, argv, "--verify-pbr-gbuffer");
 		const bool verifyPbrGBufferDebug = hasArgument(argc, argv, "--verify-pbr-gbuffer-debug");
 		const bool verifyPbrDeferred = hasArgument(argc, argv, "--verify-pbr-deferred");
-		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer || verifyPbrGBufferDebug || verifyPbrDeferred)
+		const bool verifyPbrDeferredNoAtlas = hasArgument(argc, argv, "--verify-pbr-deferred-no-atlas");
+		const bool verifyPbrNoAtlas = hasArgument(argc, argv, "--verify-pbr-no-atlas");
+		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer || verifyPbrGBufferDebug || verifyPbrDeferred || verifyPbrDeferredNoAtlas || verifyPbrNoAtlas)
 		{
 			config.window = { 1280, 720 };
 			config.enableGui = false;
@@ -38,6 +40,7 @@ namespace
 			config.pbrVerification.maxFrames = 3;
 			config.pbrVerification.captureFrame = 2;
 			config.pbrVerification.capturePath = "out/pbr_verification.ppm";
+			config.pbrVerification.disablePbrShadowAtlasPass = verifyPbrNoAtlas || verifyPbrDeferredNoAtlas;
 			if (verifyPbrIblDebug)
 			{
 				config.pbrVerification.enableIblDebugPass = true;
@@ -59,6 +62,12 @@ namespace
 				config.pbrVerification.enablePbrGBufferPass = true;
 				config.pbrVerification.enablePbrDeferredLightingPass = true;
 				config.pbrVerification.capturePath = "out/pbr_deferred_verification.ppm";
+			}
+			if (verifyPbrDeferredNoAtlas)
+			{
+				config.pbrVerification.enablePbrGBufferPass = true;
+				config.pbrVerification.enablePbrDeferredLightingPass = true;
+				config.pbrVerification.capturePath = "out/pbr_deferred_no_atlas_verification.ppm";
 			}
 		}
 

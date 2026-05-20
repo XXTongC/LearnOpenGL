@@ -37,6 +37,7 @@ namespace GLframework
 			const std::shared_ptr<DirectionalLight>& dirLight,
 			const std::vector<std::shared_ptr<PointLight>>& pointLights
 		);
+		void resetFrameStats();
 
 		const PBRShadowAtlasStats& getLastStats() const;
 		unsigned int getFramebuffer() const;

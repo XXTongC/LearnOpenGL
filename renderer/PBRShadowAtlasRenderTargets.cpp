@@ -88,6 +88,11 @@ PBRShadowAtlasStats PBRShadowAtlasRenderTargets::prepare(
 	return mLastStats;
 }
 
+void PBRShadowAtlasRenderTargets::resetFrameStats()
+{
+	mLastStats = {};
+}
+
 const PBRShadowAtlasStats& PBRShadowAtlasRenderTargets::getLastStats() const
 {
 	return mLastStats;

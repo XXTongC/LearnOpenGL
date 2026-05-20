@@ -134,6 +134,7 @@ void Renderer::render(
 )
 {
 	mLastFrameStats = {};
+	mPbrShadowAtlasTargets.resetFrameStats();
 	RendererFrameContext frameContext{
 		scene,
 		camera,

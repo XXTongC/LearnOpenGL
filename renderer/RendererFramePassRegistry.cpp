@@ -115,17 +115,25 @@ namespace
 			context.stats->pointShadowFaceCount = stats.pointFaceCount;
 			context.stats->pointShadowDrawCalls = stats.pointDrawCalls;
 		}
+	}
 
-		if (context.pbrShadowAtlasPass && context.pbrShadowAtlasTargets && context.stats)
+	void renderPBRShadowAtlas(RendererFrameContext& context)
+	{
+		if (!context.pbrShadowAtlasPass || !context.pbrShadowAtlasTargets || !context.renderQueue || !context.shaderLibrary)
 		{
-			const auto atlasStats = context.pbrShadowAtlasPass->render(
-				context.camera,
-				context.renderQueue->getOpacityObjects(),
-				context.dirLight,
-				pointLightsOrEmpty(context),
-				*context.pbrShadowAtlasTargets,
-				*context.shaderLibrary
-			);
+			return;
+		}
+
+		const auto atlasStats = context.pbrShadowAtlasPass->render(
+			context.camera,
+			context.renderQueue->getOpacityObjects(),
+			context.dirLight,
+			pointLightsOrEmpty(context),
+			*context.pbrShadowAtlasTargets,
+			*context.shaderLibrary
+		);
+		if (context.stats)
+		{
 			context.stats->pbrShadowAtlasReady = atlasStats.ready;
 			context.stats->pbrShadowAtlasDirectionalLayers = atlasStats.directionalLayerCount;
 			context.stats->pbrShadowAtlasPointLights = atlasStats.pointLightCount;
@@ -316,6 +324,7 @@ const std::vector<RendererFramePassDefinition>& RendererFramePassRegistry::defau
 	static const std::vector<RendererFramePassDefinition> passes{
 		{ RendererFramePassKey::BeginFrame, "BeginFrame", "Begin Frame" },
 		{ RendererFramePassKey::ShadowMaps, "ShadowMaps", "Shadow Maps" },
+		{ RendererFramePassKey::PBRShadowAtlas, "PBRShadowAtlas", "PBR Shadow Atlas" },
 		{ RendererFramePassKey::PBRDepthPrepass, "PBRDepthPrepass", "PBR Depth Prepass" },
 		{ RendererFramePassKey::LegacyOpaqueScene, "LegacyOpaqueScene", "Legacy Opaque Scene" },
 		{ RendererFramePassKey::PBROpaqueScene, "PBROpaqueScene", "PBR Opaque Scene" },
@@ -337,7 +346,7 @@ const std::vector<RendererFramePassDefinition>& RendererFramePassRegistry::globa
 
 const char* RendererFramePassRegistry::defaultPassOrder()
 {
-	return "BeginFrame,ShadowMaps,PBRDepthPrepass,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene";
+	return "BeginFrame,ShadowMaps,PBRShadowAtlas,PBRDepthPrepass,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene";
 }
 
 const char* RendererFramePassRegistry::globalMaterialOverridePassOrder()
@@ -422,6 +431,9 @@ void RendererFramePassRegistry::executePass(const RendererFramePassDefinition& p
 		break;
 	case RendererFramePassKey::ShadowMaps:
 		renderShadowMaps(context);
+		break;
+	case RendererFramePassKey::PBRShadowAtlas:
+		renderPBRShadowAtlas(context);
 		break;
 	case RendererFramePassKey::GlobalMaterialScene:
 		renderGlobalMaterialScene(context);

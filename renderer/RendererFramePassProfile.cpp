@@ -32,7 +32,7 @@ void RendererFramePassProfile::visitEditableProperties(GL_EDITOR::PropertyBuilde
 	builder.addConfigString("globalMaterialOverridePassOrder", "Global Material Override Pass Order", &globalMaterialOverridePassOrder);
 	builder.addText(
 		"Available Pass Keys",
-		"BeginFrame, ShadowMaps, GlobalMaterialScene, PBRDepthPrepass, PBRGBuffer, PBRDeferredLighting, PBRGBufferDebug, LegacyOpaqueScene, PBROpaqueScene, LegacyTransparentScene, PBRTransparentScene, IBLDebug"
+		"BeginFrame, ShadowMaps, PBRShadowAtlas, GlobalMaterialScene, PBRDepthPrepass, PBRGBuffer, PBRDeferredLighting, PBRGBufferDebug, LegacyOpaqueScene, PBROpaqueScene, LegacyTransparentScene, PBRTransparentScene, IBLDebug"
 	);
 	builder.addSection("PBR Deferred Lighting Pass");
 	builder.addConfigFloat("pbrDeferredLightingIntensity", "PBR Deferred Lighting Intensity", &pbrDeferredLightingIntensity, 0.0f, 8.0f);
