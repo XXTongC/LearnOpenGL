@@ -102,7 +102,7 @@ namespace
 
 		context.stats->pbrDepthPrepassDrawCalls = context.pbrDepthPrepass->render(
 			context.renderQueue->getPbrOpacityObjects(),
-			context.camera,
+			createMaterialBindingContext(context),
 			*context.shaderLibrary
 		);
 	}

@@ -1419,3 +1419,13 @@ PBR 材质绑定已从通用 `MaterialBinder` 中拆出：
 - `RendererFramePassRegistry` 在执行 scene pass 时由 `RendererFrameContext` 构造 binding context，再传给具体 pass。
 
 这一步为后续 PBR 专用资源布局做准备：如果要把 PBR light buffer、IBL debug resources、shadow atlas 或 material debug flags 接入绑定阶段，可以扩展 `MaterialBindingContext` 或派生新的 PBR binding context，而不是继续扩大每个 pass / binder 的参数列表。
+
+### 2026-05-20 Depth Prepass Binder
+
+PBR depth prepass 的 shader binding 已从 pass 主流程中拆出：
+
+- 新增 `DepthPrepassBinder`，集中写入 depth shader 的 `viewMatrix`、`projectionMatrix`、`near`、`far` 和 per-object `modelMatrix`。
+- `PBRDepthPrepass::render(...)` 现在接收 `MaterialBindingContext`，与 scene / material binding 使用同一套 frame 输入。
+- `RendererFramePassRegistry` 的 PBR depth prepass 和 scene pass 都通过 `createMaterialBindingContext(...)` 构造绑定上下文。
+
+这一步把 depth-only binding 与 pass orchestration 分开。后续如果要增加 PBR G-buffer depth pass、shadow atlas depth variant 或 depth debug view，可以优先复用 / 扩展 `DepthPrepassBinder`，而不是继续把 camera 和 shader uniform 写入散落在具体 pass 中。

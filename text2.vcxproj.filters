@@ -609,6 +609,9 @@
     <ClCompile Include="renderer\Bloom\Bloom.cpp">
       <Filter>cppfile\GLframework\renderer\Bloom</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\DepthPrepassBinder.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\RenderState.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -2017,6 +2020,9 @@
     </ClInclude>
     <ClInclude Include="renderer\Bloom\Bloom.h">
       <Filter>include\GLframework\renderer\Bloom</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\DepthPrepassBinder.h">
+      <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\RenderState.h">
       <Filter>include\GLframework\renderer</Filter>

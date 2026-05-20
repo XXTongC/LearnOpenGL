@@ -3,8 +3,8 @@
 #include <memory>
 #include <vector>
 
-#include "camera/camera.h"
 #include "mesh/mesh.h"
+#include "renderer/MaterialBindingContext.h"
 #include "renderer/ShaderLibrary.h"
 
 namespace GLframework
@@ -14,14 +14,13 @@ namespace GLframework
 	public:
 		int render(
 			const std::vector<std::shared_ptr<Mesh>>& pbrOpacityObjects,
-			Camera* camera,
+			const MaterialBindingContext& bindingContext,
 			const ShaderLibrary& shaderLibrary
 		) const;
 
 	private:
 		bool renderObject(
 			const std::shared_ptr<Mesh>& mesh,
-			Camera* camera,
 			const std::shared_ptr<Shader>& shader
 		) const;
 

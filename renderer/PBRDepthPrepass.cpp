@@ -1,17 +1,18 @@
 #include "PBRDepthPrepass.h"
 
 #include "materials/material.h"
+#include "renderer/DepthPrepassBinder.h"
 #include "renderer/MeshDraw.h"
 
 using namespace GLframework;
 
 int PBRDepthPrepass::render(
 	const std::vector<std::shared_ptr<Mesh>>& pbrOpacityObjects,
-	Camera* camera,
+	const MaterialBindingContext& bindingContext,
 	const ShaderLibrary& shaderLibrary
 ) const
 {
-	if (camera == nullptr || pbrOpacityObjects.empty())
+	if (bindingContext.camera == nullptr || pbrOpacityObjects.empty())
 	{
 		return 0;
 	}
@@ -29,13 +30,16 @@ int PBRDepthPrepass::render(
 
 	int drawCalls = 0;
 	shader->begin();
-	shader->setMat4("viewMatrix", camera->getViewMatrix());
-	shader->setMat4("projectionMatrix", camera->getProjectionMatrix());
-	shader->setFloat("near", camera->mNear);
-	shader->setFloat("far", camera->mFar);
+	if (!DepthPrepassBinder::bindFrame(shader, bindingContext))
+	{
+		shader->end();
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		return 0;
+	}
+
 	for (const auto& mesh : pbrOpacityObjects)
 	{
-		if (renderObject(mesh, camera, shader))
+		if (renderObject(mesh, shader))
 		{
 			++drawCalls;
 		}
@@ -48,7 +52,6 @@ int PBRDepthPrepass::render(
 
 bool PBRDepthPrepass::renderObject(
 	const std::shared_ptr<Mesh>& mesh,
-	Camera*,
 	const std::shared_ptr<Shader>& shader
 ) const
 {
@@ -58,6 +61,10 @@ bool PBRDepthPrepass::renderObject(
 		return false;
 	}
 
-	shader->setMat4("modelMatrix", mesh->getModelMatrix());
+	if (!DepthPrepassBinder::bindObject(shader, mesh))
+	{
+		return false;
+	}
+
 	return MeshDraw::drawIndexed(mesh);
 }
