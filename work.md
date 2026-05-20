@@ -1152,3 +1152,14 @@ Scene preparation 阶段已开始从 `main.cpp` 拆出：
 - 默认 legacy experiment 仍保持注释禁用状态，避免这次结构重构改变启动行为。
 
 这一步让 `initializeApplication()` 的场景准备阶段收敛成单一 application-level 调用。后续更合理的拆分是继续抽 `RuntimeFrameRunner`，把 `runFrame()` 中的 offscreen render、MSAA resolve、Bloom、screen composite 和 UI 绘制从主入口移出；之后再考虑更正式的 `FramePipeline` / `RenderPipeline` 结构。
+
+### 2026-05-20 Runtime Frame Runner
+
+Frame orchestration 阶段已开始从 `main.cpp` 拆出：
+
+- 新增 `RuntimeFrameRunner`，集中执行 camera control update、legacy experiment update、offscreen scene render、MSAA resolve、Bloom bright extraction / blur、screen composite 和 frame UI callback。
+- `RuntimeFrameConfig` 目前只携带 default framebuffer 尺寸，避免 frame runner 直接依赖 `GL_APP`。
+- `RuntimeFrameCallbacks` 以 callback 形式保留 UI 绘制入口，先不把 ImGui host 和 frame pipeline 混在一个类中。
+- `main.cpp` 的 `runFrame()` 现在只负责把 runtime context、legacy experiment runner、framebuffer size 和 `renderIMGUI` callback 交给 frame runner。
+
+这一步把 PBR 后续最重要的每帧渲染顺序从主入口移出。后续新增 PBR depth prepass、shadow atlas、deferred G-buffer 或 SSR / TAA 时，应优先扩展 runtime frame / pipeline 边界，而不是回到 `main.cpp` 添加 pass。

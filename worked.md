@@ -1133,6 +1133,18 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；仍存在既有 camera / shadow camera double-to-float `C4244` warning，本轮未引入 runtime scene preparer warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+190. 完成第九十五轮 runtime frame runner：
+   - 新增 [application/RuntimeFrameRunner.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFrameRunner.h) 与 [application/RuntimeFrameRunner.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFrameRunner.cpp)，集中执行 camera update、legacy experiment update、offscreen render、MSAA resolve、Bloom bright extraction / blur、screen composite 和 UI callback。
+   - 新增 `RuntimeFrameConfig`，由 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 提供 default framebuffer width / height，避免 frame runner 直接依赖 `GL_APP`。
+   - 新增 `RuntimeFrameCallbacks`，当前用于把 `renderIMGUI()` 作为 frame tail callback 传入，保持 UI host 与 frame pipeline 先解耦。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，让 `runFrame()` 收敛为一次 `RuntimeFrameRunner::run(...)` 调用。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 runtime frame runner 加入 VS 工程和 Application filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 frame orchestration 已从主入口移动到 application 层。
+191. 完成第八十六次 runtime frame runner 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeFrameRunner.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeFrameRunner.cpp) 与 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 runtime frame runner warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1187,5 +1199,6 @@
 - 当前 runtime resize 边界已从 `main.cpp` 拆出到 `RuntimeViewport`，窗口尺寸变化会统一同步 viewport、PerspectiveCamera aspect、FrameRenderTargets 和 ScreenMaterial postprocess 输入贴图。
 - 当前 runtime input 边界已从 `main.cpp` 拆出到 `RuntimeInputController`，CameraControl 输入分发和中键临时 FOV 缩放不再由主入口直接维护。
 - 当前 runtime scene preparation 边界已从 `main.cpp` 拆出到 `RuntimeScenePreparer`，scene setup、legacy experiment preparation 和相关 context 构建集中在 application 层。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担 frame orchestration、ImGui startup 和 callback glue。
-- 下一步建议目标：继续抽 `RuntimeFrameRunner`，把 `runFrame()` 的 offscreen render、MSAA resolve、Bloom、screen composite 和 UI 绘制从主入口移出；或者先抽 `RuntimeGuiHost` 收敛 ImGui startup / frame UI。
+- 当前 runtime frame orchestration 边界已从 `main.cpp` 拆出到 `RuntimeFrameRunner`，每帧 render / postprocess / UI callback 顺序集中在 application 层。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担 ImGui startup 和 callback glue。
+- 下一步建议目标：继续抽 `RuntimeGuiHost`，收敛 ImGui startup / frame UI 绘制；或者进一步把 `RuntimeFrameRunner` 拆成可扩展的 `FramePipeline` pass 列表。

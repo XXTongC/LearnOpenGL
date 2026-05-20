@@ -7,6 +7,7 @@
 #include "AppRuntimeContext.h"
 #include "Application.h"
 #include "RuntimeBootstrapper.h"
+#include "RuntimeFrameRunner.h"
 #include "RuntimeInputController.h"
 #include "RuntimeProfileLoader.h"
 #include "RuntimeScenePreparer.h"
@@ -83,6 +84,7 @@ bool initializeApplication();
 void runFrame();
 void printOpenGLCapabilities();
 void cleanupRuntime();
+GL_RUNTIME::RuntimeFrameConfig makeFrameConfig();
 GL_RUNTIME::RuntimeScenePrepareConfig makeScenePrepareConfig();
 GL_EDITOR::DebugControllerContext makeDebugControllerContext();
 
@@ -184,40 +186,15 @@ bool initializeApplication()
 
 void runFrame()
 {
-	cameracontrol->update();
-	renderer->setClearColor(clearColor);
-	GL_RUNTIME::RuntimeScenePreparer::updateLegacyExperiments(gAppRuntime, gLegacyExperiments);
-	//moveit();
+	GL_RUNTIME::RuntimeFrameRunner::run(gAppRuntime, gLegacyExperiments, makeFrameConfig(), { renderIMGUI });
+}
 
-	// pass 1: off-screen color attachment
-	renderer->render(sceneOffScreen, camera, dirLight, spotLight, pointLights, ambientLight, frameRenderTargets.getSceneFbo());
-	postProcessPass.resolveMultisample(frameRenderTargets.getMultisample(), frameRenderTargets.getResolved());
-	if (postProcessSettings.bloomEnabled)
-	{
-		postProcessPass.extractBloomBright(
-			bloom,
-			frameRenderTargets.getResolved(),
-			frameRenderTargets.getBloomBright(),
-			postProcessSettings.bloomThreshold
-		);
-		postProcessPass.blurBloom(
-			bloom,
-			frameRenderTargets.getBloomBright(),
-			frameRenderTargets.getBloomPing(),
-			frameRenderTargets.getBloomPong(),
-			postProcessSettings.bloomIterations
-		);
-	}
-
-	// pass 2: post-process composite to default framebuffer
-	postProcessPass.renderScreenComposite(
-		screenQuad,
-		renderer->getShader(GLframework::MaterialType::ScreenMaterial),
-		postProcessSettings,
+GL_RUNTIME::RuntimeFrameConfig makeFrameConfig()
+{
+	return {
 		static_cast<unsigned int>(GL_APP->getWidth()),
 		static_cast<unsigned int>(GL_APP->getHeight())
-	);
-	renderIMGUI();
+	};
 }
 
 void printOpenGLCapabilities()
