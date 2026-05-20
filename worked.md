@@ -1342,6 +1342,24 @@
    - `--verify-pbr` renderer stats 输出：`shadowCasters=32, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`，证明当前验证场景确实经过 PBR depth prepass 和 PBR scene pass。
    - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
    - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+222. 完成第一百一十一轮 renderer frame pass registry：
+   - 新增 [renderer/RendererFrameStats.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFrameStats.h)，将 `RendererFrameStats` 从 [renderer/renderer.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.h) 拆出，并新增 `rendererPassCount`。
+   - 新增 [renderer/RendererFrameContext.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFrameContext.h)，集中传递 renderer 单帧执行所需的 scene、camera、light、queue、shader library、environment targets、pass 实例和 stats。
+   - 新增 [renderer/RendererFramePassRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.h) 与 [renderer/RendererFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.cpp)，用 `RendererFramePassKey` 定义 renderer 内部 pass，并提供默认 pass plan 与 global material override pass plan。
+   - 更新 [renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)，`Renderer::render()` 现在只创建 `RendererFrameContext`、选择 pass plan 并通过 registry 执行，不再直接硬编码 shadow、PBR depth、legacy scene、PBR scene 和 transparent pass 顺序。
+   - 默认 pass plan 保持当前行为：`BeginFrame -> ShadowMaps -> PBRDepthPrepass -> LegacyOpaqueScene -> PBROpaqueScene -> LegacyTransparentScene -> PBRTransparentScene`。
+   - global material override 行为保持为单独 pass plan：`BeginFrame -> ShadowMaps -> GlobalMaterialScene`。
+   - 更新 [tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp) 与 [application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)，输出 `rendererPassCount` 便于确认 registry pass plan 被执行。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 renderer frame pass registry/context/stats 文件加入 VS 工程和 renderer filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 renderer pass registry 的职责边界和后续 PBR pass 扩展方式。
+223. 完成第一百零二次 renderer frame pass registry 验证：
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 使用 MSVC `cl /Zs` 检查 [renderer/RendererFramePassRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassRegistry.cpp)、[renderer/renderer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\renderer.cpp)、[tools/editor/DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)、[application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp) 和 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 初次 `Debug|x64` 并行构建遇到 `vc143.pdb` 并发写入问题；单进程构建又暴露 C 盘空间不足。清理本工程可再生成的中间产物后，使用 `Debug|x64` + `LinkIncremental=false` 构建通过，新增 `RendererFramePassRegistry.cpp` 已进入 VS 工程。
+   - 执行 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) `--verify-pbr`，验证模式自动退出并输出 `PBR verification scene stats: objects=33, meshes=32, pbrMeshes=25, pbrPreviewMeshes=25, iblReady=yes`。
+   - `--verify-pbr` renderer stats 输出：`rendererPasses=7, shadowCasters=32, pbrDepthPrepassDrawCalls=25, legacyDrawCalls=7, pbrDrawCalls=25`，证明默认 renderer pass plan 已执行且 PBR depth / scene pass 仍覆盖 25 个 PBR preview mesh。
+   - `--verify-pbr` 导出的 [out/pbr_verification.ppm](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\out\pbr_verification.ppm) 为 `P6 1280 720 255`，大小 `2764816` bytes；像素统计为 `921600` 个非黑像素，非黑比例 `100%`，RGB 均值约 `166.93 / 126.55 / 81.78`。
+   - 补充执行普通短启动回归，约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1412,5 +1430,6 @@
 - 当前 renderer 已新增 PBR 专用 scene pass，PBR mesh 从 render queue 分类到 PBR 子队列后由 `PBRSceneRenderPass` 渲染；`--verify-pbr` 已验证 `pbrDrawCalls=25`。
 - 当前 renderer 已新增 PBR depth prepass，`--verify-pbr` 已验证 `pbrDepthPrepassDrawCalls=25` 且 `pbrDrawCalls=25`。
 - 当前 renderer frame stats 已接入 Debug UI，普通运行时可以直接观察 PBR depth / scene pass 是否实际执行。
+- 当前 renderer 内部 pass 顺序已收敛到 `RendererFramePassRegistry`，后续 PBR shadow atlas / IBL debug / G-buffer pass 可以继续按 key 增加，而不必扩写 `Renderer::render()` 主流程。
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR path 已有 depth / scene pass 边界，但 shadow atlas 和 IBL debug pass 还未拆出。
 - 下一步建议目标：继续补 PBR shadow atlas / IBL debug pass 的具体槽位，或把 PBR verification capture 加入更明确的视觉检查流程。

@@ -1,6 +1,8 @@
 #include "renderer.h"
 
 #include "renderer/EnvironmentProfile.h"
+#include "renderer/RendererFrameContext.h"
+#include "renderer/RendererFramePassRegistry.h"
 
 using namespace GLframework;
 
@@ -122,80 +124,31 @@ void Renderer::render(
 )
 {
 	mLastFrameStats = {};
-	mFrameRenderState.begin(fbo);
-	mRenderQueue.build(scene, camera);
-	mLastFrameStats.shadowCasterCount = static_cast<int>(mRenderQueue.getOpacityObjects().size());
+	RendererFrameContext frameContext{
+		scene,
+		camera,
+		dirLight,
+		spotLight,
+		&pointLights,
+		ambient,
+		mGlobalMaterial,
+		fbo,
+		&mFrameRenderState,
+		&mRenderQueue,
+		&mShadowRenderer,
+		&mSceneRenderPass,
+		&mPbrDepthPrepass,
+		&mPbrSceneRenderPass,
+		&mShaderLibrary,
+		&mEnvironmentRenderTargets,
+		&mLastFrameStats
+	};
 
-	//	render shadowmap
-	mShadowRenderer.render(camera, mRenderQueue.getOpacityObjects(), dirLight, pointLights, mShaderLibrary);
-
-	if (mGlobalMaterial)
+	const auto& passPlan = mGlobalMaterial
+		? RendererFramePassRegistry::globalMaterialOverridePasses()
+		: RendererFramePassRegistry::defaultPasses();
+	for (const auto& pass : passPlan)
 	{
-		mLastFrameStats.legacySceneDrawCalls = mSceneRenderPass.render(
-			mRenderQueue.getOpacityObjects(),
-			mRenderQueue.getTransparentObjects(),
-			camera,
-			dirLight,
-			spotLight,
-			pointLights,
-			ambient,
-			mGlobalMaterial,
-			mShaderLibrary,
-			&mEnvironmentRenderTargets
-		);
-		return;
+		RendererFramePassRegistry::executePass(pass, frameContext);
 	}
-
-	mLastFrameStats.pbrDepthPrepassDrawCalls = mPbrDepthPrepass.render(
-		mRenderQueue.getPbrOpacityObjects(),
-		camera,
-		mShaderLibrary
-	);
-
-	mLastFrameStats.legacySceneDrawCalls = mSceneRenderPass.render(
-		mRenderQueue.getLegacyOpacityObjects(),
-		{},
-		camera,
-		dirLight,
-		spotLight,
-		pointLights,
-		ambient,
-		nullptr,
-		mShaderLibrary,
-		&mEnvironmentRenderTargets
-	);
-	mLastFrameStats.pbrSceneDrawCalls = mPbrSceneRenderPass.render(
-		mRenderQueue.getPbrOpacityObjects(),
-		{},
-		camera,
-		dirLight,
-		spotLight,
-		pointLights,
-		ambient,
-		mShaderLibrary,
-		&mEnvironmentRenderTargets
-	);
-	mLastFrameStats.legacySceneDrawCalls += mSceneRenderPass.render(
-		{},
-		mRenderQueue.getLegacyTransparentObjects(),
-		camera,
-		dirLight,
-		spotLight,
-		pointLights,
-		ambient,
-		nullptr,
-		mShaderLibrary,
-		&mEnvironmentRenderTargets
-	);
-	mLastFrameStats.pbrSceneDrawCalls += mPbrSceneRenderPass.render(
-		{},
-		mRenderQueue.getPbrTransparentObjects(),
-		camera,
-		dirLight,
-		spotLight,
-		pointLights,
-		ambient,
-		mShaderLibrary,
-		&mEnvironmentRenderTargets
-	);
 }

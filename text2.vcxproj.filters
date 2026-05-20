@@ -447,6 +447,9 @@
     <ClCompile Include="renderer\RenderQueue.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\RendererFramePassRegistry.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="materials\whiteMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
@@ -750,6 +753,15 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\RenderQueue.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\RendererFrameContext.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\RendererFramePassRegistry.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\RendererFrameStats.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="materials\whiteMaterial.h">

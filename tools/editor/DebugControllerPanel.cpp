@@ -191,6 +191,7 @@ namespace
 			const bool pbrPathActive = stats.pbrDepthPrepassDrawCalls > 0 || stats.pbrSceneDrawCalls > 0;
 
 			ImGui::Text("PBR Path Active: %s", pbrPathActive ? "Yes" : "No");
+			ImGui::Text("Renderer Passes Executed: %d", stats.rendererPassCount);
 			ImGui::Text("Shadow Casters: %d", stats.shadowCasterCount);
 			ImGui::Text("Legacy Scene Draw Calls: %d", stats.legacySceneDrawCalls);
 			ImGui::Text("PBR Depth Prepass Draw Calls: %d", stats.pbrDepthPrepassDrawCalls);

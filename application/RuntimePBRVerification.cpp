@@ -180,7 +180,8 @@ namespace GL_RUNTIME
 
 		const auto& stats = context.renderer->getLastFrameStats();
 		reportLine(
-			"PBR verification renderer stats: shadowCasters=" + std::to_string(stats.shadowCasterCount)
+			"PBR verification renderer stats: rendererPasses=" + std::to_string(stats.rendererPassCount)
+			+ ", shadowCasters=" + std::to_string(stats.shadowCasterCount)
 			+ ", pbrDepthPrepassDrawCalls=" + std::to_string(stats.pbrDepthPrepassDrawCalls)
 			+ ", legacyDrawCalls=" + std::to_string(stats.legacySceneDrawCalls)
 			+ ", pbrDrawCalls=" + std::to_string(stats.pbrSceneDrawCalls)

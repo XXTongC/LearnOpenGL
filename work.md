@@ -1347,3 +1347,17 @@ Renderer 的 PBR 路径验证信息已接入 Debug UI：
 - 这让普通运行时也能确认当前场景是否实际经过 PBR 专用 depth / scene pass，而不是只能依赖 `--verify-pbr` stdout。
 
 这一步的目的不是替代 `--verify-pbr`，而是补上人工调试入口：命令行验证负责可复现证据，Debug UI 负责运行时观察和切换实验配置时的即时反馈。
+
+### 2026-05-20 Renderer Frame Pass Registry
+
+Renderer 内部每帧 pass 顺序已从 `Renderer::render()` 主函数中拆出：
+
+- 新增 `RendererFrameStats` 独立头文件，renderer stats 不再定义在 `renderer.h` 主类文件内。
+- 新增 `RendererFrameContext`，集中传递当前 frame 的 scene、camera、light、render queue、shader library、environment targets、各 pass 实例和 stats。
+- 新增 `RendererFramePassRegistry`，用稳定 `RendererFramePassKey` 描述 renderer 内部 pass。
+- 默认 pass plan 为 `BeginFrame -> ShadowMaps -> PBRDepthPrepass -> LegacyOpaqueScene -> PBROpaqueScene -> LegacyTransparentScene -> PBRTransparentScene`。
+- 全局材质 override 仍保留旧行为，但现在通过独立 pass plan 执行：`BeginFrame -> ShadowMaps -> GlobalMaterialScene`。
+- `Renderer::render()` 现在只创建 frame context、选择 pass plan 并执行 registry pass，不再直接写死每个阶段的绘制细节。
+- `RendererFrameStats` 新增 `rendererPassCount`，Debug UI 和 `--verify-pbr` 都会输出本帧执行的 renderer pass 数。
+
+这一步继续降低 renderer 主函数耦合，但没有把 pass plan 暴露给用户配置。后续如果要接 `PBRShadowAtlas`、`IBLDebug`、G-buffer 或 clustered lighting，可以优先新增 `RendererFramePassKey` 和 pass 执行函数，再决定是否需要 profile-driven renderer pass plan。

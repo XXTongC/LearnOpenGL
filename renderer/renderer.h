@@ -11,6 +11,7 @@
 #include "PBRDepthPrepass.h"
 #include "PBRSceneRenderPass.h"
 #include "RenderQueue.h"
+#include "RendererFrameStats.h"
 #include "SceneRenderPass.h"
 #include "ShadowRenderer.h"
 #include "ShaderLibrary.h"
@@ -22,14 +23,6 @@
 namespace GLframework
 {
 	struct EnvironmentProfile;
-
-	struct RendererFrameStats
-	{
-		int shadowCasterCount{ 0 };
-		int pbrDepthPrepassDrawCalls{ 0 };
-		int legacySceneDrawCalls{ 0 };
-		int pbrSceneDrawCalls{ 0 };
-	};
 
 	class Renderer
 	{
