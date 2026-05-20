@@ -11,6 +11,7 @@
 #include "../../renderer/EnvironmentProfile.h"
 #include "../../renderer/FrameRenderTargets.h"
 #include "../../renderer/renderer.h"
+#include "PBRLightRigProfile.h"
 #include "PBRPreviewProfile.h"
 
 namespace GL_SCENE
@@ -35,6 +36,7 @@ namespace GL_SCENE
 		const std::string& texturePath;
 		GLframework::EnvironmentProfile& environmentProfile;
 		PBRPreviewProfile& pbrPreviewProfile;
+		PBRLightRigProfile& lightRigProfile;
 	};
 
 	void prepareDefaultScene(SetupContext& context);

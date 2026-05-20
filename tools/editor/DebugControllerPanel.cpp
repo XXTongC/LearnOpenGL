@@ -12,6 +12,7 @@
 #include "../../third_party/imgui/imgui.h"
 #include "../inspector/PropertyInspector.h"
 #include "../sceneSetup/PBRExperimentProfile.h"
+#include "../sceneSetup/PBRLightRigProfile.h"
 #include "../sceneSetup/PBRPreviewProfile.h"
 
 namespace
@@ -210,7 +211,16 @@ namespace
 
 	void drawPBRExperimentControls(const GL_EDITOR::DebugControllerContext& context)
 	{
-		if (!context.environmentProfile || !context.postProcessSettings || !context.pbrPreviewProfile)
+		if (
+			!context.environmentProfile ||
+			!context.postProcessSettings ||
+			!context.pbrPreviewProfile ||
+			!context.lightRigProfile ||
+			!context.ambientLight ||
+			!context.directionalLight ||
+			!context.spotLight ||
+			!context.pointLights
+		)
 		{
 			return;
 		}
@@ -226,11 +236,18 @@ namespace
 
 			if (ImGui::Button("Save PBR Experiment Preset"))
 			{
+				context.lightRigProfile->copyFrom(
+					*context.ambientLight,
+					*context.directionalLight,
+					*context.spotLight,
+					*context.pointLights
+				);
 				lastConfigStatus = GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 					configPath,
 					*context.environmentProfile,
 					*context.postProcessSettings,
-					*context.pbrPreviewProfile
+					*context.pbrPreviewProfile,
+					*context.lightRigProfile
 				)
 					? "PBR experiment preset saved."
 					: "PBR experiment preset save failed.";
@@ -242,10 +259,20 @@ namespace
 					configPath,
 					*context.environmentProfile,
 					*context.postProcessSettings,
-					*context.pbrPreviewProfile
+					*context.pbrPreviewProfile,
+					*context.lightRigProfile
 				)
 					? "PBR experiment preset reloaded."
 					: "PBR experiment preset reload failed.";
+				if (lastConfigStatus == "PBR experiment preset reloaded.")
+				{
+					context.lightRigProfile->applyTo(
+						*context.ambientLight,
+						*context.directionalLight,
+						*context.spotLight,
+						*context.pointLights
+					);
+				}
 			}
 
 			if (!lastConfigStatus.empty())
@@ -260,18 +287,18 @@ void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
 {
 	ImGui::Begin("controller");
 
-	if (context.directionalLight)
+	if (context.directionalLight && *context.directionalLight)
 	{
-		auto pos = context.directionalLight->getPosition();
+		auto pos = (*context.directionalLight)->getPosition();
 		if (ImGui::SliderFloat("light.x", &pos.x, 0.0f, 50.0f, "%.2f"))
 		{
-			context.directionalLight->setPosition(pos);
+			(*context.directionalLight)->setPosition(pos);
 		}
 
-		if (context.directionalLight->getShadow())
+		if ((*context.directionalLight)->getShadow())
 		{
-			ImGui::SliderFloat("tightness", &context.directionalLight->getShadow()->mDiskTightness, 0.0f, 1.0f, "%.3f");
-			ImGui::SliderFloat("pcfRadius", &context.directionalLight->getShadow()->mPcfRadius, 0.0f, 10.0f, "%.3f");
+			ImGui::SliderFloat("tightness", &(*context.directionalLight)->getShadow()->mDiskTightness, 0.0f, 1.0f, "%.3f");
+			ImGui::SliderFloat("pcfRadius", &(*context.directionalLight)->getShadow()->mPcfRadius, 0.0f, 10.0f, "%.3f");
 		}
 	}
 

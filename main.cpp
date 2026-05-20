@@ -56,6 +56,7 @@
 #include "tools/editor/EditorPanels.h"
 #include "tools/legacyExperiments/LegacyExperimentRunner.h"
 #include "tools/sceneSetup/PBRExperimentProfile.h"
+#include "tools/sceneSetup/PBRLightRigProfile.h"
 #include "tools/sceneSetup/SceneSetup.h"
 int GLframework::PointLightShadow::MAX_POINT_LIGHTS = 2;
 /*
@@ -130,6 +131,7 @@ struct AppRuntimeContext
 	GLframework::EnvironmentProfile environmentProfile{};
 	std::string environmentProfilePath{ GLframework::EnvironmentProfileStorage::defaultPath() };
 	GL_SCENE::PBRPreviewProfile pbrPreviewProfile{};
+	GL_SCENE::PBRLightRigProfile pbrLightRigProfile{};
 	std::string pbrPreviewProfilePath{ GL_SCENE::PBRPreviewProfileStorage::defaultPath() };
 	std::string pbrExperimentProfilePath{ GL_SCENE::PBRExperimentProfileStorage::defaultPath() };
 	Camera* camera{ nullptr };
@@ -163,6 +165,7 @@ auto& postProcessSettingsPath = gAppRuntime.postProcessSettingsPath;
 auto& environmentProfile = gAppRuntime.environmentProfile;
 auto& environmentProfilePath = gAppRuntime.environmentProfilePath;
 auto& pbrPreviewProfile = gAppRuntime.pbrPreviewProfile;
+auto& pbrLightRigProfile = gAppRuntime.pbrLightRigProfile;
 auto& pbrPreviewProfilePath = gAppRuntime.pbrPreviewProfilePath;
 auto& pbrExperimentProfilePath = gAppRuntime.pbrExperimentProfilePath;
 Camera*& camera = gAppRuntime.camera;
@@ -310,14 +313,17 @@ GL_SCENE::SetupContext makeSceneSetupContext()
 		height,
 		TexturePath,
 		environmentProfile,
-		pbrPreviewProfile
+		pbrPreviewProfile,
+		pbrLightRigProfile
 	};
 }
 
 GL_EDITOR::DebugControllerContext makeDebugControllerContext()
 {
 	return {
-		dirLight,
+		&dirLight,
+		&ambientLight,
+		&spotLight,
 		&pointLights,
 		textD,
 		&postProcessSettings,
@@ -328,6 +334,7 @@ GL_EDITOR::DebugControllerContext makeDebugControllerContext()
 		&pbrPreviewProfile,
 		&pbrPreviewProfilePath,
 		&pbrExperimentProfilePath,
+		&pbrLightRigProfile,
 		&m_time
 	};
 }
@@ -400,7 +407,8 @@ void loadPBRExperimentProfile()
 		pbrExperimentProfilePath,
 		environmentProfile,
 		postProcessSettings,
-		pbrPreviewProfile
+		pbrPreviewProfile,
+		pbrLightRigProfile
 	))
 	{
 		LogInfo("PBR experiment profile loaded from " + pbrExperimentProfilePath);

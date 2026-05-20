@@ -1095,3 +1095,15 @@ PBR experiment preset 已接入运行时 Debug UI：
 - experiment preset 的 reload 继续走 `PBRExperimentProfileStorage::loadFromFile(...)`，因此仍会应用 `pbrPreview.materialProfilePath` 指向的独立 material preset。
 
 这一步让 environment、postprocess、preview grid、material preset 引用可以作为一个实验组合保存和恢复。后续如果增加更多 PBR 实验域，例如 light rig、camera rig 或 SSR / TAA 参数，应优先纳入 experiment preset 层，而不是分散到多个独立手工步骤。
+
+### 2026-05-20 PBR Light Rig Profile
+
+PBR experiment preset 已纳入 light rig 维度：
+
+- 新增 `PBRLightRigProfile`，集中描述 ambient、directional、spot 和最多 2 个 point light 的位置、旋转、颜色、强度、specular 与 attenuation 参数。
+- `SceneSetup::prepareLights(...)` 不再手写默认 light 初始化，而是把运行时 light 创建 / 更新委托给 `PBRLightRigProfile::applyTo(...)`。
+- `PBRLightRigProfile::copyFrom(...)` 支持从当前运行时 light 状态回写 profile，Debug UI 保存 experiment preset 前会先同步当前灯光状态。
+- `PBRExperimentProfileStorage` 现在同时读写 `lightRig.*` prefixed key，`config/pbr_experiment.example.ini` 已补齐对应字段示例。
+- `DebugControllerContext` 中 light owner 改为指向 `shared_ptr` owner 的指针，避免 reload preset 时只修改 context 内部副本，确保 light rig reload 能真正更新运行时灯光对象。
+
+这一步让一次 PBR experiment preset 能恢复 environment、postprocess、preview/material 和 light rig。下一步更合理的是补 camera rig profile，把观察位置、FOV 和 near/far 也纳入实验恢复范围；之后再继续把 application lifecycle 从 `main.cpp` 拆到 runtime bootstrapper。

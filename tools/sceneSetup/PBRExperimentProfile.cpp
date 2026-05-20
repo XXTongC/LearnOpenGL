@@ -37,13 +37,15 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	const std::string& path,
 	GLframework::EnvironmentProfile& environmentProfile,
 	GLframework::PostProcessSettings& postProcessSettings,
-	PBRPreviewProfile& pbrPreviewProfile
+	PBRPreviewProfile& pbrPreviewProfile,
+	PBRLightRigProfile& lightRigProfile
 )
 {
 	bool enabled{ true };
 	auto loadedEnvironmentProfile = environmentProfile;
 	auto loadedPostProcessSettings = postProcessSettings;
 	auto loadedPBRPreviewProfile = pbrPreviewProfile;
+	auto loadedLightRigProfile = lightRigProfile;
 
 	GL_EDITOR::PropertyBuilder environmentBuilder{};
 	loadedEnvironmentProfile.visitEditableProperties(environmentBuilder);
@@ -51,12 +53,15 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	loadedPostProcessSettings.visitEditableProperties(postProcessBuilder);
 	GL_EDITOR::PropertyBuilder pbrPreviewBuilder{};
 	loadedPBRPreviewProfile.visitEditableProperties(pbrPreviewBuilder);
+	GL_EDITOR::PropertyBuilder lightRigBuilder{};
+	loadedLightRigProfile.visitEditableProperties(lightRigBuilder);
 
 	const bool loaded = GL_CONFIG::readKeyValueFile(path, [
 		&enabled,
 		&environmentBuilder,
 		&postProcessBuilder,
-		&pbrPreviewBuilder
+		&pbrPreviewBuilder,
+		&lightRigBuilder
 	](
 		const std::string& key,
 		const std::string& value
@@ -71,6 +76,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 		constexpr auto environmentPrefix = "environment.";
 		constexpr auto postProcessPrefix = "postprocess.";
 		constexpr auto pbrPreviewPrefix = "pbrPreview.";
+		constexpr auto lightRigPrefix = "lightRig.";
 
 		if (GL_CONFIG::startsWith(key, environmentPrefix))
 		{
@@ -87,6 +93,12 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 		if (GL_CONFIG::startsWith(key, pbrPreviewPrefix))
 		{
 			applyPrefixedPropertyConfigValue(key, value, pbrPreviewPrefix, pbrPreviewBuilder);
+			return;
+		}
+
+		if (GL_CONFIG::startsWith(key, lightRigPrefix))
+		{
+			applyPrefixedPropertyConfigValue(key, value, lightRigPrefix, lightRigBuilder);
 		}
 	});
 	if (!loaded)
@@ -103,6 +115,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	postProcessSettings = loadedPostProcessSettings;
 	PBRPreviewProfileStorage::applyMaterialProfileReference(loadedPBRPreviewProfile);
 	pbrPreviewProfile = loadedPBRPreviewProfile;
+	lightRigProfile = loadedLightRigProfile;
 	return true;
 }
 
@@ -110,7 +123,8 @@ bool GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 	const std::string& path,
 	const GLframework::EnvironmentProfile& environmentProfile,
 	const GLframework::PostProcessSettings& postProcessSettings,
-	const PBRPreviewProfile& pbrPreviewProfile
+	const PBRPreviewProfile& pbrPreviewProfile,
+	const PBRLightRigProfile& lightRigProfile
 )
 {
 	const std::filesystem::path filePath{ path };
@@ -134,6 +148,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 	auto environmentSnapshot = environmentProfile;
 	auto postProcessSnapshot = postProcessSettings;
 	auto pbrPreviewSnapshot = pbrPreviewProfile;
+	auto lightRigSnapshot = lightRigProfile;
 
 	GL_EDITOR::PropertyBuilder environmentBuilder{};
 	environmentSnapshot.visitEditableProperties(environmentBuilder);
@@ -141,15 +156,19 @@ bool GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 	postProcessSnapshot.visitEditableProperties(postProcessBuilder);
 	GL_EDITOR::PropertyBuilder pbrPreviewBuilder{};
 	pbrPreviewSnapshot.visitEditableProperties(pbrPreviewBuilder);
+	GL_EDITOR::PropertyBuilder lightRigBuilder{};
+	lightRigSnapshot.visitEditableProperties(lightRigBuilder);
 
 	output
-		<< "# Local PBR experiment preset for environment, postprocess, and PBR preview\n"
+		<< "# Local PBR experiment preset for environment, postprocess, PBR preview, and light rig\n"
 		<< "enabled=1\n\n";
 	GL_CONFIG::writePropertyConfig(output, "environment.", environmentBuilder);
 	output << '\n';
 	GL_CONFIG::writePropertyConfig(output, "postprocess.", postProcessBuilder);
 	output << '\n';
 	GL_CONFIG::writePropertyConfig(output, "pbrPreview.", pbrPreviewBuilder);
+	output << '\n';
+	GL_CONFIG::writePropertyConfig(output, "lightRig.", lightRigBuilder);
 
 	return true;
 }

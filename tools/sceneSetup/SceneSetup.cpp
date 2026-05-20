@@ -229,46 +229,12 @@ namespace
 
 	void prepareLights(GL_SCENE::SetupContext& context)
 	{
-		context.spotLight = std::make_shared<GLframework::SpotLight>(30.0f, 60.0f);
-		context.spotLight->setName("Spot Light");
-		context.spotLight->setPosition(glm::vec3(1.5f, 0.0f, 0.0f));
-		context.spotLight->setColor(glm::vec3{ 0.0f });
-
-		context.dirLight = std::make_shared<GLframework::DirectionalLight>();
-		context.dirLight->setName("Directional Light");
-		context.dirLight->setPosition(glm::vec3(0.0f, 11.0f, 0.0f));
-		context.dirLight->rotateX(-45.0f);
-		context.dirLight->rotateY(45.0f);
-		context.dirLight->setColor({ 0.0f, 0.0f, 0.0f });
-		context.dirLight->setSpecularIntensity(0.5f);
-
-		context.ambientLight = std::make_shared<GLframework::AmbientLight>();
-		context.ambientLight->setColor(glm::vec3(0.1f));
-
-		context.pointLights.clear();
-		for (int i = 0; i < 2; ++i)
-		{
-			auto pointLight = std::make_shared<GLframework::PointLight>();
-			pointLight->setSpecularIntensity(0.9f);
-			pointLight->setK(0.0f, 0.0f, 1.0f);
-
-			if (i == 0)
-			{
-				pointLight->setName("Point Light 0");
-				pointLight->setPosition(glm::vec3(3.0f, 3.0f, -1.0f));
-				pointLight->setColor(glm::vec3(0.8f, 0.8f, 0.9f));
-			}
-			else
-			{
-				pointLight->setName("Point Light 1");
-				pointLight->setPosition(glm::vec3(-3.0f, 3.0f, -1.0f));
-				pointLight->setColor(glm::vec3(1.0f, 1.0f, 1.0f));
-			}
-
-			context.pointLights.push_back(std::move(pointLight));
-		}
-
-		GLframework::PointLightShadow::setMAX_POINT_LIGHT(static_cast<int>(context.pointLights.size()));
+		context.lightRigProfile.applyTo(
+			context.ambientLight,
+			context.dirLight,
+			context.spotLight,
+			context.pointLights
+		);
 	}
 }
 
