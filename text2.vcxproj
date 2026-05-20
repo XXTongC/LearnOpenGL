@@ -138,6 +138,7 @@
     <ClCompile Include="application\Application.cpp" />
     <ClCompile Include="application\RuntimeBootstrapper.cpp" />
     <ClCompile Include="application\RuntimeFrameRunner.cpp" />
+    <ClCompile Include="application\RuntimeGuiHost.cpp" />
     <ClCompile Include="application\RuntimeInputController.cpp" />
     <ClCompile Include="application\RuntimeProfileLoader.cpp" />
     <ClCompile Include="application\RuntimeScenePreparer.cpp" />
@@ -288,6 +289,7 @@
     <ClInclude Include="application\Application.h" />
     <ClInclude Include="application\RuntimeBootstrapper.h" />
     <ClInclude Include="application\RuntimeFrameRunner.h" />
+    <ClInclude Include="application\RuntimeGuiHost.h" />
     <ClInclude Include="application\RuntimeInputController.h" />
     <ClInclude Include="application\RuntimeProfileLoader.h" />
     <ClInclude Include="application\RuntimeScenePreparer.h" />

@@ -8,6 +8,7 @@
 #include "Application.h"
 #include "RuntimeBootstrapper.h"
 #include "RuntimeFrameRunner.h"
+#include "RuntimeGuiHost.h"
 #include "RuntimeInputController.h"
 #include "RuntimeProfileLoader.h"
 #include "RuntimeScenePreparer.h"
@@ -47,11 +48,7 @@
 #include "renderer/PostProcessPass.h"
 #include "renderer/PostProcessSettings.h"
 #include "pointLight.h"
-//imgui thirdparty
 #include "assimpInstanceLoader.h"
-#include "third_party/imgui/imgui.h"
-#include "third_party/imgui/imgui_impl_glfw.h"
-#include "third_party/imgui/imgui_impl_opengl3.h"
 #include "assimpLoader.h"
 #include "phongEnvMaterial.h"
 #include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
@@ -93,11 +90,10 @@ void prepareCamera();
 GL_EDITOR::EditorPanelContext makeEditorPanelContext();
 
 //
-void initIMGUI();
 void prepareState();
 
-//IMGUI
-void renderIMGUI();
+void renderFrameUi();
+void drawEditorPanels();
 
 //grass texture attribute
 int rNum = 30;
@@ -178,7 +174,7 @@ bool initializeApplication()
 	prepareCamera();
 	GL_RUNTIME::RuntimeProfileLoader::loadAll(gAppRuntime);
 	GL_RUNTIME::RuntimeScenePreparer::prepare(gAppRuntime, gLegacyExperiments, makeScenePrepareConfig());
-	initIMGUI();
+	GL_RUNTIME::RuntimeGuiHost::initialize({ GL_APP->getWindow() });
 	printOpenGLCapabilities();
 
 	return true;
@@ -186,7 +182,7 @@ bool initializeApplication()
 
 void runFrame()
 {
-	GL_RUNTIME::RuntimeFrameRunner::run(gAppRuntime, gLegacyExperiments, makeFrameConfig(), { renderIMGUI });
+	GL_RUNTIME::RuntimeFrameRunner::run(gAppRuntime, gLegacyExperiments, makeFrameConfig(), { renderFrameUi });
 }
 
 GL_RUNTIME::RuntimeFrameConfig makeFrameConfig()
@@ -280,26 +276,18 @@ void prepareState()
 	glDepthFunc(GL_LESS);
 }
 
-void renderIMGUI()
+void renderFrameUi()
 {
-	// 1. Initialize ImGui
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
+	GL_RUNTIME::RuntimeGuiHost::renderFrame({ GL_APP->getWindow(), drawEditorPanels });
+}
 
+void drawEditorPanels()
+{
 	GL_EDITOR::drawDebugControllerPanel(makeDebugControllerContext());
 	const auto editorContext = makeEditorPanelContext();
 	GL_EDITOR::ensureSelectionIsInitialized(gEditorSelection, sceneOffScreen);
 	GL_EDITOR::drawHierarchyPanel(editorContext, gEditorSelection);
 	GL_EDITOR::drawSelectionInspectorPanel(editorContext, gEditorSelection);
-
-	ImGui::Render();
-	int display_w, display_h;
-	glfwGetFramebufferSize(GL_APP->getWindow(), &display_w, &display_h);
-	GL_RUNTIME::RuntimeViewport::applyViewport(display_w, display_h);
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	
-
 }
 
 void prepareCamera() 
@@ -319,19 +307,6 @@ void prepareCamera()
 	cameracontrol->setCamera(camera);
 	LogInfo("Camera prepared");
 }
-
-void initIMGUI()
-{
-	LogInfo("GUI Initializing...");
-	ImGui::CreateContext();		//����ImGui������
-	ImGui::StyleColorsDark();	//ѡ��һ������
-
-	//	imgui版本设置
-	ImGui_ImplGlfw_InitForOpenGL(GL_APP->getWindow(), true);
-	ImGui_ImplOpenGL3_Init("#version 460");
-	LogInfo("GUI Initialized");
-}
-
 
 #pragma region 回调函数
 //�����֣��������ص�����

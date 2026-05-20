@@ -1145,6 +1145,18 @@
    - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
    - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 runtime frame runner warning。
    - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
+192. 完成第九十六轮 runtime gui host：
+   - 新增 [application/RuntimeGuiHost.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeGuiHost.h) 与 [application/RuntimeGuiHost.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeGuiHost.cpp)，集中处理 ImGui context 创建、backend 初始化、每帧 NewFrame / Render / RenderDrawData。
+   - `RuntimeGuiHost::renderFrame(...)` 在提交 ImGui draw data 前调用 `RuntimeViewport::applyViewport(...)` 恢复 default framebuffer viewport，保留原本 UI 绘制前的 viewport 同步行为。
+   - 新增 `RuntimeGuiFrameContext::drawPanels` callback，当前由 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 的 `drawEditorPanels()` 提供 editor 面板内容。
+   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，删除直接 ImGui backend include、本地 `initIMGUI()` 和本地 `renderIMGUI()` host 逻辑，启动阶段改为 `RuntimeGuiHost::initialize(...)`。
+   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，将 runtime gui host 加入 VS 工程和 Application filter。
+   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录 ImGui host 生命周期已从主入口移动到 application 层。
+193. 完成第八十七次 runtime gui host 验证：
+   - 使用 MSVC `cl /Zs` 检查 [application/RuntimeGuiHost.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeGuiHost.cpp) 与 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，结果通过。
+   - 针对本轮改动执行 `git diff --check`；除既有 LF/CRLF 提示外无 whitespace error。
+   - 执行真实 `Debug|x64 Build`，构建结果：成功，`0` error；本轮增量构建未引入新的 runtime gui host warning。
+   - 短启动 [x64/Debug/text2.exe](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\x64\Debug\text2.exe) 约 `6` 秒后主动停止；stdout / stderr 未出现 `Shader Compile Error`、`Shader Link Error`、`Shader Load Error`、`Environment HDR Load Error`、`IBL precompute failed` 或 `Error:`；stderr 仍只有既有 `Failed to open logfile.`。
 
 ### 当前状态
 
@@ -1200,5 +1212,6 @@
 - 当前 runtime input 边界已从 `main.cpp` 拆出到 `RuntimeInputController`，CameraControl 输入分发和中键临时 FOV 缩放不再由主入口直接维护。
 - 当前 runtime scene preparation 边界已从 `main.cpp` 拆出到 `RuntimeScenePreparer`，scene setup、legacy experiment preparation 和相关 context 构建集中在 application 层。
 - 当前 runtime frame orchestration 边界已从 `main.cpp` 拆出到 `RuntimeFrameRunner`，每帧 render / postprocess / UI callback 顺序集中在 application 层。
-- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担 ImGui startup 和 callback glue。
-- 下一步建议目标：继续抽 `RuntimeGuiHost`，收敛 ImGui startup / frame UI 绘制；或者进一步把 `RuntimeFrameRunner` 拆成可扩展的 `FramePipeline` pass 列表。
+- 当前 runtime gui host 边界已从 `main.cpp` 拆出到 `RuntimeGuiHost`，ImGui backend 初始化和每帧 host 生命周期集中在 application 层。
+- 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 效果尚未做可视化确认；工程内仍没有默认真实 HDR environment 资源；`main.cpp` 仍承担 editor panel context 装配和 GLFW callback glue。
+- 下一步建议目标：继续抽 editor/runtime panel coordinator，收敛 `makeDebugControllerContext()`、`makeEditorPanelContext()` 和 selection 初始化；或者进一步把 `RuntimeFrameRunner` 拆成可扩展的 `FramePipeline` pass 列表。

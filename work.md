@@ -1163,3 +1163,14 @@ Frame orchestration 阶段已开始从 `main.cpp` 拆出：
 - `main.cpp` 的 `runFrame()` 现在只负责把 runtime context、legacy experiment runner、framebuffer size 和 `renderIMGUI` callback 交给 frame runner。
 
 这一步把 PBR 后续最重要的每帧渲染顺序从主入口移出。后续新增 PBR depth prepass、shadow atlas、deferred G-buffer 或 SSR / TAA 时，应优先扩展 runtime frame / pipeline 边界，而不是回到 `main.cpp` 添加 pass。
+
+### 2026-05-20 Runtime Gui Host
+
+ImGui host 阶段已开始从 `main.cpp` 拆出：
+
+- 新增 `RuntimeGuiHost`，集中处理 ImGui context 创建、backend 初始化、每帧 NewFrame / Render / RenderDrawData。
+- `RuntimeGuiHost::renderFrame(...)` 在提交 ImGui draw data 前恢复 default framebuffer viewport，保留原本 UI 绘制前的 viewport 同步行为。
+- UI 面板内容暂时通过 `RuntimeGuiFrameContext::drawPanels` callback 提供，避免把 editor panel 数据装配和 ImGui backend 生命周期混在一个类里。
+- `main.cpp` 不再直接 include `imgui.h`、`imgui_impl_glfw.h` 或 `imgui_impl_opengl3.h`，只保留 `drawEditorPanels()` 作为过渡 callback。
+
+这一步把 UI backend 生命周期从主入口移出。后续如果继续降耦合，应把 `makeDebugControllerContext()`、`makeEditorPanelContext()` 和 selection 初始化迁移到 editor/runtime panel coordinator，而不是让 `main.cpp` 长期负责 editor 数据装配。
