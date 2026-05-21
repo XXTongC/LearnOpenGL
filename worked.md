@@ -2208,3 +2208,9 @@
 - 完成第一百九十轮桌面重构报告 deferred GPU timing 同步：
   - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送提交同步到 `3a5ddd2 Defer renderer GPU timing readback`。
   - 报告中补充 `RendererGpuTimerQueryPool` deferred readback 机制、`rendererGpuTimingDeferredReadback=yes`、`rendererGpuTimingPendingQueries=12`，并把后续 profiling 缺口调整为 tiled / clustered timing 对比报告。
+- 完成第一百九十一轮 PBR light culling pressure timing comparison：
+  - 更新 [application\RuntimePBRVerificationArgs.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerificationArgs.cpp)，新增 `--verify-pbr-deferred-tiled-lights-pressure-timing` 与 `--verify-pbr-deferred-clustered-grid-pressure-timing`，两个 mode 都使用 8 点光 pressure rig 并启用 renderer GPU timing。
+  - 更新 [tools\verify_pbr.ps1](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\verify_pbr.ps1)，默认 PBR 回归新增 `deferred-tiled-lights-pressure-timing` 和 `deferred-clustered-grid-pressure-timing`，总数从 26 个增加到 28 个，并对两个 mode 同时断言 point-light pressure、grid stats 和 deferred GPU timing。
+  - 新增 [tools\profile_pbr_light_culling.ps1](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\profile_pbr_light_culling.ps1)，自动运行两个 pressure timing mode，解析 renderer stats，并生成 [pbr_light_culling_timing_report.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_light_culling_timing_report.md)。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\profile_pbr_light_culling.ps1 -NoLinkDebugInfo`，`Debug|x64` 构建通过，输出 tiled pressure `rendererGpuPbrDeferredLightingNs=1194400`、`pbrDeferredTiledLightGridIndices=8034/28800`，clustered pressure `rendererGpuPbrDeferredLightingNs=3371980`、`pbrDeferredClusteredLightGridIndices=8037`、`pbrDeferredClusteredLightGridCulledIndices=683163`。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 28 个 verification mode 全部通过。

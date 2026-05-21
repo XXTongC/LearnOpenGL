@@ -2218,3 +2218,20 @@ clustered compute assignment 已经能在 GPU 上生成 clustered light grid，�
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid-timing`：构建通过，输出 `rendererGpuTimingEnabled=yes`、`rendererGpuTimingAvailable=yes`、`rendererGpuTimingDeferredReadback=yes`、`rendererGpuTimedPasses=6`、`rendererGpuTimingPendingQueries=12`、`rendererGpuPbrGBufferNs=218600`、`rendererGpuPbrDeferredLightingNs=2172830`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 26 个 verification mode 全部通过。
+
+### 2026-05-21 PBR Light Culling Pressure Timing Comparison
+
+在 renderer GPU timing 已经改成跨帧 readback 后，本轮补上 tiled / clustered 在同一压力场景下的对比入口，避免继续用不同 verification scene 或单独 clustered timing 推断性能方向：
+
+- `RuntimePBRVerificationArgs` 新增 `--verify-pbr-deferred-tiled-lights-pressure-timing` 与 `--verify-pbr-deferred-clustered-grid-pressure-timing`，两者都启用 8 点光 pressure rig 和 renderer GPU timing。
+- `tools/verify_pbr.ps1` 默认回归新增 `deferred-tiled-lights-pressure-timing` 与 `deferred-clustered-grid-pressure-timing`，并复用 `ExpectPointLightPressure=8`、tiled / clustered grid 断言和 `ExpectGpuTiming` 断言。
+- 新增 `tools/profile_pbr_light_culling.ps1`，它会运行两个 pressure timing mode，解析 renderer stats，并生成 `docs/pbr_light_culling_timing_report.md`。
+- 当前报告记录 tiled pressure path 为 `80x45` tile grid、8 点光、`8034 / 28800` live indices；clustered pressure path 为 `80x45x24` cluster grid、8 点光、`8037 / 691200` live indices。
+- 本次采样中 tiled deferred lighting GPU time 约 `1.1944 ms`，clustered deferred lighting GPU time 约 `3.3720 ms`；这只能作为当前机器单次 pressure rig 基线，不能作为最终性能结论。
+
+这一步的意义是把“clustered 是否值得继续优化”拆成可复现问题。当前证据说明：tiled 仍应保留为稳定 fallback；clustered 已经有 compute assignment 和 3D grid 基础，但下一步需要优先做 overflow/fallback、多帧平均 timing，以及真实资产下的视觉/性能 baseline，而不是直接把 clustered 设为默认。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\profile_pbr_light_culling.ps1 -NoLinkDebugInfo`：构建通过，两个 pressure timing mode 均通过，生成 `docs/pbr_light_culling_timing_report.md`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 28 个 verification mode 全部通过。
