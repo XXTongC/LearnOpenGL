@@ -25,7 +25,7 @@ namespace
 		bool circularClip{ false };
 	};
 
-	float estimateLightRadius(const std::shared_ptr<PointLight>& light)
+	float estimateLightRadius(const std::shared_ptr<PointLight>& light, float cutoff)
 	{
 		if (!light)
 		{
@@ -35,8 +35,8 @@ namespace
 		const glm::vec3 color = light->getColor();
 		const float maxChannel = std::max({ color.r, color.g, color.b, 0.001f });
 		const float intensity = std::max(light->getIntensity(), 0.001f) * maxChannel;
-		constexpr float cutoff = 0.01f;
-		const float targetAttenuationDenominator = intensity / cutoff;
+		const float safeCutoff = std::max(cutoff, 0.001f);
+		const float targetAttenuationDenominator = intensity / safeCutoff;
 		const float k2 = light->getK2();
 		const float k1 = light->getK1();
 		const float k0 = light->getK0();
@@ -80,7 +80,8 @@ namespace
 		const Camera& camera,
 		const glm::mat4& viewProjection,
 		unsigned int width,
-		unsigned int height
+		unsigned int height,
+		float lightCutoff
 	)
 	{
 		ScreenBounds bounds{};
@@ -102,7 +103,7 @@ namespace
 			return bounds;
 		}
 
-		const float radius = estimateLightRadius(light);
+		const float radius = estimateLightRadius(light, lightCutoff);
 		const glm::vec3 sampleOffsets[] = {
 			camera.mRight * radius,
 			-camera.mRight * radius,
@@ -212,12 +213,14 @@ PBRDeferredTiledLightGridStats PBRDeferredTiledLightGrid::bind(
 	const MaterialBindingContext& context,
 	unsigned int targetWidth,
 	unsigned int targetHeight,
-	int tileSize
+	int tileSize,
+	float lightCutoff
 )
 {
 	PBRDeferredTiledLightGridStats stats{};
 	stats.enabled = true;
 	stats.tileSize = std::max(tileSize, 1);
+	stats.lightCutoff = std::max(lightCutoff, 0.001f);
 	if (!context.camera || targetWidth == 0 || targetHeight == 0)
 	{
 		return stats;
@@ -242,7 +245,7 @@ PBRDeferredTiledLightGridStats PBRDeferredTiledLightGrid::bind(
 	mTileLightEntries.reserve(static_cast<std::size_t>(tileCount) * lights.size());
 	for (int lightIndex = 0; lightIndex < static_cast<int>(lights.size()); ++lightIndex)
 	{
-		const ScreenBounds bounds = calculateLightBounds(lights[lightIndex], *context.camera, viewProjection, targetWidth, targetHeight);
+		const ScreenBounds bounds = calculateLightBounds(lights[lightIndex], *context.camera, viewProjection, targetWidth, targetHeight, stats.lightCutoff);
 		if (!bounds.valid)
 		{
 			continue;

@@ -12,6 +12,7 @@ namespace GLframework
 		bool bound{ false };
 		bool enabled{ false };
 		int tileSize{ 0 };
+		float lightCutoff{ 0.0f };
 		int tileColumns{ 0 };
 		int tileRows{ 0 };
 		int tileCount{ 0 };
@@ -35,7 +36,8 @@ namespace GLframework
 			const MaterialBindingContext& context,
 			unsigned int targetWidth,
 			unsigned int targetHeight,
-			int tileSize
+			int tileSize,
+			float lightCutoff
 		);
 
 		static constexpr unsigned int tileBufferBindingPoint()

@@ -35,7 +35,8 @@ PBRDeferredTiledLightDebugPassStats PBRDeferredTiledLightDebugPass::render(
 		context,
 		targetWidth,
 		targetHeight,
-		profile.pbrDeferredTileSize
+		profile.pbrDeferredTileSize,
+		profile.pbrDeferredTiledLightCutoff
 	);
 	if (!stats.gridStats.bound)
 	{

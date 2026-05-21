@@ -272,6 +272,7 @@ namespace
 			ImGui::Text("PBR Deferred Light Buffer Point Lights: %d / %d", stats.pbrDeferredLightBufferPointLights, stats.pbrDeferredLightBufferMaxPointLights);
 			ImGui::Text("PBR Deferred Tiled Light Grid Bound: %s", stats.pbrDeferredTiledLightGridBound ? "Yes" : "No");
 			ImGui::Text("PBR Deferred Tiled Light Grid: %d x %d tiles @ %d px", stats.pbrDeferredTiledLightGridColumns, stats.pbrDeferredTiledLightGridRows, stats.pbrDeferredTiledLightGridTileSize);
+			ImGui::Text("PBR Deferred Tiled Light Cutoff: %.4f", stats.pbrDeferredTiledLightGridCutoff);
 			ImGui::Text("PBR Deferred Tiled Light Occupancy: %d / %d occupied, %d empty", stats.pbrDeferredTiledLightGridOccupiedTiles, stats.pbrDeferredTiledLightGridTileCount, stats.pbrDeferredTiledLightGridEmptyTiles);
 			ImGui::Text("PBR Deferred Tiled Light Indices: %d, max per tile %d", stats.pbrDeferredTiledLightGridIndexCount, stats.pbrDeferredTiledLightGridMaxTileLights);
 			const float tiledLightCullPercent = stats.pbrDeferredTiledLightGridFullIndexCount > 0

@@ -256,6 +256,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + tiled light tile size " + std::to_string(config.pbrDeferredTileSizeOverride);
 		}
+		if (config.pbrDeferredTiledLightCutoffOverride > 0.0f)
+		{
+			profileLine += " + tiled light cutoff " + std::to_string(config.pbrDeferredTiledLightCutoffOverride);
+		}
 		if (config.enablePbrGBufferDebugPass)
 		{
 			profileLine += " + PBR G-buffer debug pass";
@@ -319,6 +323,10 @@ namespace GL_RUNTIME
 		if (config.pbrDeferredTileSizeOverride > 0)
 		{
 			rendererPassProfile.pbrDeferredTileSize = config.pbrDeferredTileSizeOverride;
+		}
+		if (config.pbrDeferredTiledLightCutoffOverride > 0.0f)
+		{
+			rendererPassProfile.pbrDeferredTiledLightCutoff = config.pbrDeferredTiledLightCutoffOverride;
 		}
 
 		if (config.enablePbrGBufferDebugPass)
@@ -551,6 +559,7 @@ namespace GL_RUNTIME
 			statsLine += ", pbrDeferredTiledLightGridSize=" + std::to_string(stats.pbrDeferredTiledLightGridColumns)
 				+ "x" + std::to_string(stats.pbrDeferredTiledLightGridRows);
 			statsLine += ", pbrDeferredTiledLightGridTileSize=" + std::to_string(stats.pbrDeferredTiledLightGridTileSize);
+			statsLine += ", pbrDeferredTiledLightGridCutoff=" + std::to_string(stats.pbrDeferredTiledLightGridCutoff);
 			statsLine += ", pbrDeferredTiledLightGridPointLights=" + std::to_string(stats.pbrDeferredTiledLightGridPointLights);
 			statsLine += ", pbrDeferredTiledLightGridFullIndices=" + std::to_string(stats.pbrDeferredTiledLightGridFullIndexCount);
 			statsLine += ", pbrDeferredTiledLightGridIndices=" + std::to_string(stats.pbrDeferredTiledLightGridIndexCount);

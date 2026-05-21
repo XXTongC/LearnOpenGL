@@ -226,6 +226,7 @@ namespace
 		context.stats->pbrDeferredLightBufferMaxPointLights = std::max(context.stats->pbrDeferredLightBufferMaxPointLights, stats.lightBufferMaxPointLightCount);
 		context.stats->pbrDeferredTiledLightGridBound = context.stats->pbrDeferredTiledLightGridBound || stats.tiledLightGridBound;
 		context.stats->pbrDeferredTiledLightGridTileSize = std::max(context.stats->pbrDeferredTiledLightGridTileSize, stats.tiledLightGridTileSize);
+		context.stats->pbrDeferredTiledLightGridCutoff = std::max(context.stats->pbrDeferredTiledLightGridCutoff, stats.tiledLightGridCutoff);
 		context.stats->pbrDeferredTiledLightGridColumns = std::max(context.stats->pbrDeferredTiledLightGridColumns, stats.tiledLightGridColumns);
 		context.stats->pbrDeferredTiledLightGridRows = std::max(context.stats->pbrDeferredTiledLightGridRows, stats.tiledLightGridRows);
 		context.stats->pbrDeferredTiledLightGridTileCount = std::max(context.stats->pbrDeferredTiledLightGridTileCount, stats.tiledLightGridTileCount);
@@ -247,6 +248,7 @@ namespace
 
 		context.stats->pbrDeferredTiledLightGridBound = context.stats->pbrDeferredTiledLightGridBound || stats.bound;
 		context.stats->pbrDeferredTiledLightGridTileSize = std::max(context.stats->pbrDeferredTiledLightGridTileSize, stats.tileSize);
+		context.stats->pbrDeferredTiledLightGridCutoff = std::max(context.stats->pbrDeferredTiledLightGridCutoff, stats.lightCutoff);
 		context.stats->pbrDeferredTiledLightGridColumns = std::max(context.stats->pbrDeferredTiledLightGridColumns, stats.tileColumns);
 		context.stats->pbrDeferredTiledLightGridRows = std::max(context.stats->pbrDeferredTiledLightGridRows, stats.tileRows);
 		context.stats->pbrDeferredTiledLightGridTileCount = std::max(context.stats->pbrDeferredTiledLightGridTileCount, stats.tileCount);

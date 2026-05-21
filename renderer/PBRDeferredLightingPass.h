@@ -28,6 +28,7 @@ namespace GLframework
 		bool tiledLightGridBound{ false };
 		bool tiledLightGridEnabled{ false };
 		int tiledLightGridTileSize{ 0 };
+		float tiledLightGridCutoff{ 0.0f };
 		int tiledLightGridColumns{ 0 };
 		int tiledLightGridRows{ 0 };
 		int tiledLightGridTileCount{ 0 };

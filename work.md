@@ -1921,3 +1921,23 @@ Tiled light grid 的 tile size 配置现在有专用 verification 覆盖：
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights-32`：构建通过，输出 `pbrDeferredTiledLightGridSize=40x23`、`pbrDeferredTiledLightGridTileSize=32`、`pbrDeferredTiledLightGridFullIndices=1840`、`pbrDeferredTiledLightGridIndices=762`、`pbrDeferredTiledLightGridCulledIndices=1078`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：15 个 PBR verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Tiled Light Cutoff Profile
+
+Tiled light grid 的 point light influence cutoff 已从硬编码常量提升为 renderer frame pass profile 参数：
+
+- `RendererFramePassProfile` 新增 `pbrDeferredTiledLightCutoff`，默认值保持 `0.01`。
+- `config/renderer_frame_pass.example.ini` 新增 `pbrDeferredTiledLightCutoff=0.01`，本地实验可以直接调整 cutoff。
+- `PBRDeferredTiledLightGrid::bind(...)` 现在接收 cutoff，并用它估算 point light screen-space influence radius。
+- `PBRDeferredLightingPass` 与 `PBRDeferredTiledLightDebugPass` 都从 profile 传入 cutoff，因此 deferred lighting 和 heatmap debug 使用同一套 light bounds。
+- Debug UI 和 runtime verification 输出新增 `pbrDeferredTiledLightGridCutoff`。
+- `RuntimePBRVerificationConfig` 新增 `pbrDeferredTiledLightCutoffOverride`。
+- 新增 `--verify-pbr-deferred-tiled-lights-cutoff-005`，把 sparse tiled verification 的 cutoff 从 `0.01` 提高到 `0.05`。
+- `tools/verify_pbr.ps1` 默认 PBR 回归从 15 个模式扩展为 16 个模式，并对 cutoff override 模式断言 `pbrDeferredTiledLightGridCutoff=0.05`。
+
+这一步的意义是把 tiled light bounds 的关键质量参数纳入 profile / UI / ini / verification，而不是藏在 C++ 魔数里。后续比较 CPU tiled、clustered、GPU culling 时，可以明确说明 light influence cutoff 的取值。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights-cutoff-005`：构建通过，输出 `pbrDeferredTiledLightGridCutoff=0.050000`、`pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=714`、`pbrDeferredTiledLightGridCulledIndices=6486`、`pbrDeferredTiledLightGridOccupiedTiles=714/3600`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：16 个 PBR verification mode 全部通过。

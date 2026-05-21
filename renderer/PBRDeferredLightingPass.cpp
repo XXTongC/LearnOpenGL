@@ -116,11 +116,13 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 			context,
 			targetWidth,
 			targetHeight,
-			profile.pbrDeferredTileSize
+			profile.pbrDeferredTileSize,
+			profile.pbrDeferredTiledLightCutoff
 		);
 		stats.tiledLightGridBound = tiledStats.bound;
 		stats.tiledLightGridEnabled = tiledStats.enabled;
 		stats.tiledLightGridTileSize = tiledStats.tileSize;
+		stats.tiledLightGridCutoff = tiledStats.lightCutoff;
 		stats.tiledLightGridColumns = tiledStats.tileColumns;
 		stats.tiledLightGridRows = tiledStats.tileRows;
 		stats.tiledLightGridTileCount = tiledStats.tileCount;

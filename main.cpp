@@ -37,10 +37,11 @@ namespace
 		const bool verifyPbrDeferredAlphaMask = hasArgument(argc, argv, "--verify-pbr-deferred-alpha-mask");
 		const bool verifyPbrDeferredTiledLights = hasArgument(argc, argv, "--verify-pbr-deferred-tiled-lights");
 		const bool verifyPbrDeferredTiledLights32 = hasArgument(argc, argv, "--verify-pbr-deferred-tiled-lights-32");
+		const bool verifyPbrDeferredTiledLightsCutoff005 = hasArgument(argc, argv, "--verify-pbr-deferred-tiled-lights-cutoff-005");
 		const bool verifyPbrDeferredTiledHeatmap = hasArgument(argc, argv, "--verify-pbr-deferred-tiled-heatmap");
 		const bool verifyPbrImport = hasArgument(argc, argv, "--verify-pbr-import");
 		const bool verifyPbrNoAtlas = hasArgument(argc, argv, "--verify-pbr-no-atlas");
-		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer || verifyPbrGBufferDebug || verifyPbrDeferred || verifyPbrDeferredNoAtlas || verifyPbrDeferredTransparent || verifyPbrDeferredEmissive || verifyPbrDeferredMaterialIbl || verifyPbrDeferredAlphaMask || verifyPbrDeferredTiledLights || verifyPbrDeferredTiledLights32 || verifyPbrDeferredTiledHeatmap || verifyPbrImport || verifyPbrNoAtlas)
+		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer || verifyPbrGBufferDebug || verifyPbrDeferred || verifyPbrDeferredNoAtlas || verifyPbrDeferredTransparent || verifyPbrDeferredEmissive || verifyPbrDeferredMaterialIbl || verifyPbrDeferredAlphaMask || verifyPbrDeferredTiledLights || verifyPbrDeferredTiledLights32 || verifyPbrDeferredTiledLightsCutoff005 || verifyPbrDeferredTiledHeatmap || verifyPbrImport || verifyPbrNoAtlas)
 		{
 			config.window = { 1280, 720 };
 			config.enableGui = false;
@@ -53,12 +54,16 @@ namespace
 			config.pbrVerification.enablePbrEmissiveProbe = verifyPbrDeferredEmissive;
 			config.pbrVerification.enablePbrMaterialIblProbe = verifyPbrDeferredMaterialIbl;
 			config.pbrVerification.enablePbrAlphaMaskProbe = verifyPbrDeferredAlphaMask;
-			config.pbrVerification.enablePbrTiledLightProbe = verifyPbrDeferredTiledLights || verifyPbrDeferredTiledLights32;
+			config.pbrVerification.enablePbrTiledLightProbe = verifyPbrDeferredTiledLights || verifyPbrDeferredTiledLights32 || verifyPbrDeferredTiledLightsCutoff005;
 			config.pbrVerification.enablePbrDeferredTiledLightDebugPass = verifyPbrDeferredTiledHeatmap;
 			config.pbrVerification.enablePbrImportedAssetProbe = verifyPbrImport;
 			if (verifyPbrDeferredTiledLights32)
 			{
 				config.pbrVerification.pbrDeferredTileSizeOverride = 32;
+			}
+			if (verifyPbrDeferredTiledLightsCutoff005)
+			{
+				config.pbrVerification.pbrDeferredTiledLightCutoffOverride = 0.05f;
 			}
 			if (verifyPbrIblDebug)
 			{
@@ -123,6 +128,12 @@ namespace
 				config.pbrVerification.enablePbrGBufferPass = true;
 				config.pbrVerification.enablePbrDeferredLightingPass = true;
 				config.pbrVerification.capturePath = "out/pbr_deferred_tiled_lights_32_verification.ppm";
+			}
+			if (verifyPbrDeferredTiledLightsCutoff005)
+			{
+				config.pbrVerification.enablePbrGBufferPass = true;
+				config.pbrVerification.enablePbrDeferredLightingPass = true;
+				config.pbrVerification.capturePath = "out/pbr_deferred_tiled_lights_cutoff_005_verification.ppm";
 			}
 			if (verifyPbrDeferredTiledHeatmap)
 			{

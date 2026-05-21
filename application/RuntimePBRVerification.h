@@ -25,6 +25,7 @@ namespace GL_RUNTIME
 		bool enablePbrImportedAssetProbe{ false };
 		bool enablePbrTiledLightProbe{ false };
 		int pbrDeferredTileSizeOverride{ 0 };
+		float pbrDeferredTiledLightCutoffOverride{ 0.0f };
 		int maxFrames{ 3 };
 		int captureFrame{ 2 };
 		std::string capturePath{ "out/pbr_verification.ppm" };
