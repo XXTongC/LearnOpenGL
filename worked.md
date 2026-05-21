@@ -2232,3 +2232,7 @@
   - 已在代码提交 `0a32120 Add multi-sample PBR light culling profiling` 后重新执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\profile_pbr_light_culling.ps1 -SkipBuild -NoLinkDebugInfo -Samples 3`，确保 [pbr_light_culling_timing_report.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_light_culling_timing_report.md) 和 [pbr_light_culling_timing_samples.csv](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_light_culling_timing_samples.csv) 指向已提交脚本。
   - 三样本结果为 tiled deferred lighting avg/min/max `1.0301 / 0.9916 / 1.0529 ms`，clustered deferred lighting avg/min/max `3.4366 / 3.0088 / 3.6811 ms`。
   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，将 multi-sample timing 验证记录同步到最终 `Samples 3` 报告结果。
+- 完成第一百九十六轮桌面重构报告 multi-sample profiling 同步：
+  - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送分支提交同步到 `95b8227 Record multi-sample PBR light culling report`，最新代码提交同步到 `0a32120 Add multi-sample PBR light culling profiling`。
+  - 桌面报告中补充 `profile_pbr_light_culling.ps1 -Samples N`、[pbr_light_culling_timing_samples.csv](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_light_culling_timing_samples.csv) 和 3 样本 tiled / clustered pressure timing baseline。
+  - 桌面报告的后续建议已从“多轮 timing 统计”更新为真实资产 golden capture、真实资产 profiling 场景、glTF material parity、透明策略和 clustered overflow。
