@@ -52,6 +52,18 @@ namespace GLframework
 		int pbrDeferredTiledLightGridOccupiedTiles{ 0 };
 		int pbrDeferredTiledLightGridEmptyTiles{ 0 };
 		int pbrDeferredTiledLightGridMaxTileLights{ 0 };
+		bool pbrDeferredClusteredLightGridEnabled{ false };
+		bool pbrDeferredClusteredLightGridBound{ false };
+		int pbrDeferredClusteredLightGridTileSize{ 0 };
+		int pbrDeferredClusteredLightGridColumns{ 0 };
+		int pbrDeferredClusteredLightGridRows{ 0 };
+		int pbrDeferredClusteredLightGridDepthSlices{ 0 };
+		int pbrDeferredClusteredLightGridClusterCount{ 0 };
+		int pbrDeferredClusteredLightGridMaxLightsPerCluster{ 0 };
+		int pbrDeferredClusteredLightGridMaxIndexCount{ 0 };
+		int pbrDeferredClusteredLightGridPointLights{ 0 };
+		int pbrDeferredClusteredLightGridIndexCount{ 0 };
+		int pbrDeferredClusteredLightGridCulledIndexCount{ 0 };
 		int pbrDeferredTiledLightDebugDrawCalls{ 0 };
 		int pbrGBufferDebugDrawCalls{ 0 };
 		int legacySceneDrawCalls{ 0 };

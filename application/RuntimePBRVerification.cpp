@@ -267,6 +267,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + sparse tiled light probe";
 		}
+		if (config.enablePbrClusteredLayoutProbe)
+		{
+			profileLine += " + clustered layout stats probe";
+		}
 		if (config.disablePbrDeferredTiledLights)
 		{
 			profileLine += " + tiled lights disabled";
@@ -350,6 +354,10 @@ namespace GL_RUNTIME
 		if (config.disablePbrDeferredTiledLights)
 		{
 			rendererPassProfile.pbrDeferredTiledLightsEnabled = false;
+		}
+		if (config.enablePbrClusteredLayoutProbe)
+		{
+			rendererPassProfile.pbrDeferredClusteredLayoutStatsEnabled = true;
 		}
 
 		if (config.enablePbrGBufferDebugPass)
@@ -622,6 +630,23 @@ namespace GL_RUNTIME
 			statsLine += "/" + std::to_string(stats.pbrDeferredTiledLightGridTileCount);
 			statsLine += ", pbrDeferredTiledLightGridEmptyTiles=" + std::to_string(stats.pbrDeferredTiledLightGridEmptyTiles);
 			statsLine += ", pbrDeferredTiledLightGridMaxTileLights=" + std::to_string(stats.pbrDeferredTiledLightGridMaxTileLights);
+			if (stats.pbrDeferredClusteredLightGridEnabled || stats.pbrDeferredClusteredLightGridClusterCount > 0)
+			{
+				statsLine += ", pbrDeferredClusteredLightGridEnabled=";
+				statsLine += (stats.pbrDeferredClusteredLightGridEnabled ? "yes" : "no");
+				statsLine += ", pbrDeferredClusteredLightGridBound=";
+				statsLine += (stats.pbrDeferredClusteredLightGridBound ? "yes" : "no");
+				statsLine += ", pbrDeferredClusteredLightGridSize=" + std::to_string(stats.pbrDeferredClusteredLightGridColumns)
+					+ "x" + std::to_string(stats.pbrDeferredClusteredLightGridRows)
+					+ "x" + std::to_string(stats.pbrDeferredClusteredLightGridDepthSlices);
+				statsLine += ", pbrDeferredClusteredLightGridTileSize=" + std::to_string(stats.pbrDeferredClusteredLightGridTileSize);
+				statsLine += ", pbrDeferredClusteredLightGridClusters=" + std::to_string(stats.pbrDeferredClusteredLightGridClusterCount);
+				statsLine += ", pbrDeferredClusteredLightGridMaxLightsPerCluster=" + std::to_string(stats.pbrDeferredClusteredLightGridMaxLightsPerCluster);
+				statsLine += ", pbrDeferredClusteredLightGridMaxIndices=" + std::to_string(stats.pbrDeferredClusteredLightGridMaxIndexCount);
+				statsLine += ", pbrDeferredClusteredLightGridPointLights=" + std::to_string(stats.pbrDeferredClusteredLightGridPointLights);
+				statsLine += ", pbrDeferredClusteredLightGridIndices=" + std::to_string(stats.pbrDeferredClusteredLightGridIndexCount);
+				statsLine += ", pbrDeferredClusteredLightGridCulledIndices=" + std::to_string(stats.pbrDeferredClusteredLightGridCulledIndexCount);
+			}
 		}
 		if (stats.pbrGBufferDebugDrawCalls > 0)
 		{

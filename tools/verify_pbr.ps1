@@ -31,6 +31,7 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-tiled-lights-32"; Argument = "--verify-pbr-deferred-tiled-lights-32"; Capture = "out/pbr_deferred_tiled_lights_32_verification.ppm"; ExpectTiledCulling = $true; ExpectTileSize = 32 },
     [pscustomobject]@{ Name = "deferred-tiled-lights-cutoff-005"; Argument = "--verify-pbr-deferred-tiled-lights-cutoff-005"; Capture = "out/pbr_deferred_tiled_lights_cutoff_005_verification.ppm"; ExpectTiledCulling = $true; ExpectLightCutoff = 0.05 },
     [pscustomobject]@{ Name = "deferred-tiled-heatmap"; Argument = "--verify-pbr-deferred-tiled-heatmap"; Capture = "out/pbr_deferred_tiled_heatmap_verification.ppm"; ExpectTiledCulling = $true; ExpectTiledHeatmap = $true },
+    [pscustomobject]@{ Name = "deferred-clustered-layout"; Argument = "--verify-pbr-deferred-clustered-layout"; Capture = "out/pbr_deferred_clustered_layout_verification.ppm"; ExpectClusteredLayout = $true },
     [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" },
     [pscustomobject]@{ Name = "texture-set"; Argument = "--verify-pbr-texture-set"; Capture = "out/pbr_texture_set_verification.ppm"; ExpectTexturedProbe = $true },
     [pscustomobject]@{ Name = "deferred-texture-set"; Argument = "--verify-pbr-deferred-texture-set"; Capture = "out/pbr_deferred_texture_set_verification.ppm"; ExpectTexturedProbe = $true; ExpectDeferredLighting = $true }
@@ -391,6 +392,59 @@ foreach ($mode in $selectedModes) {
         }
         elseif ($rendererLine -notmatch "pbrDeferredTiledLightDebugDrawCalls=1") {
             $failures.Add("$($mode.Name): tiled light heatmap debug pass did not draw")
+        }
+    }
+    if ($mode.PSObject.Properties.Name -contains "ExpectClusteredLayout" -and $mode.ExpectClusteredLayout) {
+        if (!$rendererLine) {
+            $failures.Add("$($mode.Name): missing renderer stats")
+        }
+        else {
+            $drawCalls = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredLightingDrawCalls=(\d+)" -Group 1
+            $columns = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridSize=(\d+)x(\d+)x(\d+)" -Group 1
+            $rows = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridSize=(\d+)x(\d+)x(\d+)" -Group 2
+            $depthSlices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridSize=(\d+)x(\d+)x(\d+)" -Group 3
+            $tileSize = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridTileSize=(\d+)" -Group 1
+            $clusters = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridClusters=(\d+)" -Group 1
+            $maxLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridMaxLightsPerCluster=(\d+)" -Group 1
+            $maxIndices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridMaxIndices=(\d+)" -Group 1
+            $pointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridPointLights=(\d+)" -Group 1
+            if ($null -eq $drawCalls -or [int]$drawCalls -le 0) {
+                $failures.Add("$($mode.Name): deferred lighting did not draw")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridEnabled=yes") {
+                $failures.Add("$($mode.Name): clustered layout stats were not enabled")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridBound=no") {
+                $failures.Add("$($mode.Name): clustered layout-only mode should not bind GPU clustered buffers")
+            }
+            if ($rendererLine -notmatch "pbrDeferredTiledLightsEnabled=no") {
+                $failures.Add("$($mode.Name): CPU tiled lights should be disabled for clustered layout-only mode")
+            }
+            if ($null -eq $columns -or $null -eq $rows -or $null -eq $depthSlices -or $null -eq $tileSize -or $null -eq $clusters -or $null -eq $maxLights -or $null -eq $maxIndices -or $null -eq $pointLights) {
+                $failures.Add("$($mode.Name): clustered layout stats were incomplete")
+            }
+            else {
+                $expectedClusters = [int]$columns * [int]$rows * [int]$depthSlices
+                $expectedMaxIndices = $expectedClusters * [int]$maxLights
+                if ([int]$tileSize -ne 16) {
+                    $failures.Add("$($mode.Name): clustered tile size did not match default profile ($tileSize != 16)")
+                }
+                if ([int]$depthSlices -ne 24) {
+                    $failures.Add("$($mode.Name): clustered depth slices did not match default profile ($depthSlices != 24)")
+                }
+                if ([int]$maxLights -ne 64) {
+                    $failures.Add("$($mode.Name): clustered max lights per cluster did not match default profile ($maxLights != 64)")
+                }
+                if ([int]$clusters -ne $expectedClusters) {
+                    $failures.Add("$($mode.Name): clustered count did not match dimensions ($clusters != $expectedClusters)")
+                }
+                if ([int]$maxIndices -ne $expectedMaxIndices) {
+                    $failures.Add("$($mode.Name): clustered max index capacity did not match dimensions and capacity ($maxIndices != $expectedMaxIndices)")
+                }
+                if ([int]$pointLights -le 0) {
+                    $failures.Add("$($mode.Name): clustered layout reported no point lights")
+                }
+            }
         }
     }
     if ($mode.PSObject.Properties.Name -contains "ExpectTexturedProbe" -and $mode.ExpectTexturedProbe) {

@@ -238,6 +238,18 @@ namespace
 		context.stats->pbrDeferredTiledLightGridOccupiedTiles = std::max(context.stats->pbrDeferredTiledLightGridOccupiedTiles, stats.tiledLightGridOccupiedTileCount);
 		context.stats->pbrDeferredTiledLightGridEmptyTiles = std::max(context.stats->pbrDeferredTiledLightGridEmptyTiles, stats.tiledLightGridEmptyTileCount);
 		context.stats->pbrDeferredTiledLightGridMaxTileLights = std::max(context.stats->pbrDeferredTiledLightGridMaxTileLights, stats.tiledLightGridMaxTileLightCount);
+		context.stats->pbrDeferredClusteredLightGridEnabled = context.stats->pbrDeferredClusteredLightGridEnabled || stats.clusteredLightGridEnabled;
+		context.stats->pbrDeferredClusteredLightGridBound = context.stats->pbrDeferredClusteredLightGridBound || stats.clusteredLightGridBound;
+		context.stats->pbrDeferredClusteredLightGridTileSize = std::max(context.stats->pbrDeferredClusteredLightGridTileSize, stats.clusteredLightGridTileSize);
+		context.stats->pbrDeferredClusteredLightGridColumns = std::max(context.stats->pbrDeferredClusteredLightGridColumns, stats.clusteredLightGridColumns);
+		context.stats->pbrDeferredClusteredLightGridRows = std::max(context.stats->pbrDeferredClusteredLightGridRows, stats.clusteredLightGridRows);
+		context.stats->pbrDeferredClusteredLightGridDepthSlices = std::max(context.stats->pbrDeferredClusteredLightGridDepthSlices, stats.clusteredLightGridDepthSlices);
+		context.stats->pbrDeferredClusteredLightGridClusterCount = std::max(context.stats->pbrDeferredClusteredLightGridClusterCount, stats.clusteredLightGridClusterCount);
+		context.stats->pbrDeferredClusteredLightGridMaxLightsPerCluster = std::max(context.stats->pbrDeferredClusteredLightGridMaxLightsPerCluster, stats.clusteredLightGridMaxLightsPerCluster);
+		context.stats->pbrDeferredClusteredLightGridMaxIndexCount = std::max(context.stats->pbrDeferredClusteredLightGridMaxIndexCount, stats.clusteredLightGridMaxIndexCount);
+		context.stats->pbrDeferredClusteredLightGridPointLights = std::max(context.stats->pbrDeferredClusteredLightGridPointLights, stats.clusteredLightGridPointLightCount);
+		context.stats->pbrDeferredClusteredLightGridIndexCount = std::max(context.stats->pbrDeferredClusteredLightGridIndexCount, stats.clusteredLightGridIndexCount);
+		context.stats->pbrDeferredClusteredLightGridCulledIndexCount = std::max(context.stats->pbrDeferredClusteredLightGridCulledIndexCount, stats.clusteredLightGridCulledIndexCount);
 	}
 
 	void accumulateTiledLightGridStats(RendererFrameContext& context, const PBRDeferredTiledLightGridStats& stats)

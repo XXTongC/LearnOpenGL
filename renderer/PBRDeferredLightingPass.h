@@ -39,6 +39,18 @@ namespace GLframework
 		int tiledLightGridOccupiedTileCount{ 0 };
 		int tiledLightGridEmptyTileCount{ 0 };
 		int tiledLightGridMaxTileLightCount{ 0 };
+		bool clusteredLightGridEnabled{ false };
+		bool clusteredLightGridBound{ false };
+		int clusteredLightGridTileSize{ 0 };
+		int clusteredLightGridColumns{ 0 };
+		int clusteredLightGridRows{ 0 };
+		int clusteredLightGridDepthSlices{ 0 };
+		int clusteredLightGridClusterCount{ 0 };
+		int clusteredLightGridMaxLightsPerCluster{ 0 };
+		int clusteredLightGridMaxIndexCount{ 0 };
+		int clusteredLightGridPointLightCount{ 0 };
+		int clusteredLightGridIndexCount{ 0 };
+		int clusteredLightGridCulledIndexCount{ 0 };
 	};
 
 	class PBRDeferredLightingPass

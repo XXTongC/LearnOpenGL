@@ -25,6 +25,7 @@ namespace GL_RUNTIME
 		bool enablePbrImportedAssetProbe{ false };
 		bool enablePbrTextureSetProbe{ false };
 		bool enablePbrTiledLightProbe{ false };
+		bool enablePbrClusteredLayoutProbe{ false };
 		bool disablePbrDeferredTiledLights{ false };
 		int pbrDeferredTileSizeOverride{ 0 };
 		float pbrDeferredTiledLightCutoffOverride{ 0.0f };

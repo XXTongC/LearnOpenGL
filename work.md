@@ -2074,3 +2074,20 @@ Texture-set probe 已从 forward PBR 验证扩展到 deferred PBR 路径：
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，确认 clustered profile/layout 字段已参与编译；当前 CPU tiled path 输出保持 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 19 个 verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Clustered Layout Verification Mode
+
+新增非 compute 的 clustered layout verification mode，用于先验证 `GpuClustered` 数据边界和统计输出：
+
+- `RuntimePBRVerificationConfig` 新增 `enablePbrClusteredLayoutProbe`，`RuntimePBRVerificationArgs` 新增 `--verify-pbr-deferred-clustered-layout`。
+- 新 verification mode 启用 PBR G-buffer + deferred lighting，打开 `RendererFramePassProfile::pbrDeferredClusteredLayoutStatsEnabled`，并关闭 CPU tiled lights。
+- `PBRDeferredLightingPass` 在 clustered layout stats 开启时构造 `GpuClustered` culling config，计算 cluster columns / rows / depth slices / cluster count / max index capacity，但不绑定 GPU clustered buffers，不改变 shader 的当前 lighting 路径。
+- `RendererFrameStats`、`RendererFramePassRegistry`、runtime verification 输出和 Debug UI 增加 clustered layout stats 字段。
+- `tools/verify_pbr.ps1` 新增 `deferred-clustered-layout` mode，并断言 clustered layout enabled、buffer bound 为 no、CPU tiled lights disabled、cluster count 等于 dimensions 乘积、max index capacity 等于 cluster count 乘 max lights per cluster。
+
+这一步是 GPU clustered culling 的 verification scaffold。它不声称 clustered culling 已实现，只保证后续 backend 实现前，layout 参数和统计输出已经可自动化验证。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-layout`：构建通过，输出 `pbrDeferredClusteredLightGridEnabled=yes`、`pbrDeferredClusteredLightGridBound=no`、`pbrDeferredClusteredLightGridSize=80x45x24`、`pbrDeferredClusteredLightGridClusters=86400`、`pbrDeferredClusteredLightGridMaxLightsPerCluster=64`、`pbrDeferredClusteredLightGridMaxIndices=5529600`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 20 个 verification mode 全部通过。

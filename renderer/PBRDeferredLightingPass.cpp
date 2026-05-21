@@ -106,6 +106,29 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 	stats.lightBufferPointLightCount = lightBufferStats.pointLightCount;
 	stats.lightBufferMaxPointLightCount = lightBufferStats.maxPointLightCount;
 
+	if (profile.pbrDeferredClusteredLayoutStatsEnabled)
+	{
+		const PBRDeferredLightCullingConfig clusteredConfig = makePbrDeferredLightCullingConfig(
+			profile,
+			PBRDeferredLightCullingMode::GpuClustered
+		);
+		const PBRDeferredClusteredLightGridLayout clusteredLayout = makePbrDeferredClusteredLightGridLayout(
+			targetWidth,
+			targetHeight,
+			clusteredConfig
+		);
+		stats.clusteredLightGridEnabled = usesPbrDeferredGpuClusteredLightGrid(clusteredConfig);
+		stats.clusteredLightGridBound = false;
+		stats.clusteredLightGridTileSize = clusteredLayout.tileSize;
+		stats.clusteredLightGridColumns = clusteredLayout.clusterColumns;
+		stats.clusteredLightGridRows = clusteredLayout.clusterRows;
+		stats.clusteredLightGridDepthSlices = clusteredLayout.clusterDepthSlices;
+		stats.clusteredLightGridClusterCount = clusteredLayout.clusterCount;
+		stats.clusteredLightGridMaxLightsPerCluster = clusteredLayout.maxLightsPerCluster;
+		stats.clusteredLightGridMaxIndexCount = clusteredLayout.maxLightIndexCount;
+		stats.clusteredLightGridPointLightCount = lightBufferStats.pointLightCount;
+	}
+
 	const bool useTiledPointLights = profile.pbrDeferredTiledLightsEnabled && lightBufferStats.pointLightCount > 0;
 	const PBRDeferredLightCullingConfig lightCullingConfig = makePbrDeferredLightCullingConfig(
 		profile,
