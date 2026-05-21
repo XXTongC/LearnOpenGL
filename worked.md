@@ -2102,3 +2102,6 @@
   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj)、[text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters) 和 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充新 light culling config 模块和技术记录。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`，`Debug|x64` 构建通过，输出保持 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 19 个 verification mode 全部通过。
+- 完成第一百七十一轮桌面重构报告同步：
+  - 已同步 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送提交更新为 `3db2627 Add PBR deferred light culling config`，并补充 `PBRDeferredLightCullingConfig`、`CpuTiled` / `GpuClustered` backend 边界、focused tiled 验证和 19 模式回归结果。
+  - 报告的下一步建议已更新为基于当前 light culling config 定义 `GpuClustered` 的 buffer layout、cluster dimensions、统计指标和 verification mode。
