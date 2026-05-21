@@ -31,7 +31,8 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-tiled-lights-32"; Argument = "--verify-pbr-deferred-tiled-lights-32"; Capture = "out/pbr_deferred_tiled_lights_32_verification.ppm"; ExpectTiledCulling = $true; ExpectTileSize = 32 },
     [pscustomobject]@{ Name = "deferred-tiled-lights-cutoff-005"; Argument = "--verify-pbr-deferred-tiled-lights-cutoff-005"; Capture = "out/pbr_deferred_tiled_lights_cutoff_005_verification.ppm"; ExpectTiledCulling = $true; ExpectLightCutoff = 0.05 },
     [pscustomobject]@{ Name = "deferred-tiled-heatmap"; Argument = "--verify-pbr-deferred-tiled-heatmap"; Capture = "out/pbr_deferred_tiled_heatmap_verification.ppm"; ExpectTiledCulling = $true; ExpectTiledHeatmap = $true },
-    [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" }
+    [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" },
+    [pscustomobject]@{ Name = "texture-set"; Argument = "--verify-pbr-texture-set"; Capture = "out/pbr_texture_set_verification.ppm"; ExpectTexturedProbe = $true }
 )
 
 function Read-PpmToken {
@@ -389,6 +390,26 @@ foreach ($mode in $selectedModes) {
         }
         elseif ($rendererLine -notmatch "pbrDeferredTiledLightDebugDrawCalls=1") {
             $failures.Add("$($mode.Name): tiled light heatmap debug pass did not draw")
+        }
+    }
+    if ($mode.PSObject.Properties.Name -contains "ExpectTexturedProbe" -and $mode.ExpectTexturedProbe) {
+        if (!$sceneLine) {
+            $failures.Add("$($mode.Name): missing scene stats")
+        }
+        else {
+            $texturedMeshes = Get-RegexValue -Text $sceneLine -Pattern "pbrTexturedMeshes=(\d+)" -Group 1
+            if ($null -eq $texturedMeshes -or [int]$texturedMeshes -le 0) {
+                $failures.Add("$($mode.Name): textured PBR probe was not added")
+            }
+        }
+        if (!$rendererLine) {
+            $failures.Add("$($mode.Name): missing renderer stats")
+        }
+        else {
+            $pbrDrawCalls = Get-RegexValue -Text $rendererLine -Pattern "pbrDrawCalls=(\d+)" -Group 1
+            if ($null -eq $pbrDrawCalls -or [int]$pbrDrawCalls -lt 26) {
+                $failures.Add("$($mode.Name): textured PBR probe did not increase PBR draw calls")
+            }
         }
     }
 }

@@ -1974,3 +1974,24 @@ Tiled light grid 的 `bind(...)` 接口已从松散参数收敛为配置对象�
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，focused tiled 输出 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures -Modes deferred-tiled-heatmap`：heatmap consumer 验证通过，输出 `pbrDeferredTiledLightDebugDrawCalls=1`、`pbrDeferredTiledLightGridBound=yes`、`pbrDeferredTiledLightGridIndices=2890`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：17 个 PBR verification mode 全部通过。
+
+### 2026-05-21 PBR Texture Set Verification Probe
+
+PBR verification 已新增 texture-set probe，用于验证真实贴图链路，而不是只依赖纯参数材质球或简单 import probe：
+
+- 新增 `--verify-pbr-texture-set` 命令行模式。
+- 复用仓库已有 `fbx/bag` 贴图集，创建一个 generated plane probe，并绑定：
+  - `diffuse.jpg` -> albedo map
+  - `specular.jpg` -> metallic map
+  - `roughness.jpg` -> roughness map
+  - `ao.jpg` -> AO map
+  - `normal.png` -> normal map
+- `RuntimePBRVerification` 新增 `pbrTexturedMeshes` scene stat，用于证明 textured PBR probe 确实进入 verification scene。
+- `tools/verify_pbr.ps1` 默认 PBR 回归从 17 个模式扩展为 18 个模式，并对 `texture-set` 模式断言 `pbrTexturedMeshes > 0` 且 `pbrDrawCalls >= 26`。
+
+这一步还不是完整真实资产视觉基准，因为 `fbx/bag` 当前缺少对应 mesh；但它已经把 PBR 贴图采样链路纳入自动化验证，覆盖 albedo / metallic / roughness / AO / normal map 组合。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes texture-set`：构建通过，输出 `pbrTexturedMeshes=1`、`pbrMeshes=26`、`pbrDrawCalls=26`、capture 非黑比例 `99.9951%`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 18 个 verification mode 全部通过。

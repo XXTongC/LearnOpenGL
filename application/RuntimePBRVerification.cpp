@@ -34,6 +34,7 @@ namespace
 		int pbrCustomIblMeshCount{ 0 };
 		int pbrAlphaMaskedMeshCount{ 0 };
 		int pbrImportedMeshCount{ 0 };
+		int pbrTexturedMeshCount{ 0 };
 	};
 
 	void reportLine(const std::string& message)
@@ -55,6 +56,7 @@ namespace
 
 		++stats.objectCount;
 		const bool importedAsset = importedAssetSubtree || object->getName().find("PBR Imported") == 0;
+		const bool texturedProbe = object->getName().find("PBR Texture Set") == 0;
 		if (object->getType() == GLframework::ObjectType::Mesh)
 		{
 			++stats.meshCount;
@@ -67,6 +69,10 @@ namespace
 			if (importedAsset)
 			{
 				++stats.pbrImportedMeshCount;
+			}
+			if (texturedProbe)
+			{
+				++stats.pbrTexturedMeshCount;
 			}
 			const auto pbrMaterial = std::dynamic_pointer_cast<GLframework::PBRMaterial>(mesh->getMaterial());
 			if (pbrMaterial && pbrMaterial->mEmissiveIntensity > 0.0f && glm::length(pbrMaterial->mEmissiveColor) > 0.0001f)
@@ -123,6 +129,11 @@ namespace
 				rowStride
 			);
 		}
+	}
+
+	std::shared_ptr<GLframework::Texture> loadLinearTexture(const std::string& path, unsigned int unit)
+	{
+		return std::make_shared<GLframework::Texture>(path, unit, GL_RGBA);
 	}
 }
 
@@ -248,6 +259,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + imported PBR asset probe";
 		}
+		if (config.enablePbrTextureSetProbe)
+		{
+			profileLine += " + textured PBR material probe";
+		}
 		if (config.enablePbrTiledLightProbe)
 		{
 			profileLine += " + sparse tiled light probe";
@@ -362,7 +377,8 @@ namespace GL_RUNTIME
 			&& !config.enablePbrEmissiveProbe
 			&& !config.enablePbrMaterialIblProbe
 			&& !config.enablePbrAlphaMaskProbe
-			&& !config.enablePbrImportedAssetProbe) || !context.sceneOffScreen || !context.renderer)
+			&& !config.enablePbrImportedAssetProbe
+			&& !config.enablePbrTextureSetProbe) || !context.sceneOffScreen || !context.renderer)
 		{
 			return;
 		}
@@ -479,6 +495,33 @@ namespace GL_RUNTIME
 				reportLine("PBR imported asset probe failed: fbx/test/test.fbx");
 			}
 		}
+
+		if (config.enablePbrTextureSetProbe)
+		{
+			auto material = std::make_shared<GLframework::PBRMaterial>();
+			material->mAlbedo = { 1.0f, 1.0f, 1.0f };
+			material->mAlbedoMap = GLframework::Texture::createTexture("fbx/bag/diffuse.jpg", 0);
+			material->mMetallic = 0.0f;
+			material->mMetallicMap = loadLinearTexture("fbx/bag/specular.jpg", 1);
+			material->mRoughness = 0.5f;
+			material->mRoughnessMap = loadLinearTexture("fbx/bag/roughness.jpg", 2);
+			material->mAo = 1.0f;
+			material->mAoMap = loadLinearTexture("fbx/bag/ao.jpg", 3);
+			material->mNormalMap = loadLinearTexture("fbx/bag/normal.png", 4);
+			material->mUseIBL = true;
+			material->mIblDiffuseStrength = 1.0f;
+			material->mIblSpecularStrength = 1.0f;
+
+			auto geometry = GLframework::Geometry::createPlane(
+				context.renderer->getShader(GLframework::MaterialType::PBRMaterial),
+				1.55f,
+				1.55f
+			);
+			auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
+			mesh->setName("PBR Texture Set Probe");
+			mesh->setPosition({ 2.35f, -1.05f, 1.85f });
+			context.sceneOffScreen->addChild(mesh);
+		}
 	}
 
 	void RuntimePBRVerification::reportPreparedScene(GLframework::AppRuntimeContext& context)
@@ -499,6 +542,7 @@ namespace GL_RUNTIME
 			+ ", pbrCustomIblMeshes=" + std::to_string(stats.pbrCustomIblMeshCount)
 			+ ", pbrAlphaMaskedMeshes=" + std::to_string(stats.pbrAlphaMaskedMeshCount)
 			+ ", pbrImportedMeshes=" + std::to_string(stats.pbrImportedMeshCount)
+			+ ", pbrTexturedMeshes=" + std::to_string(stats.pbrTexturedMeshCount)
 			+ ", iblReady=" + (environmentReady ? std::string{ "yes" } : std::string{ "no" })
 		);
 	}

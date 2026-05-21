@@ -2052,3 +2052,11 @@
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`，`Debug|x64` 构建通过，focused tiled 输出保持 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures -Modes deferred-tiled-heatmap`，heatmap consumer 验证通过，输出 `pbrDeferredTiledLightDebugDrawCalls=1`、`pbrDeferredTiledLightGridBound=yes`、`pbrDeferredTiledLightGridIndices=2890`。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，17 个 PBR verification mode 全部通过。
+- 完成第一百六十一轮 PBR texture set verification probe：
+  - 更新 [application\RuntimePBRVerification.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.h) 和 [application\RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)，新增 `enablePbrTextureSetProbe`，并在 verification scene 中用 `fbx/bag` 贴图集创建 `PBR Texture Set Probe`。
+  - 新 probe 绑定 `fbx/bag/diffuse.jpg`、`specular.jpg`、`roughness.jpg`、`ao.jpg` 和 `normal.png`，覆盖 PBR albedo / metallic / roughness / AO / normal map 采样链路。
+  - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，新增 `--verify-pbr-texture-set` 命令行入口和 `out/pbr_texture_set_verification.ppm` capture path。
+  - 更新 [tools\verify_pbr.ps1](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\verify_pbr.ps1)，默认 PBR 回归新增 `texture-set` 模式，并断言 `pbrTexturedMeshes > 0` 与 `pbrDrawCalls >= 26`。
+  - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Texture Set Verification Probe` 技术记录。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes texture-set`，`Debug|x64` 构建通过，输出 `pbrTexturedMeshes=1`、`pbrMeshes=26`、`pbrDrawCalls=26`、capture 非黑比例 `99.9951%`。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，18 个 PBR verification mode 全部通过。

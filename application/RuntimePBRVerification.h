@@ -23,6 +23,7 @@ namespace GL_RUNTIME
 		bool enablePbrMaterialIblProbe{ false };
 		bool enablePbrAlphaMaskProbe{ false };
 		bool enablePbrImportedAssetProbe{ false };
+		bool enablePbrTextureSetProbe{ false };
 		bool enablePbrTiledLightProbe{ false };
 		bool disablePbrDeferredTiledLights{ false };
 		int pbrDeferredTileSizeOverride{ 0 };
