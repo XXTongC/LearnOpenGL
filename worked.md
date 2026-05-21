@@ -2193,3 +2193,7 @@
   - 更新 [tools\editor\DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，在 Renderer Frame Stats 中显示 GPU timing 状态、timed pass 数量和 PBR 关键 pass 毫秒值。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid-timing`，`Debug|x64` 构建通过，输出 `rendererGpuTimingEnabled=yes`、`rendererGpuTimingAvailable=yes`、`rendererGpuTimedPasses=6`、`rendererGpuPbrGBufferNs=720440`、`rendererGpuPbrDeferredLightingNs=3019100`、`pbrDeferredClusteredLightGridCompute=yes`。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 26 个 verification mode 全部通过。
+- 完成第一百八十八轮桌面重构报告 GPU timing 同步：
+  - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送提交同步到 `5737bc9 Add renderer GPU timing probe`。
+  - 报告中将默认 PBR verification 状态更新为 26 个 mode，并补充 `deferred-clustered-grid-timing`、renderer pass GPU timing、`rendererGpuTimedPasses=6`、`rendererGpuPbrGBufferNs=243800` 和 `rendererGpuPbrDeferredLightingNs=2345740`。
+  - 报告中将 GPU timing 从“未完成”调整为“已有显式 verification probe”，并保留跨帧低阻塞 timer query ring buffer 作为后续优化项。
