@@ -2111,3 +2111,6 @@
   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Deferred Clustered Culling Layout Prep` 技术记录。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`，`Debug|x64` 构建通过，当前 CPU tiled path 输出保持 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 19 个 verification mode 全部通过。
+- 完成第一百七十三轮桌面重构报告同步：
+  - 已同步 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送提交更新为 `62df70b Prepare PBR clustered light culling layout`，并补充 clustered depth slices、max lights per cluster、clustered layout / stats helper、focused tiled 验证和 19 模式回归结果。
+  - 报告的下一步建议已更新为增加非 compute 的 clustered layout verification mode 和 renderer stats 输出，再进入真实 GPU culling backend。
