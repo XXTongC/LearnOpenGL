@@ -22,6 +22,7 @@ namespace GLframework
 		std::shared_ptr<Shader> getIblDebugShader() const;
 		std::shared_ptr<Shader> getPbrGBufferShader() const;
 		std::shared_ptr<Shader> getPbrDeferredLightingShader() const;
+		std::shared_ptr<Shader> getPbrDeferredClusteredLightGridComputeShader() const;
 		std::shared_ptr<Shader> getPbrDeferredTiledLightDebugShader() const;
 		std::shared_ptr<Shader> getPbrGBufferDebugShader() const;
 		std::shared_ptr<Shader> getPbrAlphaShadowShader() const;
@@ -29,6 +30,7 @@ namespace GLframework
 
 	private:
 		std::shared_ptr<Shader> createShader(const char* vertexPath, const char* fragmentPath);
+		std::shared_ptr<Shader> createComputeShader(const char* computePath);
 
 		std::map<MaterialType, std::shared_ptr<Shader>> mMaterialShaders{};
 		std::shared_ptr<Shader> mShadowShader{ nullptr };
@@ -40,6 +42,7 @@ namespace GLframework
 		std::shared_ptr<Shader> mIblDebugShader{ nullptr };
 		std::shared_ptr<Shader> mPbrGBufferShader{ nullptr };
 		std::shared_ptr<Shader> mPbrDeferredLightingShader{ nullptr };
+		std::shared_ptr<Shader> mPbrDeferredClusteredLightGridComputeShader{ nullptr };
 		std::shared_ptr<Shader> mPbrDeferredTiledLightDebugShader{ nullptr };
 		std::shared_ptr<Shader> mPbrGBufferDebugShader{ nullptr };
 		std::shared_ptr<Shader> mPbrAlphaShadowShader{ nullptr };

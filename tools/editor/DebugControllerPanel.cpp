@@ -282,6 +282,7 @@ namespace
 			ImGui::Text("PBR Deferred Tiled Light Culling: %d / %d indices skipped (%.1f%%)", stats.pbrDeferredTiledLightGridCulledIndexCount, stats.pbrDeferredTiledLightGridFullIndexCount, tiledLightCullPercent);
 			ImGui::Text("PBR Deferred Clustered Layout Enabled: %s", stats.pbrDeferredClusteredLightGridEnabled ? "Yes" : "No");
 			ImGui::Text("PBR Deferred Clustered Grid Bound: %s", stats.pbrDeferredClusteredLightGridBound ? "Yes" : "No");
+			ImGui::Text("PBR Deferred Clustered Compute: %s", stats.pbrDeferredClusteredLightGridComputeDispatched ? "Yes" : "No");
 			ImGui::Text("PBR Deferred Clustered Grid: %d x %d x %d clusters @ %d px", stats.pbrDeferredClusteredLightGridColumns, stats.pbrDeferredClusteredLightGridRows, stats.pbrDeferredClusteredLightGridDepthSlices, stats.pbrDeferredClusteredLightGridTileSize);
 			ImGui::Text("PBR Deferred Clustered Capacity: %d clusters, %d max lights/cluster, %d max indices", stats.pbrDeferredClusteredLightGridClusterCount, stats.pbrDeferredClusteredLightGridMaxLightsPerCluster, stats.pbrDeferredClusteredLightGridMaxIndexCount);
 			ImGui::Text("PBR Deferred Clustered Light Indices: %d used, %d skipped", stats.pbrDeferredClusteredLightGridIndexCount, stats.pbrDeferredClusteredLightGridCulledIndexCount);

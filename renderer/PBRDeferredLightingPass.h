@@ -52,6 +52,7 @@ namespace GLframework
 		int clusteredLightGridPointLightCount{ 0 };
 		int clusteredLightGridIndexCount{ 0 };
 		int clusteredLightGridCulledIndexCount{ 0 };
+		bool clusteredLightGridComputeDispatched{ false };
 	};
 
 	class PBRDeferredLightingPass
@@ -70,7 +71,8 @@ namespace GLframework
 			const MaterialBindingContext& context,
 			const RendererFramePassProfile& profile,
 			unsigned int targetWidth,
-			unsigned int targetHeight
+			unsigned int targetHeight,
+			ShaderLibrary& shaderLibrary
 		);
 		void bindGBufferTextures(
 			const std::shared_ptr<Shader>& shader,

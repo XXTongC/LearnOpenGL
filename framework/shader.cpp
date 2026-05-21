@@ -157,6 +157,33 @@ GLframework::Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	GL_CALL(glEnable(GL_BLEND));
 }
 
+GLframework::Shader::Shader(const char* computePath)
+{
+	std::string computeCode;
+
+	try
+	{
+		computeCode = loadShader(computePath);
+	}
+	catch (std::ifstream::failure& e)
+	{
+		std::cout << "ERROR: Shader File Error: " << e.what() << std::endl;
+	}
+
+	const char* computeShaderSource = computeCode.c_str();
+	GLuint computeShader{ 0 };
+	computeShader = glCreateShader(GL_COMPUTE_SHADER);
+	glShaderSource(computeShader, 1, &computeShaderSource, NULL);
+	glCompileShader(computeShader);
+	checkShaderErrors(computeShader, "COMPUTE_COMPILE", computePath);
+
+	mProgram = glCreateProgram();
+	glAttachShader(mProgram, computeShader);
+	glLinkProgram(mProgram);
+	checkShaderErrors(mProgram, "LINK", computePath);
+	glDeleteShader(computeShader);
+}
+
 GLframework::Shader::~Shader()
 {
 	
@@ -178,7 +205,7 @@ void GLframework::Shader::checkShaderErrors(GLuint target, const std::string& ty
 {
 	int success{ 0 };
 	char infoLog[4096]{};
-	if(type == "VERTEX_COMPILE" || type == "FRAGMENT_COMPILE")
+	if(type == "VERTEX_COMPILE" || type == "FRAGMENT_COMPILE" || type == "COMPUTE_COMPILE")
 	{
 		glGetShaderiv(target, GL_COMPILE_STATUS, &success);
 		if (!success)

@@ -800,6 +800,7 @@
     <None Include="shaders\pbr\pbr_alpha_point_shadow.vert" />
     <None Include="shaders\pbr\pbr_alpha_shadow.frag" />
     <None Include="shaders\pbr\pbr_alpha_shadow.vert" />
+    <None Include="shaders\pbr\pbr_deferred_clustered_light_grid.comp" />
     <None Include="shaders\pbr\pbr_deferred_lighting.frag" />
     <None Include="shaders\pbr\pbr_deferred_lighting.vert" />
     <None Include="shaders\pbr\pbr_gbuffer.frag" />

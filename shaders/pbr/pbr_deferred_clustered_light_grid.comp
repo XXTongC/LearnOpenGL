@@ -1,0 +1,187 @@
+#version 460 core
+
+layout(local_size_x = 64) in;
+
+const int MAX_POINT_LIGHTS = 16;
+
+layout(std430, binding = 3) readonly buffer PBRDeferredLightBuffer
+{
+	vec4 deferredDirectionalColorIntensity;
+	vec4 deferredDirectionalDirectionEnabled;
+	vec4 deferredAmbientColor;
+	ivec4 deferredPointLightMeta;
+	vec4 deferredPointLightColorIntensity[MAX_POINT_LIGHTS];
+	vec4 deferredPointLightPositionEnabled[MAX_POINT_LIGHTS];
+	vec4 deferredPointLightAttenuation[MAX_POINT_LIGHTS];
+};
+
+layout(std430, binding = 6) writeonly buffer PBRDeferredClusterBuffer
+{
+	ivec4 deferredClusterOffsetCount[];
+};
+
+layout(std430, binding = 7) writeonly buffer PBRDeferredClusterIndexBuffer
+{
+	int deferredClusterLightIndices[];
+};
+
+uniform int clusteredLightTargetWidth;
+uniform int clusteredLightTargetHeight;
+uniform int clusteredLightTileSize;
+uniform int clusteredLightGridColumns;
+uniform int clusteredLightGridRows;
+uniform int clusteredLightDepthSlices;
+uniform int clusteredLightClusterCount;
+uniform int clusteredLightMaxLightsPerCluster;
+uniform float clusteredLightNearPlane;
+uniform float clusteredLightFarPlane;
+uniform float clusteredLightCutoff;
+uniform mat4 clusteredLightViewMatrix;
+uniform mat4 clusteredLightViewProjectionMatrix;
+uniform vec3 clusteredLightCameraRight;
+uniform vec3 clusteredLightCameraUp;
+
+float estimateLightRadius(int lightIndex)
+{
+	vec3 color = deferredPointLightColorIntensity[lightIndex].rgb;
+	float maxChannel = max(max(max(color.r, color.g), color.b), 0.001);
+	float intensity = max(deferredPointLightColorIntensity[lightIndex].a, 0.001) * maxChannel;
+	float safeCutoff = max(clusteredLightCutoff, 0.001);
+	float targetAttenuationDenominator = intensity / safeCutoff;
+	vec3 attenuationTerms = deferredPointLightAttenuation[lightIndex].xyz;
+	float k2 = attenuationTerms.x;
+	float k1 = attenuationTerms.y;
+	float k0 = attenuationTerms.z;
+
+	if (abs(k2) > 0.0001)
+	{
+		float c = k0 - targetAttenuationDenominator;
+		float discriminant = k1 * k1 - 4.0 * k2 * c;
+		if (discriminant > 0.0)
+		{
+			return max((-k1 + sqrt(discriminant)) / (2.0 * k2), 0.5);
+		}
+	}
+
+	if (abs(k1) > 0.0001)
+	{
+		return max((targetAttenuationDenominator - k0) / k1, 0.5);
+	}
+
+	return 64.0;
+}
+
+bool projectToScreen(vec3 worldPosition, out vec2 screenPosition)
+{
+	vec4 clip = clusteredLightViewProjectionMatrix * vec4(worldPosition, 1.0);
+	if (clip.w <= 0.0001)
+	{
+		screenPosition = vec2(0.0);
+		return false;
+	}
+
+	vec3 ndc = clip.xyz / clip.w;
+	screenPosition = vec2(
+		(ndc.x * 0.5 + 0.5) * float(clusteredLightTargetWidth),
+		(ndc.y * 0.5 + 0.5) * float(clusteredLightTargetHeight)
+	);
+	return true;
+}
+
+bool tileIntersectsLightCircle(int tileX, int tileY, vec2 center, float radiusPixels)
+{
+	float minX = float(tileX * clusteredLightTileSize);
+	float minY = float(tileY * clusteredLightTileSize);
+	float maxX = min(float((tileX + 1) * clusteredLightTileSize), float(clusteredLightTargetWidth));
+	float maxY = min(float((tileY + 1) * clusteredLightTileSize), float(clusteredLightTargetHeight));
+	float closestX = clamp(center.x, minX, maxX);
+	float closestY = clamp(center.y, minY, maxY);
+	vec2 delta = vec2(closestX, closestY) - center;
+	float conservativeRadius = radiusPixels + 1.0;
+	return dot(delta, delta) <= conservativeRadius * conservativeRadius;
+}
+
+bool clusterIntersectsLight(int clusterX, int clusterY, int clusterZ, int lightIndex)
+{
+	if (deferredPointLightPositionEnabled[lightIndex].w <= 0.0)
+	{
+		return false;
+	}
+
+	vec3 lightPosition = deferredPointLightPositionEnabled[lightIndex].xyz;
+	float radius = estimateLightRadius(lightIndex);
+	float viewDepth = -(clusteredLightViewMatrix * vec4(lightPosition, 1.0)).z;
+	float depthRange = max(clusteredLightFarPlane - clusteredLightNearPlane, 0.001);
+	float sliceNear = clusteredLightNearPlane + depthRange * (float(clusterZ) / float(clusteredLightDepthSlices));
+	float sliceFar = clusteredLightNearPlane + depthRange * (float(clusterZ + 1) / float(clusteredLightDepthSlices));
+	if (viewDepth + radius < sliceNear || viewDepth - radius > sliceFar)
+	{
+		return false;
+	}
+
+	vec2 center;
+	if (!projectToScreen(lightPosition, center))
+	{
+		return true;
+	}
+
+	vec2 sampleRight;
+	vec2 sampleLeft;
+	vec2 sampleUp;
+	vec2 sampleDown;
+	float radiusPixels = 0.0;
+	if (projectToScreen(lightPosition + clusteredLightCameraRight * radius, sampleRight))
+	{
+		radiusPixels = max(radiusPixels, max(abs(sampleRight.x - center.x), abs(sampleRight.y - center.y)));
+	}
+	if (projectToScreen(lightPosition - clusteredLightCameraRight * radius, sampleLeft))
+	{
+		radiusPixels = max(radiusPixels, max(abs(sampleLeft.x - center.x), abs(sampleLeft.y - center.y)));
+	}
+	if (projectToScreen(lightPosition + clusteredLightCameraUp * radius, sampleUp))
+	{
+		radiusPixels = max(radiusPixels, max(abs(sampleUp.x - center.x), abs(sampleUp.y - center.y)));
+	}
+	if (projectToScreen(lightPosition - clusteredLightCameraUp * radius, sampleDown))
+	{
+		radiusPixels = max(radiusPixels, max(abs(sampleDown.x - center.x), abs(sampleDown.y - center.y)));
+	}
+	radiusPixels = radiusPixels <= 0.0 ? 64.0 : max(radiusPixels, 2.0);
+
+	float minX = center.x - radiusPixels;
+	float maxX = center.x + radiusPixels;
+	float minY = center.y - radiusPixels;
+	float maxY = center.y + radiusPixels;
+	if (maxX < 0.0 || maxY < 0.0 || minX >= float(clusteredLightTargetWidth) || minY >= float(clusteredLightTargetHeight))
+	{
+		return false;
+	}
+
+	return tileIntersectsLightCircle(clusterX, clusterY, center, radiusPixels);
+}
+
+void main()
+{
+	int clusterIndex = int(gl_GlobalInvocationID.x);
+	if (clusterIndex >= clusteredLightClusterCount)
+	{
+		return;
+	}
+
+	int clusterX = clusterIndex % clusteredLightGridColumns;
+	int clusterY = (clusterIndex / clusteredLightGridColumns) % clusteredLightGridRows;
+	int clusterZ = clusterIndex / (clusteredLightGridColumns * clusteredLightGridRows);
+	int pointLightCount = clamp(deferredPointLightMeta.x, 0, MAX_POINT_LIGHTS);
+	int offset = clusterIndex * clusteredLightMaxLightsPerCluster;
+	int count = 0;
+	for (int lightIndex = 0; lightIndex < pointLightCount && count < clusteredLightMaxLightsPerCluster; ++lightIndex)
+	{
+		if (clusterIntersectsLight(clusterX, clusterY, clusterZ, lightIndex))
+		{
+			deferredClusterLightIndices[offset + count] = lightIndex;
+			++count;
+		}
+	}
+
+	deferredClusterOffsetCount[clusterIndex] = ivec4(offset, count, 0, 0);
+}

@@ -473,6 +473,9 @@ foreach ($mode in $selectedModes) {
             if ($rendererLine -notmatch "pbrDeferredClusteredLightGridBound=yes") {
                 $failures.Add("$($mode.Name): clustered grid buffers were not bound")
             }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridCompute=yes") {
+                $failures.Add("$($mode.Name): clustered grid compute shader was not dispatched")
+            }
             if ($rendererLine -notmatch "pbrDeferredTiledLightsEnabled=no") {
                 $failures.Add("$($mode.Name): CPU tiled lights should be disabled for clustered grid mode")
             }

@@ -7,6 +7,7 @@ namespace GLframework
 	{
 	public:
 		Shader(const char* vertexPath,const char* fragmentPath);
+		explicit Shader(const char* computePath);
 		~Shader();
 		GLuint getProgram() const;
 		void setFloat(const std::string& name, float value);

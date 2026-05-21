@@ -654,6 +654,8 @@ namespace GL_RUNTIME
 				statsLine += ", pbrDeferredClusteredLightGridPointLights=" + std::to_string(stats.pbrDeferredClusteredLightGridPointLights);
 				statsLine += ", pbrDeferredClusteredLightGridIndices=" + std::to_string(stats.pbrDeferredClusteredLightGridIndexCount);
 				statsLine += ", pbrDeferredClusteredLightGridCulledIndices=" + std::to_string(stats.pbrDeferredClusteredLightGridCulledIndexCount);
+				statsLine += ", pbrDeferredClusteredLightGridCompute=";
+				statsLine += (stats.pbrDeferredClusteredLightGridComputeDispatched ? "yes" : "no");
 			}
 		}
 		if (stats.pbrGBufferDebugDrawCalls > 0)

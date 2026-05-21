@@ -69,7 +69,7 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::render(
 
 	shader->begin();
 	bindGBufferTextures(shader, targets);
-	PBRDeferredLightingPassStats stats = bindFrameUniforms(shader, context, profile, targets.getWidth(), targets.getHeight());
+	PBRDeferredLightingPassStats stats = bindFrameUniforms(shader, context, profile, targets.getWidth(), targets.getHeight(), shaderLibrary);
 
 	const bool drawn = MeshDraw::drawIndexed(mLightingQuad);
 	stats.drawCalls = drawn ? 1 : 0;
@@ -87,7 +87,8 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 	const MaterialBindingContext& context,
 	const RendererFramePassProfile& profile,
 	unsigned int targetWidth,
-	unsigned int targetHeight
+	unsigned int targetHeight,
+	ShaderLibrary& shaderLibrary
 )
 {
 	PBRDeferredLightingPassStats stats{};
@@ -121,14 +122,17 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 			profile,
 			PBRDeferredLightCullingMode::GpuClustered
 		);
-		const PBRDeferredClusteredLightGridStats clusteredStats = mClusteredLightGrid.bind(
+		const PBRDeferredClusteredLightGridStats clusteredStats = mClusteredLightGrid.bindCompute(
 			context,
 			targetWidth,
 			targetHeight,
-			clusteredConfig
+			clusteredConfig,
+			shaderLibrary.getPbrDeferredClusteredLightGridComputeShader()
 		);
+		shader->begin();
 		stats.clusteredLightGridEnabled = clusteredStats.enabled;
 		stats.clusteredLightGridBound = clusteredStats.bound;
+		stats.clusteredLightGridComputeDispatched = clusteredStats.computeDispatched;
 		stats.clusteredLightGridTileSize = clusteredStats.layout.tileSize;
 		stats.clusteredLightGridColumns = clusteredStats.layout.clusterColumns;
 		stats.clusteredLightGridRows = clusteredStats.layout.clusterRows;

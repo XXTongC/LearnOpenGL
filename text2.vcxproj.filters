@@ -2764,6 +2764,9 @@
     <None Include="shaders\pbr\pbr_alpha_shadow.vert">
       <Filter>资源文件\shaders\pbr</Filter>
     </None>
+    <None Include="shaders\pbr\pbr_deferred_clustered_light_grid.comp">
+      <Filter>资源文件\shaders\pbr</Filter>
+    </None>
     <None Include="shaders\pbr\pbr_deferred_lighting.vert">
       <Filter>资源文件\shaders\pbr</Filter>
     </None>

@@ -37,6 +37,7 @@ namespace GLframework
 	{
 		bool enabled{ false };
 		bool bound{ false };
+		bool computeDispatched{ false };
 		PBRDeferredClusteredLightGridLayout layout{};
 		int pointLightCount{ 0 };
 		int lightIndexCount{ 0 };

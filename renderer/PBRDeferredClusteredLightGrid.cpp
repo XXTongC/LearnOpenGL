@@ -7,6 +7,7 @@
 #include "camera/camera.h"
 #include "light/pointLight.h"
 #include "renderer/PBRDeferredLightBuffer.h"
+#include "shader.h"
 
 using namespace GLframework;
 
@@ -342,6 +343,103 @@ PBRDeferredClusteredLightGridStats PBRDeferredClusteredLightGrid::bind(
 	stats.bound = true;
 	stats.lightIndexCount = static_cast<int>(mLightIndices.size());
 	stats.culledLightIndexCount = std::max(clusterCount * stats.pointLightCount - stats.lightIndexCount, 0);
+	return stats;
+}
+
+PBRDeferredClusteredLightGridStats PBRDeferredClusteredLightGrid::bindCompute(
+	const MaterialBindingContext& context,
+	unsigned int targetWidth,
+	unsigned int targetHeight,
+	const PBRDeferredLightCullingConfig& config,
+	const std::shared_ptr<Shader>& computeShader
+)
+{
+	PBRDeferredClusteredLightGridStats stats{};
+	stats.enabled = usesPbrDeferredGpuClusteredLightGrid(config);
+	stats.layout = makePbrDeferredClusteredLightGridLayout(targetWidth, targetHeight, config);
+	if (!stats.enabled || !context.camera || !computeShader || targetWidth == 0 || targetHeight == 0)
+	{
+		return stats;
+	}
+
+	ensureBuffers();
+	if (mClusterBuffer == 0 || mIndexBuffer == 0)
+	{
+		return stats;
+	}
+
+	const auto lights = collectPackedPointLights(context);
+	stats.pointLightCount = static_cast<int>(lights.size());
+	if (stats.layout.clusterCount <= 0 || stats.layout.maxLightIndexCount <= 0)
+	{
+		return stats;
+	}
+
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, mClusterBuffer);
+	glBufferData(
+		GL_SHADER_STORAGE_BUFFER,
+		static_cast<GLsizeiptr>(static_cast<std::size_t>(stats.layout.clusterCount) * sizeof(glm::ivec4)),
+		nullptr,
+		GL_DYNAMIC_DRAW
+	);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, clusterBufferBindingPoint(), mClusterBuffer);
+
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, mIndexBuffer);
+	glBufferData(
+		GL_SHADER_STORAGE_BUFFER,
+		static_cast<GLsizeiptr>(static_cast<std::size_t>(stats.layout.maxLightIndexCount) * sizeof(int)),
+		nullptr,
+		GL_DYNAMIC_DRAW
+	);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, indexBufferBindingPoint(), mIndexBuffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+	const float nearPlane = std::max(context.camera->mNear, 0.001f);
+	const float farPlane = std::max(context.camera->mFar, nearPlane + 0.001f);
+	const glm::mat4 viewMatrix = context.camera->getViewMatrix();
+	const glm::mat4 viewProjection = context.camera->getProjectionMatrix() * viewMatrix;
+
+	computeShader->begin();
+	computeShader->setInt("clusteredLightTargetWidth", static_cast<int>(targetWidth));
+	computeShader->setInt("clusteredLightTargetHeight", static_cast<int>(targetHeight));
+	computeShader->setInt("clusteredLightTileSize", stats.layout.tileSize);
+	computeShader->setInt("clusteredLightGridColumns", stats.layout.clusterColumns);
+	computeShader->setInt("clusteredLightGridRows", stats.layout.clusterRows);
+	computeShader->setInt("clusteredLightDepthSlices", stats.layout.clusterDepthSlices);
+	computeShader->setInt("clusteredLightClusterCount", stats.layout.clusterCount);
+	computeShader->setInt("clusteredLightMaxLightsPerCluster", stats.layout.maxLightsPerCluster);
+	computeShader->setFloat("clusteredLightNearPlane", nearPlane);
+	computeShader->setFloat("clusteredLightFarPlane", farPlane);
+	computeShader->setFloat("clusteredLightCutoff", std::max(config.lightCutoff, 0.001f));
+	computeShader->setMat4("clusteredLightViewMatrix", viewMatrix);
+	computeShader->setMat4("clusteredLightViewProjectionMatrix", viewProjection);
+	computeShader->setVector3("clusteredLightCameraRight", context.camera->mRight);
+	computeShader->setVector3("clusteredLightCameraUp", context.camera->mUp);
+	const auto groupCount = static_cast<GLuint>((stats.layout.clusterCount + 63) / 64);
+	glDispatchCompute(groupCount, 1, 1);
+	computeShader->end();
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT);
+
+	mClusterOffsetCount.resize(static_cast<std::size_t>(stats.layout.clusterCount));
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, mClusterBuffer);
+	glGetBufferSubData(
+		GL_SHADER_STORAGE_BUFFER,
+		0,
+		static_cast<GLsizeiptr>(mClusterOffsetCount.size() * sizeof(glm::ivec4)),
+		mClusterOffsetCount.data()
+	);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+	int lightIndexCount = 0;
+	for (const auto& offsetCount : mClusterOffsetCount)
+	{
+		lightIndexCount += std::max(offsetCount.y, 0);
+	}
+
+	stats.bound = true;
+	stats.computeDispatched = true;
+	stats.lightIndexCount = lightIndexCount;
+	stats.culledLightIndexCount = std::max(stats.layout.clusterCount * stats.pointLightCount - stats.lightIndexCount, 0);
 	return stats;
 }
 

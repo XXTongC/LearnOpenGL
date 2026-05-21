@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "core.h"
@@ -8,6 +9,8 @@
 
 namespace GLframework
 {
+	class Shader;
+
 	class PBRDeferredClusteredLightGrid
 	{
 	public:
@@ -18,6 +21,14 @@ namespace GLframework
 			unsigned int targetWidth,
 			unsigned int targetHeight,
 			const PBRDeferredLightCullingConfig& config
+		);
+
+		PBRDeferredClusteredLightGridStats bindCompute(
+			const MaterialBindingContext& context,
+			unsigned int targetWidth,
+			unsigned int targetHeight,
+			const PBRDeferredLightCullingConfig& config,
+			const std::shared_ptr<Shader>& computeShader
 		);
 
 		static constexpr unsigned int clusterBufferBindingPoint()
