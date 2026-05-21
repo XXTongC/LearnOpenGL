@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+
+#include "core.h"
 #include "renderer/MaterialBindingContext.h"
 
 namespace GLframework
@@ -43,9 +46,20 @@ namespace GLframework
 		}
 
 	private:
+		struct TileLightEntry
+		{
+			int tileIndex{ 0 };
+			int lightIndex{ 0 };
+		};
+
 		void ensureBuffers();
 
 		unsigned int mTileBuffer{ 0 };
 		unsigned int mIndexBuffer{ 0 };
+		std::vector<int> mTileLightCounts{};
+		std::vector<TileLightEntry> mTileLightEntries{};
+		std::vector<glm::ivec4> mTileOffsetCount{};
+		std::vector<int> mLightIndices{};
+		std::vector<int> mTileWriteOffsets{};
 	};
 }

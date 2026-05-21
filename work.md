@@ -1866,3 +1866,20 @@ Tiled light grid 的 CPU builder 已从 `std::vector<std::vector<int>> tileLight
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，focused tiled 输出保持 `pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridOccupiedTiles=2846/3600`、`pbrDeferredTiledLightGridEmptyTiles=754`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：14 个 PBR verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Tiled Light Scratch Buffer Reuse
+
+Tiled light grid 的 CPU builder 已进一步把每帧局部临时容器改为 `PBRDeferredTiledLightGrid` 成员 scratch buffers：
+
+- `mTileLightCounts` 复用每个 tile 的 light count 存储。
+- `mTileLightEntries` 复用 flat `{ tileIndex, lightIndex }` entry buffer。
+- `mTileOffsetCount` 复用上传到 tile SSBO 的 offset / count 数据。
+- `mLightIndices` 复用上传到 index SSBO 的连续 light index 数据。
+- `mTileWriteOffsets` 复用 scatter 阶段的写入 cursor。
+
+这一步仍不改变 GPU SSBO layout，也不改变 deferred shader / heatmap shader 的读取方式。目标是避免 `bind()` 每帧反复创建多组临时 `std::vector`，让 CPU builder 逐步靠近“长期持有 buffer、每帧 clear / assign / reserve 复用容量”的形态，为后续 clustered / GPU culling 继续减少 CPU 侧结构性开销。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，focused tiled 输出保持 `pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridOccupiedTiles=2846/3600`、`pbrDeferredTiledLightGridEmptyTiles=754`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：14 个 PBR verification mode 全部通过；`deferred-tiled-lights` 与 `deferred-tiled-heatmap` 均保持 `2890` indices、`2846/3600` occupied、`754` empty。

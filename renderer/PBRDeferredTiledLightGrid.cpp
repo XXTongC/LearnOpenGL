@@ -25,12 +25,6 @@ namespace
 		bool circularClip{ false };
 	};
 
-	struct TileLightEntry
-	{
-		int tileIndex{ 0 };
-		int lightIndex{ 0 };
-	};
-
 	float estimateLightRadius(const std::shared_ptr<PointLight>& light)
 	{
 		if (!light)
@@ -238,12 +232,12 @@ PBRDeferredTiledLightGridStats PBRDeferredTiledLightGrid::bind(
 	const int columns = static_cast<int>((targetWidth + static_cast<unsigned int>(stats.tileSize) - 1) / static_cast<unsigned int>(stats.tileSize));
 	const int rows = static_cast<int>((targetHeight + static_cast<unsigned int>(stats.tileSize) - 1) / static_cast<unsigned int>(stats.tileSize));
 	const int tileCount = std::max(columns * rows, 0);
-	std::vector<int> tileLightCounts(static_cast<std::size_t>(tileCount), 0);
-	std::vector<TileLightEntry> tileLightEntries{};
-	tileLightEntries.reserve(static_cast<std::size_t>(tileCount));
+	mTileLightCounts.assign(static_cast<std::size_t>(tileCount), 0);
+	mTileLightEntries.clear();
 
 	const glm::mat4 viewProjection = context.camera->getProjectionMatrix() * context.camera->getViewMatrix();
 	const auto lights = collectPackedPointLights(context);
+	mTileLightEntries.reserve(static_cast<std::size_t>(tileCount) * lights.size());
 	for (int lightIndex = 0; lightIndex < static_cast<int>(lights.size()); ++lightIndex)
 	{
 		const ScreenBounds bounds = calculateLightBounds(lights[lightIndex], *context.camera, viewProjection, targetWidth, targetHeight);
@@ -266,18 +260,18 @@ PBRDeferredTiledLightGridStats PBRDeferredTiledLightGrid::bind(
 				}
 
 				const int tileIndex = y * columns + x;
-				++tileLightCounts[static_cast<std::size_t>(tileIndex)];
-				tileLightEntries.push_back(TileLightEntry{ tileIndex, lightIndex });
+				++mTileLightCounts[static_cast<std::size_t>(tileIndex)];
+				mTileLightEntries.push_back(TileLightEntry{ tileIndex, lightIndex });
 			}
 		}
 	}
 
-	std::vector<glm::ivec4> tileOffsetCount(static_cast<std::size_t>(tileCount), glm::ivec4{ 0 });
+	mTileOffsetCount.assign(static_cast<std::size_t>(tileCount), glm::ivec4{ 0 });
 	int lightIndexCount = 0;
 	for (int tileIndex = 0; tileIndex < tileCount; ++tileIndex)
 	{
-		const int tileLightCount = tileLightCounts[static_cast<std::size_t>(tileIndex)];
-		tileOffsetCount[static_cast<std::size_t>(tileIndex)] = glm::ivec4(
+		const int tileLightCount = mTileLightCounts[static_cast<std::size_t>(tileIndex)];
+		mTileOffsetCount[static_cast<std::size_t>(tileIndex)] = glm::ivec4(
 			lightIndexCount,
 			tileLightCount,
 			0,
@@ -295,29 +289,29 @@ PBRDeferredTiledLightGridStats PBRDeferredTiledLightGrid::bind(
 		}
 	}
 
-	std::vector<int> lightIndices(static_cast<std::size_t>(lightIndexCount), 0);
-	std::vector<int> tileWriteOffsets(static_cast<std::size_t>(tileCount), 0);
+	mLightIndices.assign(static_cast<std::size_t>(lightIndexCount), 0);
+	mTileWriteOffsets.assign(static_cast<std::size_t>(tileCount), 0);
 	for (int tileIndex = 0; tileIndex < tileCount; ++tileIndex)
 	{
-		tileWriteOffsets[static_cast<std::size_t>(tileIndex)] = tileOffsetCount[static_cast<std::size_t>(tileIndex)].x;
+		mTileWriteOffsets[static_cast<std::size_t>(tileIndex)] = mTileOffsetCount[static_cast<std::size_t>(tileIndex)].x;
 	}
-	for (const auto& entry : tileLightEntries)
+	for (const auto& entry : mTileLightEntries)
 	{
 		const auto tileIndex = static_cast<std::size_t>(entry.tileIndex);
-		const int writeIndex = tileWriteOffsets[tileIndex]++;
-		lightIndices[static_cast<std::size_t>(writeIndex)] = entry.lightIndex;
+		const int writeIndex = mTileWriteOffsets[tileIndex]++;
+		mLightIndices[static_cast<std::size_t>(writeIndex)] = entry.lightIndex;
 	}
 
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, mTileBuffer);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(tileOffsetCount.size() * sizeof(glm::ivec4)), tileOffsetCount.data(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(mTileOffsetCount.size() * sizeof(glm::ivec4)), mTileOffsetCount.data(), GL_DYNAMIC_DRAW);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, tileBufferBindingPoint(), mTileBuffer);
 
 	const int fallbackIndex = 0;
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, mIndexBuffer);
 	glBufferData(
 		GL_SHADER_STORAGE_BUFFER,
-		static_cast<GLsizeiptr>(std::max<std::size_t>(lightIndices.size(), 1) * sizeof(int)),
-		lightIndices.empty() ? &fallbackIndex : lightIndices.data(),
+		static_cast<GLsizeiptr>(std::max<std::size_t>(mLightIndices.size(), 1) * sizeof(int)),
+		mLightIndices.empty() ? &fallbackIndex : mLightIndices.data(),
 		GL_DYNAMIC_DRAW
 	);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, indexBufferBindingPoint(), mIndexBuffer);
@@ -327,7 +321,7 @@ PBRDeferredTiledLightGridStats PBRDeferredTiledLightGrid::bind(
 	stats.tileColumns = columns;
 	stats.tileRows = rows;
 	stats.tileCount = tileCount;
-	stats.lightIndexCount = static_cast<int>(lightIndices.size());
+	stats.lightIndexCount = static_cast<int>(mLightIndices.size());
 	stats.tileBufferBindingPoint = tileBufferBindingPoint();
 	stats.indexBufferBindingPoint = indexBufferBindingPoint();
 	return stats;

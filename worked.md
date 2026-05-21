@@ -2004,3 +2004,9 @@
   - GPU SSBO layout 保持不变，tile buffer 仍使用 binding `4`，index buffer 仍使用 binding `5`；本轮只优化 CPU builder 的中间数据结构，减少每帧 per-tile small vector 容器开销。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`，`Debug|x64` 构建通过，focused tiled 输出保持 `pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridOccupiedTiles=2846/3600`、`pbrDeferredTiledLightGridEmptyTiles=754`。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，14 个 PBR verification mode 全部通过。
+- 完成第一百五十三轮 PBR deferred tiled light scratch buffer reuse：
+  - 更新 [renderer/PBRDeferredTiledLightGrid.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredTiledLightGrid.h) 和 [renderer/PBRDeferredTiledLightGrid.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredTiledLightGrid.cpp)，把 tile count、flat entries、tile offset/count、light indices 和 scatter write offsets 从 `bind()` 局部临时 vector 提升为 `PBRDeferredTiledLightGrid` 成员 scratch buffers。
+  - GPU SSBO layout 和 shader 读取路径保持不变；本轮只减少 CPU builder 每帧局部容器创建，并让 tiled light grid 的数据布局更接近后续 clustered / GPU culling 的 flat buffer 形态。
+  - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Deferred Tiled Light Scratch Buffer Reuse` 技术记录。
+  - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`，`Debug|x64` 构建通过，focused tiled 输出保持 `pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridOccupiedTiles=2846/3600`、`pbrDeferredTiledLightGridEmptyTiles=754`。
+  - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，14 个 PBR verification mode 全部通过；`deferred-tiled-lights` 与 `deferred-tiled-heatmap` 均保持 `2890` indices、`2846/3600` occupied、`754` empty。
