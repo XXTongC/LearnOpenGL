@@ -2,10 +2,8 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstdint>
 #include <sstream>
 
-#include "core.h"
 #include "FrameRenderState.h"
 #include "IBLDebugPass.h"
 #include "MaterialBindingContext.h"
@@ -22,6 +20,7 @@
 #include "RenderQueue.h"
 #include "RendererFrameContext.h"
 #include "RendererFramePassProfile.h"
+#include "RendererGpuTimerQueryPool.h"
 #include "SceneRenderPass.h"
 #include "ShaderLibrary.h"
 #include "ShadowRenderer.h"
@@ -449,58 +448,10 @@ namespace
 
 	bool isGpuTimingEnabled(const RendererFrameContext& context)
 	{
-		return context.stats && context.framePassProfile && context.framePassProfile->rendererGpuTimingEnabled;
-	}
-
-	void accumulateGpuPassTime(
-		RendererFrameStats& stats,
-		RendererFramePassKey key,
-		std::uint64_t elapsedNs
-	)
-	{
-		stats.rendererGpuTimingEnabled = true;
-		stats.rendererGpuTimingAvailable = true;
-		++stats.rendererGpuTimedPassCount;
-		stats.rendererGpuFrameTimeNs += elapsedNs;
-
-		switch (key)
-		{
-		case RendererFramePassKey::BeginFrame:
-			stats.rendererGpuBeginFrameTimeNs += elapsedNs;
-			break;
-		case RendererFramePassKey::ShadowMaps:
-			stats.rendererGpuShadowMapsTimeNs += elapsedNs;
-			break;
-		case RendererFramePassKey::PBRShadowAtlas:
-			stats.rendererGpuPbrShadowAtlasTimeNs += elapsedNs;
-			break;
-		case RendererFramePassKey::PBRDepthPrepass:
-			stats.rendererGpuPbrDepthPrepassTimeNs += elapsedNs;
-			break;
-		case RendererFramePassKey::PBRGBuffer:
-			stats.rendererGpuPbrGBufferTimeNs += elapsedNs;
-			break;
-		case RendererFramePassKey::PBRDeferredLighting:
-			stats.rendererGpuPbrDeferredLightingTimeNs += elapsedNs;
-			break;
-		case RendererFramePassKey::PBRDeferredTiledLightDebug:
-			stats.rendererGpuPbrDeferredTiledLightDebugTimeNs += elapsedNs;
-			break;
-		case RendererFramePassKey::PBRDeferredClusteredLightDebug:
-			stats.rendererGpuPbrDeferredClusteredLightDebugTimeNs += elapsedNs;
-			break;
-		case RendererFramePassKey::PBRGBufferDebug:
-			stats.rendererGpuPbrGBufferDebugTimeNs += elapsedNs;
-			break;
-		case RendererFramePassKey::PBROpaqueScene:
-			stats.rendererGpuPbrOpaqueSceneTimeNs += elapsedNs;
-			break;
-		case RendererFramePassKey::PBRTransparentScene:
-			stats.rendererGpuPbrTransparentSceneTimeNs += elapsedNs;
-			break;
-		default:
-			break;
-		}
+		return context.stats
+			&& context.framePassProfile
+			&& context.framePassProfile->rendererGpuTimingEnabled
+			&& context.gpuTimerQueries;
 	}
 
 	void executePassBody(const RendererFramePassDefinition& pass, RendererFrameContext& context)
@@ -567,22 +518,15 @@ namespace
 
 		context.stats->rendererGpuTimingEnabled = true;
 
-		GLuint queryId = 0;
-		glGenQueries(1, &queryId);
+		const unsigned int queryId = context.gpuTimerQueries->beginPass(pass.key);
 		if (queryId == 0)
 		{
 			executePassBody(pass, context);
 			return;
 		}
 
-		glBeginQuery(GL_TIME_ELAPSED, queryId);
 		executePassBody(pass, context);
-		glEndQuery(GL_TIME_ELAPSED);
-
-		GLuint64 elapsedNs = 0;
-		glGetQueryObjectui64v(queryId, GL_QUERY_RESULT, &elapsedNs);
-		glDeleteQueries(1, &queryId);
-		accumulateGpuPassTime(*context.stats, pass.key, static_cast<std::uint64_t>(elapsedNs));
+		context.gpuTimerQueries->endPass(queryId);
 	}
 }
 

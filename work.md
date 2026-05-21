@@ -2200,3 +2200,21 @@ clustered compute assignment 已经能在 GPU 上生成 clustered light grid，�
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid-timing`：构建通过，输出 `rendererGpuTimingEnabled=yes`、`rendererGpuTimingAvailable=yes`、`rendererGpuTimedPasses=6`、`rendererGpuFrameNs=7024410`、`rendererGpuPbrGBufferNs=720440`、`rendererGpuPbrDeferredLightingNs=3019100`，并保持 `pbrDeferredClusteredLightGridCompute=yes`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 26 个 verification mode 全部通过。
+
+### 2026-05-21 Renderer GPU Timing Deferred Readback
+
+上一轮 renderer GPU timing probe 已经可以输出 pass 级 GPU 时间，但实现仍在同帧对每个 `GL_TIME_ELAPSED` query 调用 `GL_QUERY_RESULT`，这会强制 CPU 等 GPU 完成当前 pass。为了让 profiling 更接近真实运行，本轮将它改为跨帧延迟读回：
+
+- 新增 `RendererGpuTimerQueryPool`，由 `Renderer` 持有，负责 query 对象复用、当前帧 query 收集、旧帧 query 可用性检查和结果读回。
+- `Renderer::render(...)` 在每帧开始调用 `beginFrame(...)`，只尝试读取已经 `GL_QUERY_RESULT_AVAILABLE` 的旧帧 query；本帧结束后把当前帧 query 放入 pending frame 队列。
+- `RendererFramePassRegistry` 不再直接 `glGetQueryObjectui64v(...GL_QUERY_RESULT...)`，只负责在 pass 前后调用 query pool 的 `beginPass(...)` / `endPass(...)`。
+- `RendererFrameStats` 新增 `rendererGpuTimingDeferredReadback` 和 `rendererGpuTimingPendingQueries`，用于区分当前 timing probe 是延迟读回还是同帧阻塞读回。
+- `--verify-pbr-deferred-clustered-grid-timing` 的 capture frame 延后到第 5 帧，确保 verification 报告读取的是旧帧完成的 query，而不是当前帧同步等待。
+- `tools/verify_pbr.ps1` 对 timing mode 新增 `rendererGpuTimingDeferredReadback=yes` 与 `rendererGpuTimingPendingQueries > 0` 断言。
+
+这一步仍然是 profiling / verification 工具，不默认启用；但相比上一轮，它不再为了拿到当前帧 timing 而主动阻塞当前帧 GPU work。后续可在这个基础上做 tiled / clustered profile 对比报告。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid-timing`：构建通过，输出 `rendererGpuTimingEnabled=yes`、`rendererGpuTimingAvailable=yes`、`rendererGpuTimingDeferredReadback=yes`、`rendererGpuTimedPasses=6`、`rendererGpuTimingPendingQueries=12`、`rendererGpuPbrGBufferNs=218600`、`rendererGpuPbrDeferredLightingNs=2172830`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 26 个 verification mode 全部通过。

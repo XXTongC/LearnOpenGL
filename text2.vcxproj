@@ -227,6 +227,7 @@
     <ClCompile Include="renderer\RenderQueue.cpp" />
     <ClCompile Include="renderer\RendererFramePassProfile.cpp" />
     <ClCompile Include="renderer\RendererFramePassRegistry.cpp" />
+    <ClCompile Include="renderer\RendererGpuTimerQueryPool.cpp" />
     <ClCompile Include="renderer\RenderState.cpp" />
     <ClCompile Include="renderer\renderer.cpp" />
     <ClCompile Include="renderer\SceneRenderPass.cpp" />
@@ -345,6 +346,7 @@
     <ClInclude Include="renderer\RendererFramePassProfile.h" />
     <ClInclude Include="renderer\RendererFramePassRegistry.h" />
     <ClInclude Include="renderer\RendererFrameStats.h" />
+    <ClInclude Include="renderer\RendererGpuTimerQueryPool.h" />
     <ClInclude Include="renderer\RenderState.h" />
     <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="renderer\SceneRenderPass.h" />

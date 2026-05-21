@@ -534,6 +534,9 @@
     <ClCompile Include="renderer\RendererFramePassRegistry.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\RendererGpuTimerQueryPool.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="materials\whiteMaterial.cpp">
       <Filter>cppfile\GLframework\material</Filter>
     </ClCompile>
@@ -936,6 +939,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\RendererFrameStats.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\RendererGpuTimerQueryPool.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="materials\whiteMaterial.h">

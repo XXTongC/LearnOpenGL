@@ -130,6 +130,11 @@ namespace
 		verification.enablePbrLightPressureProbe |= hasOption(mode.options, OptionPbrLightPressureProbe);
 		verification.enableRendererGpuTimingProbe |= hasOption(mode.options, OptionRendererGpuTimingProbe);
 		verification.disablePbrDeferredTiledLights |= hasOption(mode.options, OptionDisablePbrDeferredTiledLights);
+		if (hasOption(mode.options, OptionRendererGpuTimingProbe))
+		{
+			verification.maxFrames = 5;
+			verification.captureFrame = 5;
+		}
 
 		if (mode.tileSizeOverride > 0)
 		{

@@ -135,6 +135,7 @@ void Renderer::render(
 {
 	mLastFrameStats = {};
 	mPbrShadowAtlasTargets.resetFrameStats();
+	mGpuTimerQueries.beginFrame(mFramePassProfile.rendererGpuTimingEnabled, mLastFrameStats);
 	RendererFrameContext frameContext{
 		scene,
 		camera,
@@ -162,6 +163,7 @@ void Renderer::render(
 		&mShaderLibrary,
 		&mEnvironmentRenderTargets,
 		&mFramePassProfile,
+		&mGpuTimerQueries,
 		&mLastFrameStats
 	};
 
@@ -177,4 +179,5 @@ void Renderer::render(
 			RendererFramePassRegistry::executePass(*pass, frameContext);
 		}
 	}
+	mGpuTimerQueries.endFrame(mLastFrameStats);
 }

@@ -307,16 +307,20 @@ foreach ($mode in $selectedModes) {
         if (!$rendererLine) {
             $failures.Add("$($mode.Name): missing renderer stats")
         }
-        elseif ($rendererLine -notmatch "rendererGpuTimingEnabled=yes" -or $rendererLine -notmatch "rendererGpuTimingAvailable=yes") {
+        elseif ($rendererLine -notmatch "rendererGpuTimingEnabled=yes" -or $rendererLine -notmatch "rendererGpuTimingAvailable=yes" -or $rendererLine -notmatch "rendererGpuTimingDeferredReadback=yes") {
             $failures.Add("$($mode.Name): GPU timing was not enabled and available")
         }
         else {
             $timedPasses = Get-RegexValue -Text $rendererLine -Pattern "rendererGpuTimedPasses=(\d+)" -Group 1
+            $pendingQueries = Get-RegexValue -Text $rendererLine -Pattern "rendererGpuTimingPendingQueries=(\d+)" -Group 1
             $frameNs = Get-RegexValue -Text $rendererLine -Pattern "rendererGpuFrameNs=(\d+)" -Group 1
             $gbufferNs = Get-RegexValue -Text $rendererLine -Pattern "rendererGpuPbrGBufferNs=(\d+)" -Group 1
             $deferredNs = Get-RegexValue -Text $rendererLine -Pattern "rendererGpuPbrDeferredLightingNs=(\d+)" -Group 1
             if ($null -eq $timedPasses -or [int]$timedPasses -lt 3) {
                 $failures.Add("$($mode.Name): GPU timing did not report enough timed passes")
+            }
+            if ($null -eq $pendingQueries -or [int]$pendingQueries -le 0) {
+                $failures.Add("$($mode.Name): GPU timing did not leave deferred pending queries")
             }
             if ($null -eq $frameNs -or [UInt64]$frameNs -le 0) {
                 $failures.Add("$($mode.Name): GPU frame time was not positive")

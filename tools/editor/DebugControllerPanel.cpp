@@ -254,6 +254,9 @@ namespace
 					stats.rendererGpuTimingAvailable ? "Available" : "Unavailable",
 					stats.rendererGpuTimedPassCount,
 					nsToMs(stats.rendererGpuFrameTimeNs));
+				ImGui::Text("Renderer GPU Timing Readback: %s, pending queries %d",
+					stats.rendererGpuTimingDeferredReadback ? "Deferred" : "Immediate",
+					stats.rendererGpuTimingPendingQueries);
 				ImGui::Text("GPU PBR: depth %.3f ms, gbuffer %.3f ms, deferred %.3f ms",
 					nsToMs(stats.rendererGpuPbrDepthPrepassTimeNs),
 					nsToMs(stats.rendererGpuPbrGBufferTimeNs),

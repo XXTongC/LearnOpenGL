@@ -22,6 +22,7 @@
 #include "RenderQueue.h"
 #include "RendererFrameStats.h"
 #include "RendererFramePassProfile.h"
+#include "RendererGpuTimerQueryPool.h"
 #include "SceneRenderPass.h"
 #include "ShadowRenderer.h"
 #include "ShaderLibrary.h"
@@ -89,6 +90,7 @@ private:
 		PBRGBufferRenderTargets mPbrGBufferTargets{};
 		EnvironmentRenderTargets mEnvironmentRenderTargets{};
 		IBLPrecomputePass mIblPrecomputePass{};
+		RendererGpuTimerQueryPool mGpuTimerQueries{};
 		RendererFrameStats mLastFrameStats{};
 		RendererFramePassProfile mFramePassProfile{};
 

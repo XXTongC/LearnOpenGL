@@ -670,7 +670,10 @@ namespace GL_RUNTIME
 			statsLine += ", rendererGpuTimingEnabled=yes";
 			statsLine += ", rendererGpuTimingAvailable=";
 			statsLine += (stats.rendererGpuTimingAvailable ? "yes" : "no");
+			statsLine += ", rendererGpuTimingDeferredReadback=";
+			statsLine += (stats.rendererGpuTimingDeferredReadback ? "yes" : "no");
 			statsLine += ", rendererGpuTimedPasses=" + std::to_string(stats.rendererGpuTimedPassCount);
+			statsLine += ", rendererGpuTimingPendingQueries=" + std::to_string(stats.rendererGpuTimingPendingQueries);
 			statsLine += ", rendererGpuFrameNs=" + std::to_string(stats.rendererGpuFrameTimeNs);
 			statsLine += ", rendererGpuBeginFrameNs=" + std::to_string(stats.rendererGpuBeginFrameTimeNs);
 			statsLine += ", rendererGpuShadowMapsNs=" + std::to_string(stats.rendererGpuShadowMapsTimeNs);

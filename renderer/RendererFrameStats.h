@@ -9,7 +9,9 @@ namespace GLframework
 		int rendererPassCount{ 0 };
 		bool rendererGpuTimingEnabled{ false };
 		bool rendererGpuTimingAvailable{ false };
+		bool rendererGpuTimingDeferredReadback{ false };
 		int rendererGpuTimedPassCount{ 0 };
+		int rendererGpuTimingPendingQueries{ 0 };
 		std::uint64_t rendererGpuFrameTimeNs{ 0 };
 		std::uint64_t rendererGpuBeginFrameTimeNs{ 0 };
 		std::uint64_t rendererGpuShadowMapsTimeNs{ 0 };

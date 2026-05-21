@@ -45,7 +45,7 @@ void RendererFramePassProfile::visitEditableProperties(GL_EDITOR::PropertyBuilde
 	builder.addConfigString("defaultPassOrder", "Default Pass Order", &defaultPassOrder);
 	builder.addConfigString("globalMaterialOverridePassOrder", "Global Material Override Pass Order", &globalMaterialOverridePassOrder);
 	builder.addConfigBool("rendererGpuTimingEnabled", "Renderer GPU Timing", &rendererGpuTimingEnabled);
-	builder.addText("Renderer GPU Timing Note", "Uses GL_TIME_ELAPSED and reads results back on the same frame. Keep disabled for normal rendering; enable for profiling and verification only.");
+	builder.addText("Renderer GPU Timing Note", "Uses GL_TIME_ELAPSED with deferred readback from older frames. Keep disabled for normal rendering; enable for profiling and verification only.");
 	builder.addText(
 		"Available Pass Keys",
 		"BeginFrame, ShadowMaps, PBRShadowAtlas, GlobalMaterialScene, PBRDepthPrepass, PBRGBuffer, PBRDeferredLighting, PBRDeferredTiledLightDebug, PBRDeferredClusteredLightDebug, PBRGBufferDebug, LegacyOpaqueScene, PBROpaqueScene, LegacyTransparentScene, PBRTransparentScene, IBLDebug"

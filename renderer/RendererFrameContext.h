@@ -27,6 +27,7 @@ namespace GLframework
 	class PBRShadowAtlasRenderTargets;
 	class PointLight;
 	class RenderQueue;
+	class RendererGpuTimerQueryPool;
 	class Scene;
 	class SceneRenderPass;
 	class ShaderLibrary;
@@ -63,6 +64,7 @@ namespace GLframework
 		ShaderLibrary* shaderLibrary{ nullptr };
 		EnvironmentRenderTargets* environmentTargets{ nullptr };
 		RendererFramePassProfile* framePassProfile{ nullptr };
+		RendererGpuTimerQueryPool* gpuTimerQueries{ nullptr };
 		RendererFrameStats* stats{ nullptr };
 	};
 }
