@@ -15,6 +15,7 @@ namespace GLframework
 
 		std::string defaultPassOrder{};
 		std::string globalMaterialOverridePassOrder{};
+		bool rendererGpuTimingEnabled{ false };
 		int pbrGBufferDebugMode{ 0 };
 		float pbrGBufferDebugIntensity{ 1.0f };
 		float pbrDeferredLightingIntensity{ 1.0f };

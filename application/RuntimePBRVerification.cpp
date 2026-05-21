@@ -326,6 +326,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + point light pressure rig";
 		}
+		if (config.enableRendererGpuTimingProbe)
+		{
+			profileLine += " + renderer GPU timing";
+		}
 		if (config.disablePbrDeferredTiledLights)
 		{
 			profileLine += " + tiled lights disabled";
@@ -429,6 +433,10 @@ namespace GL_RUNTIME
 		if (config.enablePbrClusteredStatsReadback)
 		{
 			rendererPassProfile.pbrDeferredClusteredStatsReadbackEnabled = true;
+		}
+		if (config.enableRendererGpuTimingProbe)
+		{
+			rendererPassProfile.rendererGpuTimingEnabled = true;
 		}
 
 		if (config.enablePbrGBufferDebugPass)
@@ -657,6 +665,25 @@ namespace GL_RUNTIME
 			+ ", legacyTransparentDrawCalls=" + std::to_string(stats.legacyTransparentDrawCalls)
 			+ ", pbrDrawCalls=" + std::to_string(stats.pbrSceneDrawCalls)
 			+ ", pbrTransparentDrawCalls=" + std::to_string(stats.pbrTransparentDrawCalls);
+		if (stats.rendererGpuTimingEnabled)
+		{
+			statsLine += ", rendererGpuTimingEnabled=yes";
+			statsLine += ", rendererGpuTimingAvailable=";
+			statsLine += (stats.rendererGpuTimingAvailable ? "yes" : "no");
+			statsLine += ", rendererGpuTimedPasses=" + std::to_string(stats.rendererGpuTimedPassCount);
+			statsLine += ", rendererGpuFrameNs=" + std::to_string(stats.rendererGpuFrameTimeNs);
+			statsLine += ", rendererGpuBeginFrameNs=" + std::to_string(stats.rendererGpuBeginFrameTimeNs);
+			statsLine += ", rendererGpuShadowMapsNs=" + std::to_string(stats.rendererGpuShadowMapsTimeNs);
+			statsLine += ", rendererGpuPbrShadowAtlasNs=" + std::to_string(stats.rendererGpuPbrShadowAtlasTimeNs);
+			statsLine += ", rendererGpuPbrDepthPrepassNs=" + std::to_string(stats.rendererGpuPbrDepthPrepassTimeNs);
+			statsLine += ", rendererGpuPbrGBufferNs=" + std::to_string(stats.rendererGpuPbrGBufferTimeNs);
+			statsLine += ", rendererGpuPbrDeferredLightingNs=" + std::to_string(stats.rendererGpuPbrDeferredLightingTimeNs);
+			statsLine += ", rendererGpuPbrDeferredTiledLightDebugNs=" + std::to_string(stats.rendererGpuPbrDeferredTiledLightDebugTimeNs);
+			statsLine += ", rendererGpuPbrDeferredClusteredLightDebugNs=" + std::to_string(stats.rendererGpuPbrDeferredClusteredLightDebugTimeNs);
+			statsLine += ", rendererGpuPbrGBufferDebugNs=" + std::to_string(stats.rendererGpuPbrGBufferDebugTimeNs);
+			statsLine += ", rendererGpuPbrOpaqueSceneNs=" + std::to_string(stats.rendererGpuPbrOpaqueSceneTimeNs);
+			statsLine += ", rendererGpuPbrTransparentSceneNs=" + std::to_string(stats.rendererGpuPbrTransparentSceneTimeNs);
+		}
 		if (stats.iblDebugDrawCalls > 0)
 		{
 			statsLine += ", iblDebugDrawCalls=" + std::to_string(stats.iblDebugDrawCalls);

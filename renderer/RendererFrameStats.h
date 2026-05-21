@@ -1,10 +1,27 @@
 #pragma once
 
+#include <cstdint>
+
 namespace GLframework
 {
 	struct RendererFrameStats
 	{
 		int rendererPassCount{ 0 };
+		bool rendererGpuTimingEnabled{ false };
+		bool rendererGpuTimingAvailable{ false };
+		int rendererGpuTimedPassCount{ 0 };
+		std::uint64_t rendererGpuFrameTimeNs{ 0 };
+		std::uint64_t rendererGpuBeginFrameTimeNs{ 0 };
+		std::uint64_t rendererGpuShadowMapsTimeNs{ 0 };
+		std::uint64_t rendererGpuPbrShadowAtlasTimeNs{ 0 };
+		std::uint64_t rendererGpuPbrDepthPrepassTimeNs{ 0 };
+		std::uint64_t rendererGpuPbrGBufferTimeNs{ 0 };
+		std::uint64_t rendererGpuPbrDeferredLightingTimeNs{ 0 };
+		std::uint64_t rendererGpuPbrDeferredTiledLightDebugTimeNs{ 0 };
+		std::uint64_t rendererGpuPbrDeferredClusteredLightDebugTimeNs{ 0 };
+		std::uint64_t rendererGpuPbrGBufferDebugTimeNs{ 0 };
+		std::uint64_t rendererGpuPbrOpaqueSceneTimeNs{ 0 };
+		std::uint64_t rendererGpuPbrTransparentSceneTimeNs{ 0 };
 		int shadowCasterCount{ 0 };
 		int directionalShadowLayerCount{ 0 };
 		int directionalShadowDrawCalls{ 0 };

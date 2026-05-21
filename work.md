@@ -2183,3 +2183,20 @@ clustered compute assignment 已经能在 GPU 上生成 clustered light grid，�
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights-pressure,deferred-clustered-grid-pressure`：构建通过；tiled pressure 输出 `pointShadowLights=8`、`pbrDeferredLightBufferPointLights=8/16`、`pbrDeferredTiledLightGridPointLights=8`、`pbrDeferredTiledLightGridFullIndices=28800`、`pbrDeferredTiledLightGridIndices=8034`、`pbrDeferredTiledLightGridCulledIndices=20766`、`pbrDeferredTiledLightGridOccupiedTiles=3568/3600`；clustered pressure 输出 `pbrDeferredClusteredLightGridPointLights=8`、`pbrDeferredClusteredLightGridIndices=8037`、`pbrDeferredClusteredLightGridCulledIndices=683163`、`pbrDeferredClusteredLightGridCompute=yes`、`pbrDeferredClusteredLightGridStatsReadback=yes`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 25 个 verification mode 全部通过。
+
+### 2026-05-21 Renderer Pass GPU Timing Probe
+
+在 pressure scene 之后，补充 renderer pass 级 GPU timing probe，用于让后续 tiled / clustered / deferred lighting 对比不再只依赖 index count 和 draw call：
+
+- `RendererFramePassProfile` 新增 `rendererGpuTimingEnabled`，默认 `false`，并接入 profile config 和 Debug UI；该开关明确用于 profiling / verification，不作为普通渲染默认行为。
+- `RendererFramePassRegistry::executePass(...)` 在 timing 开启时用 `GL_TIME_ELAPSED` 包住每个 renderer pass，并在同帧读回 query result 写入 `RendererFrameStats`。
+- `RendererFrameStats` 新增 renderer GPU timing 总量、timed pass count，以及 BeginFrame / ShadowMaps / PBRShadowAtlas / PBRDepthPrepass / PBRGBuffer / PBRDeferredLighting / debug pass / PBR scene pass 的纳秒统计。
+- `RuntimePBRVerificationArgs` 新增 `--verify-pbr-deferred-clustered-grid-timing`，启用 clustered grid + readback + renderer GPU timing。
+- `tools/verify_pbr.ps1` 默认回归新增 `deferred-clustered-grid-timing` mode，并断言 `rendererGpuTimingEnabled=yes`、`rendererGpuTimingAvailable=yes`、timed pass 数量足够、frame / G-buffer / deferred lighting GPU 时间为正数。
+
+这个实现会同步读回 timer query，因此它是显式 profiling 工具，不是最终低开销 telemetry。后续如果要长期在 UI 中显示稳定 timing，应再改成跨帧 query ring buffer，避免同帧阻塞。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid-timing`：构建通过，输出 `rendererGpuTimingEnabled=yes`、`rendererGpuTimingAvailable=yes`、`rendererGpuTimedPasses=6`、`rendererGpuFrameNs=7024410`、`rendererGpuPbrGBufferNs=720440`、`rendererGpuPbrDeferredLightingNs=3019100`，并保持 `pbrDeferredClusteredLightGridCompute=yes`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 26 个 verification mode 全部通过。

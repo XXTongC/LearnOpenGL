@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <sstream>
 
+#include "core.h"
 #include "FrameRenderState.h"
 #include "IBLDebugPass.h"
 #include "MaterialBindingContext.h"
@@ -19,6 +21,7 @@
 #include "PBRShadowAtlasRenderTargets.h"
 #include "RenderQueue.h"
 #include "RendererFrameContext.h"
+#include "RendererFramePassProfile.h"
 #include "SceneRenderPass.h"
 #include "ShaderLibrary.h"
 #include "ShadowRenderer.h"
@@ -443,6 +446,144 @@ namespace
 			return pass && pass->key == key;
 		});
 	}
+
+	bool isGpuTimingEnabled(const RendererFrameContext& context)
+	{
+		return context.stats && context.framePassProfile && context.framePassProfile->rendererGpuTimingEnabled;
+	}
+
+	void accumulateGpuPassTime(
+		RendererFrameStats& stats,
+		RendererFramePassKey key,
+		std::uint64_t elapsedNs
+	)
+	{
+		stats.rendererGpuTimingEnabled = true;
+		stats.rendererGpuTimingAvailable = true;
+		++stats.rendererGpuTimedPassCount;
+		stats.rendererGpuFrameTimeNs += elapsedNs;
+
+		switch (key)
+		{
+		case RendererFramePassKey::BeginFrame:
+			stats.rendererGpuBeginFrameTimeNs += elapsedNs;
+			break;
+		case RendererFramePassKey::ShadowMaps:
+			stats.rendererGpuShadowMapsTimeNs += elapsedNs;
+			break;
+		case RendererFramePassKey::PBRShadowAtlas:
+			stats.rendererGpuPbrShadowAtlasTimeNs += elapsedNs;
+			break;
+		case RendererFramePassKey::PBRDepthPrepass:
+			stats.rendererGpuPbrDepthPrepassTimeNs += elapsedNs;
+			break;
+		case RendererFramePassKey::PBRGBuffer:
+			stats.rendererGpuPbrGBufferTimeNs += elapsedNs;
+			break;
+		case RendererFramePassKey::PBRDeferredLighting:
+			stats.rendererGpuPbrDeferredLightingTimeNs += elapsedNs;
+			break;
+		case RendererFramePassKey::PBRDeferredTiledLightDebug:
+			stats.rendererGpuPbrDeferredTiledLightDebugTimeNs += elapsedNs;
+			break;
+		case RendererFramePassKey::PBRDeferredClusteredLightDebug:
+			stats.rendererGpuPbrDeferredClusteredLightDebugTimeNs += elapsedNs;
+			break;
+		case RendererFramePassKey::PBRGBufferDebug:
+			stats.rendererGpuPbrGBufferDebugTimeNs += elapsedNs;
+			break;
+		case RendererFramePassKey::PBROpaqueScene:
+			stats.rendererGpuPbrOpaqueSceneTimeNs += elapsedNs;
+			break;
+		case RendererFramePassKey::PBRTransparentScene:
+			stats.rendererGpuPbrTransparentSceneTimeNs += elapsedNs;
+			break;
+		default:
+			break;
+		}
+	}
+
+	void executePassBody(const RendererFramePassDefinition& pass, RendererFrameContext& context)
+	{
+		switch (pass.key)
+		{
+		case RendererFramePassKey::BeginFrame:
+			beginFrame(context);
+			break;
+		case RendererFramePassKey::ShadowMaps:
+			renderShadowMaps(context);
+			break;
+		case RendererFramePassKey::PBRShadowAtlas:
+			renderPBRShadowAtlas(context);
+			break;
+		case RendererFramePassKey::GlobalMaterialScene:
+			renderGlobalMaterialScene(context);
+			break;
+		case RendererFramePassKey::PBRDepthPrepass:
+			renderPBRDepthPrepass(context);
+			break;
+		case RendererFramePassKey::PBRGBuffer:
+			renderPBRGBuffer(context);
+			break;
+		case RendererFramePassKey::PBRDeferredLighting:
+			renderPBRDeferredLighting(context);
+			break;
+		case RendererFramePassKey::PBRDeferredTiledLightDebug:
+			renderPBRDeferredTiledLightDebug(context);
+			break;
+		case RendererFramePassKey::PBRDeferredClusteredLightDebug:
+			renderPBRDeferredClusteredLightDebug(context);
+			break;
+		case RendererFramePassKey::PBRGBufferDebug:
+			renderPBRGBufferDebug(context);
+			break;
+		case RendererFramePassKey::LegacyOpaqueScene:
+			renderLegacyOpaqueScene(context);
+			break;
+		case RendererFramePassKey::PBROpaqueScene:
+			renderPBROpaqueScene(context);
+			break;
+		case RendererFramePassKey::LegacyTransparentScene:
+			renderLegacyTransparentScene(context);
+			break;
+		case RendererFramePassKey::PBRTransparentScene:
+			renderPBRTransparentScene(context);
+			break;
+		case RendererFramePassKey::IBLDebug:
+			renderIBLDebug(context);
+			break;
+		default:
+			break;
+		}
+	}
+
+	void executeTimedPass(const RendererFramePassDefinition& pass, RendererFrameContext& context)
+	{
+		if (!isGpuTimingEnabled(context))
+		{
+			executePassBody(pass, context);
+			return;
+		}
+
+		context.stats->rendererGpuTimingEnabled = true;
+
+		GLuint queryId = 0;
+		glGenQueries(1, &queryId);
+		if (queryId == 0)
+		{
+			executePassBody(pass, context);
+			return;
+		}
+
+		glBeginQuery(GL_TIME_ELAPSED, queryId);
+		executePassBody(pass, context);
+		glEndQuery(GL_TIME_ELAPSED);
+
+		GLuint64 elapsedNs = 0;
+		glGetQueryObjectui64v(queryId, GL_QUERY_RESULT, &elapsedNs);
+		glDeleteQueries(1, &queryId);
+		accumulateGpuPassTime(*context.stats, pass.key, static_cast<std::uint64_t>(elapsedNs));
+	}
 }
 
 const std::vector<RendererFramePassDefinition>& RendererFramePassRegistry::defaultPasses()
@@ -550,54 +691,5 @@ void RendererFramePassRegistry::executePass(const RendererFramePassDefinition& p
 		++context.stats->rendererPassCount;
 	}
 
-	switch (pass.key)
-	{
-	case RendererFramePassKey::BeginFrame:
-		beginFrame(context);
-		break;
-	case RendererFramePassKey::ShadowMaps:
-		renderShadowMaps(context);
-		break;
-	case RendererFramePassKey::PBRShadowAtlas:
-		renderPBRShadowAtlas(context);
-		break;
-	case RendererFramePassKey::GlobalMaterialScene:
-		renderGlobalMaterialScene(context);
-		break;
-	case RendererFramePassKey::PBRDepthPrepass:
-		renderPBRDepthPrepass(context);
-		break;
-	case RendererFramePassKey::PBRGBuffer:
-		renderPBRGBuffer(context);
-		break;
-	case RendererFramePassKey::PBRDeferredLighting:
-		renderPBRDeferredLighting(context);
-		break;
-	case RendererFramePassKey::PBRDeferredTiledLightDebug:
-		renderPBRDeferredTiledLightDebug(context);
-		break;
-	case RendererFramePassKey::PBRDeferredClusteredLightDebug:
-		renderPBRDeferredClusteredLightDebug(context);
-		break;
-	case RendererFramePassKey::PBRGBufferDebug:
-		renderPBRGBufferDebug(context);
-		break;
-	case RendererFramePassKey::LegacyOpaqueScene:
-		renderLegacyOpaqueScene(context);
-		break;
-	case RendererFramePassKey::PBROpaqueScene:
-		renderPBROpaqueScene(context);
-		break;
-	case RendererFramePassKey::LegacyTransparentScene:
-		renderLegacyTransparentScene(context);
-		break;
-	case RendererFramePassKey::PBRTransparentScene:
-		renderPBRTransparentScene(context);
-		break;
-	case RendererFramePassKey::IBLDebug:
-		renderIBLDebug(context);
-		break;
-	default:
-		break;
-	}
+	executeTimedPass(pass, context);
 }

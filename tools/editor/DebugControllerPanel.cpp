@@ -1,5 +1,6 @@
 #include "DebugControllerPanel.h"
 
+#include <cstdint>
 #include <string>
 
 #include "../../application/RuntimeFramePipelineProfile.h"
@@ -243,6 +244,25 @@ namespace
 
 			ImGui::Text("PBR Path Active: %s", pbrPathActive ? "Yes" : "No");
 			ImGui::Text("Renderer Passes Executed: %d", stats.rendererPassCount);
+			if (stats.rendererGpuTimingEnabled)
+			{
+				const auto nsToMs = [](std::uint64_t value)
+				{
+					return static_cast<double>(value) / 1000000.0;
+				};
+				ImGui::Text("Renderer GPU Timing: %s, timed passes %d, frame %.3f ms",
+					stats.rendererGpuTimingAvailable ? "Available" : "Unavailable",
+					stats.rendererGpuTimedPassCount,
+					nsToMs(stats.rendererGpuFrameTimeNs));
+				ImGui::Text("GPU PBR: depth %.3f ms, gbuffer %.3f ms, deferred %.3f ms",
+					nsToMs(stats.rendererGpuPbrDepthPrepassTimeNs),
+					nsToMs(stats.rendererGpuPbrGBufferTimeNs),
+					nsToMs(stats.rendererGpuPbrDeferredLightingTimeNs));
+				ImGui::Text("GPU Debug: tiled %.3f ms, clustered %.3f ms, gbuffer debug %.3f ms",
+					nsToMs(stats.rendererGpuPbrDeferredTiledLightDebugTimeNs),
+					nsToMs(stats.rendererGpuPbrDeferredClusteredLightDebugTimeNs),
+					nsToMs(stats.rendererGpuPbrGBufferDebugTimeNs));
+			}
 			ImGui::Text("Shadow Casters: %d", stats.shadowCasterCount);
 			ImGui::Text("Directional Shadow Layers: %d", stats.directionalShadowLayerCount);
 			ImGui::Text("Directional Shadow Draw Calls: %d", stats.directionalShadowDrawCalls);

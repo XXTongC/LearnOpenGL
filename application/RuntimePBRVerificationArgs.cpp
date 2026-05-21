@@ -25,7 +25,8 @@ namespace
 		OptionPbrClusteredGridProbe = 1u << 15,
 		OptionDisablePbrDeferredTiledLights = 1u << 16,
 		OptionPbrClusteredStatsReadback = 1u << 17,
-		OptionPbrLightPressureProbe = 1u << 18
+		OptionPbrLightPressureProbe = 1u << 18,
+		OptionRendererGpuTimingProbe = 1u << 19
 	};
 
 	struct PbrVerificationModeDescriptor
@@ -62,6 +63,7 @@ namespace
 		{ "--verify-pbr-deferred-clustered-heatmap", "out/pbr_deferred_clustered_heatmap_verification.ppm", OptionPbrGBufferPass | OptionPbrDeferredClusteredLightDebugPass | OptionPbrClusteredGridProbe | OptionDisablePbrDeferredTiledLights },
 		{ "--verify-pbr-deferred-clustered-layout", "out/pbr_deferred_clustered_layout_verification.ppm", kDeferredPbrOptions | OptionPbrClusteredLayoutProbe | OptionDisablePbrDeferredTiledLights },
 		{ "--verify-pbr-deferred-clustered-grid", "out/pbr_deferred_clustered_grid_verification.ppm", kDeferredPbrOptions | OptionPbrClusteredGridProbe | OptionDisablePbrDeferredTiledLights | OptionPbrClusteredStatsReadback },
+		{ "--verify-pbr-deferred-clustered-grid-timing", "out/pbr_deferred_clustered_grid_timing_verification.ppm", kDeferredPbrOptions | OptionPbrClusteredGridProbe | OptionDisablePbrDeferredTiledLights | OptionPbrClusteredStatsReadback | OptionRendererGpuTimingProbe },
 		{ "--verify-pbr-deferred-clustered-grid-pressure", "out/pbr_deferred_clustered_grid_pressure_verification.ppm", kDeferredPbrOptions | OptionPbrClusteredGridProbe | OptionDisablePbrDeferredTiledLights | OptionPbrClusteredStatsReadback | OptionPbrLightPressureProbe },
 		{ "--verify-pbr-deferred-clustered-grid-no-readback", "out/pbr_deferred_clustered_grid_no_readback_verification.ppm", kDeferredPbrOptions | OptionPbrClusteredGridProbe | OptionDisablePbrDeferredTiledLights },
 		{ "--verify-pbr-import", "out/pbr_import_verification.ppm", OptionPbrImportedAssetProbe },
@@ -126,6 +128,7 @@ namespace
 		verification.enablePbrClusteredGridProbe |= hasOption(mode.options, OptionPbrClusteredGridProbe);
 		verification.enablePbrClusteredStatsReadback |= hasOption(mode.options, OptionPbrClusteredStatsReadback);
 		verification.enablePbrLightPressureProbe |= hasOption(mode.options, OptionPbrLightPressureProbe);
+		verification.enableRendererGpuTimingProbe |= hasOption(mode.options, OptionRendererGpuTimingProbe);
 		verification.disablePbrDeferredTiledLights |= hasOption(mode.options, OptionDisablePbrDeferredTiledLights);
 
 		if (mode.tileSizeOverride > 0)

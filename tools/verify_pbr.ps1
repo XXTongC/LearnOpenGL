@@ -35,6 +35,7 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-clustered-heatmap"; Argument = "--verify-pbr-deferred-clustered-heatmap"; Capture = "out/pbr_deferred_clustered_heatmap_verification.ppm"; ExpectClusteredHeatmap = $true },
     [pscustomobject]@{ Name = "deferred-clustered-layout"; Argument = "--verify-pbr-deferred-clustered-layout"; Capture = "out/pbr_deferred_clustered_layout_verification.ppm"; ExpectClusteredLayout = $true },
     [pscustomobject]@{ Name = "deferred-clustered-grid"; Argument = "--verify-pbr-deferred-clustered-grid"; Capture = "out/pbr_deferred_clustered_grid_verification.ppm"; ExpectClusteredGrid = $true },
+    [pscustomobject]@{ Name = "deferred-clustered-grid-timing"; Argument = "--verify-pbr-deferred-clustered-grid-timing"; Capture = "out/pbr_deferred_clustered_grid_timing_verification.ppm"; ExpectClusteredGrid = $true; ExpectGpuTiming = $true },
     [pscustomobject]@{ Name = "deferred-clustered-grid-pressure"; Argument = "--verify-pbr-deferred-clustered-grid-pressure"; Capture = "out/pbr_deferred_clustered_grid_pressure_verification.ppm"; ExpectClusteredGrid = $true; ExpectPointLightPressure = 8 },
     [pscustomobject]@{ Name = "deferred-clustered-grid-no-readback"; Argument = "--verify-pbr-deferred-clustered-grid-no-readback"; Capture = "out/pbr_deferred_clustered_grid_no_readback_verification.ppm"; ExpectClusteredGridNoReadback = $true },
     [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" },
@@ -301,6 +302,32 @@ foreach ($mode in $selectedModes) {
     }
     if (!$stats.Valid) {
         $failures.Add("$($mode.Name): capture invalid ($($stats.Error))")
+    }
+    if ($mode.PSObject.Properties.Name -contains "ExpectGpuTiming" -and $mode.ExpectGpuTiming) {
+        if (!$rendererLine) {
+            $failures.Add("$($mode.Name): missing renderer stats")
+        }
+        elseif ($rendererLine -notmatch "rendererGpuTimingEnabled=yes" -or $rendererLine -notmatch "rendererGpuTimingAvailable=yes") {
+            $failures.Add("$($mode.Name): GPU timing was not enabled and available")
+        }
+        else {
+            $timedPasses = Get-RegexValue -Text $rendererLine -Pattern "rendererGpuTimedPasses=(\d+)" -Group 1
+            $frameNs = Get-RegexValue -Text $rendererLine -Pattern "rendererGpuFrameNs=(\d+)" -Group 1
+            $gbufferNs = Get-RegexValue -Text $rendererLine -Pattern "rendererGpuPbrGBufferNs=(\d+)" -Group 1
+            $deferredNs = Get-RegexValue -Text $rendererLine -Pattern "rendererGpuPbrDeferredLightingNs=(\d+)" -Group 1
+            if ($null -eq $timedPasses -or [int]$timedPasses -lt 3) {
+                $failures.Add("$($mode.Name): GPU timing did not report enough timed passes")
+            }
+            if ($null -eq $frameNs -or [UInt64]$frameNs -le 0) {
+                $failures.Add("$($mode.Name): GPU frame time was not positive")
+            }
+            if ($null -eq $gbufferNs -or [UInt64]$gbufferNs -le 0) {
+                $failures.Add("$($mode.Name): GPU G-buffer time was not positive")
+            }
+            if ($null -eq $deferredNs -or [UInt64]$deferredNs -le 0) {
+                $failures.Add("$($mode.Name): GPU deferred lighting time was not positive")
+            }
+        }
     }
     if ($mode.PSObject.Properties.Name -contains "ExpectPointLightPressure") {
         if (!$rendererLine) {
