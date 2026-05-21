@@ -2010,3 +2010,7 @@
   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Deferred Tiled Light Scratch Buffer Reuse` 技术记录。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`，`Debug|x64` 构建通过，focused tiled 输出保持 `pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridOccupiedTiles=2846/3600`、`pbrDeferredTiledLightGridEmptyTiles=754`。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，14 个 PBR verification mode 全部通过；`deferred-tiled-lights` 与 `deferred-tiled-heatmap` 均保持 `2890` indices、`2846/3600` occupied、`754` empty。
+- 完成第一百五十四轮桌面重构报告更新：
+  - 已重写 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，报告覆盖当前分支最新提交 `c53bbc0 Reuse PBR tiled light grid scratch buffers`、已完成工作、与原始工程的架构差异、runtime / renderer / PBR / UI profile / tiled lighting 的 Mermaid 示意图、验证证据、剩余问题和下一步建议。
+  - 报告明确当前工程已经完成 runtime 降耦合、renderer pass 化、PBR forward / deferred 主链路、PBR shadow atlas、Assimp PBR import、tiled light grid first stage、heatmap debug 和 14 模式自动化验证，同时明确生产级完整 PBR、clustered / GPU culling、真实资产视觉基准和完整透明策略尚未完成。
+  - 报告生成前已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，14 个 PBR verification mode 全部通过。
