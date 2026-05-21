@@ -2252,3 +2252,30 @@ clustered compute assignment 已经能在 GPU 上生成 clustered light grid，�
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\profile_pbr_light_culling.ps1 -SkipBuild -NoLinkDebugInfo -Samples 3`：两个 pressure timing mode 连续三轮通过，报告中输出 tiled / clustered 的 avg/min/max GPU 时间，并生成 CSV 样本表。当前样本集的 deferred lighting 平均时间为 tiled `1.0301 ms`、clustered `3.4366 ms`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 28 个 verification mode 全部通过。
+
+### 2026-05-21 Engine Roadmap And PBR Freeze Boundary
+
+本轮将项目目标从“继续扩张 PBR renderer”重新收束到“以 PBR 作为第一个 renderer pipeline，继续建设游戏引擎”：
+
+- 新增 `docs/engine_roadmap.md`，明确后续路线为 Engine Core、Scene / Entity、Asset / Serialization、Editor Foundation、Runtime Gameplay、Renderer Module，而不是继续把 PBR 作为项目中心。
+- 新增 `docs/pbr_final_design.md`，定义 PBR 阶段冻结边界：保留 forward/deferred PBR、G-buffer、shadow atlas、tiled/clustered probe、GPU timing、pressure profiling 和 verification；暂停 full glTF material parity、OIT、production clustered overflow、高级 GI 等 renderer-only 扩张。
+- PBR 默认策略调整为保守：forward PBR 用于 preview / asset probe；deferred PBR 用于 pipeline validation；tiled deferred 作为稳定 fallback；clustered deferred 保持 profiling / experimental 状态。
+- 后续新增渲染工作需要先回答是否能让 engine boundary 更清楚；如果不能，就应延后到 renderer product 阶段。
+
+接下来只做 PBR 最小收尾：提交 real-asset golden baseline workflow，并确认 `verify_pbr.ps1` 与 `verify_pbr_golden.ps1` 都通过。完成后停止 PBR 扩张，转入 engine core / scene / asset / editor 方向讨论。
+
+### 2026-05-21 PBR Final Gate Verification
+
+本轮完成 PBR 冻结前的最小必要验证设计：
+
+- 新增 `tools/verify_pbr_golden.ps1`，将真实 Assimp import、PBR texture set、deferred texture set 三个模式组织成 golden baseline workflow。
+- 新增 `docs/pbr_golden_baselines.json`，记录当前 baseline 的分辨率、PPM 字节数、non-black 百分比、mean RGB、SHA256 和关键 scene / renderer stats pattern。
+- 新增 `docs/pbr_golden_verification_report.md`，记录最近一次 golden 验证结果。
+- 更新 `docs/pbr_final_design.md`，把 golden gate 和完整 28-mode PBR 回归作为 PBR freeze 的最终证据。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr_golden.ps1 -SkipBuild -NoLinkDebugInfo -DiscardCaptures`：通过；`import`、`texture-set`、`deferred-texture-set` 三个 golden mode 均匹配 baseline。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：通过；默认 28 个 PBR verification mode 全部通过。
+
+结论：PBR 作为 engine foundation renderer pipeline 已具备冻结条件。后续除非是 bug fix、验证修复或 engine boundary 需要，否则不应继续扩张 PBR 功能。

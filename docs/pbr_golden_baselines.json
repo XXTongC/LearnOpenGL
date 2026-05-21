@@ -1,0 +1,68 @@
+﻿{
+    "generated":  "2026-05-21 23:04:31",
+    "repository":  "C:\\Code\\CodeOfC++\\OpenGL_test\\text2-refactor",
+    "commit":  "cda4f74",
+    "configuration":  "Debug",
+    "platform":  "x64",
+    "tolerances":  {
+                       "nonBlackPercent":  0.25,
+                       "meanRgb":  0.75
+                   },
+    "modes":  [
+                  {
+                      "name":  "import",
+                      "capture":  "out/pbr_import_verification.ppm",
+                      "width":  1280,
+                      "height":  720,
+                      "bytes":  2764816,
+                      "nonBlackPercent":  100,
+                      "meanRed":  160.97,
+                      "meanGreen":  123.68,
+                      "meanBlue":  83.48,
+                      "sha256":  "bd56359a0ae1e96d06359db52abcbc5d1bbdb7341f21b4be0502af1dc39c17c1",
+                      "requiredScenePatterns":  [
+                                                    "pbrImportedMeshes=1"
+                                                ],
+                      "requiredRendererPatterns":  [
+                                                       "pbrDrawCalls=26"
+                                                   ]
+                  },
+                  {
+                      "name":  "texture-set",
+                      "capture":  "out/pbr_texture_set_verification.ppm",
+                      "width":  1280,
+                      "height":  720,
+                      "bytes":  2764816,
+                      "nonBlackPercent":  99.9951,
+                      "meanRed":  148.27,
+                      "meanGreen":  114.58,
+                      "meanBlue":  78.64,
+                      "sha256":  "be7a22e8e875ab30db1e26bc4e58f6aad916bfdcfc7c660822aea4fb28a597d1",
+                      "requiredScenePatterns":  [
+                                                    "pbrTexturedMeshes=1"
+                                                ],
+                      "requiredRendererPatterns":  [
+                                                       "pbrDrawCalls=26"
+                                                   ]
+                  },
+                  {
+                      "name":  "deferred-texture-set",
+                      "capture":  "out/pbr_deferred_texture_set_verification.ppm",
+                      "width":  1280,
+                      "height":  720,
+                      "bytes":  2764816,
+                      "nonBlackPercent":  29.2184,
+                      "meanRed":  29.04,
+                      "meanGreen":  24.01,
+                      "meanBlue":  19.84,
+                      "sha256":  "7d6f486c61d2c4f19483e20adf16f7168e6054225fb2a1302b84274cfed16b86",
+                      "requiredScenePatterns":  [
+                                                    "pbrTexturedMeshes=1"
+                                                ],
+                      "requiredRendererPatterns":  [
+                                                       "pbrGBufferDrawCalls=26",
+                                                       "pbrDeferredLightingDrawCalls=1"
+                                                   ]
+                  }
+              ]
+}

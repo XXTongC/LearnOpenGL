@@ -2236,3 +2236,13 @@
   - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送分支提交同步到 `95b8227 Record multi-sample PBR light culling report`，最新代码提交同步到 `0a32120 Add multi-sample PBR light culling profiling`。
   - 桌面报告中补充 `profile_pbr_light_culling.ps1 -Samples N`、[pbr_light_culling_timing_samples.csv](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_light_culling_timing_samples.csv) 和 3 样本 tiled / clustered pressure timing baseline。
   - 桌面报告的后续建议已从“多轮 timing 统计”更新为真实资产 golden capture、真实资产 profiling 场景、glTF material parity、透明策略和 clustered overflow。
+- 完成第一百九十七轮引擎路线与 PBR 冻结边界设计：
+  - 新增 [engine_roadmap.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\engine_roadmap.md)，将后续路线从继续扩张 PBR renderer 调整为 Engine Core、Scene / Entity、Asset / Serialization、Editor Foundation、Runtime Gameplay 和 Renderer Module。
+  - 新增 [pbr_final_design.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_final_design.md)，明确 PBR 当前只作为第一个 renderer pipeline 的基础能力保留，后续暂停 full glTF parity、OIT、production clustered overflow、高级 GI 等 renderer-only 扩张。
+  - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，记录本轮架构判断：PBR 进入冻结收尾阶段，后续新增渲染工作必须服务于 engine boundary。
+- 完成第一百九十八轮 PBR freeze gate 验证收尾：
+  - 新增 [verify_pbr_golden.ps1](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\verify_pbr_golden.ps1)，将 `import`、`texture-set`、`deferred-texture-set` 三个真实资产/纹理集探针组织成 golden baseline 验证链路。
+  - 新增 [pbr_golden_baselines.json](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_golden_baselines.json) 和 [pbr_golden_verification_report.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_golden_verification_report.md)，记录当前 PBR golden baseline 与最近一次验证结果。
+  - 更新 [pbr_final_design.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_final_design.md) 和 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，把 golden gate 与完整默认 PBR 回归作为 PBR 冻结前的最终证据。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr_golden.ps1 -SkipBuild -NoLinkDebugInfo -DiscardCaptures`，三个 golden mode 全部通过。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 28 个 PBR verification mode 全部通过。
