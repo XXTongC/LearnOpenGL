@@ -32,6 +32,7 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-tiled-lights-cutoff-005"; Argument = "--verify-pbr-deferred-tiled-lights-cutoff-005"; Capture = "out/pbr_deferred_tiled_lights_cutoff_005_verification.ppm"; ExpectTiledCulling = $true; ExpectLightCutoff = 0.05 },
     [pscustomobject]@{ Name = "deferred-tiled-heatmap"; Argument = "--verify-pbr-deferred-tiled-heatmap"; Capture = "out/pbr_deferred_tiled_heatmap_verification.ppm"; ExpectTiledCulling = $true; ExpectTiledHeatmap = $true },
     [pscustomobject]@{ Name = "deferred-clustered-layout"; Argument = "--verify-pbr-deferred-clustered-layout"; Capture = "out/pbr_deferred_clustered_layout_verification.ppm"; ExpectClusteredLayout = $true },
+    [pscustomobject]@{ Name = "deferred-clustered-grid"; Argument = "--verify-pbr-deferred-clustered-grid"; Capture = "out/pbr_deferred_clustered_grid_verification.ppm"; ExpectClusteredGrid = $true },
     [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" },
     [pscustomobject]@{ Name = "texture-set"; Argument = "--verify-pbr-texture-set"; Capture = "out/pbr_texture_set_verification.ppm"; ExpectTexturedProbe = $true },
     [pscustomobject]@{ Name = "deferred-texture-set"; Argument = "--verify-pbr-deferred-texture-set"; Capture = "out/pbr_deferred_texture_set_verification.ppm"; ExpectTexturedProbe = $true; ExpectDeferredLighting = $true }
@@ -443,6 +444,78 @@ foreach ($mode in $selectedModes) {
                 }
                 if ([int]$pointLights -le 0) {
                     $failures.Add("$($mode.Name): clustered layout reported no point lights")
+                }
+            }
+        }
+    }
+    if ($mode.PSObject.Properties.Name -contains "ExpectClusteredGrid" -and $mode.ExpectClusteredGrid) {
+        if (!$rendererLine) {
+            $failures.Add("$($mode.Name): missing renderer stats")
+        }
+        else {
+            $drawCalls = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredLightingDrawCalls=(\d+)" -Group 1
+            $columns = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridSize=(\d+)x(\d+)x(\d+)" -Group 1
+            $rows = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridSize=(\d+)x(\d+)x(\d+)" -Group 2
+            $depthSlices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridSize=(\d+)x(\d+)x(\d+)" -Group 3
+            $tileSize = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridTileSize=(\d+)" -Group 1
+            $clusters = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridClusters=(\d+)" -Group 1
+            $maxLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridMaxLightsPerCluster=(\d+)" -Group 1
+            $maxIndices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridMaxIndices=(\d+)" -Group 1
+            $pointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridPointLights=(\d+)" -Group 1
+            $indices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridIndices=(\d+)" -Group 1
+            $culledIndices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridCulledIndices=(\d+)" -Group 1
+            if ($null -eq $drawCalls -or [int]$drawCalls -le 0) {
+                $failures.Add("$($mode.Name): deferred lighting did not draw")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridEnabled=yes") {
+                $failures.Add("$($mode.Name): clustered grid was not enabled")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridBound=yes") {
+                $failures.Add("$($mode.Name): clustered grid buffers were not bound")
+            }
+            if ($rendererLine -notmatch "pbrDeferredTiledLightsEnabled=no") {
+                $failures.Add("$($mode.Name): CPU tiled lights should be disabled for clustered grid mode")
+            }
+            if ($rendererLine -notmatch "pbrDeferredTiledLightGridBound=no") {
+                $failures.Add("$($mode.Name): CPU tiled grid should not bind in clustered grid mode")
+            }
+            if ($null -eq $columns -or $null -eq $rows -or $null -eq $depthSlices -or $null -eq $tileSize -or $null -eq $clusters -or $null -eq $maxLights -or $null -eq $maxIndices -or $null -eq $pointLights -or $null -eq $indices -or $null -eq $culledIndices) {
+                $failures.Add("$($mode.Name): clustered grid stats were incomplete")
+            }
+            else {
+                $expectedClusters = [int]$columns * [int]$rows * [int]$depthSlices
+                $expectedMaxIndices = $expectedClusters * [int]$maxLights
+                $fullGlobalLoopIndexCount = $expectedClusters * [int]$pointLights
+                $expectedCulledIndices = $fullGlobalLoopIndexCount - [int]$indices
+                if ([int]$tileSize -ne 16) {
+                    $failures.Add("$($mode.Name): clustered tile size did not match default profile ($tileSize != 16)")
+                }
+                if ([int]$depthSlices -ne 24) {
+                    $failures.Add("$($mode.Name): clustered depth slices did not match default profile ($depthSlices != 24)")
+                }
+                if ([int]$maxLights -ne 64) {
+                    $failures.Add("$($mode.Name): clustered max lights per cluster did not match default profile ($maxLights != 64)")
+                }
+                if ([int]$clusters -ne $expectedClusters) {
+                    $failures.Add("$($mode.Name): clustered count did not match dimensions ($clusters != $expectedClusters)")
+                }
+                if ([int]$maxIndices -ne $expectedMaxIndices) {
+                    $failures.Add("$($mode.Name): clustered max index capacity did not match dimensions and capacity ($maxIndices != $expectedMaxIndices)")
+                }
+                if ([int]$pointLights -le 0) {
+                    $failures.Add("$($mode.Name): clustered grid reported no point lights")
+                }
+                if ([int]$indices -le 0) {
+                    $failures.Add("$($mode.Name): clustered grid produced no light indices")
+                }
+                if ([int]$indices -ge $fullGlobalLoopIndexCount) {
+                    $failures.Add("$($mode.Name): clustered grid did not reduce the global point-light loop ($indices >= $fullGlobalLoopIndexCount)")
+                }
+                if ([int]$culledIndices -ne $expectedCulledIndices) {
+                    $failures.Add("$($mode.Name): clustered culled index count was inconsistent ($culledIndices != $expectedCulledIndices)")
+                }
+                if ([int]$culledIndices -le 0) {
+                    $failures.Add("$($mode.Name): clustered grid reported no culled indices")
                 }
             }
         }

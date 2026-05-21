@@ -21,7 +21,8 @@ namespace
 		OptionPbrTextureSetProbe = 1u << 11,
 		OptionPbrTiledLightProbe = 1u << 12,
 		OptionPbrClusteredLayoutProbe = 1u << 13,
-		OptionDisablePbrDeferredTiledLights = 1u << 14
+		OptionPbrClusteredGridProbe = 1u << 14,
+		OptionDisablePbrDeferredTiledLights = 1u << 15
 	};
 
 	struct PbrVerificationModeDescriptor
@@ -55,6 +56,7 @@ namespace
 		{ "--verify-pbr-deferred-tiled-lights-cutoff-005", "out/pbr_deferred_tiled_lights_cutoff_005_verification.ppm", kDeferredPbrOptions | OptionPbrTiledLightProbe, 0, 0.05f },
 		{ "--verify-pbr-deferred-tiled-heatmap", "out/pbr_deferred_tiled_heatmap_verification.ppm", OptionPbrGBufferPass | OptionPbrDeferredTiledLightDebugPass | OptionPbrTiledLightProbe },
 		{ "--verify-pbr-deferred-clustered-layout", "out/pbr_deferred_clustered_layout_verification.ppm", kDeferredPbrOptions | OptionPbrClusteredLayoutProbe | OptionDisablePbrDeferredTiledLights },
+		{ "--verify-pbr-deferred-clustered-grid", "out/pbr_deferred_clustered_grid_verification.ppm", kDeferredPbrOptions | OptionPbrClusteredGridProbe | OptionDisablePbrDeferredTiledLights },
 		{ "--verify-pbr-import", "out/pbr_import_verification.ppm", OptionPbrImportedAssetProbe },
 		{ "--verify-pbr-texture-set", "out/pbr_texture_set_verification.ppm", OptionPbrTextureSetProbe },
 		{ "--verify-pbr-deferred-texture-set", "out/pbr_deferred_texture_set_verification.ppm", kDeferredPbrOptions | OptionPbrTextureSetProbe }
@@ -113,6 +115,7 @@ namespace
 		verification.enablePbrTextureSetProbe |= hasOption(mode.options, OptionPbrTextureSetProbe);
 		verification.enablePbrTiledLightProbe |= hasOption(mode.options, OptionPbrTiledLightProbe);
 		verification.enablePbrClusteredLayoutProbe |= hasOption(mode.options, OptionPbrClusteredLayoutProbe);
+		verification.enablePbrClusteredGridProbe |= hasOption(mode.options, OptionPbrClusteredGridProbe);
 		verification.disablePbrDeferredTiledLights |= hasOption(mode.options, OptionDisablePbrDeferredTiledLights);
 
 		if (mode.tileSizeOverride > 0)

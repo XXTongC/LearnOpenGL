@@ -201,6 +201,7 @@
     <ClCompile Include="renderer\LightResourceBinder.cpp" />
     <ClCompile Include="renderer\MaterialBinder.cpp" />
     <ClCompile Include="renderer\MeshDraw.cpp" />
+    <ClCompile Include="renderer\PBRDeferredClusteredLightGrid.cpp" />
     <ClCompile Include="renderer\PBRDeferredLightingPass.cpp" />
     <ClCompile Include="renderer\PBRDeferredLightBuffer.cpp" />
     <ClCompile Include="renderer\PBRDeferredLightCullingConfig.cpp" />
@@ -315,6 +316,7 @@
     <ClInclude Include="renderer\MaterialBindingContext.h" />
     <ClInclude Include="renderer\MaterialBinder.h" />
     <ClInclude Include="renderer\MeshDraw.h" />
+    <ClInclude Include="renderer\PBRDeferredClusteredLightGrid.h" />
     <ClInclude Include="renderer\PBRDeferredLightingPass.h" />
     <ClInclude Include="renderer\PBRDeferredLightBuffer.h" />
     <ClInclude Include="renderer\PBRDeferredLightCullingConfig.h" />

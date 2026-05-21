@@ -501,6 +501,9 @@
     <ClCompile Include="renderer\PBRDeferredLightingPass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\PBRDeferredClusteredLightGrid.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\PBRDeferredLightBuffer.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -891,6 +894,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRDeferredLightingPass.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\PBRDeferredClusteredLightGrid.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRDeferredLightBuffer.h">

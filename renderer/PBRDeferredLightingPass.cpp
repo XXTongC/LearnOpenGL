@@ -106,7 +106,49 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 	stats.lightBufferPointLightCount = lightBufferStats.pointLightCount;
 	stats.lightBufferMaxPointLightCount = lightBufferStats.maxPointLightCount;
 
-	if (profile.pbrDeferredClusteredLayoutStatsEnabled)
+	shader->setInt("useClusteredPointLights", 0);
+	shader->setInt("clusteredLightTileSize", 0);
+	shader->setInt("clusteredLightGridColumns", 0);
+	shader->setInt("clusteredLightGridRows", 0);
+	shader->setInt("clusteredLightDepthSlices", 0);
+	shader->setFloat("clusteredLightNearPlane", std::max(context.camera->mNear, 0.001f));
+	shader->setFloat("clusteredLightFarPlane", std::max(context.camera->mFar, context.camera->mNear + 0.001f));
+
+	const bool useClusteredPointLights = profile.pbrDeferredClusteredLightsEnabled && lightBufferStats.pointLightCount > 0;
+	if (useClusteredPointLights)
+	{
+		const PBRDeferredLightCullingConfig clusteredConfig = makePbrDeferredLightCullingConfig(
+			profile,
+			PBRDeferredLightCullingMode::GpuClustered
+		);
+		const PBRDeferredClusteredLightGridStats clusteredStats = mClusteredLightGrid.bind(
+			context,
+			targetWidth,
+			targetHeight,
+			clusteredConfig
+		);
+		stats.clusteredLightGridEnabled = clusteredStats.enabled;
+		stats.clusteredLightGridBound = clusteredStats.bound;
+		stats.clusteredLightGridTileSize = clusteredStats.layout.tileSize;
+		stats.clusteredLightGridColumns = clusteredStats.layout.clusterColumns;
+		stats.clusteredLightGridRows = clusteredStats.layout.clusterRows;
+		stats.clusteredLightGridDepthSlices = clusteredStats.layout.clusterDepthSlices;
+		stats.clusteredLightGridClusterCount = clusteredStats.layout.clusterCount;
+		stats.clusteredLightGridMaxLightsPerCluster = clusteredStats.layout.maxLightsPerCluster;
+		stats.clusteredLightGridMaxIndexCount = clusteredStats.layout.maxLightIndexCount;
+		stats.clusteredLightGridPointLightCount = clusteredStats.pointLightCount;
+		stats.clusteredLightGridIndexCount = clusteredStats.lightIndexCount;
+		stats.clusteredLightGridCulledIndexCount = clusteredStats.culledLightIndexCount;
+		if (clusteredStats.bound)
+		{
+			shader->setInt("useClusteredPointLights", 1);
+			shader->setInt("clusteredLightTileSize", clusteredStats.layout.tileSize);
+			shader->setInt("clusteredLightGridColumns", clusteredStats.layout.clusterColumns);
+			shader->setInt("clusteredLightGridRows", clusteredStats.layout.clusterRows);
+			shader->setInt("clusteredLightDepthSlices", clusteredStats.layout.clusterDepthSlices);
+		}
+	}
+	else if (profile.pbrDeferredClusteredLayoutStatsEnabled)
 	{
 		const PBRDeferredLightCullingConfig clusteredConfig = makePbrDeferredLightCullingConfig(
 			profile,
@@ -129,7 +171,7 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 		stats.clusteredLightGridPointLightCount = lightBufferStats.pointLightCount;
 	}
 
-	const bool useTiledPointLights = profile.pbrDeferredTiledLightsEnabled && lightBufferStats.pointLightCount > 0;
+	const bool useTiledPointLights = !stats.clusteredLightGridBound && profile.pbrDeferredTiledLightsEnabled && lightBufferStats.pointLightCount > 0;
 	const PBRDeferredLightCullingConfig lightCullingConfig = makePbrDeferredLightCullingConfig(
 		profile,
 		useTiledPointLights ? PBRDeferredLightCullingMode::CpuTiled : PBRDeferredLightCullingMode::Disabled

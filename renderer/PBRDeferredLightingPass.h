@@ -4,6 +4,7 @@
 
 #include "MaterialBindingContext.h"
 #include "mesh/mesh.h"
+#include "renderer/PBRDeferredClusteredLightGrid.h"
 #include "renderer/PBRDeferredLightBuffer.h"
 #include "renderer/PBRDeferredTiledLightGrid.h"
 
@@ -80,5 +81,6 @@ namespace GLframework
 		std::shared_ptr<Mesh> mLightingQuad{ nullptr };
 		PBRDeferredLightBuffer mLightBuffer{};
 		PBRDeferredTiledLightGrid mTiledLightGrid{};
+		PBRDeferredClusteredLightGrid mClusteredLightGrid{};
 	};
 }

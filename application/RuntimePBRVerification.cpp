@@ -271,6 +271,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + clustered layout stats probe";
 		}
+		if (config.enablePbrClusteredGridProbe)
+		{
+			profileLine += " + clustered grid probe";
+		}
 		if (config.disablePbrDeferredTiledLights)
 		{
 			profileLine += " + tiled lights disabled";
@@ -358,6 +362,10 @@ namespace GL_RUNTIME
 		if (config.enablePbrClusteredLayoutProbe)
 		{
 			rendererPassProfile.pbrDeferredClusteredLayoutStatsEnabled = true;
+		}
+		if (config.enablePbrClusteredGridProbe)
+		{
+			rendererPassProfile.pbrDeferredClusteredLightsEnabled = true;
 		}
 
 		if (config.enablePbrGBufferDebugPass)

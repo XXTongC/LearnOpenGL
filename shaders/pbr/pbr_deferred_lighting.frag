@@ -44,6 +44,23 @@ layout(std430, binding = 5) readonly buffer PBRDeferredTileIndexBuffer
 	int deferredTileLightIndices[];
 };
 
+layout(std430, binding = 6) readonly buffer PBRDeferredClusterBuffer
+{
+	ivec4 deferredClusterOffsetCount[];
+};
+
+layout(std430, binding = 7) readonly buffer PBRDeferredClusterIndexBuffer
+{
+	int deferredClusterLightIndices[];
+};
+
+uniform int useClusteredPointLights;
+uniform int clusteredLightTileSize;
+uniform int clusteredLightGridColumns;
+uniform int clusteredLightGridRows;
+uniform int clusteredLightDepthSlices;
+uniform float clusteredLightNearPlane;
+uniform float clusteredLightFarPlane;
 uniform int useTiledPointLights;
 uniform int tiledLightTileSize;
 uniform int tiledLightGridColumns;
@@ -119,7 +136,28 @@ void main()
 	color += calculatePbrLight(dirRadiance, dirLightDirection, n, v, albedo, metallic, roughness) * (1.0 - directionalShadow);
 
 	int pointLightCount = clamp(deferredPointLightMeta.x, 0, MAX_POINT_LIGHTS);
-	if (useTiledPointLights == 1 && tiledLightGridColumns > 0 && tiledLightGridRows > 0 && tiledLightTileSize > 0)
+	if (useClusteredPointLights == 1 && clusteredLightGridColumns > 0 && clusteredLightGridRows > 0 && clusteredLightDepthSlices > 0 && clusteredLightTileSize > 0)
+	{
+		ivec2 tileCoord = ivec2(gl_FragCoord.xy) / clusteredLightTileSize;
+		tileCoord = clamp(tileCoord, ivec2(0), ivec2(clusteredLightGridColumns - 1, clusteredLightGridRows - 1));
+		float viewDepth = -(viewMatrix * vec4(worldPosition, 1.0)).z;
+		float depthRange = max(clusteredLightFarPlane - clusteredLightNearPlane, 0.001);
+		int depthSlice = int(floor(((viewDepth - clusteredLightNearPlane) / depthRange) * float(clusteredLightDepthSlices)));
+		depthSlice = clamp(depthSlice, 0, clusteredLightDepthSlices - 1);
+		int clusterIndex = (depthSlice * clusteredLightGridRows + tileCoord.y) * clusteredLightGridColumns + tileCoord.x;
+		ivec4 offsetCount = deferredClusterOffsetCount[clusterIndex];
+		int offset = max(offsetCount.x, 0);
+		int count = max(offsetCount.y, 0);
+		for (int entry = 0; entry < count; ++entry)
+		{
+			int lightIndex = deferredClusterLightIndices[offset + entry];
+			if (lightIndex >= 0 && lightIndex < pointLightCount)
+			{
+				color += calculateDeferredPointLight(lightIndex, worldPosition, n, v, albedo, metallic, roughness);
+			}
+		}
+	}
+	else if (useTiledPointLights == 1 && tiledLightGridColumns > 0 && tiledLightGridRows > 0 && tiledLightTileSize > 0)
 	{
 		ivec2 tileCoord = ivec2(gl_FragCoord.xy) / tiledLightTileSize;
 		tileCoord = clamp(tileCoord, ivec2(0), ivec2(tiledLightGridColumns - 1, tiledLightGridRows - 1));

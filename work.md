@@ -2091,3 +2091,21 @@ Texture-set probe 已从 forward PBR 验证扩展到 deferred PBR 路径：
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-layout`：构建通过，输出 `pbrDeferredClusteredLightGridEnabled=yes`、`pbrDeferredClusteredLightGridBound=no`、`pbrDeferredClusteredLightGridSize=80x45x24`、`pbrDeferredClusteredLightGridClusters=86400`、`pbrDeferredClusteredLightGridMaxLightsPerCluster=64`、`pbrDeferredClusteredLightGridMaxIndices=5529600`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 20 个 verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Clustered Grid CPU Backend
+
+在 clustered layout-only scaffold 之后，新增 CPU-filled clustered grid backend，用于先打通真实 clustered SSBO binding 和 shader consumer，再进入 compute shader assignment：
+
+- 新增 `PBRDeferredClusteredLightGrid`，按 screen tile + linear depth slice 构建 clustered offset/count buffer 和 light index buffer。
+- clustered buffer 使用 SSBO binding `6`，clustered index buffer 使用 SSBO binding `7`；结构与 tiled grid 保持同类 flat `{offset,count}` + index list 形式。
+- `PBRDeferredLightingPass` 新增 `pbrDeferredClusteredLightsEnabled` profile 开关，clustered grid bound 成功后 shader 使用 clustered point-light loop；如果 clustered 未启用或绑定失败，仍可回退 tiled/global path。
+- `pbr_deferred_lighting.frag` 新增 clustered consumer 分支，根据 `gl_FragCoord` 和 `viewMatrix * worldPosition` 计算 cluster index 并遍历 clustered light indices。
+- `RuntimePBRVerificationArgs` 新增 `--verify-pbr-deferred-clustered-grid`，该模式启用 PBR G-buffer + deferred lighting + clustered grid，关闭 CPU tiled grid。
+- `tools/verify_pbr.ps1` 默认 PBR 回归新增 `deferred-clustered-grid` mode，并断言 clustered buffers 必须 bound、CPU tiled grid 不绑定、cluster dimensions / capacity 一致、clustered index count 大于 0 且小于全局 cluster-light loop。
+
+这一步仍不是最终 GPU compute clustered culling。它的作用是先验证 clustered buffer layout、binding point、shader consumer 和 stats 输出，后续可以把 CPU assignment 替换为 compute shader，而不需要同时调试 shader consumer 和 buffer layout。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid`：构建通过，输出 `pbrDeferredClusteredLightGridBound=yes`、`pbrDeferredClusteredLightGridSize=80x45x24`、`pbrDeferredClusteredLightGridIndices=14400`、`pbrDeferredClusteredLightGridCulledIndices=158400`，CPU tiled grid 为 `bound=no`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 21 个 verification mode 全部通过。
