@@ -2105,3 +2105,9 @@
 - 完成第一百七十一轮桌面重构报告同步：
   - 已同步 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送提交更新为 `3db2627 Add PBR deferred light culling config`，并补充 `PBRDeferredLightCullingConfig`、`CpuTiled` / `GpuClustered` backend 边界、focused tiled 验证和 19 模式回归结果。
   - 报告的下一步建议已更新为基于当前 light culling config 定义 `GpuClustered` 的 buffer layout、cluster dimensions、统计指标和 verification mode。
+- 完成第一百七十二轮 PBR deferred clustered culling layout prep：
+  - 更新 [renderer\PBRDeferredLightCullingConfig.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredLightCullingConfig.h) 和 [renderer\PBRDeferredLightCullingConfig.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredLightCullingConfig.cpp)，新增 clustered depth slices、max lights per cluster、`PBRDeferredClusteredLightGridLayout`、`PBRDeferredClusteredLightGridStats`、layout helper 和 `GpuClustered` backend 判断 helper。
+  - 更新 [renderer\RendererFramePassProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassProfile.h)、[renderer\RendererFramePassProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\RendererFramePassProfile.cpp) 和 [config\renderer_frame_pass.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\renderer_frame_pass.example.ini)，新增 `pbrDeferredClusteredDepthSlices=24` 与 `pbrDeferredClusteredMaxLightsPerCluster=64` profile 字段。
+  - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Deferred Clustered Culling Layout Prep` 技术记录。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`，`Debug|x64` 构建通过，当前 CPU tiled path 输出保持 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 19 个 verification mode 全部通过。

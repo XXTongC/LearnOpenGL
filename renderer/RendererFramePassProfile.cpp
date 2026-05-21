@@ -23,6 +23,8 @@ void RendererFramePassProfile::resetToDefaults()
 	pbrDeferredTiledLightsEnabled = true;
 	pbrDeferredTileSize = 16;
 	pbrDeferredTiledLightCutoff = 0.01f;
+	pbrDeferredClusteredDepthSlices = 24;
+	pbrDeferredClusteredMaxLightsPerCluster = 64;
 	pbrDeferredTiledLightDebugMaxLights = 2;
 	pbrDeferredTiledLightDebugIntensity = 1.0f;
 	iblDebugMode = 0;
@@ -46,6 +48,8 @@ void RendererFramePassProfile::visitEditableProperties(GL_EDITOR::PropertyBuilde
 	builder.addConfigBool("pbrDeferredTiledLightsEnabled", "PBR Deferred Tiled Lights", &pbrDeferredTiledLightsEnabled);
 	builder.addConfigInt("pbrDeferredTileSize", "PBR Deferred Tile Size", &pbrDeferredTileSize, 8, 64);
 	builder.addConfigFloat("pbrDeferredTiledLightCutoff", "PBR Deferred Tiled Light Cutoff", &pbrDeferredTiledLightCutoff, 0.001f, 1.0f);
+	builder.addConfigInt("pbrDeferredClusteredDepthSlices", "PBR Deferred Clustered Depth Slices", &pbrDeferredClusteredDepthSlices, 1, 128);
+	builder.addConfigInt("pbrDeferredClusteredMaxLightsPerCluster", "PBR Deferred Clustered Max Lights", &pbrDeferredClusteredMaxLightsPerCluster, 1, 256);
 	builder.addConfigInt("pbrDeferredTiledLightDebugMaxLights", "PBR Tiled Light Debug Max Lights", &pbrDeferredTiledLightDebugMaxLights, 1, 16);
 	builder.addConfigFloat("pbrDeferredTiledLightDebugIntensity", "PBR Tiled Light Debug Intensity", &pbrDeferredTiledLightDebugIntensity, 0.0f, 8.0f);
 	builder.addSection("PBR GBuffer Debug Pass");

@@ -2057,3 +2057,20 @@ Texture-set probe 已从 forward PBR 验证扩展到 deferred PBR 路径：
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，确认 `PBRDeferredLightCullingConfig.cpp` 已参与编译；输出保持 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 19 个 verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Clustered Culling Layout Prep
+
+在不启用 GPU clustered backend、不写 compute shader 的前提下，先把 `GpuClustered` 需要的 profile / layout / stats 数据边界补齐：
+
+- `RendererFramePassProfile` 新增 `pbrDeferredClusteredDepthSlices` 和 `pbrDeferredClusteredMaxLightsPerCluster`，默认分别为 `24` 和 `64`，并接入 Debug UI / profile config schema。
+- `config/renderer_frame_pass.example.ini` 新增上述 clustered 参数，后续本地实验可以先调 layout 参数，再接 backend 实现。
+- `PBRDeferredLightCullingConfig` 新增 `clusterDepthSlices` 和 `maxLightsPerCluster`，`makePbrDeferredLightCullingConfig(...)` 会从 profile 读取并 clamp 到安全范围。
+- 新增 `PBRDeferredClusteredLightGridLayout` 和 `PBRDeferredClusteredLightGridStats`，明确 clustered backend 后续至少需要 cluster columns / rows / depth slices / cluster count / max light index count / binding points / point-light stats。
+- 新增 `makePbrDeferredClusteredLightGridLayout(...)` 与 `usesPbrDeferredGpuClusteredLightGrid(...)` helper，为后续 `GpuClustered` backend 分派和 verification stats 输出预留入口。
+
+这一步仍保持默认运行使用 `CpuTiled`，因此不改变当前 deferred lighting shader 行为。后续实现 GPU clustered culling 时，应优先复用这组 layout/stats 结构，而不是直接在 pass 内部临时写 buffer 布局。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，确认 clustered profile/layout 字段已参与编译；当前 CPU tiled path 输出保持 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 19 个 verification mode 全部通过。

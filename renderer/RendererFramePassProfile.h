@@ -23,6 +23,8 @@ namespace GLframework
 		bool pbrDeferredTiledLightsEnabled{ true };
 		int pbrDeferredTileSize{ 16 };
 		float pbrDeferredTiledLightCutoff{ 0.01f };
+		int pbrDeferredClusteredDepthSlices{ 24 };
+		int pbrDeferredClusteredMaxLightsPerCluster{ 64 };
 		int pbrDeferredTiledLightDebugMaxLights{ 2 };
 		float pbrDeferredTiledLightDebugIntensity{ 1.0f };
 		int iblDebugMode{ 0 };
