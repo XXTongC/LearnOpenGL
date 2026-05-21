@@ -2120,3 +2120,6 @@
   - 更新 [tools\verify_pbr.ps1](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\verify_pbr.ps1) 和 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，默认 PBR verification 将新增 `deferred-clustered-layout` mode，并断言 layout-only stats 一致性。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-layout`，`Debug|x64` 构建通过，输出 `pbrDeferredClusteredLightGridSize=80x45x24`、`pbrDeferredClusteredLightGridClusters=86400`、`pbrDeferredClusteredLightGridMaxIndices=5529600`。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 20 个 verification mode 全部通过。
+- 完成第一百七十五轮桌面重构详细报告更新：
+  - 已重写 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，报告覆盖当前已完成重构、与原始 `text2` 工程的架构差异、runtime / renderer / UI profile / PBR deferred / verification / clustered layout 的 Mermaid 示意图、20 模式验证状态，以及 PBR 仍未完成的 GPU clustered culling、真实资产基准、glTF material parity、透明策略和 profiling 缺口。
+  - 报告明确记录最新已推送代码提交 `02c8f87 Verify PBR clustered layout stats`，并说明当前工作区只剩 `imgui.ini` 运行时 UI 布局状态未提交。
