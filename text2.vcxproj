@@ -203,6 +203,7 @@
     <ClCompile Include="renderer\MeshDraw.cpp" />
     <ClCompile Include="renderer\PBRDeferredLightingPass.cpp" />
     <ClCompile Include="renderer\PBRDeferredLightBuffer.cpp" />
+    <ClCompile Include="renderer\PBRDeferredLightCullingConfig.cpp" />
     <ClCompile Include="renderer\PBRDeferredTiledLightDebugPass.cpp" />
     <ClCompile Include="renderer\PBRDeferredTiledLightGrid.cpp" />
     <ClCompile Include="renderer\PBRMaterialBinder.cpp" />
@@ -316,6 +317,7 @@
     <ClInclude Include="renderer\MeshDraw.h" />
     <ClInclude Include="renderer\PBRDeferredLightingPass.h" />
     <ClInclude Include="renderer\PBRDeferredLightBuffer.h" />
+    <ClInclude Include="renderer\PBRDeferredLightCullingConfig.h" />
     <ClInclude Include="renderer\PBRDeferredTiledLightDebugPass.h" />
     <ClInclude Include="renderer\PBRDeferredTiledLightGrid.h" />
     <ClInclude Include="renderer\PBRMaterialBinder.h" />

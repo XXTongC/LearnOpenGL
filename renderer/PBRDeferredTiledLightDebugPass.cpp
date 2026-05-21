@@ -5,6 +5,7 @@
 #include "core.h"
 #include "framework/geometry.h"
 #include "renderer/MeshDraw.h"
+#include "renderer/PBRDeferredLightCullingConfig.h"
 #include "renderer/RendererFramePassProfile.h"
 #include "renderer/ShaderLibrary.h"
 
@@ -31,10 +32,10 @@ PBRDeferredTiledLightDebugPassStats PBRDeferredTiledLightDebugPass::render(
 		return stats;
 	}
 
-	const PBRDeferredTiledLightGridConfig tiledGridConfig{
-		profile.pbrDeferredTileSize,
-		profile.pbrDeferredTiledLightCutoff
-	};
+	const PBRDeferredLightCullingConfig tiledGridConfig = makePbrDeferredLightCullingConfig(
+		profile,
+		PBRDeferredLightCullingMode::CpuTiled
+	);
 	stats.gridStats = mTiledLightGrid.bind(
 		context,
 		targetWidth,

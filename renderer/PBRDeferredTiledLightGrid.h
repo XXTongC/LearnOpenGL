@@ -4,15 +4,10 @@
 
 #include "core.h"
 #include "renderer/MaterialBindingContext.h"
+#include "renderer/PBRDeferredLightCullingConfig.h"
 
 namespace GLframework
 {
-	struct PBRDeferredTiledLightGridConfig
-	{
-		int tileSize{ 16 };
-		float lightCutoff{ 0.01f };
-	};
-
 	struct PBRDeferredTiledLightGridStats
 	{
 		bool bound{ false };
@@ -42,7 +37,7 @@ namespace GLframework
 			const MaterialBindingContext& context,
 			unsigned int targetWidth,
 			unsigned int targetHeight,
-			const PBRDeferredTiledLightGridConfig& config
+			const PBRDeferredLightCullingConfig& config
 		);
 
 		static constexpr unsigned int tileBufferBindingPoint()

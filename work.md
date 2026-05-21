@@ -2041,3 +2041,19 @@ Texture-set probe 已从 forward PBR 验证扩展到 deferred PBR 路径：
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights-cutoff-005`：构建通过，输出 `pbrDeferredTiledLightGridCutoff=0.050000`、`pbrDeferredTiledLightGridIndices=714`、`pbrDeferredTiledLightGridCulledIndices=6486`，确认 descriptor 中 cutoff override / tiled probe / deferred pass 开关生效。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 19 个 verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Light Culling Config Boundary
+
+开始为 clustered / GPU light culling 建立上层配置边界：
+
+- 新增 `PBRDeferredLightCullingConfig` 与 `PBRDeferredLightCullingMode`，当前实际后端为 `CpuTiled`，并预留 `GpuClustered` 枚举值。
+- `PBRDeferredTiledLightGrid::bind(...)` 不再接收 tiled-grid 专用 config，而是接收更上层的 light culling config；当前只有 `CpuTiled` mode 会实际构建 SSBO tile list。
+- `PBRDeferredLightingPass` 与 `PBRDeferredTiledLightDebugPass` 通过 `makePbrDeferredLightCullingConfig(...)` 从 `RendererFramePassProfile` 创建 culling config，调用点不再直接散落 tile size / cutoff config 构造。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已加入新的 `.cpp/.h`，保持 Visual Studio 工程分类同步。
+
+这一步不改变现有 shader 行为和 verification 输出，目标是先把“使用哪种 deferred point-light culling backend”从 tiled grid 实现中抽出。后续接入 clustered / GPU culling 时，可以先扩展 `PBRDeferredLightCullingMode` 和 config，再替换 deferred lighting pass 的 backend 分派。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，确认 `PBRDeferredLightCullingConfig.cpp` 已参与编译；输出保持 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 19 个 verification mode 全部通过。

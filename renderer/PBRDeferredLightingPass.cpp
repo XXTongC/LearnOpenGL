@@ -7,6 +7,7 @@
 #include "framework/geometry.h"
 #include "renderer/EnvironmentRenderTargets.h"
 #include "renderer/MeshDraw.h"
+#include "renderer/PBRDeferredLightCullingConfig.h"
 #include "renderer/PBRGBufferRenderTargets.h"
 #include "renderer/PBRShadowResourceBinder.h"
 #include "renderer/RendererFramePassProfile.h"
@@ -105,23 +106,23 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 	stats.lightBufferPointLightCount = lightBufferStats.pointLightCount;
 	stats.lightBufferMaxPointLightCount = lightBufferStats.maxPointLightCount;
 
-	const PBRDeferredTiledLightGridConfig tiledGridConfig{
-		profile.pbrDeferredTileSize,
-		profile.pbrDeferredTiledLightCutoff
-	};
 	const bool useTiledPointLights = profile.pbrDeferredTiledLightsEnabled && lightBufferStats.pointLightCount > 0;
-	stats.tiledLightGridEnabled = useTiledPointLights;
-	shader->setInt("useTiledPointLights", useTiledPointLights ? 1 : 0);
-	shader->setInt("tiledLightTileSize", std::max(tiledGridConfig.tileSize, 1));
+	const PBRDeferredLightCullingConfig lightCullingConfig = makePbrDeferredLightCullingConfig(
+		profile,
+		useTiledPointLights ? PBRDeferredLightCullingMode::CpuTiled : PBRDeferredLightCullingMode::Disabled
+	);
+	stats.tiledLightGridEnabled = usesPbrDeferredCpuTiledLightGrid(lightCullingConfig);
+	shader->setInt("useTiledPointLights", stats.tiledLightGridEnabled ? 1 : 0);
+	shader->setInt("tiledLightTileSize", lightCullingConfig.tileSize);
 	shader->setInt("tiledLightGridColumns", 0);
 	shader->setInt("tiledLightGridRows", 0);
-	if (useTiledPointLights)
+	if (stats.tiledLightGridEnabled)
 	{
 		const PBRDeferredTiledLightGridStats tiledStats = mTiledLightGrid.bind(
 			context,
 			targetWidth,
 			targetHeight,
-			tiledGridConfig
+			lightCullingConfig
 		);
 		stats.tiledLightGridBound = tiledStats.bound;
 		stats.tiledLightGridEnabled = tiledStats.enabled;
