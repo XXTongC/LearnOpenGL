@@ -52,7 +52,7 @@ namespace
 			}
 
 			const auto index = static_cast<std::size_t>(packedPointLightCount);
-			data.pointLightColorIntensity[index] = glm::vec4(pointLight->getColor(), 1.0f);
+			data.pointLightColorIntensity[index] = glm::vec4(pointLight->getColor(), pointLight->getIntensity());
 			data.pointLightPositionEnabled[index] = glm::vec4(pointLight->getPosition(), 1.0f);
 			data.pointLightAttenuation[index] = glm::vec4(
 				pointLight->getK2(),

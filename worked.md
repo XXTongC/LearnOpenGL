@@ -1959,3 +1959,11 @@
   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Deferred Tiled Light Grid First Stage` 技术记录。
   - 同步修正 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，把 tiled grid 状态从“focused deferred 验证”更新为“完整 12 模式回归已通过，等待提交推送”。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1`，MSBuild `Debug|x64` 通过，12 个 PBR verification mode 全部通过；deferred 输出确认 `pbrDeferredTiledLightGridBound=yes`、`pbrDeferredTiledLightGridSize=80x45`、`pbrDeferredTiledLightGridTileSize=16`、`pbrDeferredTiledLightGridIndices=7200`、`pbrDeferredTiledLightGridMaxTileLights=2`。
+- 完成第一百四十六轮 PBR deferred tiled light culling verification：
+  - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp) 和 [application/RuntimePBRVerification.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.h)，新增 `--verify-pbr-deferred-tiled-lights` 验证入口和 `enablePbrTiledLightProbe` 配置。
+  - 更新 [application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)，新增 sparse / high-attenuation point light rig，让 tiled grid 在专用验证模式下必须产生小于全局遍历上限的 light index count。
+  - 更新 [renderer/PBRDeferredLightBuffer.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredLightBuffer.cpp)，修正 deferred point light SSBO 的 intensity 打包，`deferredPointLightColorIntensity.a` 现在使用 `PointLight::getIntensity()`。
+  - 更新 [tools/verify_pbr.ps1](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\verify_pbr.ps1)，默认 PBR 回归从 12 个模式扩展为 13 个模式，并对 `deferred-tiled-lights` 增加 tiled culling 断言：必须绑定 tiled grid，且 `pbrDeferredTiledLightGridIndices` 必须小于 `tileColumns * tileRows * pointLightCount`。
+  - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Deferred Tiled Light Culling Verification` 技术记录。
+  - 同步更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，把 PBR verification 状态改为 13 个模式，并补充 `deferred-tiled-lights` 的 `3311 < 7200` 断言结果。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1`，MSBuild `Debug|x64` 通过，13 个 PBR verification mode 全部通过；新增 `deferred-tiled-lights` 模式输出 `pbrDeferredTiledLightGridSize=80x45`、`pbrDeferredLightBufferPointLights=2/16`、`pbrDeferredTiledLightGridIndices=3311`，小于全局遍历上限 `7200`。

@@ -1769,3 +1769,18 @@ Deferred PBR point light shading 已从“每个 fragment 遍历全局 point lig
 这一步是 tiled / clustered lighting 的第一阶段，不是最终性能版本。当前 CPU bounds 仍偏保守，验证场景中两个 point lights 会覆盖全部 `80x45` tiles，因此 `pbrDeferredTiledLightGridIndices=7200`。这个结果说明数据链路已经跑通，但后续还需要继续收紧 culling bounds，或进一步演进到 GPU compute / clustered culling。
 
 本轮已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1`，`Debug|x64` 构建通过，12 个 PBR verification mode 全部通过；deferred 系列输出确认 `pbrDeferredTiledLightGridBound=yes`、`pbrDeferredTiledLightGridSize=80x45`、`pbrDeferredTiledLightGridTileSize=16`、`pbrDeferredTiledLightGridMaxTileLights=2`。
+
+### 2026-05-21 PBR Deferred Tiled Light Culling Verification
+
+Tiled light grid 已新增专用验证模式，用于证明 tiled grid 不只是绑定成功，而是真的能减少 deferred shader 的 point light index 遍历入口：
+
+- 新增 `--verify-pbr-deferred-tiled-lights`，该模式使用 sparse / high-attenuation point light rig，让点光只覆盖部分 screen tiles。
+- `tools/verify_pbr.ps1` 默认验证模式从 12 个扩展为 13 个，并把 `deferred-tiled-lights` 纳入默认回归。
+- 验证脚本会对该模式做额外断言：
+  - 必须输出 `pbrDeferredTiledLightGridBound=yes`。
+  - 必须能解析 tile grid size、point light count 和 light index count。
+  - `pbrDeferredTiledLightGridIndices` 必须大于 `0`。
+  - `pbrDeferredTiledLightGridIndices` 必须小于 `tileColumns * tileRows * pointLightCount`，否则说明 tiled list 没有减少全局 point light loop。
+- `PBRDeferredLightBuffer` 修正 point light intensity 打包，`deferredPointLightColorIntensity.a` 现在使用 runtime `PointLight::getIntensity()`，与 tiled radius 估算和 shader lighting 语义保持一致。
+
+本轮 full verification 已通过，新增模式输出 `pbrDeferredTiledLightGridSize=80x45`、`pbrDeferredLightBufferPointLights=2/16`、`pbrDeferredTiledLightGridIndices=3311`。对比全局遍历上限 `80 * 45 * 2 = 7200`，该模式已经能验证 tiled culling 实际减少了 deferred point light index 数。

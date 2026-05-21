@@ -188,6 +188,24 @@ namespace GL_RUNTIME
 		context.pbrLightRigProfile.pointLights[1].color = { 1.0f, 1.0f, 1.0f };
 		context.pbrLightRigProfile.pointLights[1].intensity = 1.0f;
 		context.pbrLightRigProfile.pointLights[1].specularIntensity = 0.9f;
+		if (config.enablePbrTiledLightProbe)
+		{
+			context.pbrLightRigProfile.pointLightCount = 2;
+			context.pbrLightRigProfile.pointLights[0].position = { -1.45f, 0.65f, 2.2f };
+			context.pbrLightRigProfile.pointLights[0].color = { 1.0f, 0.45f, 0.25f };
+			context.pbrLightRigProfile.pointLights[0].intensity = 2.5f;
+			context.pbrLightRigProfile.pointLights[0].specularIntensity = 1.0f;
+			context.pbrLightRigProfile.pointLights[0].attenuationK2 = 96.0f;
+			context.pbrLightRigProfile.pointLights[0].attenuationK1 = 0.0f;
+			context.pbrLightRigProfile.pointLights[0].attenuationK0 = 1.0f;
+			context.pbrLightRigProfile.pointLights[1].position = { 1.45f, -0.35f, 2.2f };
+			context.pbrLightRigProfile.pointLights[1].color = { 0.25f, 0.65f, 1.0f };
+			context.pbrLightRigProfile.pointLights[1].intensity = 2.5f;
+			context.pbrLightRigProfile.pointLights[1].specularIntensity = 1.0f;
+			context.pbrLightRigProfile.pointLights[1].attenuationK2 = 96.0f;
+			context.pbrLightRigProfile.pointLights[1].attenuationK1 = 0.0f;
+			context.pbrLightRigProfile.pointLights[1].attenuationK0 = 1.0f;
+		}
 
 		context.pbrCameraRigProfile.position = { 0.0f, 0.0f, 5.0f };
 		context.pbrCameraRigProfile.up = { 0.0f, 1.0f, 0.0f };
@@ -225,6 +243,10 @@ namespace GL_RUNTIME
 		if (config.enablePbrImportedAssetProbe)
 		{
 			profileLine += " + imported PBR asset probe";
+		}
+		if (config.enablePbrTiledLightProbe)
+		{
+			profileLine += " + sparse tiled light probe";
 		}
 		if (config.enablePbrGBufferDebugPass)
 		{

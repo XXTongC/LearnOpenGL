@@ -24,6 +24,7 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-emissive"; Argument = "--verify-pbr-deferred-emissive"; Capture = "out/pbr_deferred_emissive_verification.ppm" },
     [pscustomobject]@{ Name = "deferred-material-ibl"; Argument = "--verify-pbr-deferred-material-ibl"; Capture = "out/pbr_deferred_material_ibl_verification.ppm" },
     [pscustomobject]@{ Name = "deferred-alpha-mask"; Argument = "--verify-pbr-deferred-alpha-mask"; Capture = "out/pbr_deferred_alpha_mask_verification.ppm" },
+    [pscustomobject]@{ Name = "deferred-tiled-lights"; Argument = "--verify-pbr-deferred-tiled-lights"; Capture = "out/pbr_deferred_tiled_lights_verification.ppm"; ExpectTiledCulling = $true },
     [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" }
 )
 
@@ -140,6 +141,20 @@ function Get-PpmStats {
     }
 }
 
+function Get-RegexValue {
+    param(
+        [string]$Text,
+        [string]$Pattern,
+        [int]$Group = 1
+    )
+
+    if ($Text -match $Pattern) {
+        return $Matches[$Group]
+    }
+
+    return $null
+}
+
 function Invoke-Build {
     $vsDevCmd = Join-Path ${env:ProgramFiles} "Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"
     if (!(Test-Path $vsDevCmd)) {
@@ -253,6 +268,32 @@ foreach ($mode in $selectedModes) {
     }
     if (!$stats.Valid) {
         $failures.Add("$($mode.Name): capture invalid ($($stats.Error))")
+    }
+    if ($mode.PSObject.Properties.Name -contains "ExpectTiledCulling" -and $mode.ExpectTiledCulling) {
+        if (!$rendererLine) {
+            $failures.Add("$($mode.Name): missing renderer stats")
+        }
+        elseif ($rendererLine -notmatch "pbrDeferredTiledLightGridBound=yes") {
+            $failures.Add("$($mode.Name): tiled light grid was not bound")
+        }
+        else {
+            $columns = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridSize=(\d+)x(\d+)" -Group 1
+            $rows = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridSize=(\d+)x(\d+)" -Group 2
+            $indices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridIndices=(\d+)" -Group 1
+            $pointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredLightBufferPointLights=(\d+)/" -Group 1
+            if ($null -eq $columns -or $null -eq $rows -or $null -eq $indices -or $null -eq $pointLights) {
+                $failures.Add("$($mode.Name): tiled culling stats were incomplete")
+            }
+            else {
+                $fullGlobalLoopIndexCount = [int]$columns * [int]$rows * [int]$pointLights
+                if ([int]$indices -le 0) {
+                    $failures.Add("$($mode.Name): tiled light grid produced no light indices")
+                }
+                if ([int]$indices -ge $fullGlobalLoopIndexCount) {
+                    $failures.Add("$($mode.Name): tiled light grid did not reduce the global point-light loop ($indices >= $fullGlobalLoopIndexCount)")
+                }
+            }
+        }
     }
 }
 

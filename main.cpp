@@ -35,9 +35,10 @@ namespace
 		const bool verifyPbrDeferredEmissive = hasArgument(argc, argv, "--verify-pbr-deferred-emissive");
 		const bool verifyPbrDeferredMaterialIbl = hasArgument(argc, argv, "--verify-pbr-deferred-material-ibl");
 		const bool verifyPbrDeferredAlphaMask = hasArgument(argc, argv, "--verify-pbr-deferred-alpha-mask");
+		const bool verifyPbrDeferredTiledLights = hasArgument(argc, argv, "--verify-pbr-deferred-tiled-lights");
 		const bool verifyPbrImport = hasArgument(argc, argv, "--verify-pbr-import");
 		const bool verifyPbrNoAtlas = hasArgument(argc, argv, "--verify-pbr-no-atlas");
-		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer || verifyPbrGBufferDebug || verifyPbrDeferred || verifyPbrDeferredNoAtlas || verifyPbrDeferredTransparent || verifyPbrDeferredEmissive || verifyPbrDeferredMaterialIbl || verifyPbrDeferredAlphaMask || verifyPbrImport || verifyPbrNoAtlas)
+		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer || verifyPbrGBufferDebug || verifyPbrDeferred || verifyPbrDeferredNoAtlas || verifyPbrDeferredTransparent || verifyPbrDeferredEmissive || verifyPbrDeferredMaterialIbl || verifyPbrDeferredAlphaMask || verifyPbrDeferredTiledLights || verifyPbrImport || verifyPbrNoAtlas)
 		{
 			config.window = { 1280, 720 };
 			config.enableGui = false;
@@ -50,6 +51,7 @@ namespace
 			config.pbrVerification.enablePbrEmissiveProbe = verifyPbrDeferredEmissive;
 			config.pbrVerification.enablePbrMaterialIblProbe = verifyPbrDeferredMaterialIbl;
 			config.pbrVerification.enablePbrAlphaMaskProbe = verifyPbrDeferredAlphaMask;
+			config.pbrVerification.enablePbrTiledLightProbe = verifyPbrDeferredTiledLights;
 			config.pbrVerification.enablePbrImportedAssetProbe = verifyPbrImport;
 			if (verifyPbrIblDebug)
 			{
@@ -102,6 +104,12 @@ namespace
 				config.pbrVerification.enablePbrGBufferPass = true;
 				config.pbrVerification.enablePbrDeferredLightingPass = true;
 				config.pbrVerification.capturePath = "out/pbr_deferred_alpha_mask_verification.ppm";
+			}
+			if (verifyPbrDeferredTiledLights)
+			{
+				config.pbrVerification.enablePbrGBufferPass = true;
+				config.pbrVerification.enablePbrDeferredLightingPass = true;
+				config.pbrVerification.capturePath = "out/pbr_deferred_tiled_lights_verification.ppm";
 			}
 			if (verifyPbrImport)
 			{
