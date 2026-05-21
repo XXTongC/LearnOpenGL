@@ -2074,3 +2074,13 @@
   - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，把报告同步到最新提交 `1f5c6e5 Verify PBR deferred texture set probe`。
   - 报告中将默认 PBR verification 状态更新为 19 个模式，并补充 `deferred-texture-set` probe、`pbrTexturedMeshes=1`、`pbrGBufferDrawCalls=26`、`pbrDeferredLightingDrawCalls=1` 和 capture 非黑比例 `29.2184%`。
   - 报告继续明确当前工作区只保留未提交的 `imgui.ini` 运行时布局状态。
+- 完成第一百六十五轮 PBR verification argument split：
+  - 新增 [application\RuntimePBRVerificationArgs.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerificationArgs.h) 和 [application\RuntimePBRVerificationArgs.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerificationArgs.cpp)，集中解析 `--verify-pbr-*` 参数并生成 `RuntimeApplicationShellConfig`。
+  - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)，入口现在只负责 logger、shell 创建和 bootstrapper 调用，不再直接维护 PBR verification flag 矩阵。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 和 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，把新 verification args 模块纳入 Visual Studio 工程。
+  - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Verification Argument Split` 技术记录。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-texture-set`，`Debug|x64` 构建通过，输出保持 `pbrTexturedMeshes=1`、`pbrGBufferDrawCalls=26`、`pbrDeferredLightingDrawCalls=1`。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 19 个 verification mode 全部通过。
+- 完成第一百六十六轮桌面重构详细报告更新：
+  - 已重写 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，报告覆盖当前已完成工作、与原始 `text2` 工程的架构差异、runtime / renderer / UI profile / PBR deferred / verification 的 Mermaid 示意图、19 模式验证状态、当前本地未提交的 `RuntimePBRVerificationArgs` 拆分，以及 PBR 仍未完成的真实资产、clustered/GPU culling、透明策略等缺口。
+  - 报告明确区分最新已推送分支提交 `6193d6d Record deferred texture set report sync`、最新已推送代码提交 `1f5c6e5 Verify PBR deferred texture set probe`、当前本地已验证但尚未提交的 argument split，以及不应提交的 `imgui.ini` 运行时布局状态。

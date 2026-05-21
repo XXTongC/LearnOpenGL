@@ -2011,3 +2011,19 @@ Texture-set probe 已从 forward PBR 验证扩展到 deferred PBR 路径：
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-texture-set`：构建通过，输出 `pbrTexturedMeshes=1`、`pbrGBufferDrawCalls=26`、`pbrDeferredLightingDrawCalls=1`、capture 非黑比例 `29.2184%`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 19 个 verification mode 全部通过。
+
+### 2026-05-21 PBR Verification Argument Split
+
+`main.cpp` 中不断增长的 PBR verification 参数解析已拆出到 application 层：
+
+- 新增 `RuntimePBRVerificationArgs`，集中解析 `--verify-pbr-*` 参数，并生成 `RuntimeApplicationShellConfig`。
+- `main.cpp` 现在只负责初始化 logger、创建 `RuntimeApplicationShell` 和进入 `RuntimeBootstrapper`，不再直接维护 19 个 PBR verification flag。
+- 新模块继续覆盖 verification defaults、capture path、deferred pass 开关、tile size / cutoff overrides、texture-set / deferred texture-set probe 开关。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已加入新 `.cpp/.h`，确保 Visual Studio 工程和命令行 MSBuild 使用同一套文件。
+
+这一步不改变渲染行为，目标是把 PBR verification 的模式矩阵从程序入口剥离。后续新增真实资产基准、clustered lighting 或更多 material parity 验证时，只需要扩展 `RuntimePBRVerificationArgs` 和 `tools/verify_pbr.ps1`，不会继续把 `main.cpp` 拉回脚本式总控。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-texture-set`：构建通过，确认 `RuntimePBRVerificationArgs.cpp` 已参与编译；输出保持 `pbrTexturedMeshes=1`、`pbrGBufferDrawCalls=26`、`pbrDeferredLightingDrawCalls=1`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 19 个 verification mode 全部通过。
