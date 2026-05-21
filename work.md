@@ -1687,3 +1687,15 @@ Deferred PBR 已把 per-material IBL 参数从 forward path 补到 G-buffer / li
 - 新增 `--verify-pbr-deferred-material-ibl`，在 verification scene 中追加一个 opaque custom IBL PBR probe，并输出 `pbrCustomIblMeshes`。
 
 这一步让 deferred PBR 不再把所有材质的 IBL 响应压平成同一个全局强度。后续如果继续补 material parity，应优先考虑 alpha mask / opacity policy、normal-map tangent 数据一致性，以及把更多 material flags 统一编码到 G-buffer material params 或 material id buffer。
+
+### 2026-05-21 PBR Alpha Mask First Stage
+
+PBR 材质已新增 alpha mask / cutoff 语义，并接入 forward 与 deferred G-buffer 主视图：
+
+- `PBRMaterial` 与 `PBRMaterialProfile` 新增 `useAlphaMask` 和 `alphaCutoff`，可通过 Inspector / profile config 控制。
+- `PBRSurfaceResourceBinder` 统一绑定 `useAlphaMask` 与 `alphaCutoff`，forward PBR 和 G-buffer pass 共享同一套材质参数来源。
+- `shaders/pbr/pbr.frag` 与 `shaders/pbr/pbr_gbuffer.frag` 会读取 albedo map alpha，并在 alpha 小于 cutoff 时 `discard`。
+- `PBRDepthPrepass` 会跳过 alpha-masked PBR mesh，避免 cutout 材质在主视图 G-buffer 前被整片预写深度。
+- 新增 `--verify-pbr-deferred-alpha-mask`，使用 `Texture/window.png` 作为带 alpha 的 albedo map，验证 alpha mask probe 能进入 G-buffer 而不进入 PBR depth prepass。
+
+这一步先保证主视图的 forward / deferred PBR 不把 cutout 材质当整片实心面渲染。当前尚未完成的是 alpha-aware shadow：legacy shadow map 和 PBR shadow atlas 仍使用 depth-only shader，后续需要给 shadow pass 增加 alpha mask material binding 或专用 PBR alpha shadow shader，才能得到正确 cutout shadow。

@@ -19,6 +19,9 @@ namespace
 		builder.addConfigFloat("ao", "AO", &profile.ao, 0.0f, 1.0f);
 		builder.addConfigColor3({ "emissiveR", "emissiveG", "emissiveB" }, "Emissive Color", &profile.emissiveColor);
 		builder.addConfigFloat("emissiveIntensity", "Emissive Intensity", &profile.emissiveIntensity, 0.0f, 20.0f);
+		builder.addSection("PBR Alpha Mask");
+		builder.addConfigBool("useAlphaMask", "Use Alpha Mask", &profile.useAlphaMask);
+		builder.addConfigFloat("alphaCutoff", "Alpha Cutoff", &profile.alphaCutoff, 0.0f, 1.0f);
 	}
 
 	void addMaterialProfileIblProperties(GL_EDITOR::PropertyBuilder& builder, PBRMaterialProfile& profile)
@@ -135,6 +138,8 @@ void PBRMaterialProfile::applyTo(PBRMaterial& material) const
 	material.mRoughness = roughness;
 	material.mAo = ao;
 	material.mEmissiveIntensity = emissiveIntensity;
+	material.mUseAlphaMask = useAlphaMask;
+	material.mAlphaCutoff = alphaCutoff;
 	material.mUseIBL = useIBL;
 	material.mIblDiffuseStrength = iblDiffuseStrength;
 	material.mIblSpecularStrength = iblSpecularStrength;
@@ -148,6 +153,8 @@ void PBRMaterialProfile::copyFrom(const PBRMaterial& material)
 	roughness = material.mRoughness;
 	ao = material.mAo;
 	emissiveIntensity = material.mEmissiveIntensity;
+	useAlphaMask = material.mUseAlphaMask;
+	alphaCutoff = material.mAlphaCutoff;
 	useIBL = material.mUseIBL;
 	iblDiffuseStrength = material.mIblDiffuseStrength;
 	iblSpecularStrength = material.mIblSpecularStrength;
@@ -291,6 +298,10 @@ void PBRMaterial::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
 	addFloatUniformProperty(builder, surfaceFloatUniformSlots[2]);
 	builder.addColor3(vec3UniformSlots[1].label, vec3UniformSlots[1].value);
 	addFloatUniformProperty(builder, surfaceFloatUniformSlots[3]);
+
+	builder.addSection("PBR Alpha Mask");
+	builder.addBool("Use Alpha Mask", &mUseAlphaMask);
+	builder.addFloat("Alpha Cutoff", &mAlphaCutoff, 0.0f, 1.0f);
 
 	builder.addSection("PBR IBL");
 	builder.addBool("Use IBL", &mUseIBL);

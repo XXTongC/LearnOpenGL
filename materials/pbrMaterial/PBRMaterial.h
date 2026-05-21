@@ -18,6 +18,8 @@ namespace GLframework
 		float roughness{ 0.5f };
 		float ao{ 1.0f };
 		float emissiveIntensity{ 0.0f };
+		bool useAlphaMask{ false };
+		float alphaCutoff{ 0.5f };
 		bool useIBL{ false };
 		float iblDiffuseStrength{ 1.0f };
 		float iblSpecularStrength{ 1.0f };
@@ -111,6 +113,8 @@ namespace GLframework
 		float mRoughness{ 0.5f };
 		float mAo{ 1.0f };
 		float mEmissiveIntensity{ 0.0f };
+		bool mUseAlphaMask{ false };
+		float mAlphaCutoff{ 0.5f };
 		bool mUseIBL{ false };
 		float mIblDiffuseStrength{ 1.0f };
 		float mIblSpecularStrength{ 1.0f };

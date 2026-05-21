@@ -31,6 +31,7 @@ namespace
 		int pbrTransparentMeshCount{ 0 };
 		int pbrEmissiveMeshCount{ 0 };
 		int pbrCustomIblMeshCount{ 0 };
+		int pbrAlphaMaskedMeshCount{ 0 };
 	};
 
 	void reportLine(const std::string& message)
@@ -63,6 +64,10 @@ namespace
 			if (pbrMaterial && pbrMaterial->mEmissiveIntensity > 0.0f && glm::length(pbrMaterial->mEmissiveColor) > 0.0001f)
 			{
 				++stats.pbrEmissiveMeshCount;
+			}
+			if (pbrMaterial && pbrMaterial->mUseAlphaMask)
+			{
+				++stats.pbrAlphaMaskedMeshCount;
 			}
 			if (pbrMaterial
 				&& pbrMaterial->mUseIBL
@@ -205,6 +210,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + material IBL params probe";
 		}
+		if (config.enablePbrAlphaMaskProbe)
+		{
+			profileLine += " + alpha mask probe";
+		}
 		if (config.enablePbrGBufferDebugPass)
 		{
 			profileLine += " + PBR G-buffer debug pass";
@@ -279,7 +288,7 @@ namespace GL_RUNTIME
 		const RuntimePBRVerificationConfig& config
 	)
 	{
-		if ((!config.enablePbrTransparentFallbackPass && !config.enablePbrEmissiveProbe && !config.enablePbrMaterialIblProbe) || !context.sceneOffScreen || !context.renderer)
+		if ((!config.enablePbrTransparentFallbackPass && !config.enablePbrEmissiveProbe && !config.enablePbrMaterialIblProbe && !config.enablePbrAlphaMaskProbe) || !context.sceneOffScreen || !context.renderer)
 		{
 			return;
 		}
@@ -355,6 +364,31 @@ namespace GL_RUNTIME
 			mesh->setPosition({ 0.0f, 0.8f, 2.35f });
 			context.sceneOffScreen->addChild(mesh);
 		}
+
+		if (config.enablePbrAlphaMaskProbe)
+		{
+			auto material = std::make_shared<GLframework::PBRMaterial>();
+			material->mAlbedo = { 1.0f, 1.0f, 1.0f };
+			material->mAlbedoMap = GLframework::Texture::createTexture("Texture/window.png", 0);
+			material->mMetallic = 0.0f;
+			material->mRoughness = 0.45f;
+			material->mAo = 1.0f;
+			material->mUseAlphaMask = true;
+			material->mAlphaCutoff = 0.5f;
+			material->mUseIBL = true;
+			material->mIblDiffuseStrength = 1.0f;
+			material->mIblSpecularStrength = 1.0f;
+
+			auto geometry = GLframework::Geometry::createPlane(
+				context.renderer->getShader(GLframework::MaterialType::PBRMaterial),
+				1.25f,
+				1.25f
+			);
+			auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
+			mesh->setName("PBR Deferred Alpha Mask Probe");
+			mesh->setPosition({ 0.0f, 0.7f, 2.15f });
+			context.sceneOffScreen->addChild(mesh);
+		}
 	}
 
 	void RuntimePBRVerification::reportPreparedScene(GLframework::AppRuntimeContext& context)
@@ -373,6 +407,7 @@ namespace GL_RUNTIME
 			+ ", pbrTransparentMeshes=" + std::to_string(stats.pbrTransparentMeshCount)
 			+ ", pbrEmissiveMeshes=" + std::to_string(stats.pbrEmissiveMeshCount)
 			+ ", pbrCustomIblMeshes=" + std::to_string(stats.pbrCustomIblMeshCount)
+			+ ", pbrAlphaMaskedMeshes=" + std::to_string(stats.pbrAlphaMaskedMeshCount)
 			+ ", iblReady=" + (environmentReady ? std::string{ "yes" } : std::string{ "no" })
 		);
 	}

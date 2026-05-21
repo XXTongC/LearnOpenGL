@@ -41,6 +41,8 @@ bool PBRSurfaceResourceBinder::bind(
 	{
 		shader->setFloat(slot.uniformName, slot.value ? *slot.value : 0.0f);
 	}
+	shader->setInt("useAlphaMask", material->mUseAlphaMask ? 1 : 0);
+	shader->setFloat("alphaCutoff", material->mAlphaCutoff);
 
 	for (const auto& slot : material->getTextureSlots())
 	{

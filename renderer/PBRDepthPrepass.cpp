@@ -1,6 +1,7 @@
 #include "PBRDepthPrepass.h"
 
 #include "materials/material.h"
+#include "materials/pbrMaterial/PBRMaterial.h"
 #include "renderer/DepthPrepassBinder.h"
 #include "renderer/MeshDraw.h"
 
@@ -57,6 +58,12 @@ bool PBRDepthPrepass::renderObject(
 {
 	const auto material = mesh ? mesh->getMaterial() : nullptr;
 	if (!material || material->getMaterialType() != MaterialType::PBRMaterial)
+	{
+		return false;
+	}
+
+	const auto pbrMaterial = std::static_pointer_cast<PBRMaterial>(material);
+	if (pbrMaterial->mUseAlphaMask)
 	{
 		return false;
 	}

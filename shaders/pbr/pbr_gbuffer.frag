@@ -17,6 +17,8 @@ uniform float pbrRoughness;
 uniform float pbrAo;
 uniform vec3 pbrEmissiveColor;
 uniform float pbrEmissiveIntensity;
+uniform int useAlphaMask;
+uniform float alphaCutoff;
 uniform int useIBL;
 uniform float iblDiffuseStrength;
 uniform float iblSpecularStrength;
@@ -44,9 +46,16 @@ void main()
 	}
 
 	vec3 albedo = pbrAlbedo;
+	float albedoAlpha = 1.0;
 	if (useAlbedoMap == 1)
 	{
-		albedo = pow(texture(albedoMap, uv).rgb, vec3(2.2));
+		vec4 albedoSample = texture(albedoMap, uv);
+		albedo = pow(albedoSample.rgb, vec3(2.2));
+		albedoAlpha = albedoSample.a;
+	}
+	if (useAlphaMask == 1 && albedoAlpha < alphaCutoff)
+	{
+		discard;
 	}
 
 	float metallic = clamp(pbrMetallic, 0.0, 1.0);
