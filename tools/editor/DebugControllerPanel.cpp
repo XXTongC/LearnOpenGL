@@ -274,6 +274,10 @@ namespace
 			ImGui::Text("PBR Deferred Tiled Light Grid: %d x %d tiles @ %d px", stats.pbrDeferredTiledLightGridColumns, stats.pbrDeferredTiledLightGridRows, stats.pbrDeferredTiledLightGridTileSize);
 			ImGui::Text("PBR Deferred Tiled Light Occupancy: %d / %d occupied, %d empty", stats.pbrDeferredTiledLightGridOccupiedTiles, stats.pbrDeferredTiledLightGridTileCount, stats.pbrDeferredTiledLightGridEmptyTiles);
 			ImGui::Text("PBR Deferred Tiled Light Indices: %d, max per tile %d", stats.pbrDeferredTiledLightGridIndexCount, stats.pbrDeferredTiledLightGridMaxTileLights);
+			const float tiledLightCullPercent = stats.pbrDeferredTiledLightGridFullIndexCount > 0
+				? (static_cast<float>(stats.pbrDeferredTiledLightGridCulledIndexCount) * 100.0f) / static_cast<float>(stats.pbrDeferredTiledLightGridFullIndexCount)
+				: 0.0f;
+			ImGui::Text("PBR Deferred Tiled Light Culling: %d / %d indices skipped (%.1f%%)", stats.pbrDeferredTiledLightGridCulledIndexCount, stats.pbrDeferredTiledLightGridFullIndexCount, tiledLightCullPercent);
 			ImGui::Text("PBR Deferred Tiled Light Debug Draw Calls: %d", stats.pbrDeferredTiledLightDebugDrawCalls);
 			ImGui::Text("PBR GBuffer Debug Draw Calls: %d", stats.pbrGBufferDebugDrawCalls);
 			ImGui::Text("PBR Scene Draw Calls: %d", stats.pbrSceneDrawCalls);

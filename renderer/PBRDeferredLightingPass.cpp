@@ -124,7 +124,10 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 		stats.tiledLightGridColumns = tiledStats.tileColumns;
 		stats.tiledLightGridRows = tiledStats.tileRows;
 		stats.tiledLightGridTileCount = tiledStats.tileCount;
+		stats.tiledLightGridPointLightCount = tiledStats.pointLightCount;
+		stats.tiledLightGridFullIndexCount = tiledStats.fullLightIndexCount;
 		stats.tiledLightGridIndexCount = tiledStats.lightIndexCount;
+		stats.tiledLightGridCulledIndexCount = tiledStats.culledLightIndexCount;
 		stats.tiledLightGridOccupiedTileCount = tiledStats.occupiedTileCount;
 		stats.tiledLightGridEmptyTileCount = tiledStats.emptyTileCount;
 		stats.tiledLightGridMaxTileLightCount = tiledStats.maxTileLightCount;

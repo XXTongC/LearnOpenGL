@@ -301,24 +301,40 @@ foreach ($mode in $selectedModes) {
         else {
             $columns = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridSize=(\d+)x(\d+)" -Group 1
             $rows = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridSize=(\d+)x(\d+)" -Group 2
+            $gridPointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridPointLights=(\d+)" -Group 1
+            $fullIndices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridFullIndices=(\d+)" -Group 1
             $indices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridIndices=(\d+)" -Group 1
+            $culledIndices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridCulledIndices=(\d+)" -Group 1
             $occupiedTiles = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridOccupiedTiles=(\d+)/(\d+)" -Group 1
             $reportedTileCount = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridOccupiedTiles=(\d+)/(\d+)" -Group 2
-            $pointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredLightBufferPointLights=(\d+)/" -Group 1
+            $pointLights = $gridPointLights
+            if ($null -eq $pointLights -or [int]$pointLights -le 0) {
+                $pointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredLightBufferPointLights=(\d+)/" -Group 1
+            }
             if ($null -eq $pointLights -or [int]$pointLights -le 0) {
                 $pointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridMaxTileLights=(\d+)" -Group 1
             }
-            if ($null -eq $columns -or $null -eq $rows -or $null -eq $indices -or $null -eq $occupiedTiles -or $null -eq $reportedTileCount -or $null -eq $pointLights) {
+            if ($null -eq $columns -or $null -eq $rows -or $null -eq $indices -or $null -eq $occupiedTiles -or $null -eq $reportedTileCount -or $null -eq $pointLights -or $null -eq $fullIndices -or $null -eq $culledIndices) {
                 $failures.Add("$($mode.Name): tiled culling stats were incomplete")
             }
             else {
                 $fullGlobalLoopIndexCount = [int]$columns * [int]$rows * [int]$pointLights
                 $tileCount = [int]$columns * [int]$rows
+                $expectedCulledIndices = [int]$fullIndices - [int]$indices
+                if ([int]$fullIndices -ne $fullGlobalLoopIndexCount) {
+                    $failures.Add("$($mode.Name): tiled full index count did not match grid dimensions and point lights ($fullIndices != $fullGlobalLoopIndexCount)")
+                }
                 if ([int]$indices -le 0) {
                     $failures.Add("$($mode.Name): tiled light grid produced no light indices")
                 }
-                if ([int]$indices -ge $fullGlobalLoopIndexCount) {
-                    $failures.Add("$($mode.Name): tiled light grid did not reduce the global point-light loop ($indices >= $fullGlobalLoopIndexCount)")
+                if ([int]$indices -ge [int]$fullIndices) {
+                    $failures.Add("$($mode.Name): tiled light grid did not reduce the global point-light loop ($indices >= $fullIndices)")
+                }
+                if ([int]$culledIndices -ne $expectedCulledIndices) {
+                    $failures.Add("$($mode.Name): tiled culled index count was inconsistent ($culledIndices != $expectedCulledIndices)")
+                }
+                if ([int]$culledIndices -le 0) {
+                    $failures.Add("$($mode.Name): tiled light grid reported no culled indices")
                 }
                 if ([int]$reportedTileCount -ne $tileCount) {
                     $failures.Add("$($mode.Name): reported tile count did not match grid dimensions ($reportedTileCount != $tileCount)")

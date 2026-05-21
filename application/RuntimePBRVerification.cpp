@@ -542,7 +542,10 @@ namespace GL_RUNTIME
 			statsLine += ", pbrDeferredTiledLightGridSize=" + std::to_string(stats.pbrDeferredTiledLightGridColumns)
 				+ "x" + std::to_string(stats.pbrDeferredTiledLightGridRows);
 			statsLine += ", pbrDeferredTiledLightGridTileSize=" + std::to_string(stats.pbrDeferredTiledLightGridTileSize);
+			statsLine += ", pbrDeferredTiledLightGridPointLights=" + std::to_string(stats.pbrDeferredTiledLightGridPointLights);
+			statsLine += ", pbrDeferredTiledLightGridFullIndices=" + std::to_string(stats.pbrDeferredTiledLightGridFullIndexCount);
 			statsLine += ", pbrDeferredTiledLightGridIndices=" + std::to_string(stats.pbrDeferredTiledLightGridIndexCount);
+			statsLine += ", pbrDeferredTiledLightGridCulledIndices=" + std::to_string(stats.pbrDeferredTiledLightGridCulledIndexCount);
 			statsLine += ", pbrDeferredTiledLightGridOccupiedTiles=" + std::to_string(stats.pbrDeferredTiledLightGridOccupiedTiles);
 			statsLine += "/" + std::to_string(stats.pbrDeferredTiledLightGridTileCount);
 			statsLine += ", pbrDeferredTiledLightGridEmptyTiles=" + std::to_string(stats.pbrDeferredTiledLightGridEmptyTiles);

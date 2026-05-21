@@ -1883,3 +1883,25 @@ Tiled light grid 的 CPU builder 已进一步把每帧局部临时容器改为 `
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，focused tiled 输出保持 `pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridOccupiedTiles=2846/3600`、`pbrDeferredTiledLightGridEmptyTiles=754`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：14 个 PBR verification mode 全部通过；`deferred-tiled-lights` 与 `deferred-tiled-heatmap` 均保持 `2890` indices、`2846/3600` occupied、`754` empty。
+
+### 2026-05-21 PBR Deferred Tiled Light Culling Efficiency Stats
+
+Tiled light grid 的诊断已从“实际 index 数和 occupancy”扩展为“相对全局 point-light loop 的节省量”：
+
+- `PBRDeferredTiledLightGridStats` 新增 point light count、full index count 和 culled index count。
+- `RendererFrameStats`、Debug UI 和 runtime verification 输出新增：
+  - `pbrDeferredTiledLightGridPointLights`
+  - `pbrDeferredTiledLightGridFullIndices`
+  - `pbrDeferredTiledLightGridCulledIndices`
+- Debug UI 现在会显示 skipped index count 和 percentage。
+- `tools/verify_pbr.ps1` 的 tiled culling 断言现在会检查：
+  - `fullIndices == tileColumns * tileRows * pointLightCount`
+  - `culledIndices == fullIndices - actualIndices`
+  - 专用 tiled culling 模式必须裁掉至少一个 index。
+
+这一步不改变渲染路径本身，目标是建立后续 clustered / GPU culling 的收益基线。现在 verification 不只知道 tiled grid “比全局遍历少”，还会验证具体少了多少。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，focused tiled 输出 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：14 个 PBR verification mode 全部通过；`deferred-tiled-lights` 与 `deferred-tiled-heatmap` 均确认 `7200 -> 2890`，裁掉 `4310` 个 tiled point-light index 入口。

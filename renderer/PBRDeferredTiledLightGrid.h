@@ -15,7 +15,10 @@ namespace GLframework
 		int tileColumns{ 0 };
 		int tileRows{ 0 };
 		int tileCount{ 0 };
+		int pointLightCount{ 0 };
+		int fullLightIndexCount{ 0 };
 		int lightIndexCount{ 0 };
+		int culledLightIndexCount{ 0 };
 		int occupiedTileCount{ 0 };
 		int emptyTileCount{ 0 };
 		int maxTileLightCount{ 0 };

@@ -237,6 +237,8 @@ PBRDeferredTiledLightGridStats PBRDeferredTiledLightGrid::bind(
 
 	const glm::mat4 viewProjection = context.camera->getProjectionMatrix() * context.camera->getViewMatrix();
 	const auto lights = collectPackedPointLights(context);
+	stats.pointLightCount = static_cast<int>(lights.size());
+	stats.fullLightIndexCount = tileCount * stats.pointLightCount;
 	mTileLightEntries.reserve(static_cast<std::size_t>(tileCount) * lights.size());
 	for (int lightIndex = 0; lightIndex < static_cast<int>(lights.size()); ++lightIndex)
 	{
@@ -322,6 +324,7 @@ PBRDeferredTiledLightGridStats PBRDeferredTiledLightGrid::bind(
 	stats.tileRows = rows;
 	stats.tileCount = tileCount;
 	stats.lightIndexCount = static_cast<int>(mLightIndices.size());
+	stats.culledLightIndexCount = std::max(stats.fullLightIndexCount - stats.lightIndexCount, 0);
 	stats.tileBufferBindingPoint = tileBufferBindingPoint();
 	stats.indexBufferBindingPoint = indexBufferBindingPoint();
 	return stats;

@@ -31,7 +31,10 @@ namespace GLframework
 		int tiledLightGridColumns{ 0 };
 		int tiledLightGridRows{ 0 };
 		int tiledLightGridTileCount{ 0 };
+		int tiledLightGridPointLightCount{ 0 };
+		int tiledLightGridFullIndexCount{ 0 };
 		int tiledLightGridIndexCount{ 0 };
+		int tiledLightGridCulledIndexCount{ 0 };
 		int tiledLightGridOccupiedTileCount{ 0 };
 		int tiledLightGridEmptyTileCount{ 0 };
 		int tiledLightGridMaxTileLightCount{ 0 };
