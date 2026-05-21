@@ -2205,3 +2205,6 @@
   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj)、[text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters) 和 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，纳入新 query pool 模块并记录技术方案。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid-timing`，`Debug|x64` 构建通过，输出 `rendererGpuTimingDeferredReadback=yes`、`rendererGpuTimedPasses=6`、`rendererGpuTimingPendingQueries=12`、`rendererGpuPbrGBufferNs=218600`、`rendererGpuPbrDeferredLightingNs=2172830`。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 26 个 verification mode 全部通过。
+- 完成第一百九十轮桌面重构报告 deferred GPU timing 同步：
+  - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送提交同步到 `3a5ddd2 Defer renderer GPU timing readback`。
+  - 报告中补充 `RendererGpuTimerQueryPool` deferred readback 机制、`rendererGpuTimingDeferredReadback=yes`、`rendererGpuTimingPendingQueries=12`，并把后续 profiling 缺口调整为 tiled / clustered timing 对比报告。
