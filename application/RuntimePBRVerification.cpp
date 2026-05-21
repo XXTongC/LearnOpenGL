@@ -1,5 +1,6 @@
 #include "RuntimePBRVerification.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -135,6 +136,44 @@ namespace
 	{
 		return std::make_shared<GLframework::Texture>(path, unit, GL_RGBA);
 	}
+
+	void applyPressurePointLightRig(GLframework::AppRuntimeContext& context)
+	{
+		struct PressureLightPreset
+		{
+			glm::vec3 position{ 0.0f };
+			glm::vec3 color{ 1.0f };
+			float intensity{ 1.0f };
+		};
+
+		const PressureLightPreset presets[] = {
+			{ { -2.35f, 1.05f, 2.15f }, { 1.0f, 0.32f, 0.18f }, 2.8f },
+			{ { -1.45f, -0.75f, 2.05f }, { 1.0f, 0.72f, 0.25f }, 2.4f },
+			{ { -0.35f, 1.20f, 2.35f }, { 0.45f, 0.95f, 1.0f }, 2.6f },
+			{ { 0.75f, -0.95f, 2.10f }, { 0.28f, 0.55f, 1.0f }, 2.5f },
+			{ { 1.85f, 0.85f, 2.20f }, { 1.0f, 0.25f, 0.65f }, 2.7f },
+			{ { 2.55f, -0.35f, 1.55f }, { 0.45f, 1.0f, 0.38f }, 2.2f },
+			{ { -2.15f, -1.25f, 1.35f }, { 0.75f, 0.45f, 1.0f }, 2.1f },
+			{ { 0.15f, 0.05f, 0.95f }, { 1.0f, 1.0f, 0.45f }, 2.3f }
+		};
+
+		const int count = std::min(
+			static_cast<int>(sizeof(presets) / sizeof(presets[0])),
+			GL_SCENE::PBRLightRigProfile::maxPointLights
+		);
+		context.pbrLightRigProfile.pointLightCount = count;
+		for (int index = 0; index < count; ++index)
+		{
+			auto& pointLight = context.pbrLightRigProfile.pointLights[static_cast<std::size_t>(index)];
+			pointLight.position = presets[index].position;
+			pointLight.color = presets[index].color;
+			pointLight.intensity = presets[index].intensity;
+			pointLight.specularIntensity = 1.0f;
+			pointLight.attenuationK2 = 96.0f;
+			pointLight.attenuationK1 = 0.0f;
+			pointLight.attenuationK0 = 1.0f;
+		}
+	}
 }
 
 namespace GL_RUNTIME
@@ -217,6 +256,10 @@ namespace GL_RUNTIME
 			context.pbrLightRigProfile.pointLights[1].attenuationK1 = 0.0f;
 			context.pbrLightRigProfile.pointLights[1].attenuationK0 = 1.0f;
 		}
+		if (config.enablePbrLightPressureProbe)
+		{
+			applyPressurePointLightRig(context);
+		}
 
 		context.pbrCameraRigProfile.position = { 0.0f, 0.0f, 5.0f };
 		context.pbrCameraRigProfile.up = { 0.0f, 1.0f, 0.0f };
@@ -238,6 +281,10 @@ namespace GL_RUNTIME
 		if (config.enablePbrDeferredTiledLightDebugPass)
 		{
 			profileLine += " + PBR tiled light heatmap pass";
+		}
+		if (config.enablePbrDeferredClusteredLightDebugPass)
+		{
+			profileLine += " + PBR clustered light heatmap pass";
 		}
 		if (config.enablePbrTransparentFallbackPass)
 		{
@@ -274,6 +321,10 @@ namespace GL_RUNTIME
 		if (config.enablePbrClusteredGridProbe)
 		{
 			profileLine += " + clustered grid probe";
+		}
+		if (config.enablePbrLightPressureProbe)
+		{
+			profileLine += " + point light pressure rig";
 		}
 		if (config.disablePbrDeferredTiledLights)
 		{

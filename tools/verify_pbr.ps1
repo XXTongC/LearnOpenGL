@@ -28,12 +28,14 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-alpha-mask"; Argument = "--verify-pbr-deferred-alpha-mask"; Capture = "out/pbr_deferred_alpha_mask_verification.ppm" },
     [pscustomobject]@{ Name = "deferred-untiled-lights"; Argument = "--verify-pbr-deferred-untiled-lights"; Capture = "out/pbr_deferred_untiled_lights_verification.ppm"; ExpectUntiledFallback = $true },
     [pscustomobject]@{ Name = "deferred-tiled-lights"; Argument = "--verify-pbr-deferred-tiled-lights"; Capture = "out/pbr_deferred_tiled_lights_verification.ppm"; ExpectTiledCulling = $true },
+    [pscustomobject]@{ Name = "deferred-tiled-lights-pressure"; Argument = "--verify-pbr-deferred-tiled-lights-pressure"; Capture = "out/pbr_deferred_tiled_lights_pressure_verification.ppm"; ExpectTiledCulling = $true; ExpectPointLightPressure = 8 },
     [pscustomobject]@{ Name = "deferred-tiled-lights-32"; Argument = "--verify-pbr-deferred-tiled-lights-32"; Capture = "out/pbr_deferred_tiled_lights_32_verification.ppm"; ExpectTiledCulling = $true; ExpectTileSize = 32 },
     [pscustomobject]@{ Name = "deferred-tiled-lights-cutoff-005"; Argument = "--verify-pbr-deferred-tiled-lights-cutoff-005"; Capture = "out/pbr_deferred_tiled_lights_cutoff_005_verification.ppm"; ExpectTiledCulling = $true; ExpectLightCutoff = 0.05 },
     [pscustomobject]@{ Name = "deferred-tiled-heatmap"; Argument = "--verify-pbr-deferred-tiled-heatmap"; Capture = "out/pbr_deferred_tiled_heatmap_verification.ppm"; ExpectTiledCulling = $true; ExpectTiledHeatmap = $true },
     [pscustomobject]@{ Name = "deferred-clustered-heatmap"; Argument = "--verify-pbr-deferred-clustered-heatmap"; Capture = "out/pbr_deferred_clustered_heatmap_verification.ppm"; ExpectClusteredHeatmap = $true },
     [pscustomobject]@{ Name = "deferred-clustered-layout"; Argument = "--verify-pbr-deferred-clustered-layout"; Capture = "out/pbr_deferred_clustered_layout_verification.ppm"; ExpectClusteredLayout = $true },
     [pscustomobject]@{ Name = "deferred-clustered-grid"; Argument = "--verify-pbr-deferred-clustered-grid"; Capture = "out/pbr_deferred_clustered_grid_verification.ppm"; ExpectClusteredGrid = $true },
+    [pscustomobject]@{ Name = "deferred-clustered-grid-pressure"; Argument = "--verify-pbr-deferred-clustered-grid-pressure"; Capture = "out/pbr_deferred_clustered_grid_pressure_verification.ppm"; ExpectClusteredGrid = $true; ExpectPointLightPressure = 8 },
     [pscustomobject]@{ Name = "deferred-clustered-grid-no-readback"; Argument = "--verify-pbr-deferred-clustered-grid-no-readback"; Capture = "out/pbr_deferred_clustered_grid_no_readback_verification.ppm"; ExpectClusteredGridNoReadback = $true },
     [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" },
     [pscustomobject]@{ Name = "texture-set"; Argument = "--verify-pbr-texture-set"; Capture = "out/pbr_texture_set_verification.ppm"; ExpectTexturedProbe = $true },
@@ -299,6 +301,30 @@ foreach ($mode in $selectedModes) {
     }
     if (!$stats.Valid) {
         $failures.Add("$($mode.Name): capture invalid ($($stats.Error))")
+    }
+    if ($mode.PSObject.Properties.Name -contains "ExpectPointLightPressure") {
+        if (!$rendererLine) {
+            $failures.Add("$($mode.Name): missing renderer stats")
+        }
+        else {
+            $expectedPressureLights = [int]$mode.ExpectPointLightPressure
+            $lightBufferPointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredLightBufferPointLights=(\d+)/" -Group 1
+            $tiledPointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridPointLights=(\d+)" -Group 1
+            $clusteredPointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridPointLights=(\d+)" -Group 1
+            $reportedPressureLights = 0
+            if ($null -ne $lightBufferPointLights) {
+                $reportedPressureLights = [Math]::Max($reportedPressureLights, [int]$lightBufferPointLights)
+            }
+            if ($null -ne $tiledPointLights) {
+                $reportedPressureLights = [Math]::Max($reportedPressureLights, [int]$tiledPointLights)
+            }
+            if ($null -ne $clusteredPointLights) {
+                $reportedPressureLights = [Math]::Max($reportedPressureLights, [int]$clusteredPointLights)
+            }
+            if ($reportedPressureLights -lt $expectedPressureLights) {
+                $failures.Add("$($mode.Name): pressure scene did not report enough point lights ($reportedPressureLights < $expectedPressureLights)")
+            }
+        }
     }
     if ($mode.PSObject.Properties.Name -contains "ExpectTiledCulling" -and $mode.ExpectTiledCulling) {
         if (!$rendererLine) {

@@ -2169,3 +2169,15 @@
 - 完成第一百八十三轮桌面重构报告同步：
   - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新代码状态同步到 `0278ad1 Add PBR clustered light debug heatmap`。
   - 报告中将默认 PBR verification 状态更新为 23 个模式，并补充 `deferred-clustered-heatmap`、clustered occupancy heatmap、`pbrDeferredClusteredLightDebugDrawCalls=1`、`pbrDeferredClusteredLightGridStatsReadback=no` 和下一步 GPU timing / pressure scene 建议。
+- 完成第一百八十四轮 PBR deferred light pressure verification：
+  - 更新 [tools\sceneSetup\PBRLightRigProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRLightRigProfile.h)，将 PBR light rig 的 `maxPointLights` 从 `2` 提升到 `8`，为 PBR deferred 多点光源压力场景提供容量。
+  - 更新 [application\RuntimePBRVerification.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.h) 和 [application\RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp)，新增 `enablePbrLightPressureProbe` 和 `applyPressurePointLightRig(...)`，只在 pressure mode 下注入 8 个彩色 point lights。
+  - 更新 [application\RuntimePBRVerificationArgs.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerificationArgs.cpp)，新增 `--verify-pbr-deferred-tiled-lights-pressure` 与 `--verify-pbr-deferred-clustered-grid-pressure` 两个命令行 mode。
+  - 更新 [tools\verify_pbr.ps1](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\verify_pbr.ps1)，默认 PBR 回归新增 `deferred-tiled-lights-pressure` 和 `deferred-clustered-grid-pressure`，并通过 `ExpectPointLightPressure=8` 断言 renderer stats 至少报告 8 个 point lights。
+  - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Deferred Light Pressure Verification` 技术记录。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights-pressure,deferred-clustered-grid-pressure`，`Debug|x64` 构建通过；tiled pressure 输出 `pbrDeferredTiledLightGridPointLights=8`、`pbrDeferredTiledLightGridIndices=8034`、`pbrDeferredTiledLightGridCulledIndices=20766`；clustered pressure 输出 `pbrDeferredClusteredLightGridPointLights=8`、`pbrDeferredClusteredLightGridIndices=8037`、`pbrDeferredClusteredLightGridCulledIndices=683163`、`pbrDeferredClusteredLightGridCompute=yes`。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 25 个 verification mode 全部通过。
+- 完成第一百八十五轮桌面重构详细报告生成：
+  - 已重写 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，生成面向当前阶段的详细 Markdown 报告。
+  - 报告包含当前分支和提交状态、已完成工作、与原始 `text2` 工程的架构差异、runtime / renderer / UI schema / selection / PBR deferred / clustered culling / verification 的 Mermaid 示意图。
+  - 报告明确区分最新已推送代码提交 `0278ad1 Add PBR clustered light debug heatmap` 与当前本地已验证未提交的 PBR pressure probe，并记录本地 PBR verification 已扩展到 25 个 mode。

@@ -2166,3 +2166,20 @@ clustered compute assignment 已经能在 GPU 上生成 clustered light grid，�
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-heatmap`：构建通过，输出 `pbrDeferredClusteredLightDebugDrawCalls=1`、`pbrDeferredClusteredLightGridBound=yes`、`pbrDeferredClusteredLightGridCompute=yes`、`pbrDeferredClusteredLightGridStatsReadback=no`、capture 非黑比例 `100%`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 23 个 verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Light Pressure Verification
+
+在 clustered heatmap 之后，补充更真实的多点光源压力验证，避免后续只用默认 2 盏点光或老 Phong 场景判断 PBR tiled / clustered culling 是否有效：
+
+- `PBRLightRigProfile::maxPointLights` 从 `2` 提升到 `8`，但普通 verification 默认仍保持原有少量点光，不强制所有模式变成压力场景。
+- `RuntimePBRVerificationConfig` 新增 `enablePbrLightPressureProbe`，用于只在明确 pressure mode 下启用 8 盏点光。
+- `RuntimePBRVerification.cpp` 新增 `applyPressurePointLightRig(...)`，注入 8 个位置、颜色和强度不同的 point light，并统一使用较紧的 attenuation `K2=96.0`，让 tiled / clustered culling 有更明显的压力。
+- `RuntimePBRVerificationArgs` 新增 `--verify-pbr-deferred-tiled-lights-pressure` 和 `--verify-pbr-deferred-clustered-grid-pressure`。
+- `tools/verify_pbr.ps1` 默认 PBR 回归新增 `deferred-tiled-lights-pressure` 与 `deferred-clustered-grid-pressure`，并通过 `ExpectPointLightPressure=8` 检查 renderer stats 中至少报告 8 个 point lights。
+
+这一步的重点是把“PBR 多光源 culling 是否真的工作”从主观观察推进到可重复验证。它不替代 GPU timing；它只证明 tiled / clustered 在 8 点光压力场景下仍能生成合理 light list 并完成渲染。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights-pressure,deferred-clustered-grid-pressure`：构建通过；tiled pressure 输出 `pointShadowLights=8`、`pbrDeferredLightBufferPointLights=8/16`、`pbrDeferredTiledLightGridPointLights=8`、`pbrDeferredTiledLightGridFullIndices=28800`、`pbrDeferredTiledLightGridIndices=8034`、`pbrDeferredTiledLightGridCulledIndices=20766`、`pbrDeferredTiledLightGridOccupiedTiles=3568/3600`；clustered pressure 输出 `pbrDeferredClusteredLightGridPointLights=8`、`pbrDeferredClusteredLightGridIndices=8037`、`pbrDeferredClusteredLightGridCulledIndices=683163`、`pbrDeferredClusteredLightGridCompute=yes`、`pbrDeferredClusteredLightGridStatsReadback=yes`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 25 个 verification mode 全部通过。

@@ -40,7 +40,7 @@ namespace GL_SCENE
 
 	struct PBRLightRigProfile
 	{
-		static constexpr int maxPointLights = 2;
+		static constexpr int maxPointLights = 8;
 
 		PBRLightRigProfile();
 
