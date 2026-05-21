@@ -2222,3 +2222,9 @@
   - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送分支提交同步到 `ff23ab9 Record PBR light culling timing report`，最新代码提交同步到 `bf85071 Add PBR light culling timing comparison`。
   - 桌面报告中将 PBR verification 数量更新为 28 个 mode，并补充 `deferred-tiled-lights-pressure-timing`、`deferred-clustered-grid-pressure-timing`、[pbr_light_culling_timing_report.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_light_culling_timing_report.md) 和本次 pressure timing baseline。
   - 桌面报告的后续建议已从“增加 tiled / clustered profiling 对比”更新为“多帧 profiling 统计、真实资产 golden capture、glTF material parity、透明策略和 clustered overflow”。
+- 完成第一百九十四轮 PBR light culling multi-sample timing：
+  - 更新 [profile_pbr_light_culling.ps1](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\profile_pbr_light_culling.ps1)，新增 `-Samples N` 与 `-SamplesCsvPath`，默认仍保持单样本行为。
+  - profiling 脚本现在会循环运行 `deferred-tiled-lights-pressure-timing` 与 `deferred-clustered-grid-pressure-timing`，首轮按参数决定是否构建，后续样本自动跳过构建，并在 Markdown 中输出 avg/min/max GPU 时间。
+  - profiling 脚本现在会生成 [pbr_light_culling_timing_samples.csv](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_light_culling_timing_samples.csv)，逐样本保存 G-buffer、deferred lighting、frame GPU time、light index 和 pending query 数据。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\profile_pbr_light_culling.ps1 -SkipBuild -NoLinkDebugInfo -Samples 2`，两个 pressure timing mode 连续两轮通过，并生成多样本 Markdown / CSV 报告。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 28 个 verification mode 全部通过。

@@ -2235,3 +2235,20 @@ clustered compute assignment 已经能在 GPU 上生成 clustered light grid，�
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\profile_pbr_light_culling.ps1 -NoLinkDebugInfo`：构建通过，两个 pressure timing mode 均通过，生成 `docs/pbr_light_culling_timing_report.md`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 28 个 verification mode 全部通过。
+
+### 2026-05-21 PBR Light Culling Multi-Sample Timing
+
+上一轮 timing comparison 解决了“没有 tiled / clustered 对比报告”的问题，但仍只是一轮采样。GPU timing 在桌面环境下可能受到驱动调度、缓存、窗口系统和前序 pass 波动影响，因此本轮把 profiling 脚本扩展为多样本统计：
+
+- `tools/profile_pbr_light_culling.ps1` 新增 `-Samples N`，默认仍为 `1`，保持单次 baseline 的兼容行为。
+- 多样本模式下第一轮按参数决定是否构建，后续样本自动 `-SkipBuild`，避免把重复构建时间混进 profiling 流程。
+- 报告结果表从单值改为 `avg / min / max ms`，分别覆盖 G-buffer、deferred lighting 和 frame GPU time。
+- 新增 `docs/pbr_light_culling_timing_samples.csv`，逐样本保存 path、grid、index count、G-buffer time、deferred lighting time、frame time 和 pending query 数量，便于后续画图或比较多次运行。
+- `docs/pbr_light_culling_timing_report.md` 新增样本表与 CSV 路径，最后保留最后一轮 renderer stats 用于定位具体 verification 输出。
+
+这一步不改变渲染结果，也不尝试把 clustered 设为默认。它的作用是让后续性能讨论至少基于多样本统计，而不是单次 timing；下一步可以把 `Samples` 提高到 5 或 10，并增加 CSV 对比脚本或真实资产场景。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\profile_pbr_light_culling.ps1 -SkipBuild -NoLinkDebugInfo -Samples 2`：两个 pressure timing mode 连续两轮通过，报告中输出 tiled / clustered 的 avg/min/max GPU 时间，并生成 CSV 样本表。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 28 个 verification mode 全部通过。
