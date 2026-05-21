@@ -2166,3 +2166,6 @@
   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 和 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，把 clustered debug pass 与 shader 纳入 Visual Studio 工程。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-heatmap`，`Debug|x64` 构建通过，输出 `pbrDeferredClusteredLightDebugDrawCalls=1`、`pbrDeferredClusteredLightGridCompute=yes`、`pbrDeferredClusteredLightGridStatsReadback=no`、capture 非黑比例 `100%`。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 23 个 verification mode 全部通过。
+- 完成第一百八十三轮桌面重构报告同步：
+  - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新代码状态同步到 `0278ad1 Add PBR clustered light debug heatmap`。
+  - 报告中将默认 PBR verification 状态更新为 23 个模式，并补充 `deferred-clustered-heatmap`、clustered occupancy heatmap、`pbrDeferredClusteredLightDebugDrawCalls=1`、`pbrDeferredClusteredLightGridStatsReadback=no` 和下一步 GPU timing / pressure scene 建议。
