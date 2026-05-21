@@ -30,6 +30,9 @@ namespace GLframework
 		bool pbrDeferredClusteredStatsReadbackEnabled{ false };
 		int pbrDeferredTiledLightDebugMaxLights{ 2 };
 		float pbrDeferredTiledLightDebugIntensity{ 1.0f };
+		int pbrDeferredClusteredLightDebugDepthSlice{ -1 };
+		int pbrDeferredClusteredLightDebugMaxLights{ 2 };
+		float pbrDeferredClusteredLightDebugIntensity{ 1.0f };
 		int iblDebugMode{ 0 };
 		float iblDebugMipLevel{ 0.0f };
 		float iblDebugIntensity{ 1.0f };

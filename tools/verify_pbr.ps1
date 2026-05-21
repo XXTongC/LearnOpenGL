@@ -31,6 +31,7 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-tiled-lights-32"; Argument = "--verify-pbr-deferred-tiled-lights-32"; Capture = "out/pbr_deferred_tiled_lights_32_verification.ppm"; ExpectTiledCulling = $true; ExpectTileSize = 32 },
     [pscustomobject]@{ Name = "deferred-tiled-lights-cutoff-005"; Argument = "--verify-pbr-deferred-tiled-lights-cutoff-005"; Capture = "out/pbr_deferred_tiled_lights_cutoff_005_verification.ppm"; ExpectTiledCulling = $true; ExpectLightCutoff = 0.05 },
     [pscustomobject]@{ Name = "deferred-tiled-heatmap"; Argument = "--verify-pbr-deferred-tiled-heatmap"; Capture = "out/pbr_deferred_tiled_heatmap_verification.ppm"; ExpectTiledCulling = $true; ExpectTiledHeatmap = $true },
+    [pscustomobject]@{ Name = "deferred-clustered-heatmap"; Argument = "--verify-pbr-deferred-clustered-heatmap"; Capture = "out/pbr_deferred_clustered_heatmap_verification.ppm"; ExpectClusteredHeatmap = $true },
     [pscustomobject]@{ Name = "deferred-clustered-layout"; Argument = "--verify-pbr-deferred-clustered-layout"; Capture = "out/pbr_deferred_clustered_layout_verification.ppm"; ExpectClusteredLayout = $true },
     [pscustomobject]@{ Name = "deferred-clustered-grid"; Argument = "--verify-pbr-deferred-clustered-grid"; Capture = "out/pbr_deferred_clustered_grid_verification.ppm"; ExpectClusteredGrid = $true },
     [pscustomobject]@{ Name = "deferred-clustered-grid-no-readback"; Argument = "--verify-pbr-deferred-clustered-grid-no-readback"; Capture = "out/pbr_deferred_clustered_grid_no_readback_verification.ppm"; ExpectClusteredGridNoReadback = $true },
@@ -394,6 +395,57 @@ foreach ($mode in $selectedModes) {
         }
         elseif ($rendererLine -notmatch "pbrDeferredTiledLightDebugDrawCalls=1") {
             $failures.Add("$($mode.Name): tiled light heatmap debug pass did not draw")
+        }
+    }
+    if ($mode.PSObject.Properties.Name -contains "ExpectClusteredHeatmap" -and $mode.ExpectClusteredHeatmap) {
+        if (!$rendererLine) {
+            $failures.Add("$($mode.Name): missing renderer stats")
+        }
+        else {
+            $drawCalls = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightDebugDrawCalls=(\d+)" -Group 1
+            $columns = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridSize=(\d+)x(\d+)x(\d+)" -Group 1
+            $rows = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridSize=(\d+)x(\d+)x(\d+)" -Group 2
+            $depthSlices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridSize=(\d+)x(\d+)x(\d+)" -Group 3
+            $clusters = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridClusters=(\d+)" -Group 1
+            $maxLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridMaxLightsPerCluster=(\d+)" -Group 1
+            $maxIndices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridMaxIndices=(\d+)" -Group 1
+            if ($null -eq $drawCalls -or [int]$drawCalls -ne 1) {
+                $failures.Add("$($mode.Name): clustered light heatmap debug pass did not draw")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridEnabled=yes") {
+                $failures.Add("$($mode.Name): clustered heatmap did not enable clustered grid")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridBound=yes") {
+                $failures.Add("$($mode.Name): clustered heatmap did not bind clustered grid buffers")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridCompute=yes") {
+                $failures.Add("$($mode.Name): clustered heatmap did not dispatch compute assignment")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridStatsReadback=no") {
+                $failures.Add("$($mode.Name): clustered heatmap should not enable CPU stats readback")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridLightIndexStats=no") {
+                $failures.Add("$($mode.Name): clustered heatmap should not require CPU light index stats")
+            }
+            if ($rendererLine -notmatch "pbrDeferredTiledLightsEnabled=no") {
+                $failures.Add("$($mode.Name): CPU tiled lights should be disabled for clustered heatmap mode")
+            }
+            if ($rendererLine -notmatch "pbrDeferredTiledLightGridBound=no") {
+                $failures.Add("$($mode.Name): CPU tiled grid should not bind in clustered heatmap mode")
+            }
+            if ($null -eq $columns -or $null -eq $rows -or $null -eq $depthSlices -or $null -eq $clusters -or $null -eq $maxLights -or $null -eq $maxIndices) {
+                $failures.Add("$($mode.Name): clustered heatmap layout stats were incomplete")
+            }
+            else {
+                $expectedClusters = [int]$columns * [int]$rows * [int]$depthSlices
+                $expectedMaxIndices = $expectedClusters * [int]$maxLights
+                if ([int]$clusters -ne $expectedClusters) {
+                    $failures.Add("$($mode.Name): clustered heatmap count did not match dimensions ($clusters != $expectedClusters)")
+                }
+                if ([int]$maxIndices -ne $expectedMaxIndices) {
+                    $failures.Add("$($mode.Name): clustered heatmap max index capacity did not match dimensions and capacity ($maxIndices != $expectedMaxIndices)")
+                }
+            }
         }
     }
     if ($mode.PSObject.Properties.Name -contains "ExpectClusteredLayout" -and $mode.ExpectClusteredLayout) {

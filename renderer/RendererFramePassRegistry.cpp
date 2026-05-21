@@ -8,6 +8,7 @@
 #include "IBLDebugPass.h"
 #include "MaterialBindingContext.h"
 #include "PBRDepthPrepass.h"
+#include "PBRDeferredClusteredLightDebugPass.h"
 #include "PBRDeferredLightingPass.h"
 #include "PBRDeferredTiledLightDebugPass.h"
 #include "PBRGBufferDebugPass.h"
@@ -60,6 +61,7 @@ namespace
 			{ RendererFramePassKey::PBRGBuffer, "PBRGBuffer", "PBR GBuffer" },
 			{ RendererFramePassKey::PBRDeferredLighting, "PBRDeferredLighting", "PBR Deferred Lighting" },
 			{ RendererFramePassKey::PBRDeferredTiledLightDebug, "PBRDeferredTiledLightDebug", "PBR Deferred Tiled Light Debug" },
+			{ RendererFramePassKey::PBRDeferredClusteredLightDebug, "PBRDeferredClusteredLightDebug", "PBR Deferred Clustered Light Debug" },
 			{ RendererFramePassKey::PBRGBufferDebug, "PBRGBufferDebug", "PBR GBuffer Debug" },
 			{ RendererFramePassKey::IBLDebug, "IBLDebug", "IBL Debug" }
 		};
@@ -277,6 +279,30 @@ namespace
 		context.stats->pbrDeferredTiledLightGridMaxTileLights = std::max(context.stats->pbrDeferredTiledLightGridMaxTileLights, stats.maxTileLightCount);
 	}
 
+	void accumulateClusteredLightGridStats(RendererFrameContext& context, const PBRDeferredClusteredLightGridStats& stats)
+	{
+		if (!context.stats)
+		{
+			return;
+		}
+
+		context.stats->pbrDeferredClusteredLightGridEnabled = context.stats->pbrDeferredClusteredLightGridEnabled || stats.enabled;
+		context.stats->pbrDeferredClusteredLightGridBound = context.stats->pbrDeferredClusteredLightGridBound || stats.bound;
+		context.stats->pbrDeferredClusteredLightGridTileSize = std::max(context.stats->pbrDeferredClusteredLightGridTileSize, stats.layout.tileSize);
+		context.stats->pbrDeferredClusteredLightGridColumns = std::max(context.stats->pbrDeferredClusteredLightGridColumns, stats.layout.clusterColumns);
+		context.stats->pbrDeferredClusteredLightGridRows = std::max(context.stats->pbrDeferredClusteredLightGridRows, stats.layout.clusterRows);
+		context.stats->pbrDeferredClusteredLightGridDepthSlices = std::max(context.stats->pbrDeferredClusteredLightGridDepthSlices, stats.layout.clusterDepthSlices);
+		context.stats->pbrDeferredClusteredLightGridClusterCount = std::max(context.stats->pbrDeferredClusteredLightGridClusterCount, stats.layout.clusterCount);
+		context.stats->pbrDeferredClusteredLightGridMaxLightsPerCluster = std::max(context.stats->pbrDeferredClusteredLightGridMaxLightsPerCluster, stats.layout.maxLightsPerCluster);
+		context.stats->pbrDeferredClusteredLightGridMaxIndexCount = std::max(context.stats->pbrDeferredClusteredLightGridMaxIndexCount, stats.layout.maxLightIndexCount);
+		context.stats->pbrDeferredClusteredLightGridPointLights = std::max(context.stats->pbrDeferredClusteredLightGridPointLights, stats.pointLightCount);
+		context.stats->pbrDeferredClusteredLightGridIndexCount = std::max(context.stats->pbrDeferredClusteredLightGridIndexCount, stats.lightIndexCount);
+		context.stats->pbrDeferredClusteredLightGridCulledIndexCount = std::max(context.stats->pbrDeferredClusteredLightGridCulledIndexCount, stats.culledLightIndexCount);
+		context.stats->pbrDeferredClusteredLightGridComputeDispatched = context.stats->pbrDeferredClusteredLightGridComputeDispatched || stats.computeDispatched;
+		context.stats->pbrDeferredClusteredLightGridStatsReadbackEnabled = context.stats->pbrDeferredClusteredLightGridStatsReadbackEnabled || stats.statsReadbackEnabled;
+		context.stats->pbrDeferredClusteredLightGridLightIndexStatsAvailable = context.stats->pbrDeferredClusteredLightGridLightIndexStatsAvailable || stats.lightIndexStatsAvailable;
+	}
+
 	void renderPBRDeferredTiledLightDebug(RendererFrameContext& context)
 	{
 		if (!context.pbrDeferredTiledLightDebugPass || !context.pbrGBufferTargets || !context.framePassProfile || !context.shaderLibrary || !context.stats)
@@ -293,6 +319,24 @@ namespace
 		);
 		context.stats->pbrDeferredTiledLightDebugDrawCalls += stats.drawCalls;
 		accumulateTiledLightGridStats(context, stats.gridStats);
+	}
+
+	void renderPBRDeferredClusteredLightDebug(RendererFrameContext& context)
+	{
+		if (!context.pbrDeferredClusteredLightDebugPass || !context.pbrGBufferTargets || !context.framePassProfile || !context.shaderLibrary || !context.stats)
+		{
+			return;
+		}
+
+		const auto stats = context.pbrDeferredClusteredLightDebugPass->render(
+			createMaterialBindingContext(context),
+			*context.framePassProfile,
+			*context.shaderLibrary,
+			context.pbrGBufferTargets->getWidth(),
+			context.pbrGBufferTargets->getHeight()
+		);
+		context.stats->pbrDeferredClusteredLightDebugDrawCalls += stats.drawCalls;
+		accumulateClusteredLightGridStats(context, stats.gridStats);
 	}
 
 	void renderPBRGBufferDebug(RendererFrameContext& context)
@@ -531,6 +575,9 @@ void RendererFramePassRegistry::executePass(const RendererFramePassDefinition& p
 		break;
 	case RendererFramePassKey::PBRDeferredTiledLightDebug:
 		renderPBRDeferredTiledLightDebug(context);
+		break;
+	case RendererFramePassKey::PBRDeferredClusteredLightDebug:
+		renderPBRDeferredClusteredLightDebug(context);
 		break;
 	case RendererFramePassKey::PBRGBufferDebug:
 		renderPBRGBufferDebug(context);

@@ -17,6 +17,7 @@ namespace GLframework
 		PBRGBuffer,
 		PBRDeferredLighting,
 		PBRDeferredTiledLightDebug,
+		PBRDeferredClusteredLightDebug,
 		PBRGBufferDebug,
 		LegacyOpaqueScene,
 		PBROpaqueScene,

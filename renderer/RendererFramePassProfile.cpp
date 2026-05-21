@@ -30,6 +30,9 @@ void RendererFramePassProfile::resetToDefaults()
 	pbrDeferredClusteredStatsReadbackEnabled = false;
 	pbrDeferredTiledLightDebugMaxLights = 2;
 	pbrDeferredTiledLightDebugIntensity = 1.0f;
+	pbrDeferredClusteredLightDebugDepthSlice = -1;
+	pbrDeferredClusteredLightDebugMaxLights = 2;
+	pbrDeferredClusteredLightDebugIntensity = 1.0f;
 	iblDebugMode = 0;
 	iblDebugMipLevel = 0.0f;
 	iblDebugIntensity = 1.0f;
@@ -42,7 +45,7 @@ void RendererFramePassProfile::visitEditableProperties(GL_EDITOR::PropertyBuilde
 	builder.addConfigString("globalMaterialOverridePassOrder", "Global Material Override Pass Order", &globalMaterialOverridePassOrder);
 	builder.addText(
 		"Available Pass Keys",
-		"BeginFrame, ShadowMaps, PBRShadowAtlas, GlobalMaterialScene, PBRDepthPrepass, PBRGBuffer, PBRDeferredLighting, PBRDeferredTiledLightDebug, PBRGBufferDebug, LegacyOpaqueScene, PBROpaqueScene, LegacyTransparentScene, PBRTransparentScene, IBLDebug"
+		"BeginFrame, ShadowMaps, PBRShadowAtlas, GlobalMaterialScene, PBRDepthPrepass, PBRGBuffer, PBRDeferredLighting, PBRDeferredTiledLightDebug, PBRDeferredClusteredLightDebug, PBRGBufferDebug, LegacyOpaqueScene, PBROpaqueScene, LegacyTransparentScene, PBRTransparentScene, IBLDebug"
 	);
 	builder.addSection("PBR Deferred Lighting Pass");
 	builder.addConfigFloat("pbrDeferredLightingIntensity", "PBR Deferred Lighting Intensity", &pbrDeferredLightingIntensity, 0.0f, 8.0f);
@@ -58,6 +61,9 @@ void RendererFramePassProfile::visitEditableProperties(GL_EDITOR::PropertyBuilde
 	builder.addConfigBool("pbrDeferredClusteredStatsReadbackEnabled", "PBR Clustered Stats Readback", &pbrDeferredClusteredStatsReadbackEnabled);
 	builder.addConfigInt("pbrDeferredTiledLightDebugMaxLights", "PBR Tiled Light Debug Max Lights", &pbrDeferredTiledLightDebugMaxLights, 1, 16);
 	builder.addConfigFloat("pbrDeferredTiledLightDebugIntensity", "PBR Tiled Light Debug Intensity", &pbrDeferredTiledLightDebugIntensity, 0.0f, 8.0f);
+	builder.addConfigInt("pbrDeferredClusteredLightDebugDepthSlice", "PBR Clustered Debug Depth Slice", &pbrDeferredClusteredLightDebugDepthSlice, -1, 128);
+	builder.addConfigInt("pbrDeferredClusteredLightDebugMaxLights", "PBR Clustered Debug Max Lights", &pbrDeferredClusteredLightDebugMaxLights, 1, 16);
+	builder.addConfigFloat("pbrDeferredClusteredLightDebugIntensity", "PBR Clustered Debug Intensity", &pbrDeferredClusteredLightDebugIntensity, 0.0f, 8.0f);
 	builder.addSection("PBR GBuffer Debug Pass");
 	builder.addConfigInt("pbrGBufferDebugMode", "PBR GBuffer Debug Mode", &pbrGBufferDebugMode, 0, 8);
 	builder.addConfigFloat("pbrGBufferDebugIntensity", "PBR GBuffer Debug Intensity", &pbrGBufferDebugIntensity, 0.0f, 8.0f);

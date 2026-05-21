@@ -10,6 +10,7 @@
 #include "IBLPrecomputePass.h"
 #include "IBLDebugPass.h"
 #include "PBRDepthPrepass.h"
+#include "PBRDeferredClusteredLightDebugPass.h"
 #include "PBRDeferredLightingPass.h"
 #include "PBRDeferredTiledLightDebugPass.h"
 #include "PBRGBufferPass.h"
@@ -79,6 +80,7 @@ private:
 		PBRGBufferPass mPbrGBufferPass{};
 		PBRDeferredLightingPass mPbrDeferredLightingPass{};
 		PBRDeferredTiledLightDebugPass mPbrDeferredTiledLightDebugPass{};
+		PBRDeferredClusteredLightDebugPass mPbrDeferredClusteredLightDebugPass{};
 		PBRGBufferDebugPass mPbrGBufferDebugPass{};
 		PBRSceneRenderPass mPbrSceneRenderPass{};
 		IBLDebugPass mIblDebugPass{};

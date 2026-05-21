@@ -33,6 +33,7 @@ void GLframework::ShaderLibrary::initialize()
 	mPbrDeferredLightingShader = createShader("shaders/pbr/pbr_deferred_lighting.vert", "shaders/pbr/pbr_deferred_lighting.frag");
 	mPbrDeferredClusteredLightGridComputeShader = createComputeShader("shaders/pbr/pbr_deferred_clustered_light_grid.comp");
 	mPbrDeferredTiledLightDebugShader = createShader("shaders/diagnostics/pbr_deferred_tiled_light_debug.vert", "shaders/diagnostics/pbr_deferred_tiled_light_debug.frag");
+	mPbrDeferredClusteredLightDebugShader = createShader("shaders/diagnostics/pbr_deferred_tiled_light_debug.vert", "shaders/diagnostics/pbr_deferred_clustered_light_debug.frag");
 	mPbrGBufferDebugShader = createShader("shaders/diagnostics/pbr_gbuffer_debug.vert", "shaders/diagnostics/pbr_gbuffer_debug.frag");
 	mPbrAlphaShadowShader = createShader("shaders/pbr/pbr_alpha_shadow.vert", "shaders/pbr/pbr_alpha_shadow.frag");
 	mPbrAlphaPointShadowShader = createShader("shaders/pbr/pbr_alpha_point_shadow.vert", "shaders/pbr/pbr_alpha_point_shadow.frag");
@@ -103,6 +104,11 @@ std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPbrDeferredC
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPbrDeferredTiledLightDebugShader() const
 {
 	return mPbrDeferredTiledLightDebugShader;
+}
+
+std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPbrDeferredClusteredLightDebugShader() const
+{
+	return mPbrDeferredClusteredLightDebugShader;
 }
 
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPbrGBufferDebugShader() const

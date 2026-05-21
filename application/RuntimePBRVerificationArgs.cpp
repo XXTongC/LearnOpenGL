@@ -11,19 +11,20 @@ namespace
 		OptionPbrGBufferPass = 1u << 1,
 		OptionPbrDeferredLightingPass = 1u << 2,
 		OptionPbrDeferredTiledLightDebugPass = 1u << 3,
-		OptionPbrGBufferDebugPass = 1u << 4,
-		OptionDisablePbrShadowAtlasPass = 1u << 5,
-		OptionPbrTransparentFallbackPass = 1u << 6,
-		OptionPbrEmissiveProbe = 1u << 7,
-		OptionPbrMaterialIblProbe = 1u << 8,
-		OptionPbrAlphaMaskProbe = 1u << 9,
-		OptionPbrImportedAssetProbe = 1u << 10,
-		OptionPbrTextureSetProbe = 1u << 11,
-		OptionPbrTiledLightProbe = 1u << 12,
-		OptionPbrClusteredLayoutProbe = 1u << 13,
-		OptionPbrClusteredGridProbe = 1u << 14,
-		OptionDisablePbrDeferredTiledLights = 1u << 15,
-		OptionPbrClusteredStatsReadback = 1u << 16
+		OptionPbrDeferredClusteredLightDebugPass = 1u << 4,
+		OptionPbrGBufferDebugPass = 1u << 5,
+		OptionDisablePbrShadowAtlasPass = 1u << 6,
+		OptionPbrTransparentFallbackPass = 1u << 7,
+		OptionPbrEmissiveProbe = 1u << 8,
+		OptionPbrMaterialIblProbe = 1u << 9,
+		OptionPbrAlphaMaskProbe = 1u << 10,
+		OptionPbrImportedAssetProbe = 1u << 11,
+		OptionPbrTextureSetProbe = 1u << 12,
+		OptionPbrTiledLightProbe = 1u << 13,
+		OptionPbrClusteredLayoutProbe = 1u << 14,
+		OptionPbrClusteredGridProbe = 1u << 15,
+		OptionDisablePbrDeferredTiledLights = 1u << 16,
+		OptionPbrClusteredStatsReadback = 1u << 17
 	};
 
 	struct PbrVerificationModeDescriptor
@@ -56,6 +57,7 @@ namespace
 		{ "--verify-pbr-deferred-tiled-lights-32", "out/pbr_deferred_tiled_lights_32_verification.ppm", kDeferredPbrOptions | OptionPbrTiledLightProbe, 32 },
 		{ "--verify-pbr-deferred-tiled-lights-cutoff-005", "out/pbr_deferred_tiled_lights_cutoff_005_verification.ppm", kDeferredPbrOptions | OptionPbrTiledLightProbe, 0, 0.05f },
 		{ "--verify-pbr-deferred-tiled-heatmap", "out/pbr_deferred_tiled_heatmap_verification.ppm", OptionPbrGBufferPass | OptionPbrDeferredTiledLightDebugPass | OptionPbrTiledLightProbe },
+		{ "--verify-pbr-deferred-clustered-heatmap", "out/pbr_deferred_clustered_heatmap_verification.ppm", OptionPbrGBufferPass | OptionPbrDeferredClusteredLightDebugPass | OptionPbrClusteredGridProbe | OptionDisablePbrDeferredTiledLights },
 		{ "--verify-pbr-deferred-clustered-layout", "out/pbr_deferred_clustered_layout_verification.ppm", kDeferredPbrOptions | OptionPbrClusteredLayoutProbe | OptionDisablePbrDeferredTiledLights },
 		{ "--verify-pbr-deferred-clustered-grid", "out/pbr_deferred_clustered_grid_verification.ppm", kDeferredPbrOptions | OptionPbrClusteredGridProbe | OptionDisablePbrDeferredTiledLights | OptionPbrClusteredStatsReadback },
 		{ "--verify-pbr-deferred-clustered-grid-no-readback", "out/pbr_deferred_clustered_grid_no_readback_verification.ppm", kDeferredPbrOptions | OptionPbrClusteredGridProbe | OptionDisablePbrDeferredTiledLights },
@@ -107,6 +109,7 @@ namespace
 		verification.enablePbrGBufferPass |= hasOption(mode.options, OptionPbrGBufferPass);
 		verification.enablePbrDeferredLightingPass |= hasOption(mode.options, OptionPbrDeferredLightingPass);
 		verification.enablePbrDeferredTiledLightDebugPass |= hasOption(mode.options, OptionPbrDeferredTiledLightDebugPass);
+		verification.enablePbrDeferredClusteredLightDebugPass |= hasOption(mode.options, OptionPbrDeferredClusteredLightDebugPass);
 		verification.enablePbrGBufferDebugPass |= hasOption(mode.options, OptionPbrGBufferDebugPass);
 		verification.disablePbrShadowAtlasPass |= hasOption(mode.options, OptionDisablePbrShadowAtlasPass);
 		verification.enablePbrTransparentFallbackPass |= hasOption(mode.options, OptionPbrTransparentFallbackPass);

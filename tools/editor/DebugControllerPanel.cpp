@@ -295,6 +295,7 @@ namespace
 				ImGui::TextUnformatted("PBR Deferred Clustered Light Indices: not read back");
 			}
 			ImGui::Text("PBR Deferred Tiled Light Debug Draw Calls: %d", stats.pbrDeferredTiledLightDebugDrawCalls);
+			ImGui::Text("PBR Deferred Clustered Light Debug Draw Calls: %d", stats.pbrDeferredClusteredLightDebugDrawCalls);
 			ImGui::Text("PBR GBuffer Debug Draw Calls: %d", stats.pbrGBufferDebugDrawCalls);
 			ImGui::Text("PBR Scene Draw Calls: %d", stats.pbrSceneDrawCalls);
 			ImGui::Text("PBR Transparent Draw Calls: %d", stats.pbrTransparentDrawCalls);

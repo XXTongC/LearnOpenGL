@@ -2148,3 +2148,21 @@ clustered compute assignment 已经能在 GPU 上生成 clustered light grid，�
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid,deferred-clustered-grid-no-readback`：构建通过；readback mode 输出 `pbrDeferredClusteredLightGridStatsReadback=yes`、`pbrDeferredClusteredLightGridLightIndexStats=yes`、`pbrDeferredClusteredLightGridIndices=14400`、`pbrDeferredClusteredLightGridCulledIndices=158400`；no-readback mode 输出 `pbrDeferredClusteredLightGridStatsReadback=no`、`pbrDeferredClusteredLightGridLightIndexStats=no`，且 clustered compute / buffer bound 仍为 `yes`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 22 个 verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Clustered Occupancy Debug Pass
+
+在 clustered compute assignment 和 readback gate 之后，新增 clustered occupancy debug visualization，用于直接观察 clustered grid 的屏幕空间热力图：
+
+- 新增 `PBRDeferredClusteredLightDebugPass`，结构对齐已有 `PBRDeferredTiledLightDebugPass`。
+- 新增 pass key `PBRDeferredClusteredLightDebug`，可通过 renderer pass plan 插入在 `PBRGBuffer` 之后。
+- 新增 `pbr_deferred_clustered_light_debug.frag`，直接读取 clustered offset/count SSBO binding `6`，按 tile 聚合 depth slices 的最大 light count 并输出 heatmap。
+- debug pass 会调用 clustered compute backend 生成 SSBO，但强制 `clusteredStatsReadbackEnabled=false`，因此 visualization 本身不依赖 CPU readback。
+- `RendererFramePassProfile` 新增 `pbrDeferredClusteredLightDebugDepthSlice`、`pbrDeferredClusteredLightDebugMaxLights`、`pbrDeferredClusteredLightDebugIntensity`，支持选择单个 depth slice 或默认 `-1` 聚合所有 depth slices 的最大 occupancy。
+- `RuntimePBRVerificationArgs` 新增 `--verify-pbr-deferred-clustered-heatmap`，`tools/verify_pbr.ps1` 默认 PBR 回归新增 `deferred-clustered-heatmap`，总数从 22 个增加到 23 个。
+
+这一步补上了 clustered path 的可视化调试入口。它不能替代 GPU timing 或真实压力场景，但能避免后续 clustered culling 变更只靠最终画面判断是否正确。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-heatmap`：构建通过，输出 `pbrDeferredClusteredLightDebugDrawCalls=1`、`pbrDeferredClusteredLightGridBound=yes`、`pbrDeferredClusteredLightGridCompute=yes`、`pbrDeferredClusteredLightGridStatsReadback=no`、capture 非黑比例 `100%`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 23 个 verification mode 全部通过。

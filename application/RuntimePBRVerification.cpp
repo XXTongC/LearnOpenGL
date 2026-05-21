@@ -341,6 +341,14 @@ namespace GL_RUNTIME
 			rendererPassProfile.pbrDeferredTiledLightDebugMaxLights = 2;
 			rendererPassProfile.pbrDeferredTiledLightDebugIntensity = 1.0f;
 		}
+		else if (config.enablePbrDeferredClusteredLightDebugPass)
+		{
+			rendererPassProfile.defaultPassOrder =
+				shadowPrefix + "PBRDepthPrepass,PBRGBuffer,PBRDeferredClusteredLightDebug";
+			rendererPassProfile.pbrDeferredClusteredLightDebugDepthSlice = -1;
+			rendererPassProfile.pbrDeferredClusteredLightDebugMaxLights = 2;
+			rendererPassProfile.pbrDeferredClusteredLightDebugIntensity = 1.0f;
+		}
 		else if (config.enablePbrGBufferPass || config.enablePbrGBufferDebugPass)
 		{
 			rendererPassProfile.defaultPassOrder =
@@ -610,10 +618,11 @@ namespace GL_RUNTIME
 			statsLine += ", pbrGBufferSize=" + std::to_string(stats.pbrGBufferWidth)
 				+ "x" + std::to_string(stats.pbrGBufferHeight);
 		}
-		if (stats.pbrDeferredLightingDrawCalls > 0 || stats.pbrDeferredTiledLightDebugDrawCalls > 0)
+		if (stats.pbrDeferredLightingDrawCalls > 0 || stats.pbrDeferredTiledLightDebugDrawCalls > 0 || stats.pbrDeferredClusteredLightDebugDrawCalls > 0)
 		{
 			statsLine += ", pbrDeferredLightingDrawCalls=" + std::to_string(stats.pbrDeferredLightingDrawCalls);
 			statsLine += ", pbrDeferredTiledLightDebugDrawCalls=" + std::to_string(stats.pbrDeferredTiledLightDebugDrawCalls);
+			statsLine += ", pbrDeferredClusteredLightDebugDrawCalls=" + std::to_string(stats.pbrDeferredClusteredLightDebugDrawCalls);
 			statsLine += ", pbrDeferredCsmShadowBound=";
 			statsLine += (stats.pbrDeferredCsmShadowBound ? "yes" : "no");
 			statsLine += ", pbrDeferredCsmShadowLayers=" + std::to_string(stats.pbrDeferredCsmShadowLayers);

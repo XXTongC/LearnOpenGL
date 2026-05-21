@@ -501,6 +501,9 @@
     <ClCompile Include="renderer\PBRDeferredLightingPass.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\PBRDeferredClusteredLightDebugPass.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\PBRDeferredClusteredLightGrid.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -894,6 +897,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRDeferredLightingPass.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\PBRDeferredClusteredLightDebugPass.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRDeferredClusteredLightGrid.h">
@@ -2645,6 +2651,9 @@
       <Filter>资源文件\shaders\diagnostics</Filter>
     </None>
     <None Include="shaders\diagnostics\pbr_gbuffer_debug.vert">
+      <Filter>资源文件\shaders\diagnostics</Filter>
+    </None>
+    <None Include="shaders\diagnostics\pbr_deferred_clustered_light_debug.frag">
       <Filter>资源文件\shaders\diagnostics</Filter>
     </None>
     <None Include="shaders\diagnostics\pbr_deferred_tiled_light_debug.frag">
