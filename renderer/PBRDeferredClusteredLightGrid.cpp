@@ -341,6 +341,7 @@ PBRDeferredClusteredLightGridStats PBRDeferredClusteredLightGrid::bind(
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 	stats.bound = true;
+	stats.lightIndexStatsAvailable = true;
 	stats.lightIndexCount = static_cast<int>(mLightIndices.size());
 	stats.culledLightIndexCount = std::max(clusterCount * stats.pointLightCount - stats.lightIndexCount, 0);
 	return stats;
@@ -356,6 +357,7 @@ PBRDeferredClusteredLightGridStats PBRDeferredClusteredLightGrid::bindCompute(
 {
 	PBRDeferredClusteredLightGridStats stats{};
 	stats.enabled = usesPbrDeferredGpuClusteredLightGrid(config);
+	stats.statsReadbackEnabled = config.clusteredStatsReadbackEnabled;
 	stats.layout = makePbrDeferredClusteredLightGridLayout(targetWidth, targetHeight, config);
 	if (!stats.enabled || !context.camera || !computeShader || targetWidth == 0 || targetHeight == 0)
 	{
@@ -418,7 +420,17 @@ PBRDeferredClusteredLightGridStats PBRDeferredClusteredLightGrid::bindCompute(
 	const auto groupCount = static_cast<GLuint>((stats.layout.clusterCount + 63) / 64);
 	glDispatchCompute(groupCount, 1, 1);
 	computeShader->end();
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT);
+	glMemoryBarrier(
+		GL_SHADER_STORAGE_BARRIER_BIT
+		| (stats.statsReadbackEnabled ? GL_BUFFER_UPDATE_BARRIER_BIT : 0)
+	);
+
+	stats.bound = true;
+	stats.computeDispatched = true;
+	if (!stats.statsReadbackEnabled)
+	{
+		return stats;
+	}
 
 	mClusterOffsetCount.resize(static_cast<std::size_t>(stats.layout.clusterCount));
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, mClusterBuffer);
@@ -436,8 +448,7 @@ PBRDeferredClusteredLightGridStats PBRDeferredClusteredLightGrid::bindCompute(
 		lightIndexCount += std::max(offsetCount.y, 0);
 	}
 
-	stats.bound = true;
-	stats.computeDispatched = true;
+	stats.lightIndexStatsAvailable = true;
 	stats.lightIndexCount = lightIndexCount;
 	stats.culledLightIndexCount = std::max(stats.layout.clusterCount * stats.pointLightCount - stats.lightIndexCount, 0);
 	return stats;

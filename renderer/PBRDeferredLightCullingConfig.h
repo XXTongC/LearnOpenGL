@@ -18,6 +18,7 @@ namespace GLframework
 		float lightCutoff{ 0.01f };
 		int clusterDepthSlices{ 24 };
 		int maxLightsPerCluster{ 64 };
+		bool clusteredStatsReadbackEnabled{ false };
 	};
 
 	struct PBRDeferredClusteredLightGridLayout
@@ -38,6 +39,8 @@ namespace GLframework
 		bool enabled{ false };
 		bool bound{ false };
 		bool computeDispatched{ false };
+		bool statsReadbackEnabled{ false };
+		bool lightIndexStatsAvailable{ false };
 		PBRDeferredClusteredLightGridLayout layout{};
 		int pointLightCount{ 0 };
 		int lightIndexCount{ 0 };

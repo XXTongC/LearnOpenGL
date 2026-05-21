@@ -283,9 +283,17 @@ namespace
 			ImGui::Text("PBR Deferred Clustered Layout Enabled: %s", stats.pbrDeferredClusteredLightGridEnabled ? "Yes" : "No");
 			ImGui::Text("PBR Deferred Clustered Grid Bound: %s", stats.pbrDeferredClusteredLightGridBound ? "Yes" : "No");
 			ImGui::Text("PBR Deferred Clustered Compute: %s", stats.pbrDeferredClusteredLightGridComputeDispatched ? "Yes" : "No");
+			ImGui::Text("PBR Deferred Clustered Stats Readback: %s", stats.pbrDeferredClusteredLightGridStatsReadbackEnabled ? "Yes" : "No");
 			ImGui::Text("PBR Deferred Clustered Grid: %d x %d x %d clusters @ %d px", stats.pbrDeferredClusteredLightGridColumns, stats.pbrDeferredClusteredLightGridRows, stats.pbrDeferredClusteredLightGridDepthSlices, stats.pbrDeferredClusteredLightGridTileSize);
 			ImGui::Text("PBR Deferred Clustered Capacity: %d clusters, %d max lights/cluster, %d max indices", stats.pbrDeferredClusteredLightGridClusterCount, stats.pbrDeferredClusteredLightGridMaxLightsPerCluster, stats.pbrDeferredClusteredLightGridMaxIndexCount);
-			ImGui::Text("PBR Deferred Clustered Light Indices: %d used, %d skipped", stats.pbrDeferredClusteredLightGridIndexCount, stats.pbrDeferredClusteredLightGridCulledIndexCount);
+			if (stats.pbrDeferredClusteredLightGridLightIndexStatsAvailable)
+			{
+				ImGui::Text("PBR Deferred Clustered Light Indices: %d used, %d skipped", stats.pbrDeferredClusteredLightGridIndexCount, stats.pbrDeferredClusteredLightGridCulledIndexCount);
+			}
+			else
+			{
+				ImGui::TextUnformatted("PBR Deferred Clustered Light Indices: not read back");
+			}
 			ImGui::Text("PBR Deferred Tiled Light Debug Draw Calls: %d", stats.pbrDeferredTiledLightDebugDrawCalls);
 			ImGui::Text("PBR GBuffer Debug Draw Calls: %d", stats.pbrGBufferDebugDrawCalls);
 			ImGui::Text("PBR Scene Draw Calls: %d", stats.pbrSceneDrawCalls);

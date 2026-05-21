@@ -251,6 +251,8 @@ namespace
 		context.stats->pbrDeferredClusteredLightGridIndexCount = std::max(context.stats->pbrDeferredClusteredLightGridIndexCount, stats.clusteredLightGridIndexCount);
 		context.stats->pbrDeferredClusteredLightGridCulledIndexCount = std::max(context.stats->pbrDeferredClusteredLightGridCulledIndexCount, stats.clusteredLightGridCulledIndexCount);
 		context.stats->pbrDeferredClusteredLightGridComputeDispatched = context.stats->pbrDeferredClusteredLightGridComputeDispatched || stats.clusteredLightGridComputeDispatched;
+		context.stats->pbrDeferredClusteredLightGridStatsReadbackEnabled = context.stats->pbrDeferredClusteredLightGridStatsReadbackEnabled || stats.clusteredLightGridStatsReadbackEnabled;
+		context.stats->pbrDeferredClusteredLightGridLightIndexStatsAvailable = context.stats->pbrDeferredClusteredLightGridLightIndexStatsAvailable || stats.clusteredLightGridLightIndexStatsAvailable;
 	}
 
 	void accumulateTiledLightGridStats(RendererFrameContext& context, const PBRDeferredTiledLightGridStats& stats)

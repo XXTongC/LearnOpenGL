@@ -65,6 +65,8 @@ namespace GLframework
 		int pbrDeferredClusteredLightGridIndexCount{ 0 };
 		int pbrDeferredClusteredLightGridCulledIndexCount{ 0 };
 		bool pbrDeferredClusteredLightGridComputeDispatched{ false };
+		bool pbrDeferredClusteredLightGridStatsReadbackEnabled{ false };
+		bool pbrDeferredClusteredLightGridLightIndexStatsAvailable{ false };
 		int pbrDeferredTiledLightDebugDrawCalls{ 0 };
 		int pbrGBufferDebugDrawCalls{ 0 };
 		int legacySceneDrawCalls{ 0 };

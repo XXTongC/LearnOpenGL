@@ -53,6 +53,8 @@ namespace GLframework
 		int clusteredLightGridIndexCount{ 0 };
 		int clusteredLightGridCulledIndexCount{ 0 };
 		bool clusteredLightGridComputeDispatched{ false };
+		bool clusteredLightGridStatsReadbackEnabled{ false };
+		bool clusteredLightGridLightIndexStatsAvailable{ false };
 	};
 
 	class PBRDeferredLightingPass

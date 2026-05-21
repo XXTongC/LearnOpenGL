@@ -143,6 +143,8 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 		stats.clusteredLightGridPointLightCount = clusteredStats.pointLightCount;
 		stats.clusteredLightGridIndexCount = clusteredStats.lightIndexCount;
 		stats.clusteredLightGridCulledIndexCount = clusteredStats.culledLightIndexCount;
+		stats.clusteredLightGridStatsReadbackEnabled = clusteredStats.statsReadbackEnabled;
+		stats.clusteredLightGridLightIndexStatsAvailable = clusteredStats.lightIndexStatsAvailable;
 		if (clusteredStats.bound)
 		{
 			shader->setInt("useClusteredPointLights", 1);
@@ -173,6 +175,7 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 		stats.clusteredLightGridMaxLightsPerCluster = clusteredLayout.maxLightsPerCluster;
 		stats.clusteredLightGridMaxIndexCount = clusteredLayout.maxLightIndexCount;
 		stats.clusteredLightGridPointLightCount = lightBufferStats.pointLightCount;
+		stats.clusteredLightGridStatsReadbackEnabled = clusteredConfig.clusteredStatsReadbackEnabled;
 	}
 
 	const bool useTiledPointLights = !stats.clusteredLightGridBound && profile.pbrDeferredTiledLightsEnabled && lightBufferStats.pointLightCount > 0;

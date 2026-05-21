@@ -27,6 +27,7 @@ namespace GLframework
 		bool pbrDeferredClusteredLayoutStatsEnabled{ false };
 		int pbrDeferredClusteredDepthSlices{ 24 };
 		int pbrDeferredClusteredMaxLightsPerCluster{ 64 };
+		bool pbrDeferredClusteredStatsReadbackEnabled{ false };
 		int pbrDeferredTiledLightDebugMaxLights{ 2 };
 		float pbrDeferredTiledLightDebugIntensity{ 1.0f };
 		int iblDebugMode{ 0 };

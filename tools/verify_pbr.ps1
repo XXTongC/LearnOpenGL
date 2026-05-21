@@ -33,6 +33,7 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-tiled-heatmap"; Argument = "--verify-pbr-deferred-tiled-heatmap"; Capture = "out/pbr_deferred_tiled_heatmap_verification.ppm"; ExpectTiledCulling = $true; ExpectTiledHeatmap = $true },
     [pscustomobject]@{ Name = "deferred-clustered-layout"; Argument = "--verify-pbr-deferred-clustered-layout"; Capture = "out/pbr_deferred_clustered_layout_verification.ppm"; ExpectClusteredLayout = $true },
     [pscustomobject]@{ Name = "deferred-clustered-grid"; Argument = "--verify-pbr-deferred-clustered-grid"; Capture = "out/pbr_deferred_clustered_grid_verification.ppm"; ExpectClusteredGrid = $true },
+    [pscustomobject]@{ Name = "deferred-clustered-grid-no-readback"; Argument = "--verify-pbr-deferred-clustered-grid-no-readback"; Capture = "out/pbr_deferred_clustered_grid_no_readback_verification.ppm"; ExpectClusteredGridNoReadback = $true },
     [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" },
     [pscustomobject]@{ Name = "texture-set"; Argument = "--verify-pbr-texture-set"; Capture = "out/pbr_texture_set_verification.ppm"; ExpectTexturedProbe = $true },
     [pscustomobject]@{ Name = "deferred-texture-set"; Argument = "--verify-pbr-deferred-texture-set"; Capture = "out/pbr_deferred_texture_set_verification.ppm"; ExpectTexturedProbe = $true; ExpectDeferredLighting = $true }
@@ -476,6 +477,12 @@ foreach ($mode in $selectedModes) {
             if ($rendererLine -notmatch "pbrDeferredClusteredLightGridCompute=yes") {
                 $failures.Add("$($mode.Name): clustered grid compute shader was not dispatched")
             }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridStatsReadback=yes") {
+                $failures.Add("$($mode.Name): clustered grid verification did not enable stats readback")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridLightIndexStats=yes") {
+                $failures.Add("$($mode.Name): clustered grid light index stats were not available")
+            }
             if ($rendererLine -notmatch "pbrDeferredTiledLightsEnabled=no") {
                 $failures.Add("$($mode.Name): CPU tiled lights should be disabled for clustered grid mode")
             }
@@ -519,6 +526,57 @@ foreach ($mode in $selectedModes) {
                 }
                 if ([int]$culledIndices -le 0) {
                     $failures.Add("$($mode.Name): clustered grid reported no culled indices")
+                }
+            }
+        }
+    }
+    if ($mode.PSObject.Properties.Name -contains "ExpectClusteredGridNoReadback" -and $mode.ExpectClusteredGridNoReadback) {
+        if (!$rendererLine) {
+            $failures.Add("$($mode.Name): missing renderer stats")
+        }
+        else {
+            $drawCalls = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredLightingDrawCalls=(\d+)" -Group 1
+            $columns = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridSize=(\d+)x(\d+)x(\d+)" -Group 1
+            $rows = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridSize=(\d+)x(\d+)x(\d+)" -Group 2
+            $depthSlices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridSize=(\d+)x(\d+)x(\d+)" -Group 3
+            $clusters = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridClusters=(\d+)" -Group 1
+            $maxLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridMaxLightsPerCluster=(\d+)" -Group 1
+            $maxIndices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredClusteredLightGridMaxIndices=(\d+)" -Group 1
+            if ($null -eq $drawCalls -or [int]$drawCalls -le 0) {
+                $failures.Add("$($mode.Name): deferred lighting did not draw")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridEnabled=yes") {
+                $failures.Add("$($mode.Name): clustered grid was not enabled")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridBound=yes") {
+                $failures.Add("$($mode.Name): clustered grid buffers were not bound")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridCompute=yes") {
+                $failures.Add("$($mode.Name): clustered grid compute shader was not dispatched")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridStatsReadback=no") {
+                $failures.Add("$($mode.Name): clustered grid no-readback mode unexpectedly enabled stats readback")
+            }
+            if ($rendererLine -notmatch "pbrDeferredClusteredLightGridLightIndexStats=no") {
+                $failures.Add("$($mode.Name): clustered grid no-readback mode unexpectedly reported light index stats")
+            }
+            if ($rendererLine -notmatch "pbrDeferredTiledLightsEnabled=no") {
+                $failures.Add("$($mode.Name): CPU tiled lights should be disabled for clustered no-readback mode")
+            }
+            if ($rendererLine -notmatch "pbrDeferredTiledLightGridBound=no") {
+                $failures.Add("$($mode.Name): CPU tiled grid should not bind in clustered no-readback mode")
+            }
+            if ($null -eq $columns -or $null -eq $rows -or $null -eq $depthSlices -or $null -eq $clusters -or $null -eq $maxLights -or $null -eq $maxIndices) {
+                $failures.Add("$($mode.Name): clustered grid no-readback layout stats were incomplete")
+            }
+            else {
+                $expectedClusters = [int]$columns * [int]$rows * [int]$depthSlices
+                $expectedMaxIndices = $expectedClusters * [int]$maxLights
+                if ([int]$clusters -ne $expectedClusters) {
+                    $failures.Add("$($mode.Name): clustered count did not match dimensions ($clusters != $expectedClusters)")
+                }
+                if ([int]$maxIndices -ne $expectedMaxIndices) {
+                    $failures.Add("$($mode.Name): clustered max index capacity did not match dimensions and capacity ($maxIndices != $expectedMaxIndices)")
                 }
             }
         }

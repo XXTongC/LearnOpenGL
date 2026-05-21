@@ -16,7 +16,8 @@ PBRDeferredLightCullingConfig GLframework::makePbrDeferredLightCullingConfig(
 		std::max(profile.pbrDeferredTileSize, 1),
 		std::max(profile.pbrDeferredTiledLightCutoff, 0.001f),
 		std::max(profile.pbrDeferredClusteredDepthSlices, 1),
-		std::max(profile.pbrDeferredClusteredMaxLightsPerCluster, 1)
+		std::max(profile.pbrDeferredClusteredMaxLightsPerCluster, 1),
+		profile.pbrDeferredClusteredStatsReadbackEnabled
 	};
 }
 

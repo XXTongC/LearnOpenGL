@@ -27,6 +27,7 @@ namespace GL_RUNTIME
 		bool enablePbrTiledLightProbe{ false };
 		bool enablePbrClusteredLayoutProbe{ false };
 		bool enablePbrClusteredGridProbe{ false };
+		bool enablePbrClusteredStatsReadback{ false };
 		bool disablePbrDeferredTiledLights{ false };
 		int pbrDeferredTileSizeOverride{ 0 };
 		float pbrDeferredTiledLightCutoffOverride{ 0.0f };

@@ -367,6 +367,10 @@ namespace GL_RUNTIME
 		{
 			rendererPassProfile.pbrDeferredClusteredLightsEnabled = true;
 		}
+		if (config.enablePbrClusteredStatsReadback)
+		{
+			rendererPassProfile.pbrDeferredClusteredStatsReadbackEnabled = true;
+		}
 
 		if (config.enablePbrGBufferDebugPass)
 		{
@@ -656,6 +660,10 @@ namespace GL_RUNTIME
 				statsLine += ", pbrDeferredClusteredLightGridCulledIndices=" + std::to_string(stats.pbrDeferredClusteredLightGridCulledIndexCount);
 				statsLine += ", pbrDeferredClusteredLightGridCompute=";
 				statsLine += (stats.pbrDeferredClusteredLightGridComputeDispatched ? "yes" : "no");
+				statsLine += ", pbrDeferredClusteredLightGridStatsReadback=";
+				statsLine += (stats.pbrDeferredClusteredLightGridStatsReadbackEnabled ? "yes" : "no");
+				statsLine += ", pbrDeferredClusteredLightGridLightIndexStats=";
+				statsLine += (stats.pbrDeferredClusteredLightGridLightIndexStatsAvailable ? "yes" : "no");
 			}
 		}
 		if (stats.pbrGBufferDebugDrawCalls > 0)

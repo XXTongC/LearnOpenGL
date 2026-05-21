@@ -2128,3 +2128,23 @@ Texture-set probe 已从 forward PBR 验证扩展到 deferred PBR 路径：
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid`：构建通过，输出 `pbrDeferredClusteredLightGridBound=yes`、`pbrDeferredClusteredLightGridCompute=yes`、`pbrDeferredClusteredLightGridIndices=14400`、`pbrDeferredClusteredLightGridCulledIndices=158400`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 21 个 verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Clustered Readback Gate
+
+clustered compute assignment 已经能在 GPU 上生成 clustered light grid，但上一轮实现仍在每次 dispatch 后执行 `glGetBufferSubData(...)` 读取 cluster count。该读回适合 verification，但不适合作为默认渲染路径，因为它会引入 CPU/GPU 同步点。
+
+本轮将 readback 改为显式 profile/verification gate：
+
+- `RendererFramePassProfile` 新增 `pbrDeferredClusteredStatsReadbackEnabled`，默认 `false`，并接入 profile config schema 与 `config/renderer_frame_pass.example.ini`。
+- `PBRDeferredLightCullingConfig` 新增 `clusteredStatsReadbackEnabled`，clustered backend 不再隐式同步读回 GPU buffer。
+- `PBRDeferredClusteredLightGrid::bindCompute(...)` 默认只 dispatch compute shader 并设置 SSBO memory barrier；只有 readback gate 打开时才执行 `glGetBufferSubData(...)` 并填充 actual light index / culled index stats。
+- clustered stats 新增 `statsReadbackEnabled` 与 `lightIndexStatsAvailable`，避免 UI / verification 把 no-readback 模式下的 `0` 误解成真实 culling 数。
+- `RuntimePBRVerificationArgs` 新增 `--verify-pbr-deferred-clustered-grid-no-readback`，用于验证默认 no-readback clustered compute path；原 `--verify-pbr-deferred-clustered-grid` 仍显式打开 readback，用于验证 actual culling counts。
+- `tools/verify_pbr.ps1` 默认 PBR 回归新增 `deferred-clustered-grid-no-readback` mode，总数从 21 个增加到 22 个。
+
+这一步把 clustered compute 从“验证型实现”推进到更接近真实 renderer 的路径：默认渲染不再依赖同步读回，只有 debug / verification 需要实际 index count 时才打开 readback。后续仍需要补 GPU timing、occupancy debug pass，以及更真实多光源压力场景。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid,deferred-clustered-grid-no-readback`：构建通过；readback mode 输出 `pbrDeferredClusteredLightGridStatsReadback=yes`、`pbrDeferredClusteredLightGridLightIndexStats=yes`、`pbrDeferredClusteredLightGridIndices=14400`、`pbrDeferredClusteredLightGridCulledIndices=158400`；no-readback mode 输出 `pbrDeferredClusteredLightGridStatsReadback=no`、`pbrDeferredClusteredLightGridLightIndexStats=no`，且 clustered compute / buffer bound 仍为 `yes`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 22 个 verification mode 全部通过。
