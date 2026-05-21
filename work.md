@@ -2279,3 +2279,20 @@ clustered compute assignment 已经能在 GPU 上生成 clustered light grid，�
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：通过；默认 28 个 PBR verification mode 全部通过。
 
 结论：PBR 作为 engine foundation renderer pipeline 已具备冻结条件。后续除非是 bug fix、验证修复或 engine boundary 需要，否则不应继续扩张 PBR 功能。
+
+### 2026-05-21 PBR Showcase Sphere Scene
+
+根据“实现一个 PBR 渲染球场景，展示已经完成的内容”的目标，本轮新增一个独立 verification showcase mode，而不是改默认工程启动场景：
+
+- 新增 `--verify-pbr-showcase-spheres`，`tools/verify_pbr.ps1` 中对应 `-Modes showcase-spheres`。
+- showcase scene 使用现有本地资源，不下载外部纹理：`Texture/solar system` 行星/太阳贴图、`Texture/normal/normal_map.png`、`fbx/bag` 的 diffuse / specular / roughness / AO / normal 贴图。
+- 场景上排新增 6 个大 PBR sphere：Earth albedo IBL、Mars rough dielectric、texture-set + normal/roughness/AO、gold metallic low roughness、glossy normal-map、emissive sun/bloom。
+- 场景下排保留材质球矩阵，展示 metallic / roughness 参数变化。
+- showcase mode 使用 deferred PBR、G-buffer、deferred lighting、tiled point-light culling、8 点光 pressure rig、PBR shadow atlas、procedural IBL 和 verification capture。
+- 新增 `docs/pbr_showcase_scene.md` 记录运行方式、场景内容、验证契约和资源策略。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes showcase-spheres`：构建通过；输出 `pbrShowcaseSpheres=6`、`pbrGBufferDrawCalls=26`、`pbrDeferredLightingDrawCalls=1`、`pointShadowLights=8`、`pbrDeferredTiledLightGridBound=yes`、`pbrDeferredTiledLightGridIndices=7167/28800`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：通过；默认 PBR 回归从 28 个 mode 增加到 29 个 mode，新增 `showcase-spheres`。
+- 已生成本地截图 `out/pbr_showcase_spheres_verification.ppm`，并临时转换为 `out/pbr_showcase_spheres_verification.png` 做视觉检查。

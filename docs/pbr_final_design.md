@@ -50,7 +50,7 @@ Before moving fully into engine systems, PBR must satisfy these gates:
 Current local gate result:
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr_golden.ps1 -SkipBuild -NoLinkDebugInfo -DiscardCaptures`: passed.
-- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`: passed all 28 default modes.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`: passed all 29 default modes, including the showcase sphere scene.
 
 Golden baseline coverage:
 

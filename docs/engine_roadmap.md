@@ -51,7 +51,7 @@ Required outcomes:
 
 - A documented PBR feature boundary.
 - Golden verification for real asset and texture-set probes.
-- Existing 28-mode PBR verification remains green.
+- Existing 29-mode PBR verification remains green.
 - Profiling report remains available, but does not drive more PBR expansion.
 - Tiled deferred path remains the stable fallback.
 - Clustered deferred path remains experimental/profiling-oriented until overflow and quality policy are solved.
@@ -156,4 +156,3 @@ Until Phase 2 starts, any new rendering work must answer one question:
 Does this make the engine boundary clearer?
 
 If the answer is no, it should be deferred.
-

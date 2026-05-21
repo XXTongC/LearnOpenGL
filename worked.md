@@ -2246,3 +2246,10 @@
   - 更新 [pbr_final_design.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_final_design.md) 和 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，把 golden gate 与完整默认 PBR 回归作为 PBR 冻结前的最终证据。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr_golden.ps1 -SkipBuild -NoLinkDebugInfo -DiscardCaptures`，三个 golden mode 全部通过。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 28 个 PBR verification mode 全部通过。
+- 完成第一百九十九轮 PBR showcase sphere scene：
+  - 更新 [RuntimePBRVerification.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.h)、[RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp) 和 [RuntimePBRVerificationArgs.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerificationArgs.cpp)，新增 `--verify-pbr-showcase-spheres`，在 verification 场景中添加 6 个展示 PBR sphere。
+  - 更新 [verify_pbr.ps1](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\verify_pbr.ps1)，新增 `showcase-spheres` mode，并断言 `pbrShowcaseSpheres >= 6`、deferred lighting、tiled culling 和 8 点光 pressure rig。
+  - 新增 [pbr_showcase_scene.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_showcase_scene.md)，说明场景展示内容、运行命令、验证契约和资源策略。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes showcase-spheres`，构建和单项验证通过，生成 `out/pbr_showcase_spheres_verification.ppm`。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 29 个 verification mode 全部通过。
+  - 已将 `out/pbr_showcase_spheres_verification.ppm` 临时转换为 `out/pbr_showcase_spheres_verification.png` 并完成视觉检查。

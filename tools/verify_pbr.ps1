@@ -42,7 +42,8 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-clustered-grid-no-readback"; Argument = "--verify-pbr-deferred-clustered-grid-no-readback"; Capture = "out/pbr_deferred_clustered_grid_no_readback_verification.ppm"; ExpectClusteredGridNoReadback = $true },
     [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" },
     [pscustomobject]@{ Name = "texture-set"; Argument = "--verify-pbr-texture-set"; Capture = "out/pbr_texture_set_verification.ppm"; ExpectTexturedProbe = $true },
-    [pscustomobject]@{ Name = "deferred-texture-set"; Argument = "--verify-pbr-deferred-texture-set"; Capture = "out/pbr_deferred_texture_set_verification.ppm"; ExpectTexturedProbe = $true; ExpectDeferredLighting = $true }
+    [pscustomobject]@{ Name = "deferred-texture-set"; Argument = "--verify-pbr-deferred-texture-set"; Capture = "out/pbr_deferred_texture_set_verification.ppm"; ExpectTexturedProbe = $true; ExpectDeferredLighting = $true },
+    [pscustomobject]@{ Name = "showcase-spheres"; Argument = "--verify-pbr-showcase-spheres"; Capture = "out/pbr_showcase_spheres_verification.ppm"; ExpectShowcaseSpheres = 6; ExpectDeferredLighting = $true; ExpectTiledCulling = $true; ExpectPointLightPressure = 8 }
 )
 
 function Read-PpmToken {
@@ -717,6 +718,27 @@ foreach ($mode in $selectedModes) {
             }
             if ($pbrDrawPathCalls -lt 26) {
                 $failures.Add("$($mode.Name): textured PBR probe did not increase a PBR draw path")
+            }
+        }
+    }
+    if ($mode.PSObject.Properties.Name -contains "ExpectShowcaseSpheres") {
+        if (!$sceneLine) {
+            $failures.Add("$($mode.Name): missing scene stats")
+        }
+        else {
+            $expectedShowcaseSpheres = [int]$mode.ExpectShowcaseSpheres
+            $showcaseSpheres = Get-RegexValue -Text $sceneLine -Pattern "pbrShowcaseSpheres=(\d+)" -Group 1
+            if ($null -eq $showcaseSpheres -or [int]$showcaseSpheres -lt $expectedShowcaseSpheres) {
+                $failures.Add("$($mode.Name): showcase sphere scene did not add enough PBR spheres ($showcaseSpheres < $expectedShowcaseSpheres)")
+            }
+        }
+        if (!$rendererLine) {
+            $failures.Add("$($mode.Name): missing renderer stats")
+        }
+        else {
+            $pbrGBufferDrawCalls = Get-RegexValue -Text $rendererLine -Pattern "pbrGBufferDrawCalls=(\d+)" -Group 1
+            if ($null -eq $pbrGBufferDrawCalls -or [int]$pbrGBufferDrawCalls -lt 26) {
+                $failures.Add("$($mode.Name): showcase sphere scene did not render through the PBR G-buffer path")
             }
         }
     }

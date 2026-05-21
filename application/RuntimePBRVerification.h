@@ -25,6 +25,7 @@ namespace GL_RUNTIME
 		bool enablePbrAlphaMaskProbe{ false };
 		bool enablePbrImportedAssetProbe{ false };
 		bool enablePbrTextureSetProbe{ false };
+		bool enablePbrShowcaseSpheres{ false };
 		bool enablePbrTiledLightProbe{ false };
 		bool enablePbrClusteredLayoutProbe{ false };
 		bool enablePbrClusteredGridProbe{ false };

@@ -36,6 +36,7 @@ namespace
 		int pbrAlphaMaskedMeshCount{ 0 };
 		int pbrImportedMeshCount{ 0 };
 		int pbrTexturedMeshCount{ 0 };
+		int pbrShowcaseSphereCount{ 0 };
 	};
 
 	void reportLine(const std::string& message)
@@ -58,6 +59,7 @@ namespace
 		++stats.objectCount;
 		const bool importedAsset = importedAssetSubtree || object->getName().find("PBR Imported") == 0;
 		const bool texturedProbe = object->getName().find("PBR Texture Set") == 0;
+		const bool showcaseSphere = object->getName().find("PBR Showcase Sphere") == 0;
 		if (object->getType() == GLframework::ObjectType::Mesh)
 		{
 			++stats.meshCount;
@@ -74,6 +76,10 @@ namespace
 			if (texturedProbe)
 			{
 				++stats.pbrTexturedMeshCount;
+			}
+			if (showcaseSphere)
+			{
+				++stats.pbrShowcaseSphereCount;
 			}
 			const auto pbrMaterial = std::dynamic_pointer_cast<GLframework::PBRMaterial>(mesh->getMaterial());
 			if (pbrMaterial && pbrMaterial->mEmissiveIntensity > 0.0f && glm::length(pbrMaterial->mEmissiveColor) > 0.0001f)
@@ -135,6 +141,86 @@ namespace
 	std::shared_ptr<GLframework::Texture> loadLinearTexture(const std::string& path, unsigned int unit)
 	{
 		return std::make_shared<GLframework::Texture>(path, unit, GL_RGBA);
+	}
+
+	std::shared_ptr<GLframework::PBRMaterial> createPbrShowcaseMaterial(
+		const glm::vec3& albedo,
+		float metallic,
+		float roughness
+	)
+	{
+		auto material = std::make_shared<GLframework::PBRMaterial>();
+		material->mAlbedo = albedo;
+		material->mMetallic = metallic;
+		material->mRoughness = roughness;
+		material->mAo = 1.0f;
+		material->mUseIBL = true;
+		material->mIblDiffuseStrength = 1.15f;
+		material->mIblSpecularStrength = 1.25f;
+		return material;
+	}
+
+	void addPbrShowcaseSphere(
+		GLframework::AppRuntimeContext& context,
+		const std::shared_ptr<GLframework::Geometry>& geometry,
+		const std::shared_ptr<GLframework::PBRMaterial>& material,
+		const std::string& label,
+		const glm::vec3& position,
+		const glm::vec3& scale = { 1.0f, 1.0f, 1.0f }
+	)
+	{
+		auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
+		mesh->setName("PBR Showcase Sphere " + label);
+		mesh->setPosition(position);
+		mesh->setScale(scale);
+		context.sceneOffScreen->addChild(mesh);
+	}
+
+	void addPbrShowcaseSpheres(GLframework::AppRuntimeContext& context)
+	{
+		if (!context.sceneOffScreen || !context.renderer)
+		{
+			return;
+		}
+
+		auto sphereGeometry = GLframework::Geometry::createSphere(
+			context.renderer->getShader(GLframework::MaterialType::PBRMaterial),
+			0.42f,
+			48,
+			24
+		);
+
+		auto earth = createPbrShowcaseMaterial({ 1.0f, 1.0f, 1.0f }, 0.0f, 0.52f);
+		earth->mAlbedoMap = GLframework::Texture::createTexture("Texture/solar system/2k_earth_daymap.jpg", 0);
+		addPbrShowcaseSphere(context, sphereGeometry, earth, "Earth Albedo IBL", { -2.65f, 1.05f, 2.05f });
+
+		auto mars = createPbrShowcaseMaterial({ 1.0f, 0.82f, 0.68f }, 0.0f, 0.68f);
+		mars->mAlbedoMap = GLframework::Texture::createTexture("Texture/solar system/2k_mars.jpg", 0);
+		addPbrShowcaseSphere(context, sphereGeometry, mars, "Mars Rough Dielectric", { -1.55f, 1.05f, 1.98f });
+
+		auto brushedTextureSet = createPbrShowcaseMaterial({ 1.0f, 1.0f, 1.0f }, 0.0f, 0.48f);
+		brushedTextureSet->mAlbedoMap = GLframework::Texture::createTexture("fbx/bag/diffuse.jpg", 0);
+		brushedTextureSet->mMetallicMap = loadLinearTexture("fbx/bag/specular.jpg", 1);
+		brushedTextureSet->mRoughnessMap = loadLinearTexture("fbx/bag/roughness.jpg", 2);
+		brushedTextureSet->mAoMap = loadLinearTexture("fbx/bag/ao.jpg", 3);
+		brushedTextureSet->mNormalMap = loadLinearTexture("fbx/bag/normal.png", 4);
+		addPbrShowcaseSphere(context, sphereGeometry, brushedTextureSet, "Texture Set Normal Roughness AO", { -0.35f, 1.05f, 1.9f });
+
+		auto gold = createPbrShowcaseMaterial({ 1.0f, 0.78f, 0.28f }, 1.0f, 0.18f);
+		addPbrShowcaseSphere(context, sphereGeometry, gold, "Gold Metallic Low Roughness", { 0.85f, 1.05f, 1.9f });
+
+		auto ceramic = createPbrShowcaseMaterial({ 0.12f, 0.72f, 1.0f }, 0.0f, 0.16f);
+		ceramic->mNormalMap = loadLinearTexture("Texture/normal/normal_map.png", 4);
+		addPbrShowcaseSphere(context, sphereGeometry, ceramic, "Glossy Normal Map", { 1.95f, 1.05f, 1.98f });
+
+		auto emissiveSun = createPbrShowcaseMaterial({ 1.0f, 1.0f, 1.0f }, 0.0f, 0.9f);
+		auto sunTexture = GLframework::Texture::createTexture("Texture/solar system/2k_sun.jpg", 0);
+		emissiveSun->mAlbedoMap = sunTexture;
+		emissiveSun->mEmissiveMap = sunTexture;
+		emissiveSun->mEmissiveColor = { 1.0f, 0.52f, 0.16f };
+		emissiveSun->mEmissiveIntensity = 2.4f;
+		emissiveSun->mUseIBL = false;
+		addPbrShowcaseSphere(context, sphereGeometry, emissiveSun, "Emissive Bloom", { 2.95f, 1.05f, 2.12f });
 	}
 
 	void applyPressurePointLightRig(GLframework::AppRuntimeContext& context)
@@ -224,6 +310,17 @@ namespace GL_RUNTIME
 		context.pbrPreviewProfile.material.iblSpecularStrength = 1.0f;
 		context.pbrPreviewProfile.normalMapPath = "Texture/normal/normal_map.png";
 		context.pbrPreviewProfile.normalMapUnit = 4;
+		if (config.enablePbrShowcaseSpheres)
+		{
+			context.pbrPreviewProfile.position = { -0.15f, -0.95f, 1.25f };
+			context.pbrPreviewProfile.gridColumns = 5;
+			context.pbrPreviewProfile.gridRows = 4;
+			context.pbrPreviewProfile.gridSpacing = 0.72f;
+			context.pbrPreviewProfile.gridRadius = 0.24f;
+			context.pbrPreviewProfile.gridRoughnessMin = 0.06f;
+			context.pbrPreviewProfile.gridRoughnessMax = 0.92f;
+			context.pbrPreviewProfile.material.albedo = { 0.82f, 0.38f, 0.16f };
+		}
 
 		context.pbrLightRigProfile.ambientColor = { 0.1f, 0.1f, 0.1f };
 		context.pbrLightRigProfile.ambientIntensity = 1.0f;
@@ -265,6 +362,11 @@ namespace GL_RUNTIME
 		context.pbrCameraRigProfile.up = { 0.0f, 1.0f, 0.0f };
 		context.pbrCameraRigProfile.right = { 1.0f, 0.0f, 0.0f };
 		context.pbrCameraRigProfile.fovy = 60.0f;
+		if (config.enablePbrShowcaseSpheres)
+		{
+			context.pbrCameraRigProfile.position = { 0.0f, 0.2f, 6.1f };
+			context.pbrCameraRigProfile.fovy = 52.0f;
+		}
 		context.pbrCameraRigProfile.nearPlane = 0.1f;
 		context.pbrCameraRigProfile.farPlane = 1000.0f;
 		context.pbrCameraRigProfile.applyTo(context.camera);
@@ -309,6 +411,10 @@ namespace GL_RUNTIME
 		if (config.enablePbrTextureSetProbe)
 		{
 			profileLine += " + textured PBR material probe";
+		}
+		if (config.enablePbrShowcaseSpheres)
+		{
+			profileLine += " + PBR showcase sphere scene";
 		}
 		if (config.enablePbrTiledLightProbe)
 		{
@@ -465,7 +571,8 @@ namespace GL_RUNTIME
 			&& !config.enablePbrMaterialIblProbe
 			&& !config.enablePbrAlphaMaskProbe
 			&& !config.enablePbrImportedAssetProbe
-			&& !config.enablePbrTextureSetProbe) || !context.sceneOffScreen || !context.renderer)
+			&& !config.enablePbrTextureSetProbe
+			&& !config.enablePbrShowcaseSpheres) || !context.sceneOffScreen || !context.renderer)
 		{
 			return;
 		}
@@ -609,6 +716,11 @@ namespace GL_RUNTIME
 			mesh->setPosition({ 2.35f, -1.05f, 1.85f });
 			context.sceneOffScreen->addChild(mesh);
 		}
+
+		if (config.enablePbrShowcaseSpheres)
+		{
+			addPbrShowcaseSpheres(context);
+		}
 	}
 
 	void RuntimePBRVerification::reportPreparedScene(GLframework::AppRuntimeContext& context)
@@ -630,6 +742,7 @@ namespace GL_RUNTIME
 			+ ", pbrAlphaMaskedMeshes=" + std::to_string(stats.pbrAlphaMaskedMeshCount)
 			+ ", pbrImportedMeshes=" + std::to_string(stats.pbrImportedMeshCount)
 			+ ", pbrTexturedMeshes=" + std::to_string(stats.pbrTexturedMeshCount)
+			+ ", pbrShowcaseSpheres=" + std::to_string(stats.pbrShowcaseSphereCount)
 			+ ", iblReady=" + (environmentReady ? std::string{ "yes" } : std::string{ "no" })
 		);
 	}

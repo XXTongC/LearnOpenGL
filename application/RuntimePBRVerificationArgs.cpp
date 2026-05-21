@@ -26,7 +26,8 @@ namespace
 		OptionDisablePbrDeferredTiledLights = 1u << 16,
 		OptionPbrClusteredStatsReadback = 1u << 17,
 		OptionPbrLightPressureProbe = 1u << 18,
-		OptionRendererGpuTimingProbe = 1u << 19
+		OptionRendererGpuTimingProbe = 1u << 19,
+		OptionPbrShowcaseSpheres = 1u << 20
 	};
 
 	struct PbrVerificationModeDescriptor
@@ -70,7 +71,8 @@ namespace
 		{ "--verify-pbr-deferred-clustered-grid-no-readback", "out/pbr_deferred_clustered_grid_no_readback_verification.ppm", kDeferredPbrOptions | OptionPbrClusteredGridProbe | OptionDisablePbrDeferredTiledLights },
 		{ "--verify-pbr-import", "out/pbr_import_verification.ppm", OptionPbrImportedAssetProbe },
 		{ "--verify-pbr-texture-set", "out/pbr_texture_set_verification.ppm", OptionPbrTextureSetProbe },
-		{ "--verify-pbr-deferred-texture-set", "out/pbr_deferred_texture_set_verification.ppm", kDeferredPbrOptions | OptionPbrTextureSetProbe }
+		{ "--verify-pbr-deferred-texture-set", "out/pbr_deferred_texture_set_verification.ppm", kDeferredPbrOptions | OptionPbrTextureSetProbe },
+		{ "--verify-pbr-showcase-spheres", "out/pbr_showcase_spheres_verification.ppm", kDeferredPbrOptions | OptionPbrShowcaseSpheres | OptionPbrTiledLightProbe | OptionPbrLightPressureProbe }
 	};
 
 	bool hasArgument(int argc, char** argv, const std::string& expected)
@@ -125,6 +127,7 @@ namespace
 		verification.enablePbrAlphaMaskProbe |= hasOption(mode.options, OptionPbrAlphaMaskProbe);
 		verification.enablePbrImportedAssetProbe |= hasOption(mode.options, OptionPbrImportedAssetProbe);
 		verification.enablePbrTextureSetProbe |= hasOption(mode.options, OptionPbrTextureSetProbe);
+		verification.enablePbrShowcaseSpheres |= hasOption(mode.options, OptionPbrShowcaseSpheres);
 		verification.enablePbrTiledLightProbe |= hasOption(mode.options, OptionPbrTiledLightProbe);
 		verification.enablePbrClusteredLayoutProbe |= hasOption(mode.options, OptionPbrClusteredLayoutProbe);
 		verification.enablePbrClusteredGridProbe |= hasOption(mode.options, OptionPbrClusteredGridProbe);
