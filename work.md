@@ -2227,7 +2227,7 @@ clustered compute assignment 已经能在 GPU 上生成 clustered light grid，�
 - `tools/verify_pbr.ps1` 默认回归新增 `deferred-tiled-lights-pressure-timing` 与 `deferred-clustered-grid-pressure-timing`，并复用 `ExpectPointLightPressure=8`、tiled / clustered grid 断言和 `ExpectGpuTiming` 断言。
 - 新增 `tools/profile_pbr_light_culling.ps1`，它会运行两个 pressure timing mode，解析 renderer stats，并生成 `docs/pbr_light_culling_timing_report.md`。
 - 当前报告记录 tiled pressure path 为 `80x45` tile grid、8 点光、`8034 / 28800` live indices；clustered pressure path 为 `80x45x24` cluster grid、8 点光、`8037 / 691200` live indices。
-- 本次采样中 tiled deferred lighting GPU time 约 `1.1944 ms`，clustered deferred lighting GPU time 约 `3.3720 ms`；这只能作为当前机器单次 pressure rig 基线，不能作为最终性能结论。
+- 基于已提交代码 `bf85071` 重新采样后，tiled deferred lighting GPU time 约 `1.0270 ms`，clustered deferred lighting GPU time 约 `2.9362 ms`；这只能作为当前机器单次 pressure rig 基线，不能作为最终性能结论。
 
 这一步的意义是把“clustered 是否值得继续优化”拆成可复现问题。当前证据说明：tiled 仍应保留为稳定 fallback；clustered 已经有 compute assignment 和 3D grid 基础，但下一步需要优先做 overflow/fallback、多帧平均 timing，以及真实资产下的视觉/性能 baseline，而不是直接把 clustered 设为默认。
 
