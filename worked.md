@@ -1999,3 +1999,8 @@
   - 新增的 tile-circle 测试会计算 tile rectangle 到 light center 的最近点，用 `radius + 1px` 判断是否与 light screen circle 相交；center 投影失败的保守全屏 fallback 不启用 circle clip，避免漏光。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`，`Debug|x64` 构建通过，sparse tiled 输出从 `3311 / 3119 occupied / 481 empty` 改进为 `2890 / 2846 occupied / 754 empty`。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，14 个 PBR verification mode 全部通过；`deferred-tiled-heatmap` 同步输出 `pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridOccupiedTiles=2846/3600`。
+- 完成第一百五十二轮 PBR deferred tiled light flat index builder：
+  - 更新 [renderer/PBRDeferredTiledLightGrid.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredTiledLightGrid.cpp)，将 `std::vector<std::vector<int>> tileLightLists` 改为 flat `{ tileIndex, lightIndex }` entries + per-tile count + prefix offset scatter。
+  - GPU SSBO layout 保持不变，tile buffer 仍使用 binding `4`，index buffer 仍使用 binding `5`；本轮只优化 CPU builder 的中间数据结构，减少每帧 per-tile small vector 容器开销。
+  - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`，`Debug|x64` 构建通过，focused tiled 输出保持 `pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridOccupiedTiles=2846/3600`、`pbrDeferredTiledLightGridEmptyTiles=754`。
+  - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，14 个 PBR verification mode 全部通过。

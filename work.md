@@ -1850,3 +1850,19 @@ Tiled light grid 已从“screen-space circle 的 AABB 覆盖所有候选 tiles�
 - `pbrDeferredTiledLightGridEmptyTiles=754`
 
 这说明 circle tile clip 去掉了 AABB 四角的部分无效 tile entries，同时保持 `--verify-pbr-deferred-tiled-lights` 与 heatmap consumer 都通过。`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已再次通过 14 个 PBR verification mode。
+
+### 2026-05-21 PBR Deferred Tiled Light Flat Index Builder
+
+Tiled light grid 的 CPU builder 已从 `std::vector<std::vector<int>> tileLightLists` 改为 flat entry + prefix offset 构建：
+
+- 第一阶段收集 `{ tileIndex, lightIndex }` entries，并同步统计每个 tile 的 light count。
+- 第二阶段根据 per-tile count 生成 `tileOffsetCount` 的 prefix offset / count。
+- 第三阶段用 tile write cursor 将 entries scatter 到连续 `lightIndices` buffer。
+- GPU 侧 SSBO layout 不变：tile buffer 仍是 binding `4`，index buffer 仍是 binding `5`。
+
+这一步不改变 tiled lighting 结果，目标是减少每帧 `tileCount` 个小 vector 的容器开销，让 CPU builder 的数据布局更接近后续 GPU compute / clustered culling 需要的 flat buffer 模型。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，focused tiled 输出保持 `pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridOccupiedTiles=2846/3600`、`pbrDeferredTiledLightGridEmptyTiles=754`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：14 个 PBR verification mode 全部通过。
