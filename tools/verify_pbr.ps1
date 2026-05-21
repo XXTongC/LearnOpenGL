@@ -2,6 +2,7 @@ param(
     [string]$Configuration = "Debug",
     [string]$Platform = "x64",
     [switch]$SkipBuild,
+    [switch]$DiscardCaptures,
     [string[]]$Modes = @()
 )
 
@@ -25,6 +26,7 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-material-ibl"; Argument = "--verify-pbr-deferred-material-ibl"; Capture = "out/pbr_deferred_material_ibl_verification.ppm" },
     [pscustomobject]@{ Name = "deferred-alpha-mask"; Argument = "--verify-pbr-deferred-alpha-mask"; Capture = "out/pbr_deferred_alpha_mask_verification.ppm" },
     [pscustomobject]@{ Name = "deferred-tiled-lights"; Argument = "--verify-pbr-deferred-tiled-lights"; Capture = "out/pbr_deferred_tiled_lights_verification.ppm"; ExpectTiledCulling = $true },
+    [pscustomobject]@{ Name = "deferred-tiled-heatmap"; Argument = "--verify-pbr-deferred-tiled-heatmap"; Capture = "out/pbr_deferred_tiled_heatmap_verification.ppm"; ExpectTiledCulling = $true; ExpectTiledHeatmap = $true },
     [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" }
 )
 
@@ -206,6 +208,7 @@ $summaryLines.Add("Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")
 $summaryLines.Add("Repository: $repoRoot")
 $summaryLines.Add("Configuration: $Configuration")
 $summaryLines.Add("Platform: $Platform")
+$summaryLines.Add("DiscardCaptures: $($DiscardCaptures.IsPresent)")
 $summaryLines.Add("")
 
 if (!$SkipBuild) {
@@ -248,6 +251,9 @@ foreach ($mode in $selectedModes) {
 
     $output | Set-Content -Path $logPath -Encoding UTF8
     $stats = Get-PpmStats -Path $capturePath
+    if ($DiscardCaptures -and (Test-Path $capturePath)) {
+        Remove-Item -Path $capturePath -Force
+    }
     $rendererLine = ($output | Where-Object { $_ -match "PBR verification renderer stats:" } | Select-Object -Last 1)
     $sceneLine = ($output | Where-Object { $_ -match "PBR verification scene stats:" } | Select-Object -Last 1)
 
@@ -281,6 +287,9 @@ foreach ($mode in $selectedModes) {
             $rows = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridSize=(\d+)x(\d+)" -Group 2
             $indices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridIndices=(\d+)" -Group 1
             $pointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredLightBufferPointLights=(\d+)/" -Group 1
+            if ($null -eq $pointLights -or [int]$pointLights -le 0) {
+                $pointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridMaxTileLights=(\d+)" -Group 1
+            }
             if ($null -eq $columns -or $null -eq $rows -or $null -eq $indices -or $null -eq $pointLights) {
                 $failures.Add("$($mode.Name): tiled culling stats were incomplete")
             }
@@ -293,6 +302,14 @@ foreach ($mode in $selectedModes) {
                     $failures.Add("$($mode.Name): tiled light grid did not reduce the global point-light loop ($indices >= $fullGlobalLoopIndexCount)")
                 }
             }
+        }
+    }
+    if ($mode.PSObject.Properties.Name -contains "ExpectTiledHeatmap" -and $mode.ExpectTiledHeatmap) {
+        if (!$rendererLine) {
+            $failures.Add("$($mode.Name): missing renderer stats")
+        }
+        elseif ($rendererLine -notmatch "pbrDeferredTiledLightDebugDrawCalls=1") {
+            $failures.Add("$($mode.Name): tiled light heatmap debug pass did not draw")
         }
     }
 }

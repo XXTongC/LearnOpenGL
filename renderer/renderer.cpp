@@ -151,6 +151,7 @@ void Renderer::render(
 		&mPbrDepthPrepass,
 		&mPbrGBufferPass,
 		&mPbrDeferredLightingPass,
+		&mPbrDeferredTiledLightDebugPass,
 		&mPbrGBufferDebugPass,
 		&mPbrSceneRenderPass,
 		&mIblDebugPass,

@@ -22,6 +22,8 @@ namespace GLframework
 		float pbrDeferredIblSpecularStrength{ 1.0f };
 		bool pbrDeferredTiledLightsEnabled{ true };
 		int pbrDeferredTileSize{ 16 };
+		int pbrDeferredTiledLightDebugMaxLights{ 2 };
+		float pbrDeferredTiledLightDebugIntensity{ 1.0f };
 		int iblDebugMode{ 0 };
 		float iblDebugMipLevel{ 0.0f };
 		float iblDebugIntensity{ 1.0f };

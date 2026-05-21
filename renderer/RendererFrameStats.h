@@ -45,6 +45,7 @@ namespace GLframework
 		int pbrDeferredTiledLightGridTileCount{ 0 };
 		int pbrDeferredTiledLightGridIndexCount{ 0 };
 		int pbrDeferredTiledLightGridMaxTileLights{ 0 };
+		int pbrDeferredTiledLightDebugDrawCalls{ 0 };
 		int pbrGBufferDebugDrawCalls{ 0 };
 		int legacySceneDrawCalls{ 0 };
 		int legacyTransparentDrawCalls{ 0 };

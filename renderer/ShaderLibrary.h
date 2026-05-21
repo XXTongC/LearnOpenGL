@@ -22,6 +22,7 @@ namespace GLframework
 		std::shared_ptr<Shader> getIblDebugShader() const;
 		std::shared_ptr<Shader> getPbrGBufferShader() const;
 		std::shared_ptr<Shader> getPbrDeferredLightingShader() const;
+		std::shared_ptr<Shader> getPbrDeferredTiledLightDebugShader() const;
 		std::shared_ptr<Shader> getPbrGBufferDebugShader() const;
 		std::shared_ptr<Shader> getPbrAlphaShadowShader() const;
 		std::shared_ptr<Shader> getPbrAlphaPointShadowShader() const;
@@ -39,6 +40,7 @@ namespace GLframework
 		std::shared_ptr<Shader> mIblDebugShader{ nullptr };
 		std::shared_ptr<Shader> mPbrGBufferShader{ nullptr };
 		std::shared_ptr<Shader> mPbrDeferredLightingShader{ nullptr };
+		std::shared_ptr<Shader> mPbrDeferredTiledLightDebugShader{ nullptr };
 		std::shared_ptr<Shader> mPbrGBufferDebugShader{ nullptr };
 		std::shared_ptr<Shader> mPbrAlphaShadowShader{ nullptr };
 		std::shared_ptr<Shader> mPbrAlphaPointShadowShader{ nullptr };

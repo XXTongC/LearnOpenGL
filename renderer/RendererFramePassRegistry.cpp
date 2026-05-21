@@ -9,8 +9,10 @@
 #include "MaterialBindingContext.h"
 #include "PBRDepthPrepass.h"
 #include "PBRDeferredLightingPass.h"
+#include "PBRDeferredTiledLightDebugPass.h"
 #include "PBRGBufferDebugPass.h"
 #include "PBRGBufferPass.h"
+#include "PBRGBufferRenderTargets.h"
 #include "PBRSceneRenderPass.h"
 #include "PBRShadowAtlasRenderPass.h"
 #include "PBRShadowAtlasRenderTargets.h"
@@ -57,6 +59,7 @@ namespace
 		static const std::vector<RendererFramePassDefinition> passes{
 			{ RendererFramePassKey::PBRGBuffer, "PBRGBuffer", "PBR GBuffer" },
 			{ RendererFramePassKey::PBRDeferredLighting, "PBRDeferredLighting", "PBR Deferred Lighting" },
+			{ RendererFramePassKey::PBRDeferredTiledLightDebug, "PBRDeferredTiledLightDebug", "PBR Deferred Tiled Light Debug" },
 			{ RendererFramePassKey::PBRGBufferDebug, "PBRGBufferDebug", "PBR GBuffer Debug" },
 			{ RendererFramePassKey::IBLDebug, "IBLDebug", "IBL Debug" }
 		};
@@ -228,6 +231,40 @@ namespace
 		context.stats->pbrDeferredTiledLightGridTileCount = std::max(context.stats->pbrDeferredTiledLightGridTileCount, stats.tiledLightGridTileCount);
 		context.stats->pbrDeferredTiledLightGridIndexCount = std::max(context.stats->pbrDeferredTiledLightGridIndexCount, stats.tiledLightGridIndexCount);
 		context.stats->pbrDeferredTiledLightGridMaxTileLights = std::max(context.stats->pbrDeferredTiledLightGridMaxTileLights, stats.tiledLightGridMaxTileLightCount);
+	}
+
+	void accumulateTiledLightGridStats(RendererFrameContext& context, const PBRDeferredTiledLightGridStats& stats)
+	{
+		if (!context.stats)
+		{
+			return;
+		}
+
+		context.stats->pbrDeferredTiledLightGridBound = context.stats->pbrDeferredTiledLightGridBound || stats.bound;
+		context.stats->pbrDeferredTiledLightGridTileSize = std::max(context.stats->pbrDeferredTiledLightGridTileSize, stats.tileSize);
+		context.stats->pbrDeferredTiledLightGridColumns = std::max(context.stats->pbrDeferredTiledLightGridColumns, stats.tileColumns);
+		context.stats->pbrDeferredTiledLightGridRows = std::max(context.stats->pbrDeferredTiledLightGridRows, stats.tileRows);
+		context.stats->pbrDeferredTiledLightGridTileCount = std::max(context.stats->pbrDeferredTiledLightGridTileCount, stats.tileCount);
+		context.stats->pbrDeferredTiledLightGridIndexCount = std::max(context.stats->pbrDeferredTiledLightGridIndexCount, stats.lightIndexCount);
+		context.stats->pbrDeferredTiledLightGridMaxTileLights = std::max(context.stats->pbrDeferredTiledLightGridMaxTileLights, stats.maxTileLightCount);
+	}
+
+	void renderPBRDeferredTiledLightDebug(RendererFrameContext& context)
+	{
+		if (!context.pbrDeferredTiledLightDebugPass || !context.pbrGBufferTargets || !context.framePassProfile || !context.shaderLibrary || !context.stats)
+		{
+			return;
+		}
+
+		const auto stats = context.pbrDeferredTiledLightDebugPass->render(
+			createMaterialBindingContext(context),
+			*context.framePassProfile,
+			*context.shaderLibrary,
+			context.pbrGBufferTargets->getWidth(),
+			context.pbrGBufferTargets->getHeight()
+		);
+		context.stats->pbrDeferredTiledLightDebugDrawCalls += stats.drawCalls;
+		accumulateTiledLightGridStats(context, stats.gridStats);
 	}
 
 	void renderPBRGBufferDebug(RendererFrameContext& context)
@@ -463,6 +500,9 @@ void RendererFramePassRegistry::executePass(const RendererFramePassDefinition& p
 		break;
 	case RendererFramePassKey::PBRDeferredLighting:
 		renderPBRDeferredLighting(context);
+		break;
+	case RendererFramePassKey::PBRDeferredTiledLightDebug:
+		renderPBRDeferredTiledLightDebug(context);
 		break;
 	case RendererFramePassKey::PBRGBufferDebug:
 		renderPBRGBufferDebug(context);

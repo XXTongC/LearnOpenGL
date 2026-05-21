@@ -15,6 +15,7 @@ namespace GL_RUNTIME
 		bool enableIblDebugPass{ false };
 		bool enablePbrGBufferPass{ false };
 		bool enablePbrDeferredLightingPass{ false };
+		bool enablePbrDeferredTiledLightDebugPass{ false };
 		bool enablePbrGBufferDebugPass{ false };
 		bool disablePbrShadowAtlasPass{ false };
 		bool enablePbrTransparentFallbackPass{ false };

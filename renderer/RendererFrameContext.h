@@ -17,6 +17,7 @@ namespace GLframework
 	class Material;
 	class PBRDepthPrepass;
 	class PBRDeferredLightingPass;
+	class PBRDeferredTiledLightDebugPass;
 	class PBRGBufferPass;
 	class PBRGBufferDebugPass;
 	class PBRGBufferRenderTargets;
@@ -50,6 +51,7 @@ namespace GLframework
 		PBRDepthPrepass* pbrDepthPrepass{ nullptr };
 		PBRGBufferPass* pbrGBufferPass{ nullptr };
 		PBRDeferredLightingPass* pbrDeferredLightingPass{ nullptr };
+		PBRDeferredTiledLightDebugPass* pbrDeferredTiledLightDebugPass{ nullptr };
 		PBRGBufferDebugPass* pbrGBufferDebugPass{ nullptr };
 		PBRSceneRenderPass* pbrSceneRenderPass{ nullptr };
 		IBLDebugPass* iblDebugPass{ nullptr };

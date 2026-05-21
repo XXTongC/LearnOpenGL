@@ -202,6 +202,7 @@
     <ClCompile Include="renderer\MeshDraw.cpp" />
     <ClCompile Include="renderer\PBRDeferredLightingPass.cpp" />
     <ClCompile Include="renderer\PBRDeferredLightBuffer.cpp" />
+    <ClCompile Include="renderer\PBRDeferredTiledLightDebugPass.cpp" />
     <ClCompile Include="renderer\PBRDeferredTiledLightGrid.cpp" />
     <ClCompile Include="renderer\PBRMaterialBinder.cpp" />
     <ClCompile Include="renderer\PBRIBLResourceBinder.cpp" />
@@ -314,6 +315,7 @@
     <ClInclude Include="renderer\MeshDraw.h" />
     <ClInclude Include="renderer\PBRDeferredLightingPass.h" />
     <ClInclude Include="renderer\PBRDeferredLightBuffer.h" />
+    <ClInclude Include="renderer\PBRDeferredTiledLightDebugPass.h" />
     <ClInclude Include="renderer\PBRDeferredTiledLightGrid.h" />
     <ClInclude Include="renderer\PBRMaterialBinder.h" />
     <ClInclude Include="renderer\PBRIBLResourceBinder.h" />
@@ -773,6 +775,8 @@
     <None Include="shaders\diagnostics\ibl_debug.vert" />
     <None Include="shaders\diagnostics\pbr_gbuffer_debug.frag" />
     <None Include="shaders\diagnostics\pbr_gbuffer_debug.vert" />
+    <None Include="shaders\diagnostics\pbr_deferred_tiled_light_debug.frag" />
+    <None Include="shaders\diagnostics\pbr_deferred_tiled_light_debug.vert" />
     <None Include="shaders\fragment.glsl" />
     <None Include="shaders\grassInstance\grassInstance.frag" />
     <None Include="shaders\grassInstance\grassInstance.vert" />

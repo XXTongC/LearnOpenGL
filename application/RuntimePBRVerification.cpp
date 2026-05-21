@@ -224,6 +224,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + PBR deferred lighting pass";
 		}
+		if (config.enablePbrDeferredTiledLightDebugPass)
+		{
+			profileLine += " + PBR tiled light heatmap pass";
+		}
 		if (config.enablePbrTransparentFallbackPass)
 		{
 			profileLine += " + transparent forward fallback";
@@ -294,6 +298,13 @@ namespace GL_RUNTIME
 			rendererPassProfile.pbrDeferredLightingIntensity = 1.0f;
 			rendererPassProfile.pbrDeferredIblDiffuseStrength = 1.0f;
 			rendererPassProfile.pbrDeferredIblSpecularStrength = 1.0f;
+		}
+		else if (config.enablePbrDeferredTiledLightDebugPass)
+		{
+			rendererPassProfile.defaultPassOrder =
+				shadowPrefix + "PBRDepthPrepass,PBRGBuffer,PBRDeferredTiledLightDebug";
+			rendererPassProfile.pbrDeferredTiledLightDebugMaxLights = 2;
+			rendererPassProfile.pbrDeferredTiledLightDebugIntensity = 1.0f;
 		}
 		else if (config.enablePbrGBufferPass || config.enablePbrGBufferDebugPass)
 		{
@@ -510,9 +521,10 @@ namespace GL_RUNTIME
 			statsLine += ", pbrGBufferSize=" + std::to_string(stats.pbrGBufferWidth)
 				+ "x" + std::to_string(stats.pbrGBufferHeight);
 		}
-		if (stats.pbrDeferredLightingDrawCalls > 0)
+		if (stats.pbrDeferredLightingDrawCalls > 0 || stats.pbrDeferredTiledLightDebugDrawCalls > 0)
 		{
 			statsLine += ", pbrDeferredLightingDrawCalls=" + std::to_string(stats.pbrDeferredLightingDrawCalls);
+			statsLine += ", pbrDeferredTiledLightDebugDrawCalls=" + std::to_string(stats.pbrDeferredTiledLightDebugDrawCalls);
 			statsLine += ", pbrDeferredCsmShadowBound=";
 			statsLine += (stats.pbrDeferredCsmShadowBound ? "yes" : "no");
 			statsLine += ", pbrDeferredCsmShadowLayers=" + std::to_string(stats.pbrDeferredCsmShadowLayers);

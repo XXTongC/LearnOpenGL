@@ -1784,3 +1784,16 @@ Tiled light grid 已新增专用验证模式，用于证明 tiled grid 不只是
 - `PBRDeferredLightBuffer` 修正 point light intensity 打包，`deferredPointLightColorIntensity.a` 现在使用 runtime `PointLight::getIntensity()`，与 tiled radius 估算和 shader lighting 语义保持一致。
 
 本轮 full verification 已通过，新增模式输出 `pbrDeferredTiledLightGridSize=80x45`、`pbrDeferredLightBufferPointLights=2/16`、`pbrDeferredTiledLightGridIndices=3311`。对比全局遍历上限 `80 * 45 * 2 = 7200`，该模式已经能验证 tiled culling 实际减少了 deferred point light index 数。
+
+### 2026-05-21 PBR Deferred Tiled Light Heatmap Debug Pass
+
+Tiled light grid 已新增可视诊断 pass，用于直接观察每个 screen tile 的 point light occupancy，而不是只依赖 verification stats：
+
+- 新增 `PBRDeferredTiledLightDebugPass`，作为独立 renderer frame pass 接入 `RendererFramePassRegistry`，pass key 为 `PBRDeferredTiledLightDebug`。
+- 新增 `shaders/diagnostics/pbr_deferred_tiled_light_debug.vert` 与 `pbr_deferred_tiled_light_debug.frag`，fullscreen debug shader 从 tiled light tile buffer SSBO binding `4` 读取每个 tile 的 light count，并输出 heatmap。
+- `RendererFramePassProfile` 新增 `pbrDeferredTiledLightDebugMaxLights` 与 `pbrDeferredTiledLightDebugIntensity`，Debug UI / profile 可调整热力图归一化上限和显示强度。
+- `RendererFrameStats`、Debug UI 和 runtime verification 输出新增 `pbrDeferredTiledLightDebugDrawCalls`，用于证明 debug pass 确实执行。
+- 新增 `--verify-pbr-deferred-tiled-heatmap`，验证场景会走 `PBRDepthPrepass,PBRGBuffer,PBRDeferredTiledLightDebug`，用 heatmap capture 验证 tile list 可被独立 debug consumer 使用。
+- `tools/verify_pbr.ps1` 默认 PBR 回归从 13 个模式扩展为 14 个模式，并新增 `-DiscardCaptures`，可以在低磁盘空间下解析 PPM 后立即删除 capture，只保留 summary / log。
+
+本轮 full verification 已通过，新增 heatmap 模式输出 `pbrDeferredTiledLightDebugDrawCalls=1`、`pbrDeferredTiledLightGridSize=80x45`、`pbrDeferredTiledLightGridIndices=3311`、非黑比例 `100%`、RGB 均值约 `185.09 / 173.14 / 87.33`。这说明 tiled light grid 不仅能服务 deferred lighting，也能被独立诊断 pass 消费，后续可用它继续收紧 CPU bounds 或迁移 clustered / GPU culling。
