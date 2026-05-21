@@ -302,20 +302,32 @@ foreach ($mode in $selectedModes) {
             $columns = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridSize=(\d+)x(\d+)" -Group 1
             $rows = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridSize=(\d+)x(\d+)" -Group 2
             $indices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridIndices=(\d+)" -Group 1
+            $occupiedTiles = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridOccupiedTiles=(\d+)/(\d+)" -Group 1
+            $reportedTileCount = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridOccupiedTiles=(\d+)/(\d+)" -Group 2
             $pointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredLightBufferPointLights=(\d+)/" -Group 1
             if ($null -eq $pointLights -or [int]$pointLights -le 0) {
                 $pointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridMaxTileLights=(\d+)" -Group 1
             }
-            if ($null -eq $columns -or $null -eq $rows -or $null -eq $indices -or $null -eq $pointLights) {
+            if ($null -eq $columns -or $null -eq $rows -or $null -eq $indices -or $null -eq $occupiedTiles -or $null -eq $reportedTileCount -or $null -eq $pointLights) {
                 $failures.Add("$($mode.Name): tiled culling stats were incomplete")
             }
             else {
                 $fullGlobalLoopIndexCount = [int]$columns * [int]$rows * [int]$pointLights
+                $tileCount = [int]$columns * [int]$rows
                 if ([int]$indices -le 0) {
                     $failures.Add("$($mode.Name): tiled light grid produced no light indices")
                 }
                 if ([int]$indices -ge $fullGlobalLoopIndexCount) {
                     $failures.Add("$($mode.Name): tiled light grid did not reduce the global point-light loop ($indices >= $fullGlobalLoopIndexCount)")
+                }
+                if ([int]$reportedTileCount -ne $tileCount) {
+                    $failures.Add("$($mode.Name): reported tile count did not match grid dimensions ($reportedTileCount != $tileCount)")
+                }
+                if ([int]$occupiedTiles -le 0) {
+                    $failures.Add("$($mode.Name): tiled light grid reported no occupied tiles")
+                }
+                if ([int]$occupiedTiles -ge $tileCount) {
+                    $failures.Add("$($mode.Name): tiled light grid occupied every tile ($occupiedTiles >= $tileCount)")
                 }
             }
         }

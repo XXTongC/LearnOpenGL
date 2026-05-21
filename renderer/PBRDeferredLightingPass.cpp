@@ -125,6 +125,8 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 		stats.tiledLightGridRows = tiledStats.tileRows;
 		stats.tiledLightGridTileCount = tiledStats.tileCount;
 		stats.tiledLightGridIndexCount = tiledStats.lightIndexCount;
+		stats.tiledLightGridOccupiedTileCount = tiledStats.occupiedTileCount;
+		stats.tiledLightGridEmptyTileCount = tiledStats.emptyTileCount;
 		stats.tiledLightGridMaxTileLightCount = tiledStats.maxTileLightCount;
 		shader->setInt("useTiledPointLights", tiledStats.bound ? 1 : 0);
 		shader->setInt("tiledLightTileSize", tiledStats.tileSize);

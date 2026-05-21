@@ -13,6 +13,8 @@ namespace GLframework
 		int tileRows{ 0 };
 		int tileCount{ 0 };
 		int lightIndexCount{ 0 };
+		int occupiedTileCount{ 0 };
+		int emptyTileCount{ 0 };
 		int maxTileLightCount{ 0 };
 		unsigned int tileBufferBindingPoint{ 0 };
 		unsigned int indexBufferBindingPoint{ 0 };

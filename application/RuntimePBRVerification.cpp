@@ -543,6 +543,9 @@ namespace GL_RUNTIME
 				+ "x" + std::to_string(stats.pbrDeferredTiledLightGridRows);
 			statsLine += ", pbrDeferredTiledLightGridTileSize=" + std::to_string(stats.pbrDeferredTiledLightGridTileSize);
 			statsLine += ", pbrDeferredTiledLightGridIndices=" + std::to_string(stats.pbrDeferredTiledLightGridIndexCount);
+			statsLine += ", pbrDeferredTiledLightGridOccupiedTiles=" + std::to_string(stats.pbrDeferredTiledLightGridOccupiedTiles);
+			statsLine += "/" + std::to_string(stats.pbrDeferredTiledLightGridTileCount);
+			statsLine += ", pbrDeferredTiledLightGridEmptyTiles=" + std::to_string(stats.pbrDeferredTiledLightGridEmptyTiles);
 			statsLine += ", pbrDeferredTiledLightGridMaxTileLights=" + std::to_string(stats.pbrDeferredTiledLightGridMaxTileLights);
 		}
 		if (stats.pbrGBufferDebugDrawCalls > 0)

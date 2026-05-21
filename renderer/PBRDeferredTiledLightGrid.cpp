@@ -235,6 +235,14 @@ PBRDeferredTiledLightGridStats PBRDeferredTiledLightGrid::bind(
 			0
 		);
 		stats.maxTileLightCount = std::max(stats.maxTileLightCount, static_cast<int>(list.size()));
+		if (list.empty())
+		{
+			++stats.emptyTileCount;
+		}
+		else
+		{
+			++stats.occupiedTileCount;
+		}
 		lightIndices.insert(lightIndices.end(), list.begin(), list.end());
 	}
 

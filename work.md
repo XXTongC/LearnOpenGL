@@ -1813,3 +1813,18 @@ Tiled light grid 的 screen-space bounds 估算已从“单侧采样 + 64px 最�
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，tiled culling 验证通过。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：14 个 PBR verification mode 全部通过。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures -Modes deferred-tiled-lights,deferred-tiled-heatmap`：逗号分隔 `-Modes` 解析验证通过。
+
+### 2026-05-21 PBR Deferred Tiled Light Occupancy Stats
+
+Tiled light grid 诊断已从“index count + max per tile”扩展为“tile occupancy”：
+
+- `PBRDeferredTiledLightGridStats` 新增 `occupiedTileCount` 与 `emptyTileCount`。
+- `RendererFrameStats`、Debug UI 和 runtime verification 输出新增 `pbrDeferredTiledLightGridOccupiedTiles=<occupied>/<total>` 与 `pbrDeferredTiledLightGridEmptyTiles=<empty>`。
+- `tools/verify_pbr.ps1` 的 tiled culling 断言新增 occupancy 校验：occupied 必须大于 `0`，且必须小于 tile 总数；reported tile count 必须与 `columns * rows` 一致。
+
+本轮验证结果给出了更明确的 bounds 质量基线：
+
+- 普通 deferred 场景：`pbrDeferredTiledLightGridOccupiedTiles=3600/3600`，说明默认两个点光仍覆盖全屏 tiles。
+- sparse tiled 场景：`pbrDeferredTiledLightGridIndices=3311`、`pbrDeferredTiledLightGridOccupiedTiles=3119/3600`、`pbrDeferredTiledLightGridEmptyTiles=481`，说明专用 culling 场景不仅减少了 index loop，也确实存在空 tiles。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，focused tiled occupancy 断言通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：14 个 PBR verification mode 全部通过。
