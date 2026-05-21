@@ -2060,3 +2060,7 @@
   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Texture Set Verification Probe` 技术记录。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes texture-set`，`Debug|x64` 构建通过，输出 `pbrTexturedMeshes=1`、`pbrMeshes=26`、`pbrDrawCalls=26`、capture 非黑比例 `99.9951%`。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，18 个 PBR verification mode 全部通过。
+- 完成第一百六十二轮桌面重构报告同步：
+  - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，把报告同步到最新提交 `513f663 Verify PBR texture set probe`。
+  - 报告中将默认 PBR verification 状态更新为 18 个模式，并补充 `texture-set` probe、`pbrTexturedMeshes=1`、`pbrDrawCalls=26` 和 capture 非黑比例 `99.9951%`。
+  - 报告中已删除 `PBRDeferredTiledLightGridConfig` 仍未提交的过期说明，当前工作区只保留未提交的 `imgui.ini` 运行时布局状态。
