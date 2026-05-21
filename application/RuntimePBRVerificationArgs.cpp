@@ -4,6 +4,60 @@
 
 namespace
 {
+	enum PbrVerificationModeOption : unsigned int
+	{
+		OptionNone = 0u,
+		OptionIblDebugPass = 1u << 0,
+		OptionPbrGBufferPass = 1u << 1,
+		OptionPbrDeferredLightingPass = 1u << 2,
+		OptionPbrDeferredTiledLightDebugPass = 1u << 3,
+		OptionPbrGBufferDebugPass = 1u << 4,
+		OptionDisablePbrShadowAtlasPass = 1u << 5,
+		OptionPbrTransparentFallbackPass = 1u << 6,
+		OptionPbrEmissiveProbe = 1u << 7,
+		OptionPbrMaterialIblProbe = 1u << 8,
+		OptionPbrAlphaMaskProbe = 1u << 9,
+		OptionPbrImportedAssetProbe = 1u << 10,
+		OptionPbrTextureSetProbe = 1u << 11,
+		OptionPbrTiledLightProbe = 1u << 12,
+		OptionDisablePbrDeferredTiledLights = 1u << 13
+	};
+
+	struct PbrVerificationModeDescriptor
+	{
+		const char* argument{ nullptr };
+		const char* capturePath{ nullptr };
+		unsigned int options{ OptionNone };
+		int tileSizeOverride{ 0 };
+		float tiledLightCutoffOverride{ 0.0f };
+	};
+
+	constexpr unsigned int kDeferredPbrOptions =
+		OptionPbrGBufferPass
+		| OptionPbrDeferredLightingPass;
+
+	constexpr PbrVerificationModeDescriptor kPbrVerificationModes[] = {
+		{ "--verify-pbr", nullptr, OptionNone },
+		{ "--verify-pbr-no-atlas", nullptr, OptionDisablePbrShadowAtlasPass },
+		{ "--verify-pbr-ibl-debug", "out/pbr_ibl_debug_verification.ppm", OptionIblDebugPass },
+		{ "--verify-pbr-gbuffer", "out/pbr_gbuffer_verification.ppm", OptionPbrGBufferPass },
+		{ "--verify-pbr-gbuffer-debug", "out/pbr_gbuffer_debug_verification.ppm", OptionPbrGBufferPass | OptionPbrGBufferDebugPass },
+		{ "--verify-pbr-deferred", "out/pbr_deferred_verification.ppm", kDeferredPbrOptions },
+		{ "--verify-pbr-deferred-no-atlas", "out/pbr_deferred_no_atlas_verification.ppm", kDeferredPbrOptions | OptionDisablePbrShadowAtlasPass },
+		{ "--verify-pbr-deferred-transparent", "out/pbr_deferred_transparent_verification.ppm", kDeferredPbrOptions | OptionPbrTransparentFallbackPass },
+		{ "--verify-pbr-deferred-emissive", "out/pbr_deferred_emissive_verification.ppm", kDeferredPbrOptions | OptionPbrEmissiveProbe },
+		{ "--verify-pbr-deferred-material-ibl", "out/pbr_deferred_material_ibl_verification.ppm", kDeferredPbrOptions | OptionPbrMaterialIblProbe },
+		{ "--verify-pbr-deferred-alpha-mask", "out/pbr_deferred_alpha_mask_verification.ppm", kDeferredPbrOptions | OptionPbrAlphaMaskProbe },
+		{ "--verify-pbr-deferred-untiled-lights", "out/pbr_deferred_untiled_lights_verification.ppm", kDeferredPbrOptions | OptionPbrTiledLightProbe | OptionDisablePbrDeferredTiledLights },
+		{ "--verify-pbr-deferred-tiled-lights", "out/pbr_deferred_tiled_lights_verification.ppm", kDeferredPbrOptions | OptionPbrTiledLightProbe },
+		{ "--verify-pbr-deferred-tiled-lights-32", "out/pbr_deferred_tiled_lights_32_verification.ppm", kDeferredPbrOptions | OptionPbrTiledLightProbe, 32 },
+		{ "--verify-pbr-deferred-tiled-lights-cutoff-005", "out/pbr_deferred_tiled_lights_cutoff_005_verification.ppm", kDeferredPbrOptions | OptionPbrTiledLightProbe, 0, 0.05f },
+		{ "--verify-pbr-deferred-tiled-heatmap", "out/pbr_deferred_tiled_heatmap_verification.ppm", OptionPbrGBufferPass | OptionPbrDeferredTiledLightDebugPass | OptionPbrTiledLightProbe },
+		{ "--verify-pbr-import", "out/pbr_import_verification.ppm", OptionPbrImportedAssetProbe },
+		{ "--verify-pbr-texture-set", "out/pbr_texture_set_verification.ppm", OptionPbrTextureSetProbe },
+		{ "--verify-pbr-deferred-texture-set", "out/pbr_deferred_texture_set_verification.ppm", kDeferredPbrOptions | OptionPbrTextureSetProbe }
+	};
+
 	bool hasArgument(int argc, char** argv, const std::string& expected)
 	{
 		for (int index = 1; index < argc; ++index)
@@ -17,87 +71,12 @@ namespace
 		return false;
 	}
 
-	struct PbrVerificationArgs
+	bool hasOption(unsigned int options, PbrVerificationModeOption option)
 	{
-		bool forward{ false };
-		bool iblDebug{ false };
-		bool gbuffer{ false };
-		bool gbufferDebug{ false };
-		bool deferred{ false };
-		bool deferredNoAtlas{ false };
-		bool deferredTransparent{ false };
-		bool deferredEmissive{ false };
-		bool deferredMaterialIbl{ false };
-		bool deferredAlphaMask{ false };
-		bool deferredUntiledLights{ false };
-		bool deferredTiledLights{ false };
-		bool deferredTiledLights32{ false };
-		bool deferredTiledLightsCutoff005{ false };
-		bool deferredTiledHeatmap{ false };
-		bool importAsset{ false };
-		bool textureSet{ false };
-		bool deferredTextureSet{ false };
-		bool forwardNoAtlas{ false };
-
-		bool any() const
-		{
-			return forward
-				|| iblDebug
-				|| gbuffer
-				|| gbufferDebug
-				|| deferred
-				|| deferredNoAtlas
-				|| deferredTransparent
-				|| deferredEmissive
-				|| deferredMaterialIbl
-				|| deferredAlphaMask
-				|| deferredUntiledLights
-				|| deferredTiledLights
-				|| deferredTiledLights32
-				|| deferredTiledLightsCutoff005
-				|| deferredTiledHeatmap
-				|| importAsset
-				|| textureSet
-				|| deferredTextureSet
-				|| forwardNoAtlas;
-		}
-	};
-
-	PbrVerificationArgs parsePbrVerificationArgs(int argc, char** argv)
-	{
-		return PbrVerificationArgs{
-			hasArgument(argc, argv, "--verify-pbr"),
-			hasArgument(argc, argv, "--verify-pbr-ibl-debug"),
-			hasArgument(argc, argv, "--verify-pbr-gbuffer"),
-			hasArgument(argc, argv, "--verify-pbr-gbuffer-debug"),
-			hasArgument(argc, argv, "--verify-pbr-deferred"),
-			hasArgument(argc, argv, "--verify-pbr-deferred-no-atlas"),
-			hasArgument(argc, argv, "--verify-pbr-deferred-transparent"),
-			hasArgument(argc, argv, "--verify-pbr-deferred-emissive"),
-			hasArgument(argc, argv, "--verify-pbr-deferred-material-ibl"),
-			hasArgument(argc, argv, "--verify-pbr-deferred-alpha-mask"),
-			hasArgument(argc, argv, "--verify-pbr-deferred-untiled-lights"),
-			hasArgument(argc, argv, "--verify-pbr-deferred-tiled-lights"),
-			hasArgument(argc, argv, "--verify-pbr-deferred-tiled-lights-32"),
-			hasArgument(argc, argv, "--verify-pbr-deferred-tiled-lights-cutoff-005"),
-			hasArgument(argc, argv, "--verify-pbr-deferred-tiled-heatmap"),
-			hasArgument(argc, argv, "--verify-pbr-import"),
-			hasArgument(argc, argv, "--verify-pbr-texture-set"),
-			hasArgument(argc, argv, "--verify-pbr-deferred-texture-set"),
-			hasArgument(argc, argv, "--verify-pbr-no-atlas")
-		};
+		return (options & option) != 0u;
 	}
 
-	void enableDeferredVerification(GL_RUNTIME::RuntimeApplicationShellConfig& config)
-	{
-		config.pbrVerification.enablePbrGBufferPass = true;
-		config.pbrVerification.enablePbrDeferredLightingPass = true;
-	}
-
-	void applyPbrVerificationDefaults(
-		GL_RUNTIME::RuntimeApplicationShellConfig& config,
-		const PbrVerificationArgs& args
-	)
+	void applyPbrVerificationDefaults(GL_RUNTIME::RuntimeApplicationShellConfig& config)
 	{
 		config.window = { 1280, 720 };
 		config.enableGui = false;
@@ -105,141 +84,74 @@ namespace
 		config.pbrVerification.maxFrames = 3;
 		config.pbrVerification.captureFrame = 2;
 		config.pbrVerification.capturePath = "out/pbr_verification.ppm";
-		config.pbrVerification.disablePbrShadowAtlasPass = args.forwardNoAtlas || args.deferredNoAtlas;
-		config.pbrVerification.enablePbrTransparentFallbackPass = args.deferredTransparent;
-		config.pbrVerification.enablePbrEmissiveProbe = args.deferredEmissive;
-		config.pbrVerification.enablePbrMaterialIblProbe = args.deferredMaterialIbl;
-		config.pbrVerification.enablePbrAlphaMaskProbe = args.deferredAlphaMask;
-		config.pbrVerification.enablePbrTiledLightProbe =
-			args.deferredUntiledLights
-			|| args.deferredTiledLights
-			|| args.deferredTiledLights32
-			|| args.deferredTiledLightsCutoff005;
-		config.pbrVerification.enablePbrDeferredTiledLightDebugPass = args.deferredTiledHeatmap;
-		config.pbrVerification.enablePbrImportedAssetProbe = args.importAsset;
-		config.pbrVerification.enablePbrTextureSetProbe = args.textureSet || args.deferredTextureSet;
-		config.pbrVerification.disablePbrDeferredTiledLights = args.deferredUntiledLights;
-	}
-
-	void applyPbrVerificationOverrides(
-		GL_RUNTIME::RuntimeApplicationShellConfig& config,
-		const PbrVerificationArgs& args
-	)
-	{
-		if (args.deferredTiledLights32)
-		{
-			config.pbrVerification.pbrDeferredTileSizeOverride = 32;
-		}
-		if (args.deferredTiledLightsCutoff005)
-		{
-			config.pbrVerification.pbrDeferredTiledLightCutoffOverride = 0.05f;
-		}
 	}
 
 	void applyPbrVerificationMode(
 		GL_RUNTIME::RuntimeApplicationShellConfig& config,
-		const PbrVerificationArgs& args
+		const PbrVerificationModeDescriptor& mode
 	)
 	{
-		if (args.iblDebug)
+		auto& verification = config.pbrVerification;
+		if (mode.capturePath != nullptr)
 		{
-			config.pbrVerification.enableIblDebugPass = true;
-			config.pbrVerification.capturePath = "out/pbr_ibl_debug_verification.ppm";
+			verification.capturePath = mode.capturePath;
 		}
-		if (args.gbuffer)
+
+		verification.enableIblDebugPass |= hasOption(mode.options, OptionIblDebugPass);
+		verification.enablePbrGBufferPass |= hasOption(mode.options, OptionPbrGBufferPass);
+		verification.enablePbrDeferredLightingPass |= hasOption(mode.options, OptionPbrDeferredLightingPass);
+		verification.enablePbrDeferredTiledLightDebugPass |= hasOption(mode.options, OptionPbrDeferredTiledLightDebugPass);
+		verification.enablePbrGBufferDebugPass |= hasOption(mode.options, OptionPbrGBufferDebugPass);
+		verification.disablePbrShadowAtlasPass |= hasOption(mode.options, OptionDisablePbrShadowAtlasPass);
+		verification.enablePbrTransparentFallbackPass |= hasOption(mode.options, OptionPbrTransparentFallbackPass);
+		verification.enablePbrEmissiveProbe |= hasOption(mode.options, OptionPbrEmissiveProbe);
+		verification.enablePbrMaterialIblProbe |= hasOption(mode.options, OptionPbrMaterialIblProbe);
+		verification.enablePbrAlphaMaskProbe |= hasOption(mode.options, OptionPbrAlphaMaskProbe);
+		verification.enablePbrImportedAssetProbe |= hasOption(mode.options, OptionPbrImportedAssetProbe);
+		verification.enablePbrTextureSetProbe |= hasOption(mode.options, OptionPbrTextureSetProbe);
+		verification.enablePbrTiledLightProbe |= hasOption(mode.options, OptionPbrTiledLightProbe);
+		verification.disablePbrDeferredTiledLights |= hasOption(mode.options, OptionDisablePbrDeferredTiledLights);
+
+		if (mode.tileSizeOverride > 0)
 		{
-			config.pbrVerification.enablePbrGBufferPass = true;
-			config.pbrVerification.capturePath = "out/pbr_gbuffer_verification.ppm";
+			verification.pbrDeferredTileSizeOverride = mode.tileSizeOverride;
 		}
-		if (args.gbufferDebug)
+		if (mode.tiledLightCutoffOverride > 0.0f)
 		{
-			config.pbrVerification.enablePbrGBufferPass = true;
-			config.pbrVerification.enablePbrGBufferDebugPass = true;
-			config.pbrVerification.capturePath = "out/pbr_gbuffer_debug_verification.ppm";
+			verification.pbrDeferredTiledLightCutoffOverride = mode.tiledLightCutoffOverride;
 		}
-		if (args.deferred)
+	}
+
+	bool applyRequestedPbrVerificationModes(
+		GL_RUNTIME::RuntimeApplicationShellConfig& config,
+		int argc,
+		char** argv
+	)
+	{
+		bool foundPbrVerificationMode = false;
+		for (const auto& mode : kPbrVerificationModes)
 		{
-			enableDeferredVerification(config);
-			config.pbrVerification.capturePath = "out/pbr_deferred_verification.ppm";
+			if (!hasArgument(argc, argv, mode.argument))
+			{
+				continue;
+			}
+
+			if (!foundPbrVerificationMode)
+			{
+				applyPbrVerificationDefaults(config);
+				foundPbrVerificationMode = true;
+			}
+
+			applyPbrVerificationMode(config, mode);
 		}
-		if (args.deferredNoAtlas)
-		{
-			enableDeferredVerification(config);
-			config.pbrVerification.capturePath = "out/pbr_deferred_no_atlas_verification.ppm";
-		}
-		if (args.deferredTransparent)
-		{
-			enableDeferredVerification(config);
-			config.pbrVerification.capturePath = "out/pbr_deferred_transparent_verification.ppm";
-		}
-		if (args.deferredEmissive)
-		{
-			enableDeferredVerification(config);
-			config.pbrVerification.capturePath = "out/pbr_deferred_emissive_verification.ppm";
-		}
-		if (args.deferredMaterialIbl)
-		{
-			enableDeferredVerification(config);
-			config.pbrVerification.capturePath = "out/pbr_deferred_material_ibl_verification.ppm";
-		}
-		if (args.deferredAlphaMask)
-		{
-			enableDeferredVerification(config);
-			config.pbrVerification.capturePath = "out/pbr_deferred_alpha_mask_verification.ppm";
-		}
-		if (args.deferredUntiledLights)
-		{
-			enableDeferredVerification(config);
-			config.pbrVerification.capturePath = "out/pbr_deferred_untiled_lights_verification.ppm";
-		}
-		if (args.deferredTiledLights)
-		{
-			enableDeferredVerification(config);
-			config.pbrVerification.capturePath = "out/pbr_deferred_tiled_lights_verification.ppm";
-		}
-		if (args.deferredTiledLights32)
-		{
-			enableDeferredVerification(config);
-			config.pbrVerification.capturePath = "out/pbr_deferred_tiled_lights_32_verification.ppm";
-		}
-		if (args.deferredTiledLightsCutoff005)
-		{
-			enableDeferredVerification(config);
-			config.pbrVerification.capturePath = "out/pbr_deferred_tiled_lights_cutoff_005_verification.ppm";
-		}
-		if (args.deferredTiledHeatmap)
-		{
-			config.pbrVerification.enablePbrGBufferPass = true;
-			config.pbrVerification.enablePbrTiledLightProbe = true;
-			config.pbrVerification.capturePath = "out/pbr_deferred_tiled_heatmap_verification.ppm";
-		}
-		if (args.importAsset)
-		{
-			config.pbrVerification.capturePath = "out/pbr_import_verification.ppm";
-		}
-		if (args.textureSet)
-		{
-			config.pbrVerification.capturePath = "out/pbr_texture_set_verification.ppm";
-		}
-		if (args.deferredTextureSet)
-		{
-			enableDeferredVerification(config);
-			config.pbrVerification.capturePath = "out/pbr_deferred_texture_set_verification.ppm";
-		}
+
+		return foundPbrVerificationMode;
 	}
 }
 
 GL_RUNTIME::RuntimeApplicationShellConfig GL_RUNTIME::makeShellConfigFromArguments(int argc, char** argv)
 {
 	RuntimeApplicationShellConfig config{};
-	const auto pbrArgs = parsePbrVerificationArgs(argc, argv);
-	if (!pbrArgs.any())
-	{
-		return config;
-	}
-
-	applyPbrVerificationDefaults(config, pbrArgs);
-	applyPbrVerificationOverrides(config, pbrArgs);
-	applyPbrVerificationMode(config, pbrArgs);
+	applyRequestedPbrVerificationModes(config, argc, argv);
 	return config;
 }

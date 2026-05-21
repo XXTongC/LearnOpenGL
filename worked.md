@@ -2087,3 +2087,9 @@
 - 完成第一百六十七轮 argument split 提交与报告同步：
   - 已提交并推送 `c66225d Split PBR verification argument parsing` 到 `github/codex/text2-refactor`，提交包含 `RuntimePBRVerificationArgs`、瘦身后的 `main.cpp`、VS 工程文件和对应工作记录。
   - 已同步 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送提交更新为 `c66225d Split PBR verification argument parsing`，并把 `RuntimePBRVerificationArgs` 从“本地未提交”改为“已提交并推送”。
+- 完成第一百六十八轮 PBR verification mode descriptor table：
+  - 更新 [application\RuntimePBRVerificationArgs.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerificationArgs.cpp)，把 19 个 PBR verification bool flag 和长串 mode-specific `if` 收敛为 `PbrVerificationModeDescriptor` 表。
+  - 每个 `--verify-pbr-*` mode 现在集中声明 argument、capture path、pass/probe option bit、tile size override 和 tiled light cutoff override；`makeShellConfigFromArguments(...)` 只负责遍历 descriptor 并合并命中的 mode 行为。
+  - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Verification Mode Descriptor Table` 技术记录。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights-cutoff-005`，`Debug|x64` 构建通过，输出 `pbrDeferredTiledLightGridCutoff=0.050000`、`pbrDeferredTiledLightGridIndices=714`、`pbrDeferredTiledLightGridCulledIndices=6486`。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 19 个 verification mode 全部通过。

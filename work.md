@@ -2027,3 +2027,17 @@ Texture-set probe 已从 forward PBR 验证扩展到 deferred PBR 路径：
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-texture-set`：构建通过，确认 `RuntimePBRVerificationArgs.cpp` 已参与编译；输出保持 `pbrTexturedMeshes=1`、`pbrGBufferDrawCalls=26`、`pbrDeferredLightingDrawCalls=1`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 19 个 verification mode 全部通过。
+
+### 2026-05-21 PBR Verification Mode Descriptor Table
+
+`RuntimePBRVerificationArgs` 内部已从 19 个 bool flag 和长串 mode-specific `if` 继续收敛为 descriptor table：
+
+- 新增 `PbrVerificationModeDescriptor`，每个 `--verify-pbr-*` mode 在一行中声明 argument、capture path、pass/probe option bit、tile size override 和 tiled light cutoff override。
+- `makeShellConfigFromArguments(...)` 现在只遍历 mode descriptor，命中任意 PBR verification mode 后应用公共默认配置，再按 descriptor 合并具体 mode 行为。
+- `--verify-pbr` 和 `--verify-pbr-no-atlas` 复用公共默认 capture path；deferred、G-buffer、texture-set、tiled light、heatmap 等特殊模式只声明自己的差异。
+- 这一步继续压缩入口层耦合，为后续新增 `--verify-pbr-clustered`、真实资产基准或更多 material parity 验证预留更稳定的扩展点。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights-cutoff-005`：构建通过，输出 `pbrDeferredTiledLightGridCutoff=0.050000`、`pbrDeferredTiledLightGridIndices=714`、`pbrDeferredTiledLightGridCulledIndices=6486`，确认 descriptor 中 cutoff override / tiled probe / deferred pass 开关生效。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 19 个 verification mode 全部通过。
