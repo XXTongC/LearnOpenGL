@@ -42,8 +42,9 @@ namespace
 		const bool verifyPbrDeferredTiledHeatmap = hasArgument(argc, argv, "--verify-pbr-deferred-tiled-heatmap");
 		const bool verifyPbrImport = hasArgument(argc, argv, "--verify-pbr-import");
 		const bool verifyPbrTextureSet = hasArgument(argc, argv, "--verify-pbr-texture-set");
+		const bool verifyPbrDeferredTextureSet = hasArgument(argc, argv, "--verify-pbr-deferred-texture-set");
 		const bool verifyPbrNoAtlas = hasArgument(argc, argv, "--verify-pbr-no-atlas");
-		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer || verifyPbrGBufferDebug || verifyPbrDeferred || verifyPbrDeferredNoAtlas || verifyPbrDeferredTransparent || verifyPbrDeferredEmissive || verifyPbrDeferredMaterialIbl || verifyPbrDeferredAlphaMask || verifyPbrDeferredUntiledLights || verifyPbrDeferredTiledLights || verifyPbrDeferredTiledLights32 || verifyPbrDeferredTiledLightsCutoff005 || verifyPbrDeferredTiledHeatmap || verifyPbrImport || verifyPbrTextureSet || verifyPbrNoAtlas)
+		if (verifyPbr || verifyPbrIblDebug || verifyPbrGBuffer || verifyPbrGBufferDebug || verifyPbrDeferred || verifyPbrDeferredNoAtlas || verifyPbrDeferredTransparent || verifyPbrDeferredEmissive || verifyPbrDeferredMaterialIbl || verifyPbrDeferredAlphaMask || verifyPbrDeferredUntiledLights || verifyPbrDeferredTiledLights || verifyPbrDeferredTiledLights32 || verifyPbrDeferredTiledLightsCutoff005 || verifyPbrDeferredTiledHeatmap || verifyPbrImport || verifyPbrTextureSet || verifyPbrDeferredTextureSet || verifyPbrNoAtlas)
 		{
 			config.window = { 1280, 720 };
 			config.enableGui = false;
@@ -59,7 +60,7 @@ namespace
 			config.pbrVerification.enablePbrTiledLightProbe = verifyPbrDeferredUntiledLights || verifyPbrDeferredTiledLights || verifyPbrDeferredTiledLights32 || verifyPbrDeferredTiledLightsCutoff005;
 			config.pbrVerification.enablePbrDeferredTiledLightDebugPass = verifyPbrDeferredTiledHeatmap;
 			config.pbrVerification.enablePbrImportedAssetProbe = verifyPbrImport;
-			config.pbrVerification.enablePbrTextureSetProbe = verifyPbrTextureSet;
+			config.pbrVerification.enablePbrTextureSetProbe = verifyPbrTextureSet || verifyPbrDeferredTextureSet;
 			config.pbrVerification.disablePbrDeferredTiledLights = verifyPbrDeferredUntiledLights;
 			if (verifyPbrDeferredTiledLights32)
 			{
@@ -158,6 +159,12 @@ namespace
 			if (verifyPbrTextureSet)
 			{
 				config.pbrVerification.capturePath = "out/pbr_texture_set_verification.ppm";
+			}
+			if (verifyPbrDeferredTextureSet)
+			{
+				config.pbrVerification.enablePbrGBufferPass = true;
+				config.pbrVerification.enablePbrDeferredLightingPass = true;
+				config.pbrVerification.capturePath = "out/pbr_deferred_texture_set_verification.ppm";
 			}
 		}
 

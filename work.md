@@ -1995,3 +1995,19 @@ PBR verification 已新增 texture-set probe，用于验证真实贴图链路，
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes texture-set`：构建通过，输出 `pbrTexturedMeshes=1`、`pbrMeshes=26`、`pbrDrawCalls=26`、capture 非黑比例 `99.9951%`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 18 个 verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Texture Set Verification
+
+Texture-set probe 已从 forward PBR 验证扩展到 deferred PBR 路径：
+
+- 新增 `--verify-pbr-deferred-texture-set` 命令行模式。
+- 该模式复用 `PBR Texture Set Probe`，但 renderer pass order 走 `PBRDepthPrepass,PBRGBuffer,PBRDeferredLighting`。
+- `tools/verify_pbr.ps1` 新增 `deferred-texture-set` 默认模式，并复用 textured probe 断言，同时额外断言 deferred lighting pass 必须绘制。
+- textured probe 断言现在同时支持 forward draw path 和 deferred G-buffer draw path，避免只用 `pbrDrawCalls` 判断导致 deferred 模式误判。
+
+这一步把 albedo / metallic / roughness / AO / normal map 贴图集从 forward shader 验证推进到 G-buffer producer + deferred lighting consumer 验证。后续改 PBR G-buffer packing、surface binder 或 deferred material decode 时，该模式可以直接暴露贴图链路回归。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-texture-set`：构建通过，输出 `pbrTexturedMeshes=1`、`pbrGBufferDrawCalls=26`、`pbrDeferredLightingDrawCalls=1`、capture 非黑比例 `29.2184%`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 19 个 verification mode 全部通过。

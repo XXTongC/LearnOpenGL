@@ -32,7 +32,8 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-tiled-lights-cutoff-005"; Argument = "--verify-pbr-deferred-tiled-lights-cutoff-005"; Capture = "out/pbr_deferred_tiled_lights_cutoff_005_verification.ppm"; ExpectTiledCulling = $true; ExpectLightCutoff = 0.05 },
     [pscustomobject]@{ Name = "deferred-tiled-heatmap"; Argument = "--verify-pbr-deferred-tiled-heatmap"; Capture = "out/pbr_deferred_tiled_heatmap_verification.ppm"; ExpectTiledCulling = $true; ExpectTiledHeatmap = $true },
     [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" },
-    [pscustomobject]@{ Name = "texture-set"; Argument = "--verify-pbr-texture-set"; Capture = "out/pbr_texture_set_verification.ppm"; ExpectTexturedProbe = $true }
+    [pscustomobject]@{ Name = "texture-set"; Argument = "--verify-pbr-texture-set"; Capture = "out/pbr_texture_set_verification.ppm"; ExpectTexturedProbe = $true },
+    [pscustomobject]@{ Name = "deferred-texture-set"; Argument = "--verify-pbr-deferred-texture-set"; Capture = "out/pbr_deferred_texture_set_verification.ppm"; ExpectTexturedProbe = $true; ExpectDeferredLighting = $true }
 )
 
 function Read-PpmToken {
@@ -407,8 +408,27 @@ foreach ($mode in $selectedModes) {
         }
         else {
             $pbrDrawCalls = Get-RegexValue -Text $rendererLine -Pattern "pbrDrawCalls=(\d+)" -Group 1
-            if ($null -eq $pbrDrawCalls -or [int]$pbrDrawCalls -lt 26) {
-                $failures.Add("$($mode.Name): textured PBR probe did not increase PBR draw calls")
+            $pbrGBufferDrawCalls = Get-RegexValue -Text $rendererLine -Pattern "pbrGBufferDrawCalls=(\d+)" -Group 1
+            $pbrDrawPathCalls = 0
+            if ($null -ne $pbrDrawCalls) {
+                $pbrDrawPathCalls = [Math]::Max($pbrDrawPathCalls, [int]$pbrDrawCalls)
+            }
+            if ($null -ne $pbrGBufferDrawCalls) {
+                $pbrDrawPathCalls = [Math]::Max($pbrDrawPathCalls, [int]$pbrGBufferDrawCalls)
+            }
+            if ($pbrDrawPathCalls -lt 26) {
+                $failures.Add("$($mode.Name): textured PBR probe did not increase a PBR draw path")
+            }
+        }
+    }
+    if ($mode.PSObject.Properties.Name -contains "ExpectDeferredLighting" -and $mode.ExpectDeferredLighting) {
+        if (!$rendererLine) {
+            $failures.Add("$($mode.Name): missing renderer stats")
+        }
+        else {
+            $deferredDrawCalls = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredLightingDrawCalls=(\d+)" -Group 1
+            if ($null -eq $deferredDrawCalls -or [int]$deferredDrawCalls -le 0) {
+                $failures.Add("$($mode.Name): deferred lighting pass did not draw")
             }
         }
     }
