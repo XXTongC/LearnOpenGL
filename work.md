@@ -1699,3 +1699,15 @@ PBR 材质已新增 alpha mask / cutoff 语义，并接入 forward 与 deferred 
 - 新增 `--verify-pbr-deferred-alpha-mask`，使用 `Texture/window.png` 作为带 alpha 的 albedo map，验证 alpha mask probe 能进入 G-buffer 而不进入 PBR depth prepass。
 
 这一步先保证主视图的 forward / deferred PBR 不把 cutout 材质当整片实心面渲染。当前尚未完成的是 alpha-aware shadow：legacy shadow map 和 PBR shadow atlas 仍使用 depth-only shader，后续需要给 shadow pass 增加 alpha mask material binding 或专用 PBR alpha shadow shader，才能得到正确 cutout shadow。
+
+### 2026-05-21 PBR Alpha-Aware Shadow
+
+PBR alpha mask 已从主视图扩展到 shadow map / PBR shadow atlas：
+
+- 新增 `PBRAlphaShadowBinder`，集中判断 alpha-masked PBR mesh，并为 shadow shader 绑定 albedo map alpha 与 cutoff。
+- 新增 `pbr_alpha_shadow` 与 `pbr_alpha_point_shadow` shader，分别用于 directional / point shadow 的 alpha discard。
+- `DirectionalShadowRenderPass` 与 `PointShadowRenderPass` 会继续用原 depth-only shader 绘制普通 mesh；遇到 alpha-masked PBR mesh 时切换到 alpha-aware shadow shader。
+- `PBRShadowAtlasRenderPass` 同样接入 alpha-aware directional / point atlas 写入，保证 atlas shadow 与 legacy shadow map 的 cutout 语义一致。
+- `RendererFrameStats`、Debug UI 和 `--verify-pbr*` 输出新增 legacy shadow 与 PBR atlas 的 alpha-masked shadow draw call 统计。
+
+这一步补上了 alpha mask first stage 的最大缺口：cutout 材质不再只在主视图镂空，而是也能用 alpha discard 写入 shadow depth。后续仍可优化为更少 shader switch 或更明确的 cutout queue，但当前行为已经具备可验证的 producer-consumer 链路。

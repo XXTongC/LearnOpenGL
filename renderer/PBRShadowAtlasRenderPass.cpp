@@ -5,6 +5,7 @@
 #include "camera/perspectivecamera.h"
 #include "light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
+#include "renderer/PBRAlphaShadowBinder.h"
 #include "renderer/ShadowMeshDraw.h"
 #include "tools/tools.h"
 
@@ -65,7 +66,7 @@ int PBRShadowAtlasRenderPass::renderDirectionalAtlas(
 	const std::vector<std::shared_ptr<Mesh>>& meshes,
 	const std::shared_ptr<DirectionalLight>& dirLight,
 	const PBRShadowAtlasRenderTargets& targets,
-	const PBRShadowAtlasStats& atlasStats,
+	PBRShadowAtlasStats& stats,
 	ShaderLibrary& shaderLibrary
 ) const
 {
@@ -84,18 +85,19 @@ int PBRShadowAtlasRenderPass::renderDirectionalAtlas(
 	csmShadow->generateCascadeLayers(layers, camera->mNear, camera->mFar);
 	const auto lightMatrices = csmShadow->getLightMatrix(camera, dirLight->getDirection(), layers);
 	const int layerCount = std::min(
-		atlasStats.directionalLayerCount,
+		stats.directionalLayerCount,
 		static_cast<int>(lightMatrices.size())
 	);
 
 	auto shadowShader = shaderLibrary.getShadowShader();
+	auto alphaShadowShader = shaderLibrary.getPbrAlphaShadowShader();
 	if (!shadowShader)
 	{
 		return 0;
 	}
 
 	int drawCalls = 0;
-	glViewport(0, 0, atlasStats.directionalResolution, atlasStats.directionalResolution);
+	glViewport(0, 0, stats.directionalResolution, stats.directionalResolution);
 	for (int layer = 0; layer < layerCount; ++layer)
 	{
 		glFramebufferTextureLayer(
@@ -111,6 +113,11 @@ int PBRShadowAtlasRenderPass::renderDirectionalAtlas(
 		shadowShader->setMat4("lightMatrix", lightMatrices[static_cast<std::size_t>(layer)]);
 		for (const auto& mesh : meshes)
 		{
+			if (PBRAlphaShadowBinder::isAlphaMaskedPbrMesh(mesh))
+			{
+				continue;
+			}
+
 			shadowShader->setMat4("modelMatrix", mesh->getModelMatrix());
 			if (ShadowMeshDraw::draw(mesh))
 			{
@@ -118,6 +125,28 @@ int PBRShadowAtlasRenderPass::renderDirectionalAtlas(
 			}
 		}
 		shadowShader->end();
+
+		if (alphaShadowShader)
+		{
+			alphaShadowShader->begin();
+			for (const auto& mesh : meshes)
+			{
+				if (!PBRAlphaShadowBinder::bindDirectional(
+					alphaShadowShader,
+					mesh,
+					lightMatrices[static_cast<std::size_t>(layer)]))
+				{
+					continue;
+				}
+
+				if (ShadowMeshDraw::draw(mesh))
+				{
+					++drawCalls;
+					++stats.directionalAlphaMaskedDrawCalls;
+				}
+			}
+			alphaShadowShader->end();
+		}
 	}
 
 	return drawCalls;
@@ -127,7 +156,7 @@ int PBRShadowAtlasRenderPass::renderPointAtlas(
 	const std::vector<std::shared_ptr<Mesh>>& meshes,
 	const std::vector<std::shared_ptr<PointLight>>& pointLights,
 	const PBRShadowAtlasRenderTargets& targets,
-	const PBRShadowAtlasStats& atlasStats,
+	PBRShadowAtlasStats& stats,
 	ShaderLibrary& shaderLibrary,
 	int& renderedFaceCount
 ) const
@@ -139,6 +168,7 @@ int PBRShadowAtlasRenderPass::renderPointAtlas(
 	}
 
 	auto shadowDistanceShader = shaderLibrary.getShadowDistanceShader();
+	auto alphaPointShadowShader = shaderLibrary.getPbrAlphaPointShadowShader();
 	if (!shadowDistanceShader)
 	{
 		return 0;
@@ -146,7 +176,7 @@ int PBRShadowAtlasRenderPass::renderPointAtlas(
 
 	int drawCalls = 0;
 	int atlasPointIndex = 0;
-	glViewport(0, 0, atlasStats.pointResolution, atlasStats.pointResolution);
+	glViewport(0, 0, stats.pointResolution, stats.pointResolution);
 	for (const auto& pointLight : pointLights)
 	{
 		if (!pointLight || !pointLight->getShadow() || atlasPointIndex >= PBRShadowAtlasRenderTargets::maxPointLights())
@@ -187,6 +217,11 @@ int PBRShadowAtlasRenderPass::renderPointAtlas(
 
 			for (const auto& mesh : meshes)
 			{
+				if (PBRAlphaShadowBinder::isAlphaMaskedPbrMesh(mesh))
+				{
+					continue;
+				}
+
 				shadowDistanceShader->setMat4("modelMatrix", mesh->getModelMatrix());
 				if (ShadowMeshDraw::draw(mesh))
 				{
@@ -194,6 +229,30 @@ int PBRShadowAtlasRenderPass::renderPointAtlas(
 				}
 			}
 			shadowDistanceShader->end();
+
+			if (alphaPointShadowShader)
+			{
+				alphaPointShadowShader->begin();
+				for (const auto& mesh : meshes)
+				{
+					if (!PBRAlphaShadowBinder::bindPoint(
+						alphaPointShadowShader,
+						mesh,
+						shadowProj * shadowView,
+						pointLight->getPosition(),
+						pointShadow->mCamera->mFar))
+					{
+						continue;
+					}
+
+					if (ShadowMeshDraw::draw(mesh))
+					{
+						++drawCalls;
+						++stats.pointAlphaMaskedDrawCalls;
+					}
+				}
+				alphaPointShadowShader->end();
+			}
 		}
 
 		++atlasPointIndex;

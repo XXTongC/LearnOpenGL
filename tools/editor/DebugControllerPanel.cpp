@@ -246,13 +246,16 @@ namespace
 			ImGui::Text("Shadow Casters: %d", stats.shadowCasterCount);
 			ImGui::Text("Directional Shadow Layers: %d", stats.directionalShadowLayerCount);
 			ImGui::Text("Directional Shadow Draw Calls: %d", stats.directionalShadowDrawCalls);
+			ImGui::Text("Directional Alpha-Masked Shadow Draw Calls: %d", stats.directionalAlphaMaskedShadowDrawCalls);
 			ImGui::Text("Point Shadow Lights: %d", stats.pointShadowLightCount);
 			ImGui::Text("Point Shadow Faces: %d", stats.pointShadowFaceCount);
 			ImGui::Text("Point Shadow Draw Calls: %d", stats.pointShadowDrawCalls);
+			ImGui::Text("Point Alpha-Masked Shadow Draw Calls: %d", stats.pointAlphaMaskedShadowDrawCalls);
 			ImGui::Text("PBR Shadow Atlas Ready: %s", stats.pbrShadowAtlasReady ? "Yes" : "No");
 			ImGui::Text("PBR Shadow Atlas Directional Layers: %d @ %d", stats.pbrShadowAtlasDirectionalLayers, stats.pbrShadowAtlasDirectionalResolution);
 			ImGui::Text("PBR Shadow Atlas Point Faces: %d / %d @ %d", stats.pbrShadowAtlasPointFacesRendered, stats.pbrShadowAtlasPointFaces, stats.pbrShadowAtlasPointResolution);
 			ImGui::Text("PBR Shadow Atlas Draw Calls: directional %d, point %d", stats.pbrShadowAtlasDirectionalDrawCalls, stats.pbrShadowAtlasPointDrawCalls);
+			ImGui::Text("PBR Shadow Atlas Alpha-Masked Draw Calls: directional %d, point %d", stats.pbrShadowAtlasDirectionalAlphaMaskedDrawCalls, stats.pbrShadowAtlasPointAlphaMaskedDrawCalls);
 			ImGui::Text("Legacy Scene Draw Calls: %d", stats.legacySceneDrawCalls);
 			ImGui::Text("Legacy Transparent Draw Calls: %d", stats.legacyTransparentDrawCalls);
 			ImGui::Text("PBR Depth Prepass Draw Calls: %d", stats.pbrDepthPrepassDrawCalls);

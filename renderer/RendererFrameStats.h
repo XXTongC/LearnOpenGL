@@ -8,9 +8,11 @@ namespace GLframework
 		int shadowCasterCount{ 0 };
 		int directionalShadowLayerCount{ 0 };
 		int directionalShadowDrawCalls{ 0 };
+		int directionalAlphaMaskedShadowDrawCalls{ 0 };
 		int pointShadowLightCount{ 0 };
 		int pointShadowFaceCount{ 0 };
 		int pointShadowDrawCalls{ 0 };
+		int pointAlphaMaskedShadowDrawCalls{ 0 };
 		bool pbrShadowAtlasReady{ false };
 		int pbrShadowAtlasDirectionalLayers{ 0 };
 		int pbrShadowAtlasPointLights{ 0 };
@@ -18,6 +20,8 @@ namespace GLframework
 		int pbrShadowAtlasPointFacesRendered{ 0 };
 		int pbrShadowAtlasDirectionalDrawCalls{ 0 };
 		int pbrShadowAtlasPointDrawCalls{ 0 };
+		int pbrShadowAtlasDirectionalAlphaMaskedDrawCalls{ 0 };
+		int pbrShadowAtlasPointAlphaMaskedDrawCalls{ 0 };
 		int pbrShadowAtlasDirectionalResolution{ 0 };
 		int pbrShadowAtlasPointResolution{ 0 };
 		int pbrDepthPrepassDrawCalls{ 0 };

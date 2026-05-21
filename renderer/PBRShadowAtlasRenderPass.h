@@ -30,14 +30,14 @@ namespace GLframework
 			const std::vector<std::shared_ptr<Mesh>>& meshes,
 			const std::shared_ptr<DirectionalLight>& dirLight,
 			const PBRShadowAtlasRenderTargets& targets,
-			const PBRShadowAtlasStats& atlasStats,
+			PBRShadowAtlasStats& stats,
 			ShaderLibrary& shaderLibrary
 		) const;
 		int renderPointAtlas(
 			const std::vector<std::shared_ptr<Mesh>>& meshes,
 			const std::vector<std::shared_ptr<PointLight>>& pointLights,
 			const PBRShadowAtlasRenderTargets& targets,
-			const PBRShadowAtlasStats& atlasStats,
+			PBRShadowAtlasStats& stats,
 			ShaderLibrary& shaderLibrary,
 			int& renderedFaceCount
 		) const;

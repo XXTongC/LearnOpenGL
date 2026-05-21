@@ -79,6 +79,8 @@ PBRShadowAtlasStats PBRShadowAtlasRenderTargets::prepare(
 		0,
 		0,
 		0,
+		0,
+		0,
 		kDirectionalAtlasResolution,
 		kPointAtlasResolution,
 		mFramebuffer,

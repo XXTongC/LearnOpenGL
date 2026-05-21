@@ -111,9 +111,11 @@ namespace
 		{
 			context.stats->directionalShadowLayerCount = stats.directionalLayerCount;
 			context.stats->directionalShadowDrawCalls = stats.directionalDrawCalls;
+			context.stats->directionalAlphaMaskedShadowDrawCalls = stats.directionalAlphaMaskedDrawCalls;
 			context.stats->pointShadowLightCount = stats.pointLightCount;
 			context.stats->pointShadowFaceCount = stats.pointFaceCount;
 			context.stats->pointShadowDrawCalls = stats.pointDrawCalls;
+			context.stats->pointAlphaMaskedShadowDrawCalls = stats.pointAlphaMaskedDrawCalls;
 		}
 	}
 
@@ -141,6 +143,8 @@ namespace
 			context.stats->pbrShadowAtlasPointFacesRendered = atlasStats.pointFacesRendered;
 			context.stats->pbrShadowAtlasDirectionalDrawCalls = atlasStats.directionalDrawCalls;
 			context.stats->pbrShadowAtlasPointDrawCalls = atlasStats.pointDrawCalls;
+			context.stats->pbrShadowAtlasDirectionalAlphaMaskedDrawCalls = atlasStats.directionalAlphaMaskedDrawCalls;
+			context.stats->pbrShadowAtlasPointAlphaMaskedDrawCalls = atlasStats.pointAlphaMaskedDrawCalls;
 			context.stats->pbrShadowAtlasDirectionalResolution = atlasStats.directionalResolution;
 			context.stats->pbrShadowAtlasPointResolution = atlasStats.pointResolution;
 		}

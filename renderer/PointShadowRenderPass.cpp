@@ -2,6 +2,7 @@
 
 #include "camera/perspectivecamera.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
+#include "renderer/PBRAlphaShadowBinder.h"
 #include "renderer/ShadowMeshDraw.h"
 #include "tools/tools.h"
 
@@ -52,6 +53,7 @@ ShadowRenderStats PointShadowRenderPass::render(
 		const auto& pointShadow = std::static_pointer_cast<PointLightShadow>(pointLight->getShadow());
 		pointShadow->setShadowMapIndex(static_cast<int>(i));
 		auto shadowDistanceShader = shaderLibrary.getShadowDistanceShader();
+		auto alphaPointShadowShader = shaderLibrary.getPbrAlphaPointShadowShader();
 
 		for (unsigned int face = 0; face < 6; ++face)
 		{
@@ -74,6 +76,11 @@ ShadowRenderStats PointShadowRenderPass::render(
 
 			for (const auto& mesh : meshes)
 			{
+				if (PBRAlphaShadowBinder::isAlphaMaskedPbrMesh(mesh))
+				{
+					continue;
+				}
+
 				shadowDistanceShader->setMat4("modelMatrix", mesh->getModelMatrix());
 				if (ShadowMeshDraw::draw(mesh))
 				{
@@ -82,6 +89,30 @@ ShadowRenderStats PointShadowRenderPass::render(
 			}
 
 			shadowDistanceShader->end();
+
+			if (alphaPointShadowShader)
+			{
+				alphaPointShadowShader->begin();
+				for (const auto& mesh : meshes)
+				{
+					if (!PBRAlphaShadowBinder::bindPoint(
+						alphaPointShadowShader,
+						mesh,
+						shadowProj * shadowView,
+						pointLight->getPosition(),
+						pointShadow->mCamera->mFar))
+					{
+						continue;
+					}
+
+					if (ShadowMeshDraw::draw(mesh))
+					{
+						++stats.pointDrawCalls;
+						++stats.pointAlphaMaskedDrawCalls;
+					}
+				}
+				alphaPointShadowShader->end();
+			}
 		}
 	}
 

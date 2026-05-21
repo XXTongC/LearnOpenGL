@@ -441,6 +441,9 @@
     <ClCompile Include="renderer\PBRObjectUniformBinder.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\PBRAlphaShadowBinder.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\PBRShadowResourceBinder.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -813,6 +816,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRObjectUniformBinder.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\PBRAlphaShadowBinder.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PBRShadowResourceBinder.h">
@@ -2702,6 +2708,18 @@
       <Filter>资源文件\shaders\pbr</Filter>
     </None>
     <None Include="shaders\pbr\pbr_deferred_lighting.frag">
+      <Filter>资源文件\shaders\pbr</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr_alpha_point_shadow.frag">
+      <Filter>资源文件\shaders\pbr</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr_alpha_point_shadow.vert">
+      <Filter>资源文件\shaders\pbr</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr_alpha_shadow.frag">
+      <Filter>资源文件\shaders\pbr</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr_alpha_shadow.vert">
       <Filter>资源文件\shaders\pbr</Filter>
     </None>
     <None Include="shaders\pbr\pbr_deferred_lighting.vert">

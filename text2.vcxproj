@@ -204,6 +204,7 @@
     <ClCompile Include="renderer\PBRMaterialBinder.cpp" />
     <ClCompile Include="renderer\PBRIBLResourceBinder.cpp" />
     <ClCompile Include="renderer\PBRObjectUniformBinder.cpp" />
+    <ClCompile Include="renderer\PBRAlphaShadowBinder.cpp" />
     <ClCompile Include="renderer\PBRShadowResourceBinder.cpp" />
     <ClCompile Include="renderer\PBRSurfaceResourceBinder.cpp" />
     <ClCompile Include="renderer\PBRDepthPrepass.cpp" />
@@ -313,6 +314,7 @@
     <ClInclude Include="renderer\PBRMaterialBinder.h" />
     <ClInclude Include="renderer\PBRIBLResourceBinder.h" />
     <ClInclude Include="renderer\PBRObjectUniformBinder.h" />
+    <ClInclude Include="renderer\PBRAlphaShadowBinder.h" />
     <ClInclude Include="renderer\PBRShadowResourceBinder.h" />
     <ClInclude Include="renderer\PBRSurfaceResourceBinder.h" />
     <ClInclude Include="renderer\PBRDepthPrepass.h" />
@@ -780,6 +782,10 @@
     <None Include="shaders\opacityMask\phongOpacityMask.vert" />
     <None Include="shaders\pbr\pbr.frag" />
     <None Include="shaders\pbr\pbr.vert" />
+    <None Include="shaders\pbr\pbr_alpha_point_shadow.frag" />
+    <None Include="shaders\pbr\pbr_alpha_point_shadow.vert" />
+    <None Include="shaders\pbr\pbr_alpha_shadow.frag" />
+    <None Include="shaders\pbr\pbr_alpha_shadow.vert" />
     <None Include="shaders\pbr\pbr_deferred_lighting.frag" />
     <None Include="shaders\pbr\pbr_deferred_lighting.vert" />
     <None Include="shaders\pbr\pbr_gbuffer.frag" />

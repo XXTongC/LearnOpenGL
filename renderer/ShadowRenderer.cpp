@@ -16,8 +16,10 @@ ShadowRenderStats ShadowRenderer::render(
 
 	stats.directionalLayerCount = directionalStats.directionalLayerCount;
 	stats.directionalDrawCalls = directionalStats.directionalDrawCalls;
+	stats.directionalAlphaMaskedDrawCalls = directionalStats.directionalAlphaMaskedDrawCalls;
 	stats.pointLightCount = pointStats.pointLightCount;
 	stats.pointFaceCount = pointStats.pointFaceCount;
 	stats.pointDrawCalls = pointStats.pointDrawCalls;
+	stats.pointAlphaMaskedDrawCalls = pointStats.pointAlphaMaskedDrawCalls;
 	return stats;
 }

@@ -32,6 +32,8 @@ void GLframework::ShaderLibrary::initialize()
 	mPbrGBufferShader = createShader("shaders/pbr/pbr_gbuffer.vert", "shaders/pbr/pbr_gbuffer.frag");
 	mPbrDeferredLightingShader = createShader("shaders/pbr/pbr_deferred_lighting.vert", "shaders/pbr/pbr_deferred_lighting.frag");
 	mPbrGBufferDebugShader = createShader("shaders/diagnostics/pbr_gbuffer_debug.vert", "shaders/diagnostics/pbr_gbuffer_debug.frag");
+	mPbrAlphaShadowShader = createShader("shaders/pbr/pbr_alpha_shadow.vert", "shaders/pbr/pbr_alpha_shadow.frag");
+	mPbrAlphaPointShadowShader = createShader("shaders/pbr/pbr_alpha_point_shadow.vert", "shaders/pbr/pbr_alpha_point_shadow.frag");
 }
 
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::get(MaterialType type) const
@@ -94,6 +96,16 @@ std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPbrDeferredL
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPbrGBufferDebugShader() const
 {
 	return mPbrGBufferDebugShader;
+}
+
+std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPbrAlphaShadowShader() const
+{
+	return mPbrAlphaShadowShader;
+}
+
+std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::getPbrAlphaPointShadowShader() const
+{
+	return mPbrAlphaPointShadowShader;
 }
 
 std::shared_ptr<GLframework::Shader> GLframework::ShaderLibrary::createShader(const char* vertexPath, const char* fragmentPath)

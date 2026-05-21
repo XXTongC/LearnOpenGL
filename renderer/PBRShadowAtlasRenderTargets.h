@@ -21,6 +21,8 @@ namespace GLframework
 		int pointFacesRendered{ 0 };
 		int directionalDrawCalls{ 0 };
 		int pointDrawCalls{ 0 };
+		int directionalAlphaMaskedDrawCalls{ 0 };
+		int pointAlphaMaskedDrawCalls{ 0 };
 		int directionalResolution{ 0 };
 		int pointResolution{ 0 };
 		unsigned int framebuffer{ 0 };

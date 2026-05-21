@@ -1,6 +1,7 @@
 #include "DirectionalShadowRenderPass.h"
 
 #include "light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
+#include "renderer/PBRAlphaShadowBinder.h"
 #include "renderer/ShadowMeshDraw.h"
 
 using namespace GLframework;
@@ -40,6 +41,7 @@ ShadowRenderStats DirectionalShadowRenderPass::render(
 	for (int i = 0; i < csmShadow->getLayerCount(); ++i)
 	{
 		auto shadowShader = shaderLibrary.getShadowShader();
+		auto alphaShadowShader = shaderLibrary.getPbrAlphaShadowShader();
 		glFramebufferTextureLayer(
 			GL_FRAMEBUFFER,
 			GL_DEPTH_ATTACHMENT,
@@ -53,6 +55,11 @@ ShadowRenderStats DirectionalShadowRenderPass::render(
 		shadowShader->setMat4("lightMatrix", lightMatrices[i]);
 		for (const auto& mesh : meshes)
 		{
+			if (PBRAlphaShadowBinder::isAlphaMaskedPbrMesh(mesh))
+			{
+				continue;
+			}
+
 			shadowShader->setMat4("modelMatrix", mesh->getModelMatrix());
 			if (ShadowMeshDraw::draw(mesh))
 			{
@@ -60,6 +67,25 @@ ShadowRenderStats DirectionalShadowRenderPass::render(
 			}
 		}
 		shadowShader->end();
+
+		if (alphaShadowShader)
+		{
+			alphaShadowShader->begin();
+			for (const auto& mesh : meshes)
+			{
+				if (!PBRAlphaShadowBinder::bindDirectional(alphaShadowShader, mesh, lightMatrices[i]))
+				{
+					continue;
+				}
+
+				if (ShadowMeshDraw::draw(mesh))
+				{
+					++stats.directionalDrawCalls;
+					++stats.directionalAlphaMaskedDrawCalls;
+				}
+			}
+			alphaShadowShader->end();
+		}
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, preFbo);
