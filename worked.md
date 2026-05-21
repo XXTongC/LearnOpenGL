@@ -2131,3 +2131,6 @@
   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 和 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，把 clustered grid 新模块纳入 Visual Studio 工程。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid`，`Debug|x64` 构建通过，输出 `pbrDeferredClusteredLightGridBound=yes`、`pbrDeferredClusteredLightGridSize=80x45x24`、`pbrDeferredClusteredLightGridIndices=14400`、`pbrDeferredClusteredLightGridCulledIndices=158400`。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 21 个 verification mode 全部通过。
+- 完成第一百七十七轮桌面重构报告同步：
+  - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新代码状态同步到 `f40342b Add PBR clustered grid backend`。
+  - 报告中将默认 PBR verification 状态更新为 21 个模式，并补充 CPU-filled clustered grid backend、shader consumer、`pbrDeferredClusteredLightGridIndices=14400`、`pbrDeferredClusteredLightGridCulledIndices=158400` 和 compute shader clustered assignment 尚未完成的边界。
