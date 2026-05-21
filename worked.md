@@ -2228,3 +2228,7 @@
   - profiling 脚本现在会生成 [pbr_light_culling_timing_samples.csv](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_light_culling_timing_samples.csv)，逐样本保存 G-buffer、deferred lighting、frame GPU time、light index 和 pending query 数据。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\profile_pbr_light_culling.ps1 -SkipBuild -NoLinkDebugInfo -Samples 2`，两个 pressure timing mode 连续两轮通过，并生成多样本 Markdown / CSV 报告。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 28 个 verification mode 全部通过。
+- 完成第一百九十五轮 PBR light culling multi-sample report sync：
+  - 已在代码提交 `0a32120 Add multi-sample PBR light culling profiling` 后重新执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\profile_pbr_light_culling.ps1 -SkipBuild -NoLinkDebugInfo -Samples 3`，确保 [pbr_light_culling_timing_report.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_light_culling_timing_report.md) 和 [pbr_light_culling_timing_samples.csv](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_light_culling_timing_samples.csv) 指向已提交脚本。
+  - 三样本结果为 tiled deferred lighting avg/min/max `1.0301 / 0.9916 / 1.0529 ms`，clustered deferred lighting avg/min/max `3.4366 / 3.0088 / 3.6811 ms`。
+  - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，将 multi-sample timing 验证记录同步到最终 `Samples 3` 报告结果。

@@ -1,0 +1,7 @@
+﻿"Sample","Kind","Grid","PointLights","LiveIndices","FullIndices","CulledIndices","CullingPercent","Occupancy","GBufferMs","DeferredLightingMs","FrameMs","TimedPasses","PendingQueries","Log"
+"1","Tiled","80x45","8","8034","28800","20766","72.10%","3568/3600","0.2428","1.0529","6.7147","6","18","out/pbr_verify_deferred-tiled-lights-pressure-timing.log"
+"1","Clustered","80x45x24","8","8037","691200","683163","98.84%","86400 clusters","0.2282","3.0088","8.3465","6","12","out/pbr_verify_deferred-clustered-grid-pressure-timing.log"
+"2","Tiled","80x45","8","8034","28800","20766","72.10%","3568/3600","0.2042","1.0457","6.2001","6","18","out/pbr_verify_deferred-tiled-lights-pressure-timing.log"
+"2","Clustered","80x45x24","8","8037","691200","683163","98.84%","86400 clusters","0.2203","3.6811","9.0913","6","12","out/pbr_verify_deferred-clustered-grid-pressure-timing.log"
+"3","Tiled","80x45","8","8034","28800","20766","72.10%","3568/3600","0.2061","0.9916","5.9759","6","18","out/pbr_verify_deferred-tiled-lights-pressure-timing.log"
+"3","Clustered","80x45x24","8","8037","691200","683163","98.84%","86400 clusters","0.2502","3.6200","9.1491","6","12","out/pbr_verify_deferred-clustered-grid-pressure-timing.log"

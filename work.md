@@ -2250,5 +2250,5 @@ clustered compute assignment 已经能在 GPU 上生成 clustered light grid，�
 
 验证结果：
 
-- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\profile_pbr_light_culling.ps1 -SkipBuild -NoLinkDebugInfo -Samples 2`：两个 pressure timing mode 连续两轮通过，报告中输出 tiled / clustered 的 avg/min/max GPU 时间，并生成 CSV 样本表。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\profile_pbr_light_culling.ps1 -SkipBuild -NoLinkDebugInfo -Samples 3`：两个 pressure timing mode 连续三轮通过，报告中输出 tiled / clustered 的 avg/min/max GPU 时间，并生成 CSV 样本表。当前样本集的 deferred lighting 平均时间为 tiled `1.0301 ms`、clustered `3.4366 ms`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归 28 个 verification mode 全部通过。
