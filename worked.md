@@ -2218,3 +2218,7 @@
   - 已在代码提交 `bf85071 Add PBR light culling timing comparison` 后重新执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\profile_pbr_light_culling.ps1 -SkipBuild -NoLinkDebugInfo`，确保 [pbr_light_culling_timing_report.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_light_culling_timing_report.md) 中记录的 commit 指向已提交代码。
   - 重新采样结果为 tiled pressure `rendererGpuPbrDeferredLightingNs=1026960`、`pbrDeferredTiledLightGridIndices=8034/28800`，clustered pressure `rendererGpuPbrDeferredLightingNs=2936230`、`pbrDeferredClusteredLightGridIndices=8037`、`pbrDeferredClusteredLightGridCulledIndices=683163`。
   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，将 timing comparison 记录中的样本值同步到基于 `bf85071` 的报告结果。
+- 完成第一百九十三轮桌面重构报告 PBR timing comparison 同步：
+  - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送分支提交同步到 `ff23ab9 Record PBR light culling timing report`，最新代码提交同步到 `bf85071 Add PBR light culling timing comparison`。
+  - 桌面报告中将 PBR verification 数量更新为 28 个 mode，并补充 `deferred-tiled-lights-pressure-timing`、`deferred-clustered-grid-pressure-timing`、[pbr_light_culling_timing_report.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\docs\pbr_light_culling_timing_report.md) 和本次 pressure timing baseline。
+  - 桌面报告的后续建议已从“增加 tiled / clustered profiling 对比”更新为“多帧 profiling 统计、真实资产 golden capture、glTF material parity、透明策略和 clustered overflow”。
