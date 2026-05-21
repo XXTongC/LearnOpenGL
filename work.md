@@ -1828,3 +1828,25 @@ Tiled light grid 诊断已从“index count + max per tile”扩展为“tile oc
 - sparse tiled 场景：`pbrDeferredTiledLightGridIndices=3311`、`pbrDeferredTiledLightGridOccupiedTiles=3119/3600`、`pbrDeferredTiledLightGridEmptyTiles=481`，说明专用 culling 场景不仅减少了 index loop，也确实存在空 tiles。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，focused tiled occupancy 断言通过。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：14 个 PBR verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Tiled Light Circle Tile Clip
+
+Tiled light grid 已从“screen-space circle 的 AABB 覆盖所有候选 tiles”推进到“AABB 内再做 tile rectangle 与 light circle 的交叠测试”：
+
+- `ScreenBounds` 保留 light 的屏幕中心和投影半径。
+- `tileIntersectsCircularBounds(...)` 会在写入 tile light list 前，计算 tile rect 到 light center 的最近点，并用 `radius + 1px` 的保守圆半径判断是否相交。
+- 当 light center 无法投影、系统退回全屏保守 bounds 时，不启用 circle clip，避免近裁剪 / 背后光源场景漏光。
+
+本轮 focused verification 中 sparse tiled 场景从上一轮的：
+
+- `pbrDeferredTiledLightGridIndices=3311`
+- `pbrDeferredTiledLightGridOccupiedTiles=3119/3600`
+- `pbrDeferredTiledLightGridEmptyTiles=481`
+
+下降为：
+
+- `pbrDeferredTiledLightGridIndices=2890`
+- `pbrDeferredTiledLightGridOccupiedTiles=2846/3600`
+- `pbrDeferredTiledLightGridEmptyTiles=754`
+
+这说明 circle tile clip 去掉了 AABB 四角的部分无效 tile entries，同时保持 `--verify-pbr-deferred-tiled-lights` 与 heatmap consumer 都通过。`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已再次通过 14 个 PBR verification mode。

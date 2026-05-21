@@ -18,7 +18,11 @@ namespace
 		int minY{ 0 };
 		int maxX{ 0 };
 		int maxY{ 0 };
+		float centerX{ 0.0f };
+		float centerY{ 0.0f };
+		float radiusPixels{ 0.0f };
 		bool valid{ false };
+		bool circularClip{ false };
 	};
 
 	float estimateLightRadius(const std::shared_ptr<PointLight>& light)
@@ -140,8 +144,38 @@ namespace
 		bounds.minY = std::clamp(static_cast<int>(std::floor(minY)), 0, static_cast<int>(height) - 1);
 		bounds.maxX = std::clamp(static_cast<int>(std::ceil(maxX)), 0, static_cast<int>(width) - 1);
 		bounds.maxY = std::clamp(static_cast<int>(std::ceil(maxY)), 0, static_cast<int>(height) - 1);
+		bounds.centerX = center.x;
+		bounds.centerY = center.y;
+		bounds.radiusPixels = radiusPixels;
 		bounds.valid = bounds.maxX >= bounds.minX && bounds.maxY >= bounds.minY;
+		bounds.circularClip = bounds.valid;
 		return bounds;
+	}
+
+	bool tileIntersectsCircularBounds(
+		const ScreenBounds& bounds,
+		int tileX,
+		int tileY,
+		int tileSize,
+		unsigned int width,
+		unsigned int height
+	)
+	{
+		if (!bounds.circularClip)
+		{
+			return true;
+		}
+
+		const float minX = static_cast<float>(tileX * tileSize);
+		const float minY = static_cast<float>(tileY * tileSize);
+		const float maxX = std::min(static_cast<float>((tileX + 1) * tileSize), static_cast<float>(width));
+		const float maxY = std::min(static_cast<float>((tileY + 1) * tileSize), static_cast<float>(height));
+		const float closestX = std::clamp(bounds.centerX, minX, maxX);
+		const float closestY = std::clamp(bounds.centerY, minY, maxY);
+		const float deltaX = closestX - bounds.centerX;
+		const float deltaY = closestY - bounds.centerY;
+		const float conservativeRadius = bounds.radiusPixels + 1.0f;
+		return deltaX * deltaX + deltaY * deltaY <= conservativeRadius * conservativeRadius;
 	}
 
 	std::vector<std::shared_ptr<PointLight>> collectPackedPointLights(const MaterialBindingContext& context)
@@ -218,6 +252,10 @@ PBRDeferredTiledLightGridStats PBRDeferredTiledLightGrid::bind(
 		{
 			for (int x = minTileX; x <= maxTileX; ++x)
 			{
+				if (!tileIntersectsCircularBounds(bounds, x, y, stats.tileSize, targetWidth, targetHeight))
+				{
+					continue;
+				}
 				tileLightLists[static_cast<std::size_t>(y * columns + x)].push_back(lightIndex);
 			}
 		}
