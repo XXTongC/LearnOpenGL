@@ -41,6 +41,9 @@ bool PBRSurfaceResourceBinder::bind(
 	{
 		shader->setFloat(slot.uniformName, slot.value ? *slot.value : 0.0f);
 	}
+	shader->setInt("metallicMapChannel", material->mMetallicMapChannel);
+	shader->setInt("roughnessMapChannel", material->mRoughnessMapChannel);
+	shader->setInt("aoMapChannel", material->mAoMapChannel);
 	shader->setInt("useAlphaMask", material->mUseAlphaMask ? 1 : 0);
 	shader->setFloat("alphaCutoff", material->mAlphaCutoff);
 

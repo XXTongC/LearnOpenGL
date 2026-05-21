@@ -303,6 +303,11 @@ void PBRMaterial::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
 	builder.addBool("Use Alpha Mask", &mUseAlphaMask);
 	builder.addFloat("Alpha Cutoff", &mAlphaCutoff, 0.0f, 1.0f);
 
+	builder.addSection("PBR Texture Channels");
+	builder.addInt("Metallic Map Channel", &mMetallicMapChannel, 0, 3);
+	builder.addInt("Roughness Map Channel", &mRoughnessMapChannel, 0, 3);
+	builder.addInt("AO Map Channel", &mAoMapChannel, 0, 3);
+
 	builder.addSection("PBR IBL");
 	builder.addBool("Use IBL", &mUseIBL);
 	for (const auto& slot : getIblFloatUniformSlots())

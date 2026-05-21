@@ -152,6 +152,7 @@
     <ClCompile Include="application\RuntimeScenePreparer.cpp" />
     <ClCompile Include="application\RuntimeViewport.cpp" />
     <ClCompile Include="application\RuntimeWindowLifecycle.cpp" />
+    <ClCompile Include="application\AssimpMaterialImporter.cpp" />
     <ClCompile Include="application\assimpInstanceLoader.cpp" />
     <ClCompile Include="application\assimpLoader.cpp" />
     <ClCompile Include="camera\camera.cpp" />
@@ -262,6 +263,7 @@
     <ClInclude Include="light\ambientLight.h" />
     <ClInclude Include="application\assimpInstanceLoader.h" />
     <ClInclude Include="application\assimpLoader.h" />
+    <ClInclude Include="application\AssimpMaterialImporter.h" />
     <ClInclude Include="camera\camera.h" />
     <ClInclude Include="camera\cameracontrol.h" />
     <ClInclude Include="core.h" />

@@ -113,6 +113,9 @@ namespace GLframework
 		float mRoughness{ 0.5f };
 		float mAo{ 1.0f };
 		float mEmissiveIntensity{ 0.0f };
+		int mMetallicMapChannel{ 0 };
+		int mRoughnessMapChannel{ 0 };
+		int mAoMapChannel{ 0 };
 		bool mUseAlphaMask{ false };
 		float mAlphaCutoff{ 0.5f };
 		bool mUseIBL{ false };

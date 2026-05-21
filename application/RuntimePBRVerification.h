@@ -21,6 +21,7 @@ namespace GL_RUNTIME
 		bool enablePbrEmissiveProbe{ false };
 		bool enablePbrMaterialIblProbe{ false };
 		bool enablePbrAlphaMaskProbe{ false };
+		bool enablePbrImportedAssetProbe{ false };
 		int maxFrames{ 3 };
 		int captureFrame{ 2 };
 		std::string capturePath{ "out/pbr_verification.ppm" };

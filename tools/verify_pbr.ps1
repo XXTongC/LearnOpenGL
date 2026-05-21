@@ -23,7 +23,8 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-transparent"; Argument = "--verify-pbr-deferred-transparent"; Capture = "out/pbr_deferred_transparent_verification.ppm" },
     [pscustomobject]@{ Name = "deferred-emissive"; Argument = "--verify-pbr-deferred-emissive"; Capture = "out/pbr_deferred_emissive_verification.ppm" },
     [pscustomobject]@{ Name = "deferred-material-ibl"; Argument = "--verify-pbr-deferred-material-ibl"; Capture = "out/pbr_deferred_material_ibl_verification.ppm" },
-    [pscustomobject]@{ Name = "deferred-alpha-mask"; Argument = "--verify-pbr-deferred-alpha-mask"; Capture = "out/pbr_deferred_alpha_mask_verification.ppm" }
+    [pscustomobject]@{ Name = "deferred-alpha-mask"; Argument = "--verify-pbr-deferred-alpha-mask"; Capture = "out/pbr_deferred_alpha_mask_verification.ppm" },
+    [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" }
 )
 
 function Read-PpmToken {

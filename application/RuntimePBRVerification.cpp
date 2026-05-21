@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "assimpLoader.h"
 #include "../framework/object.h"
 #include "../framework/geometry.h"
 #include "../framework/scene.h"
@@ -32,6 +33,7 @@ namespace
 		int pbrEmissiveMeshCount{ 0 };
 		int pbrCustomIblMeshCount{ 0 };
 		int pbrAlphaMaskedMeshCount{ 0 };
+		int pbrImportedMeshCount{ 0 };
 	};
 
 	void reportLine(const std::string& message)
@@ -42,7 +44,8 @@ namespace
 
 	void collectSceneStats(
 		const std::shared_ptr<GLframework::Object>& object,
-		PBRVerificationSceneStats& stats
+		PBRVerificationSceneStats& stats,
+		bool importedAssetSubtree = false
 	)
 	{
 		if (!object)
@@ -51,6 +54,7 @@ namespace
 		}
 
 		++stats.objectCount;
+		const bool importedAsset = importedAssetSubtree || object->getName().find("PBR Imported") == 0;
 		if (object->getType() == GLframework::ObjectType::Mesh)
 		{
 			++stats.meshCount;
@@ -60,6 +64,10 @@ namespace
 		if (mesh && mesh->getMaterial() && mesh->getMaterial()->getMaterialType() == GLframework::MaterialType::PBRMaterial)
 		{
 			++stats.pbrMeshCount;
+			if (importedAsset)
+			{
+				++stats.pbrImportedMeshCount;
+			}
 			const auto pbrMaterial = std::dynamic_pointer_cast<GLframework::PBRMaterial>(mesh->getMaterial());
 			if (pbrMaterial && pbrMaterial->mEmissiveIntensity > 0.0f && glm::length(pbrMaterial->mEmissiveColor) > 0.0001f)
 			{
@@ -95,7 +103,7 @@ namespace
 
 		for (const auto& child : object->getChildren())
 		{
-			collectSceneStats(child, stats);
+			collectSceneStats(child, stats, importedAsset);
 		}
 	}
 
@@ -214,6 +222,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + alpha mask probe";
 		}
+		if (config.enablePbrImportedAssetProbe)
+		{
+			profileLine += " + imported PBR asset probe";
+		}
 		if (config.enablePbrGBufferDebugPass)
 		{
 			profileLine += " + PBR G-buffer debug pass";
@@ -288,7 +300,11 @@ namespace GL_RUNTIME
 		const RuntimePBRVerificationConfig& config
 	)
 	{
-		if ((!config.enablePbrTransparentFallbackPass && !config.enablePbrEmissiveProbe && !config.enablePbrMaterialIblProbe && !config.enablePbrAlphaMaskProbe) || !context.sceneOffScreen || !context.renderer)
+		if ((!config.enablePbrTransparentFallbackPass
+			&& !config.enablePbrEmissiveProbe
+			&& !config.enablePbrMaterialIblProbe
+			&& !config.enablePbrAlphaMaskProbe
+			&& !config.enablePbrImportedAssetProbe) || !context.sceneOffScreen || !context.renderer)
 		{
 			return;
 		}
@@ -389,6 +405,22 @@ namespace GL_RUNTIME
 			mesh->setPosition({ 0.0f, 0.7f, 2.15f });
 			context.sceneOffScreen->addChild(mesh);
 		}
+
+		if (config.enablePbrImportedAssetProbe)
+		{
+			auto importedAsset = GL_APPLICATION::AssimpLoader::loadPBR("fbx/test/test.fbx", context.renderer);
+			if (importedAsset)
+			{
+				importedAsset->setName("PBR Imported Asset Probe");
+				importedAsset->setPosition({ -2.4f, -1.1f, 1.8f });
+				importedAsset->setScale({ 0.65f, 0.65f, 0.65f });
+				context.sceneOffScreen->addChild(importedAsset);
+			}
+			else
+			{
+				reportLine("PBR imported asset probe failed: fbx/test/test.fbx");
+			}
+		}
 	}
 
 	void RuntimePBRVerification::reportPreparedScene(GLframework::AppRuntimeContext& context)
@@ -408,6 +440,7 @@ namespace GL_RUNTIME
 			+ ", pbrEmissiveMeshes=" + std::to_string(stats.pbrEmissiveMeshCount)
 			+ ", pbrCustomIblMeshes=" + std::to_string(stats.pbrCustomIblMeshCount)
 			+ ", pbrAlphaMaskedMeshes=" + std::to_string(stats.pbrAlphaMaskedMeshCount)
+			+ ", pbrImportedMeshes=" + std::to_string(stats.pbrImportedMeshCount)
 			+ ", iblReady=" + (environmentReady ? std::string{ "yes" } : std::string{ "no" })
 		);
 	}

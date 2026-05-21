@@ -8,6 +8,7 @@
 #include "renderer.h"
 #include "texture.h"
 #include "shader.h"
+#include "AssimpMaterialImporter.h"
 namespace GL_APPLICATION
 {
 	using namespace GLframework;
@@ -18,13 +19,23 @@ namespace GL_APPLICATION
 			const std::string& path, 
 			std::shared_ptr<Renderer> renderer
 		);
+		static std::shared_ptr<Object> load(
+			const std::string& path,
+			std::shared_ptr<Renderer> renderer,
+			const AssimpMaterialImportOptions& materialOptions
+		);
+		static std::shared_ptr<Object> loadPBR(
+			const std::string& path,
+			std::shared_ptr<Renderer> renderer
+		);
 
 	private:
 		static void processNode(
 			std::shared_ptr<Renderer> renderer,
 			aiNode* ainode,std::shared_ptr<Object> parent,
 			const aiScene* scene,
-			const std::string& rootPath
+			const std::string& rootPath,
+			const AssimpMaterialImportOptions& materialOptions
 		);
 
 		static glm::mat4 getMat4f(aiMatrix4x4 value);
@@ -32,14 +43,8 @@ namespace GL_APPLICATION
 		static std::shared_ptr<Mesh> processMesh(
 			std::shared_ptr<Renderer> renderer,aiMesh* aimesh,
 			const aiScene* scene, 
-			const std::string& rootPath
-		);
-
-		static std::shared_ptr<Texture> processTexture(
-			const aiMaterial* aiMat,
-			const aiTextureType & type,
-			const aiScene* scene,
-			const std::string& rootPath
+			const std::string& rootPath,
+			const AssimpMaterialImportOptions& materialOptions
 		);
 		
 	};

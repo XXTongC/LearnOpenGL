@@ -35,6 +35,26 @@ uniform int useRoughnessMap;
 uniform int useAoMap;
 uniform int useEmissiveMap;
 uniform int useNormalMap;
+uniform int metallicMapChannel;
+uniform int roughnessMapChannel;
+uniform int aoMapChannel;
+
+float selectTextureChannel(vec4 value, int channel)
+{
+	if (channel == 1)
+	{
+		return value.g;
+	}
+	if (channel == 2)
+	{
+		return value.b;
+	}
+	if (channel == 3)
+	{
+		return value.a;
+	}
+	return value.r;
+}
 
 void main()
 {
@@ -61,19 +81,19 @@ void main()
 	float metallic = clamp(pbrMetallic, 0.0, 1.0);
 	if (useMetallicMap == 1)
 	{
-		metallic = texture(metallicMap, uv).r;
+		metallic = selectTextureChannel(texture(metallicMap, uv), metallicMapChannel);
 	}
 
 	float roughness = clamp(pbrRoughness, 0.04, 1.0);
 	if (useRoughnessMap == 1)
 	{
-		roughness = clamp(texture(roughnessMap, uv).r, 0.04, 1.0);
+		roughness = clamp(selectTextureChannel(texture(roughnessMap, uv), roughnessMapChannel), 0.04, 1.0);
 	}
 
 	float ao = clamp(pbrAo, 0.0, 1.0);
 	if (useAoMap == 1)
 	{
-		ao = texture(aoMap, uv).r;
+		ao = selectTextureChannel(texture(aoMap, uv), aoMapChannel);
 	}
 
 	vec3 emissive = pbrEmissiveColor * pbrEmissiveIntensity;

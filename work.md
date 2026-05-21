@@ -1737,3 +1737,19 @@ PBR 验证链路已从“手动逐个命令运行”推进到“一键回归脚�
 - `deferred-alpha-mask`
 
 这一步不改变渲染行为，但显著降低后续 PBR 重构的回归成本。下一步继续做 clustered / tiled light list 或 PBR asset import 前，应先保持这个脚本作为基本 gate，避免继续只靠人工观察窗口判断。
+
+### 2026-05-21 Assimp PBR Material Import Mapping
+
+模型导入链路已新增 PBR 材质映射入口，目标是让外部资产可以直接进入 PBR path，而不是只能靠手写 preview grid：
+
+- 新增 `AssimpMaterialImporter`，把 Assimp material 到项目 material 的转换从 `AssimpLoader::processMesh(...)` 中拆出。
+- `AssimpLoader::load(path, renderer)` 默认行为保持不变，仍生成 legacy `PhongMaterial`，避免破坏旧实验。
+- 新增 `AssimpLoader::load(path, renderer, AssimpMaterialImportOptions)` 和 `AssimpLoader::loadPBR(path, renderer)`，可显式选择 `PBRMetallicRoughness` 导入模式。
+- PBR 导入模式会映射 base color / diffuse color、metallic factor、roughness factor、opacity、emissive color / intensity，以及 base color、metallic、roughness、AO、normal、emissive 贴图。
+- `PBRMaterial` 新增 metallic / roughness / AO 贴图通道字段，forward PBR 和 G-buffer shader 现在会按 channel 采样材质贴图；当 Assimp 把 metallic 和 roughness 指向同一张贴图时，导入器会按 glTF metallic-roughness 常见布局使用 `B=metallic`、`G=roughness`。
+- 新增 `--verify-pbr-import`，验证场景会用 `AssimpLoader::loadPBR("fbx/test/test.fbx", ...)` 导入一个 PBR asset probe，并输出 `pbrImportedMeshes`。
+- `tools/verify_pbr.ps1` 已把 `import` 纳入默认回归模式。
+
+本轮已执行默认全量脚本，`Debug|x64` 构建通过，12 个 PBR 验证模式全部通过；新增 `import` 模式输出 `pbrImportedMeshes=1`、`pbrDrawCalls=26`、有效 capture `out/pbr_import_verification.ppm`。
+
+这一步把 PBR 从“程序生成材质球可验证”推进到“Assimp 外部资产可显式导入为 PBRMaterial”。后续还需要继续补真实 glTF / FBX PBR 资产的视觉审阅，以及更完整的 material feature parity，例如 alpha mode、combined occlusion-roughness-metallic texture 的更精细策略、clearcoat / transmission 等扩展。

@@ -357,6 +357,9 @@
     <ClCompile Include="application\RuntimeWindowLifecycle.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\AssimpMaterialImporter.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="framework\texture.cpp">
       <Filter>cppfile\GLframework</Filter>
     </ClCompile>
@@ -723,6 +726,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeWindowLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\AssimpMaterialImporter.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="framework\texture.h">
