@@ -224,6 +224,7 @@ namespace
 		context.stats->pbrDeferredLightBufferBound = context.stats->pbrDeferredLightBufferBound || stats.lightBufferBound;
 		context.stats->pbrDeferredLightBufferPointLights = std::max(context.stats->pbrDeferredLightBufferPointLights, stats.lightBufferPointLightCount);
 		context.stats->pbrDeferredLightBufferMaxPointLights = std::max(context.stats->pbrDeferredLightBufferMaxPointLights, stats.lightBufferMaxPointLightCount);
+		context.stats->pbrDeferredTiledLightsEnabled = context.stats->pbrDeferredTiledLightsEnabled || stats.tiledLightGridEnabled;
 		context.stats->pbrDeferredTiledLightGridBound = context.stats->pbrDeferredTiledLightGridBound || stats.tiledLightGridBound;
 		context.stats->pbrDeferredTiledLightGridTileSize = std::max(context.stats->pbrDeferredTiledLightGridTileSize, stats.tiledLightGridTileSize);
 		context.stats->pbrDeferredTiledLightGridCutoff = std::max(context.stats->pbrDeferredTiledLightGridCutoff, stats.tiledLightGridCutoff);

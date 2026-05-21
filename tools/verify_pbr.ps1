@@ -26,6 +26,7 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-emissive"; Argument = "--verify-pbr-deferred-emissive"; Capture = "out/pbr_deferred_emissive_verification.ppm" },
     [pscustomobject]@{ Name = "deferred-material-ibl"; Argument = "--verify-pbr-deferred-material-ibl"; Capture = "out/pbr_deferred_material_ibl_verification.ppm" },
     [pscustomobject]@{ Name = "deferred-alpha-mask"; Argument = "--verify-pbr-deferred-alpha-mask"; Capture = "out/pbr_deferred_alpha_mask_verification.ppm" },
+    [pscustomobject]@{ Name = "deferred-untiled-lights"; Argument = "--verify-pbr-deferred-untiled-lights"; Capture = "out/pbr_deferred_untiled_lights_verification.ppm"; ExpectUntiledFallback = $true },
     [pscustomobject]@{ Name = "deferred-tiled-lights"; Argument = "--verify-pbr-deferred-tiled-lights"; Capture = "out/pbr_deferred_tiled_lights_verification.ppm"; ExpectTiledCulling = $true },
     [pscustomobject]@{ Name = "deferred-tiled-lights-32"; Argument = "--verify-pbr-deferred-tiled-lights-32"; Capture = "out/pbr_deferred_tiled_lights_32_verification.ppm"; ExpectTiledCulling = $true; ExpectTileSize = 32 },
     [pscustomobject]@{ Name = "deferred-tiled-lights-cutoff-005"; Argument = "--verify-pbr-deferred-tiled-lights-cutoff-005"; Capture = "out/pbr_deferred_tiled_lights_cutoff_005_verification.ppm"; ExpectTiledCulling = $true; ExpectLightCutoff = 0.05 },
@@ -355,6 +356,30 @@ foreach ($mode in $selectedModes) {
                 if ([int]$occupiedTiles -ge $tileCount) {
                     $failures.Add("$($mode.Name): tiled light grid occupied every tile ($occupiedTiles >= $tileCount)")
                 }
+            }
+        }
+    }
+    if ($mode.PSObject.Properties.Name -contains "ExpectUntiledFallback" -and $mode.ExpectUntiledFallback) {
+        if (!$rendererLine) {
+            $failures.Add("$($mode.Name): missing renderer stats")
+        }
+        else {
+            $drawCalls = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredLightingDrawCalls=(\d+)" -Group 1
+            $pointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredLightBufferPointLights=(\d+)/" -Group 1
+            if ($null -eq $drawCalls -or [int]$drawCalls -le 0) {
+                $failures.Add("$($mode.Name): deferred lighting fallback did not draw")
+            }
+            if ($rendererLine -notmatch "pbrDeferredLightBufferBound=yes") {
+                $failures.Add("$($mode.Name): deferred light buffer was not bound")
+            }
+            if ($null -eq $pointLights -or [int]$pointLights -le 0) {
+                $failures.Add("$($mode.Name): deferred light buffer reported no point lights")
+            }
+            if ($rendererLine -notmatch "pbrDeferredTiledLightsEnabled=no") {
+                $failures.Add("$($mode.Name): tiled point-light path was not disabled")
+            }
+            if ($rendererLine -notmatch "pbrDeferredTiledLightGridBound=no") {
+                $failures.Add("$($mode.Name): tiled light grid should not be bound in untiled fallback mode")
             }
         }
     }

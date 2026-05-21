@@ -24,6 +24,7 @@ namespace GL_RUNTIME
 		bool enablePbrAlphaMaskProbe{ false };
 		bool enablePbrImportedAssetProbe{ false };
 		bool enablePbrTiledLightProbe{ false };
+		bool disablePbrDeferredTiledLights{ false };
 		int pbrDeferredTileSizeOverride{ 0 };
 		float pbrDeferredTiledLightCutoffOverride{ 0.0f };
 		int maxFrames{ 3 };

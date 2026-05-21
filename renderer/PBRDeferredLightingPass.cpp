@@ -106,6 +106,7 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 	stats.lightBufferMaxPointLightCount = lightBufferStats.maxPointLightCount;
 
 	const bool useTiledPointLights = profile.pbrDeferredTiledLightsEnabled && lightBufferStats.pointLightCount > 0;
+	stats.tiledLightGridEnabled = useTiledPointLights;
 	shader->setInt("useTiledPointLights", useTiledPointLights ? 1 : 0);
 	shader->setInt("tiledLightTileSize", std::max(profile.pbrDeferredTileSize, 1));
 	shader->setInt("tiledLightGridColumns", 0);

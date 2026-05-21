@@ -1941,3 +1941,21 @@ Tiled light grid 的 point light influence cutoff 已从硬编码常量提升为
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights-cutoff-005`：构建通过，输出 `pbrDeferredTiledLightGridCutoff=0.050000`、`pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=714`、`pbrDeferredTiledLightGridCulledIndices=6486`、`pbrDeferredTiledLightGridOccupiedTiles=714/3600`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：16 个 PBR verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Untiled Fallback Verification
+
+`pbrDeferredTiledLightsEnabled` 现在有专用 verification 覆盖，确保 profile 关闭 tiled path 时 deferred lighting 会回退到全局 point-light loop：
+
+- `RuntimePBRVerificationConfig` 新增 `disablePbrDeferredTiledLights`。
+- 新增命令行模式 `--verify-pbr-deferred-untiled-lights`，复用 sparse tiled light probe，但强制设置 `RendererFramePassProfile::pbrDeferredTiledLightsEnabled=false`。
+- `PBRDeferredLightingPass` 现在把本帧是否启用 tiled point-light path 写入 stats。
+- `RendererFrameStats`、Debug UI 和 runtime verification 输出新增 `pbrDeferredTiledLightsEnabled`。
+- `tools/verify_pbr.ps1` 默认 PBR 回归从 16 个模式扩展为 17 个模式，新增 `deferred-untiled-lights`。
+- 脚本会断言 untiled fallback 模式下 deferred lighting 仍绘制、deferred light buffer 仍绑定并有 point lights、`pbrDeferredTiledLightsEnabled=no`、`pbrDeferredTiledLightGridBound=no`。
+
+这一步让 tiled / untiled 两条 deferred point-light shading 路径都可回归。后续对比 tiled、clustered 或 GPU culling 时，可以明确验证 fallback 仍可用。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-untiled-lights`：构建通过，输出 `pbrDeferredLightingDrawCalls=1`、`pbrDeferredLightBufferBound=yes`、`pbrDeferredLightBufferPointLights=2/16`、`pbrDeferredTiledLightsEnabled=no`、`pbrDeferredTiledLightGridBound=no`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：17 个 PBR verification mode 全部通过。

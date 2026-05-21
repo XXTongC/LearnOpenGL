@@ -270,6 +270,7 @@ namespace
 			ImGui::Text("PBR Deferred Point Shadow Atlas Lights: %d", stats.pbrDeferredPointShadowAtlasLights);
 			ImGui::Text("PBR Deferred Light Buffer Bound: %s", stats.pbrDeferredLightBufferBound ? "Yes" : "No");
 			ImGui::Text("PBR Deferred Light Buffer Point Lights: %d / %d", stats.pbrDeferredLightBufferPointLights, stats.pbrDeferredLightBufferMaxPointLights);
+			ImGui::Text("PBR Deferred Tiled Lights Enabled: %s", stats.pbrDeferredTiledLightsEnabled ? "Yes" : "No");
 			ImGui::Text("PBR Deferred Tiled Light Grid Bound: %s", stats.pbrDeferredTiledLightGridBound ? "Yes" : "No");
 			ImGui::Text("PBR Deferred Tiled Light Grid: %d x %d tiles @ %d px", stats.pbrDeferredTiledLightGridColumns, stats.pbrDeferredTiledLightGridRows, stats.pbrDeferredTiledLightGridTileSize);
 			ImGui::Text("PBR Deferred Tiled Light Cutoff: %.4f", stats.pbrDeferredTiledLightGridCutoff);

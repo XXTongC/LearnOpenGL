@@ -252,6 +252,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + sparse tiled light probe";
 		}
+		if (config.disablePbrDeferredTiledLights)
+		{
+			profileLine += " + tiled lights disabled";
+		}
 		if (config.pbrDeferredTileSizeOverride > 0)
 		{
 			profileLine += " + tiled light tile size " + std::to_string(config.pbrDeferredTileSizeOverride);
@@ -327,6 +331,10 @@ namespace GL_RUNTIME
 		if (config.pbrDeferredTiledLightCutoffOverride > 0.0f)
 		{
 			rendererPassProfile.pbrDeferredTiledLightCutoff = config.pbrDeferredTiledLightCutoffOverride;
+		}
+		if (config.disablePbrDeferredTiledLights)
+		{
+			rendererPassProfile.pbrDeferredTiledLightsEnabled = false;
 		}
 
 		if (config.enablePbrGBufferDebugPass)
@@ -554,6 +562,8 @@ namespace GL_RUNTIME
 			statsLine += (stats.pbrDeferredLightBufferBound ? "yes" : "no");
 			statsLine += ", pbrDeferredLightBufferPointLights=" + std::to_string(stats.pbrDeferredLightBufferPointLights);
 			statsLine += "/" + std::to_string(stats.pbrDeferredLightBufferMaxPointLights);
+			statsLine += ", pbrDeferredTiledLightsEnabled=";
+			statsLine += (stats.pbrDeferredTiledLightsEnabled ? "yes" : "no");
 			statsLine += ", pbrDeferredTiledLightGridBound=";
 			statsLine += (stats.pbrDeferredTiledLightGridBound ? "yes" : "no");
 			statsLine += ", pbrDeferredTiledLightGridSize=" + std::to_string(stats.pbrDeferredTiledLightGridColumns)
