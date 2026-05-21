@@ -2154,3 +2154,6 @@
   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Deferred Clustered Readback Gate` 技术记录。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid,deferred-clustered-grid-no-readback`，`Debug|x64` 构建通过；readback mode 输出 `pbrDeferredClusteredLightGridStatsReadback=yes`、`pbrDeferredClusteredLightGridLightIndexStats=yes`、`pbrDeferredClusteredLightGridIndices=14400`、`pbrDeferredClusteredLightGridCulledIndices=158400`；no-readback mode 输出 `pbrDeferredClusteredLightGridStatsReadback=no`、`pbrDeferredClusteredLightGridLightIndexStats=no`。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 22 个 verification mode 全部通过。
+- 完成第一百八十一轮桌面重构报告同步：
+  - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新代码状态同步到 `3327b93 Gate PBR clustered stats readback`。
+  - 报告中将默认 PBR verification 状态更新为 22 个模式，并把 clustered readback 状态从“未完成”更新为默认 no-readback、verification/debug 显式打开 readback 的 gate 设计；下一步建议调整为 clustered debug visualization、GPU timing 和真实资产 baseline。
