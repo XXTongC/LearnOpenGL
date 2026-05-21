@@ -3,6 +3,7 @@ param(
     [string]$Platform = "x64",
     [switch]$SkipBuild,
     [switch]$DiscardCaptures,
+    [switch]$NoLinkDebugInfo,
     [string[]]$Modes = @()
 )
 
@@ -163,7 +164,16 @@ function Invoke-Build {
         throw "VsDevCmd.bat was not found at $vsDevCmd"
     }
 
-    $buildCommand = "`"$vsDevCmd`" -arch=x64 -host_arch=x64 >nul && msbuild text2.sln /m:1 /p:Configuration=$Configuration /p:Platform=$Platform /p:LinkIncremental=false /v:minimal"
+    $noDebugInfoArg = ""
+    if ($NoLinkDebugInfo) {
+        $noDebugInfoTarget = Join-Path $scriptPath "msbuild_no_link_debug.targets"
+        if (!(Test-Path $noDebugInfoTarget)) {
+            throw "No-link-debug-info MSBuild target was not found at $noDebugInfoTarget"
+        }
+        $noDebugInfoArg = " /p:ForceImportAfterCppTargets=`"$noDebugInfoTarget`""
+    }
+
+    $buildCommand = "`"$vsDevCmd`" -arch=x64 -host_arch=x64 >nul && msbuild text2.sln /m:1 /p:Configuration=$Configuration /p:Platform=$Platform /p:LinkIncremental=false$noDebugInfoArg /v:minimal"
     Push-Location $repoRoot
     try {
         & cmd.exe /d /s /c $buildCommand
@@ -190,13 +200,18 @@ if (!(Test-Path $outDir)) {
 
 $selectedModes = $allModes
 if ($Modes.Count -gt 0) {
+    $normalizedModes = @(
+        foreach ($mode in $Modes) {
+            $mode -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_.Length -gt 0 }
+        }
+    )
     $requested = @{}
-    foreach ($mode in $Modes) {
+    foreach ($mode in $normalizedModes) {
         $requested[$mode] = $true
     }
 
     $selectedModes = @($allModes | Where-Object { $requested.ContainsKey($_.Name) -or $requested.ContainsKey($_.Argument) })
-    if ($selectedModes.Count -ne $Modes.Count) {
+    if ($selectedModes.Count -ne $normalizedModes.Count) {
         $available = ($allModes | ForEach-Object { $_.Name }) -join ", "
         throw "Unknown mode. Available modes: $available"
     }
@@ -209,6 +224,7 @@ $summaryLines.Add("Repository: $repoRoot")
 $summaryLines.Add("Configuration: $Configuration")
 $summaryLines.Add("Platform: $Platform")
 $summaryLines.Add("DiscardCaptures: $($DiscardCaptures.IsPresent)")
+$summaryLines.Add("NoLinkDebugInfo: $($NoLinkDebugInfo.IsPresent)")
 $summaryLines.Add("")
 
 if (!$SkipBuild) {

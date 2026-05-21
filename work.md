@@ -1797,3 +1797,19 @@ Tiled light grid 已新增可视诊断 pass，用于直接观察每个 screen ti
 - `tools/verify_pbr.ps1` 默认 PBR 回归从 13 个模式扩展为 14 个模式，并新增 `-DiscardCaptures`，可以在低磁盘空间下解析 PPM 后立即删除 capture，只保留 summary / log。
 
 本轮 full verification 已通过，新增 heatmap 模式输出 `pbrDeferredTiledLightDebugDrawCalls=1`、`pbrDeferredTiledLightGridSize=80x45`、`pbrDeferredTiledLightGridIndices=3311`、非黑比例 `100%`、RGB 均值约 `185.09 / 173.14 / 87.33`。这说明 tiled light grid 不仅能服务 deferred lighting，也能被独立诊断 pass 消费，后续可用它继续收紧 CPU bounds 或迁移 clustered / GPU culling。
+
+### 2026-05-21 PBR Deferred Tiled Light Bounds Cleanup
+
+Tiled light grid 的 screen-space bounds 估算已从“单侧采样 + 64px 最小半径”调整为更明确的投影采样策略：
+
+- `PBRDeferredTiledLightGrid::calculateLightBounds(...)` 现在同时采样 `+right`、`-right`、`+up`、`-up` 四个 light radius offset，使用这些投影点相对 light center 的最大屏幕距离估算 tile 覆盖半径。
+- 只有当所有 radius sample 都无法投影时，才回退到保守的 `64px` fallback；正常情况下最小半径降为 `2px`，避免小光源被无条件扩大为 64px 覆盖。
+- 当前 sparse tiled verification 仍输出 `pbrDeferredTiledLightGridIndices=3311`，说明该验证场景的覆盖范围主要由真实投影半径决定，而不是旧 64px 下限造成；本轮改动主要是移除隐藏魔数对普通小光源的过度扩张风险。
+- 新增 `tools/msbuild_no_link_debug.targets` 与 `tools/verify_pbr.ps1 -NoLinkDebugInfo`，用于在低磁盘空间下导入 `/DEBUG:NONE`，避免验证构建生成几十 MB 的 linker PDB。
+- `tools/verify_pbr.ps1 -Modes` 现在支持逗号分隔输入，例如 `-Modes deferred-tiled-lights,deferred-tiled-heatmap`。
+
+本轮验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，tiled culling 验证通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：14 个 PBR verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures -Modes deferred-tiled-lights,deferred-tiled-heatmap`：逗号分隔 `-Modes` 解析验证通过。

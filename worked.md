@@ -1979,3 +1979,10 @@
   - 已提交并推送 `c6ed195 Add PBR tiled light heatmap debug pass` 到 `github/codex/text2-refactor`。
   - 已更新桌面报告 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，把报告状态同步到 heatmap debug pass、14 模式验证和 `-DiscardCaptures` 低磁盘空间流程。
   - `imgui.ini` 仍保持未提交状态，因为它是运行时 UI 布局状态，不属于本轮重构代码。
+- 完成第一百四十九轮 PBR deferred tiled light bounds cleanup：
+  - 更新 [renderer/PBRDeferredTiledLightGrid.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredTiledLightGrid.cpp)，screen-space light bounds 从单侧 `right/up` 投影采样改为 `+right/-right/+up/-up` 四点采样；正常投影成功时不再强制使用 `64px` 最小半径，只在采样失败时保留保守 fallback。
+  - 新增 [tools/msbuild_no_link_debug.targets](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\msbuild_no_link_debug.targets)，用于验证构建时导入 `/DEBUG:NONE`，避免低磁盘空间下 linker PDB 导致 `LNK1201/LNK1318`。
+  - 更新 [tools/verify_pbr.ps1](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\verify_pbr.ps1)，新增 `-NoLinkDebugInfo` 构建选项，summary 输出该选项状态，并让 `-Modes` 支持逗号分隔输入。
+  - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`，`Debug|x64` 构建通过，`deferred-tiled-lights` 验证通过，输出 `pbrDeferredTiledLightGridIndices=3311`。
+  - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，14 个 PBR verification mode 全部通过。
+  - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures -Modes deferred-tiled-lights,deferred-tiled-heatmap`，确认逗号分隔 `-Modes` 可正确选择两个 tiled verification mode。

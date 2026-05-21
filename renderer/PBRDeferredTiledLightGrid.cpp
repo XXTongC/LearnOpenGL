@@ -99,18 +99,32 @@ namespace
 		}
 
 		const float radius = estimateLightRadius(light);
-		bool rightValid = false;
-		bool upValid = false;
-		const glm::vec2 right = projectToScreen(position + camera.mRight * radius, viewProjection, width, height, rightValid);
-		const glm::vec2 up = projectToScreen(position + camera.mUp * radius, viewProjection, width, height, upValid);
-		float radiusPixels = 64.0f;
-		if (rightValid)
+		const glm::vec3 sampleOffsets[] = {
+			camera.mRight * radius,
+			-camera.mRight * radius,
+			camera.mUp * radius,
+			-camera.mUp * radius
+		};
+		float radiusPixels = 0.0f;
+		for (const auto& offset : sampleOffsets)
 		{
-			radiusPixels = std::max(radiusPixels, std::abs(right.x - center.x));
+			bool sampleValid = false;
+			const glm::vec2 sample = projectToScreen(position + offset, viewProjection, width, height, sampleValid);
+			if (!sampleValid)
+			{
+				continue;
+			}
+
+			const glm::vec2 delta = sample - center;
+			radiusPixels = std::max(radiusPixels, std::max(std::abs(delta.x), std::abs(delta.y)));
 		}
-		if (upValid)
+		if (radiusPixels <= 0.0f)
 		{
-			radiusPixels = std::max(radiusPixels, std::abs(up.y - center.y));
+			radiusPixels = 64.0f;
+		}
+		else
+		{
+			radiusPixels = std::max(radiusPixels, 2.0f);
 		}
 
 		const float minX = center.x - radiusPixels;
