@@ -20,6 +20,8 @@ void RendererFramePassProfile::resetToDefaults()
 	pbrDeferredLightingIntensity = 1.0f;
 	pbrDeferredIblDiffuseStrength = 1.0f;
 	pbrDeferredIblSpecularStrength = 1.0f;
+	pbrDeferredTiledLightsEnabled = true;
+	pbrDeferredTileSize = 16;
 	iblDebugMode = 0;
 	iblDebugMipLevel = 0.0f;
 	iblDebugIntensity = 1.0f;
@@ -38,6 +40,8 @@ void RendererFramePassProfile::visitEditableProperties(GL_EDITOR::PropertyBuilde
 	builder.addConfigFloat("pbrDeferredLightingIntensity", "PBR Deferred Lighting Intensity", &pbrDeferredLightingIntensity, 0.0f, 8.0f);
 	builder.addConfigFloat("pbrDeferredIblDiffuseStrength", "PBR Deferred IBL Diffuse Strength", &pbrDeferredIblDiffuseStrength, 0.0f, 8.0f);
 	builder.addConfigFloat("pbrDeferredIblSpecularStrength", "PBR Deferred IBL Specular Strength", &pbrDeferredIblSpecularStrength, 0.0f, 8.0f);
+	builder.addConfigBool("pbrDeferredTiledLightsEnabled", "PBR Deferred Tiled Lights", &pbrDeferredTiledLightsEnabled);
+	builder.addConfigInt("pbrDeferredTileSize", "PBR Deferred Tile Size", &pbrDeferredTileSize, 8, 64);
 	builder.addSection("PBR GBuffer Debug Pass");
 	builder.addConfigInt("pbrGBufferDebugMode", "PBR GBuffer Debug Mode", &pbrGBufferDebugMode, 0, 8);
 	builder.addConfigFloat("pbrGBufferDebugIntensity", "PBR GBuffer Debug Intensity", &pbrGBufferDebugIntensity, 0.0f, 8.0f);

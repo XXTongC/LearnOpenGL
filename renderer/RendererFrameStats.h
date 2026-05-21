@@ -38,6 +38,13 @@ namespace GLframework
 		bool pbrDeferredLightBufferBound{ false };
 		int pbrDeferredLightBufferPointLights{ 0 };
 		int pbrDeferredLightBufferMaxPointLights{ 0 };
+		bool pbrDeferredTiledLightGridBound{ false };
+		int pbrDeferredTiledLightGridTileSize{ 0 };
+		int pbrDeferredTiledLightGridColumns{ 0 };
+		int pbrDeferredTiledLightGridRows{ 0 };
+		int pbrDeferredTiledLightGridTileCount{ 0 };
+		int pbrDeferredTiledLightGridIndexCount{ 0 };
+		int pbrDeferredTiledLightGridMaxTileLights{ 0 };
 		int pbrGBufferDebugDrawCalls{ 0 };
 		int legacySceneDrawCalls{ 0 };
 		int legacyTransparentDrawCalls{ 0 };

@@ -5,6 +5,7 @@
 #include "MaterialBindingContext.h"
 #include "mesh/mesh.h"
 #include "renderer/PBRDeferredLightBuffer.h"
+#include "renderer/PBRDeferredTiledLightGrid.h"
 
 namespace GLframework
 {
@@ -24,6 +25,14 @@ namespace GLframework
 		bool lightBufferBound{ false };
 		int lightBufferPointLightCount{ 0 };
 		int lightBufferMaxPointLightCount{ 0 };
+		bool tiledLightGridBound{ false };
+		bool tiledLightGridEnabled{ false };
+		int tiledLightGridTileSize{ 0 };
+		int tiledLightGridColumns{ 0 };
+		int tiledLightGridRows{ 0 };
+		int tiledLightGridTileCount{ 0 };
+		int tiledLightGridIndexCount{ 0 };
+		int tiledLightGridMaxTileLightCount{ 0 };
 	};
 
 	class PBRDeferredLightingPass
@@ -40,7 +49,9 @@ namespace GLframework
 		PBRDeferredLightingPassStats bindFrameUniforms(
 			const std::shared_ptr<Shader>& shader,
 			const MaterialBindingContext& context,
-			const RendererFramePassProfile& profile
+			const RendererFramePassProfile& profile,
+			unsigned int targetWidth,
+			unsigned int targetHeight
 		);
 		void bindGBufferTextures(
 			const std::shared_ptr<Shader>& shader,
@@ -50,5 +61,6 @@ namespace GLframework
 
 		std::shared_ptr<Mesh> mLightingQuad{ nullptr };
 		PBRDeferredLightBuffer mLightBuffer{};
+		PBRDeferredTiledLightGrid mTiledLightGrid{};
 	};
 }

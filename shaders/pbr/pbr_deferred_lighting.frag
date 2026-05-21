@@ -34,9 +34,45 @@ layout(std430, binding = 3) readonly buffer PBRDeferredLightBuffer
 	vec4 deferredPointLightAttenuation[MAX_POINT_LIGHTS];
 };
 
+layout(std430, binding = 4) readonly buffer PBRDeferredTileBuffer
+{
+	ivec4 deferredTileOffsetCount[];
+};
+
+layout(std430, binding = 5) readonly buffer PBRDeferredTileIndexBuffer
+{
+	int deferredTileLightIndices[];
+};
+
+uniform int useTiledPointLights;
+uniform int tiledLightTileSize;
+uniform int tiledLightGridColumns;
+uniform int tiledLightGridRows;
+
 #include "pbr_lighting.glsl"
 #include "pbr_csm_shadow.glsl"
 #include "pbr_point_shadow.glsl"
+
+vec3 calculateDeferredPointLight(
+	int lightIndex,
+	vec3 worldPosition,
+	vec3 n,
+	vec3 v,
+	vec3 albedo,
+	float metallic,
+	float roughness
+)
+{
+	vec3 l = deferredPointLightPositionEnabled[lightIndex].xyz - worldPosition;
+	float distance = length(l);
+	l = normalize(l);
+	vec3 attenuationTerms = deferredPointLightAttenuation[lightIndex].xyz;
+	float attenuation = 1.0 / max(attenuationTerms.x * distance * distance + attenuationTerms.y * distance + attenuationTerms.z, 0.0001);
+	vec4 pointColorIntensity = deferredPointLightColorIntensity[lightIndex];
+	float pointEnabled = deferredPointLightPositionEnabled[lightIndex].w;
+	float pointShadow = calculatePbrPointShadow(worldPosition, deferredPointLightPositionEnabled[lightIndex].xyz, lightIndex);
+	return calculatePbrLight(pointColorIntensity.rgb * pointColorIntensity.a * attenuation * pointEnabled, l, n, v, albedo, metallic, roughness) * (1.0 - pointShadow);
+}
 
 void main()
 {
@@ -83,17 +119,29 @@ void main()
 	color += calculatePbrLight(dirRadiance, dirLightDirection, n, v, albedo, metallic, roughness) * (1.0 - directionalShadow);
 
 	int pointLightCount = clamp(deferredPointLightMeta.x, 0, MAX_POINT_LIGHTS);
-	for (int i = 0; i < pointLightCount; ++i)
+	if (useTiledPointLights == 1 && tiledLightGridColumns > 0 && tiledLightGridRows > 0 && tiledLightTileSize > 0)
 	{
-		vec3 l = deferredPointLightPositionEnabled[i].xyz - worldPosition;
-		float distance = length(l);
-		l = normalize(l);
-		vec3 attenuationTerms = deferredPointLightAttenuation[i].xyz;
-		float attenuation = 1.0 / max(attenuationTerms.x * distance * distance + attenuationTerms.y * distance + attenuationTerms.z, 0.0001);
-		vec4 pointColorIntensity = deferredPointLightColorIntensity[i];
-		float pointEnabled = deferredPointLightPositionEnabled[i].w;
-		float pointShadow = calculatePbrPointShadow(worldPosition, deferredPointLightPositionEnabled[i].xyz, i);
-		color += calculatePbrLight(pointColorIntensity.rgb * pointColorIntensity.a * attenuation * pointEnabled, l, n, v, albedo, metallic, roughness) * (1.0 - pointShadow);
+		ivec2 tileCoord = ivec2(gl_FragCoord.xy) / tiledLightTileSize;
+		tileCoord = clamp(tileCoord, ivec2(0), ivec2(tiledLightGridColumns - 1, tiledLightGridRows - 1));
+		int tileIndex = tileCoord.y * tiledLightGridColumns + tileCoord.x;
+		ivec4 offsetCount = deferredTileOffsetCount[tileIndex];
+		int offset = max(offsetCount.x, 0);
+		int count = max(offsetCount.y, 0);
+		for (int entry = 0; entry < count; ++entry)
+		{
+			int lightIndex = deferredTileLightIndices[offset + entry];
+			if (lightIndex >= 0 && lightIndex < pointLightCount)
+			{
+				color += calculateDeferredPointLight(lightIndex, worldPosition, n, v, albedo, metallic, roughness);
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < pointLightCount; ++i)
+		{
+			color += calculateDeferredPointLight(i, worldPosition, n, v, albedo, metallic, roughness);
+		}
 	}
 
 	FragColor = vec4(color * max(pbrDeferredLightingIntensity, 0.0) + emissive, 1.0);

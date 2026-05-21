@@ -221,6 +221,13 @@ namespace
 		context.stats->pbrDeferredLightBufferBound = context.stats->pbrDeferredLightBufferBound || stats.lightBufferBound;
 		context.stats->pbrDeferredLightBufferPointLights = std::max(context.stats->pbrDeferredLightBufferPointLights, stats.lightBufferPointLightCount);
 		context.stats->pbrDeferredLightBufferMaxPointLights = std::max(context.stats->pbrDeferredLightBufferMaxPointLights, stats.lightBufferMaxPointLightCount);
+		context.stats->pbrDeferredTiledLightGridBound = context.stats->pbrDeferredTiledLightGridBound || stats.tiledLightGridBound;
+		context.stats->pbrDeferredTiledLightGridTileSize = std::max(context.stats->pbrDeferredTiledLightGridTileSize, stats.tiledLightGridTileSize);
+		context.stats->pbrDeferredTiledLightGridColumns = std::max(context.stats->pbrDeferredTiledLightGridColumns, stats.tiledLightGridColumns);
+		context.stats->pbrDeferredTiledLightGridRows = std::max(context.stats->pbrDeferredTiledLightGridRows, stats.tiledLightGridRows);
+		context.stats->pbrDeferredTiledLightGridTileCount = std::max(context.stats->pbrDeferredTiledLightGridTileCount, stats.tiledLightGridTileCount);
+		context.stats->pbrDeferredTiledLightGridIndexCount = std::max(context.stats->pbrDeferredTiledLightGridIndexCount, stats.tiledLightGridIndexCount);
+		context.stats->pbrDeferredTiledLightGridMaxTileLights = std::max(context.stats->pbrDeferredTiledLightGridMaxTileLights, stats.tiledLightGridMaxTileLightCount);
 	}
 
 	void renderPBRGBufferDebug(RendererFrameContext& context)

@@ -1753,3 +1753,19 @@ PBR 验证链路已从“手动逐个命令运行”推进到“一键回归脚�
 本轮已执行默认全量脚本，`Debug|x64` 构建通过，12 个 PBR 验证模式全部通过；新增 `import` 模式输出 `pbrImportedMeshes=1`、`pbrDrawCalls=26`、有效 capture `out/pbr_import_verification.ppm`。
 
 这一步把 PBR 从“程序生成材质球可验证”推进到“Assimp 外部资产可显式导入为 PBRMaterial”。后续还需要继续补真实 glTF / FBX PBR 资产的视觉审阅，以及更完整的 material feature parity，例如 alpha mode、combined occlusion-roughness-metallic texture 的更精细策略、clearcoat / transmission 等扩展。
+
+### 2026-05-21 PBR Deferred Tiled Light Grid First Stage
+
+Deferred PBR point light shading 已从“每个 fragment 遍历全局 point light list”推进到“可选 tile-indexed light list”：
+
+- 新增 `PBRDeferredTiledLightGrid`，在 CPU 侧根据当前 camera、viewport、point light attenuation radius 生成 screen-space tile light list。
+- `PBRDeferredLightingPass` 现在会在 deferred lighting 前绑定 tiled grid SSBO，并继续保留全局 point light loop fallback。
+- `shaders/pbr/pbr_deferred_lighting.frag` 新增 tile buffer / tile index buffer 两个 SSBO：
+  - tile buffer 使用 binding `4`，保存每个 tile 的 offset / count。
+  - index buffer 使用 binding `5`，保存 tile 对应的 point light index 列表。
+- `RendererFramePassProfile` 新增 `pbrDeferredTiledLightsEnabled` 与 `pbrDeferredTileSize`，可通过 Debug UI / profile 控制 tiled path。
+- `RendererFrameStats`、Debug UI 和 runtime verification 输出新增 tiled light grid stats，用于确认 deferred shader 是否实际使用 tile-indexed light list。
+
+这一步是 tiled / clustered lighting 的第一阶段，不是最终性能版本。当前 CPU bounds 仍偏保守，验证场景中两个 point lights 会覆盖全部 `80x45` tiles，因此 `pbrDeferredTiledLightGridIndices=7200`。这个结果说明数据链路已经跑通，但后续还需要继续收紧 culling bounds，或进一步演进到 GPU compute / clustered culling。
+
+本轮已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1`，`Debug|x64` 构建通过，12 个 PBR verification mode 全部通过；deferred 系列输出确认 `pbrDeferredTiledLightGridBound=yes`、`pbrDeferredTiledLightGridSize=80x45`、`pbrDeferredTiledLightGridTileSize=16`、`pbrDeferredTiledLightGridMaxTileLights=2`。

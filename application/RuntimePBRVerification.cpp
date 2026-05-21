@@ -503,6 +503,13 @@ namespace GL_RUNTIME
 			statsLine += (stats.pbrDeferredLightBufferBound ? "yes" : "no");
 			statsLine += ", pbrDeferredLightBufferPointLights=" + std::to_string(stats.pbrDeferredLightBufferPointLights);
 			statsLine += "/" + std::to_string(stats.pbrDeferredLightBufferMaxPointLights);
+			statsLine += ", pbrDeferredTiledLightGridBound=";
+			statsLine += (stats.pbrDeferredTiledLightGridBound ? "yes" : "no");
+			statsLine += ", pbrDeferredTiledLightGridSize=" + std::to_string(stats.pbrDeferredTiledLightGridColumns)
+				+ "x" + std::to_string(stats.pbrDeferredTiledLightGridRows);
+			statsLine += ", pbrDeferredTiledLightGridTileSize=" + std::to_string(stats.pbrDeferredTiledLightGridTileSize);
+			statsLine += ", pbrDeferredTiledLightGridIndices=" + std::to_string(stats.pbrDeferredTiledLightGridIndexCount);
+			statsLine += ", pbrDeferredTiledLightGridMaxTileLights=" + std::to_string(stats.pbrDeferredTiledLightGridMaxTileLights);
 		}
 		if (stats.pbrGBufferDebugDrawCalls > 0)
 		{

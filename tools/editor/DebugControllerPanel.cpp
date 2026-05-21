@@ -270,6 +270,9 @@ namespace
 			ImGui::Text("PBR Deferred Point Shadow Atlas Lights: %d", stats.pbrDeferredPointShadowAtlasLights);
 			ImGui::Text("PBR Deferred Light Buffer Bound: %s", stats.pbrDeferredLightBufferBound ? "Yes" : "No");
 			ImGui::Text("PBR Deferred Light Buffer Point Lights: %d / %d", stats.pbrDeferredLightBufferPointLights, stats.pbrDeferredLightBufferMaxPointLights);
+			ImGui::Text("PBR Deferred Tiled Light Grid Bound: %s", stats.pbrDeferredTiledLightGridBound ? "Yes" : "No");
+			ImGui::Text("PBR Deferred Tiled Light Grid: %d x %d tiles @ %d px", stats.pbrDeferredTiledLightGridColumns, stats.pbrDeferredTiledLightGridRows, stats.pbrDeferredTiledLightGridTileSize);
+			ImGui::Text("PBR Deferred Tiled Light Indices: %d, max per tile %d", stats.pbrDeferredTiledLightGridIndexCount, stats.pbrDeferredTiledLightGridMaxTileLights);
 			ImGui::Text("PBR GBuffer Debug Draw Calls: %d", stats.pbrGBufferDebugDrawCalls);
 			ImGui::Text("PBR Scene Draw Calls: %d", stats.pbrSceneDrawCalls);
 			ImGui::Text("PBR Transparent Draw Calls: %d", stats.pbrTransparentDrawCalls);

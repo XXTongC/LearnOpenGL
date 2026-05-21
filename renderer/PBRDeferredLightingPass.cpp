@@ -1,5 +1,7 @@
 #include "PBRDeferredLightingPass.h"
 
+#include <algorithm>
+
 #include "camera/camera.h"
 #include "core.h"
 #include "framework/geometry.h"
@@ -66,7 +68,7 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::render(
 
 	shader->begin();
 	bindGBufferTextures(shader, targets);
-	PBRDeferredLightingPassStats stats = bindFrameUniforms(shader, context, profile);
+	PBRDeferredLightingPassStats stats = bindFrameUniforms(shader, context, profile, targets.getWidth(), targets.getHeight());
 
 	const bool drawn = MeshDraw::drawIndexed(mLightingQuad);
 	stats.drawCalls = drawn ? 1 : 0;
@@ -82,7 +84,9 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::render(
 PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 	const std::shared_ptr<Shader>& shader,
 	const MaterialBindingContext& context,
-	const RendererFramePassProfile& profile
+	const RendererFramePassProfile& profile,
+	unsigned int targetWidth,
+	unsigned int targetHeight
 )
 {
 	PBRDeferredLightingPassStats stats{};
@@ -100,6 +104,33 @@ PBRDeferredLightingPassStats PBRDeferredLightingPass::bindFrameUniforms(
 	stats.lightBufferBound = lightBufferStats.bound;
 	stats.lightBufferPointLightCount = lightBufferStats.pointLightCount;
 	stats.lightBufferMaxPointLightCount = lightBufferStats.maxPointLightCount;
+
+	const bool useTiledPointLights = profile.pbrDeferredTiledLightsEnabled && lightBufferStats.pointLightCount > 0;
+	shader->setInt("useTiledPointLights", useTiledPointLights ? 1 : 0);
+	shader->setInt("tiledLightTileSize", std::max(profile.pbrDeferredTileSize, 1));
+	shader->setInt("tiledLightGridColumns", 0);
+	shader->setInt("tiledLightGridRows", 0);
+	if (useTiledPointLights)
+	{
+		const PBRDeferredTiledLightGridStats tiledStats = mTiledLightGrid.bind(
+			context,
+			targetWidth,
+			targetHeight,
+			profile.pbrDeferredTileSize
+		);
+		stats.tiledLightGridBound = tiledStats.bound;
+		stats.tiledLightGridEnabled = tiledStats.enabled;
+		stats.tiledLightGridTileSize = tiledStats.tileSize;
+		stats.tiledLightGridColumns = tiledStats.tileColumns;
+		stats.tiledLightGridRows = tiledStats.tileRows;
+		stats.tiledLightGridTileCount = tiledStats.tileCount;
+		stats.tiledLightGridIndexCount = tiledStats.lightIndexCount;
+		stats.tiledLightGridMaxTileLightCount = tiledStats.maxTileLightCount;
+		shader->setInt("useTiledPointLights", tiledStats.bound ? 1 : 0);
+		shader->setInt("tiledLightTileSize", tiledStats.tileSize);
+		shader->setInt("tiledLightGridColumns", tiledStats.tileColumns);
+		shader->setInt("tiledLightGridRows", tiledStats.tileRows);
+	}
 
 	const bool useIBL = context.environmentTargets
 		&& context.environmentTargets->isInitialized()
