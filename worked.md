@@ -2143,3 +2143,6 @@
   - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 和 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，把 compute shader 纳入 Visual Studio 工程资源。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-clustered-grid`，`Debug|x64` 构建通过，输出 `pbrDeferredClusteredLightGridCompute=yes`、`pbrDeferredClusteredLightGridIndices=14400`、`pbrDeferredClusteredLightGridCulledIndices=158400`。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 21 个 verification mode 全部通过。
+- 完成第一百七十九轮桌面重构报告同步：
+  - 已更新 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新代码状态同步到 `1025334 Dispatch PBR clustered light compute grid`。
+  - 报告中将 clustered 状态从 CPU-filled backend 更新为 compute shader assignment 最小闭环，并保留 clustered readback optimization、occupancy debug pass、GPU timing 和真实资产基准仍未完成的边界。
