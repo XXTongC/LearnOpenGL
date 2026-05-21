@@ -2084,3 +2084,6 @@
 - 完成第一百六十六轮桌面重构详细报告更新：
   - 已重写 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，报告覆盖当前已完成工作、与原始 `text2` 工程的架构差异、runtime / renderer / UI profile / PBR deferred / verification 的 Mermaid 示意图、19 模式验证状态、当前本地未提交的 `RuntimePBRVerificationArgs` 拆分，以及 PBR 仍未完成的真实资产、clustered/GPU culling、透明策略等缺口。
   - 报告明确区分最新已推送分支提交 `6193d6d Record deferred texture set report sync`、最新已推送代码提交 `1f5c6e5 Verify PBR deferred texture set probe`、当前本地已验证但尚未提交的 argument split，以及不应提交的 `imgui.ini` 运行时布局状态。
+- 完成第一百六十七轮 argument split 提交与报告同步：
+  - 已提交并推送 `c66225d Split PBR verification argument parsing` 到 `github/codex/text2-refactor`，提交包含 `RuntimePBRVerificationArgs`、瘦身后的 `main.cpp`、VS 工程文件和对应工作记录。
+  - 已同步 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送提交更新为 `c66225d Split PBR verification argument parsing`，并把 `RuntimePBRVerificationArgs` 从“本地未提交”改为“已提交并推送”。
