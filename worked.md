@@ -1975,3 +1975,7 @@
   - 更新 [main.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\main.cpp)、[application/RuntimePBRVerification.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.h)、[application/RuntimePBRVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRVerification.cpp) 和 [tools/verify_pbr.ps1](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\verify_pbr.ps1)，新增 `--verify-pbr-deferred-tiled-heatmap`，默认 PBR 回归扩展为 14 个模式，并新增 `-DiscardCaptures` 低磁盘空间验证选项。
   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Deferred Tiled Light Heatmap Debug Pass` 技术记录。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，14 个 PBR verification mode 全部通过；新增 `deferred-tiled-heatmap` 模式输出 `pbrDeferredTiledLightDebugDrawCalls=1`、`pbrDeferredTiledLightGridSize=80x45`、`pbrDeferredTiledLightGridIndices=3311`，capture 解析结果非黑比例 `100%`、RGB 均值约 `185.09 / 173.14 / 87.33`。
+- 完成第一百四十八轮收尾同步：
+  - 已提交并推送 `c6ed195 Add PBR tiled light heatmap debug pass` 到 `github/codex/text2-refactor`。
+  - 已更新桌面报告 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，把报告状态同步到 heatmap debug pass、14 模式验证和 `-DiscardCaptures` 低磁盘空间流程。
+  - `imgui.ini` 仍保持未提交状态，因为它是运行时 UI 布局状态，不属于本轮重构代码。
