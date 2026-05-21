@@ -2181,3 +2181,8 @@
   - 已重写 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，生成面向当前阶段的详细 Markdown 报告。
   - 报告包含当前分支和提交状态、已完成工作、与原始 `text2` 工程的架构差异、runtime / renderer / UI schema / selection / PBR deferred / clustered culling / verification 的 Mermaid 示意图。
   - 报告明确区分最新已推送代码提交 `0278ad1 Add PBR clustered light debug heatmap` 与当前本地已验证未提交的 PBR pressure probe，并记录本地 PBR verification 已扩展到 25 个 mode。
+- 完成第一百八十六轮 PBR pressure probe 提交与报告状态同步：
+  - 已重新执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights-pressure,deferred-clustered-grid-pressure`，focused pressure 验证通过。
+  - 已重新执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，当前工作树 25 个 PBR verification mode 全部通过。
+  - 已提交并推送 `c95496a Add PBR deferred light pressure probes` 到 `github/codex/text2-refactor`，提交包含 pressure probe 代码、verification 脚本和 `work.md` / `worked.md` 记录。
+  - 已同步 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送分支提交和最新已推送代码提交更新为 `c95496a Add PBR deferred light pressure probes`，并将 pressure probe 状态从“本地未提交”改为“已提交并推送”。
