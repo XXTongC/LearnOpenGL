@@ -252,6 +252,10 @@ namespace GL_RUNTIME
 		{
 			profileLine += " + sparse tiled light probe";
 		}
+		if (config.pbrDeferredTileSizeOverride > 0)
+		{
+			profileLine += " + tiled light tile size " + std::to_string(config.pbrDeferredTileSizeOverride);
+		}
 		if (config.enablePbrGBufferDebugPass)
 		{
 			profileLine += " + PBR G-buffer debug pass";
@@ -310,6 +314,11 @@ namespace GL_RUNTIME
 		{
 			rendererPassProfile.defaultPassOrder =
 				shadowPrefix + "PBRDepthPrepass,PBRGBuffer,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene";
+		}
+
+		if (config.pbrDeferredTileSizeOverride > 0)
+		{
+			rendererPassProfile.pbrDeferredTileSize = config.pbrDeferredTileSizeOverride;
 		}
 
 		if (config.enablePbrGBufferDebugPass)

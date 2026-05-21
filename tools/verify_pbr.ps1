@@ -27,6 +27,7 @@ $allModes = @(
     [pscustomobject]@{ Name = "deferred-material-ibl"; Argument = "--verify-pbr-deferred-material-ibl"; Capture = "out/pbr_deferred_material_ibl_verification.ppm" },
     [pscustomobject]@{ Name = "deferred-alpha-mask"; Argument = "--verify-pbr-deferred-alpha-mask"; Capture = "out/pbr_deferred_alpha_mask_verification.ppm" },
     [pscustomobject]@{ Name = "deferred-tiled-lights"; Argument = "--verify-pbr-deferred-tiled-lights"; Capture = "out/pbr_deferred_tiled_lights_verification.ppm"; ExpectTiledCulling = $true },
+    [pscustomobject]@{ Name = "deferred-tiled-lights-32"; Argument = "--verify-pbr-deferred-tiled-lights-32"; Capture = "out/pbr_deferred_tiled_lights_32_verification.ppm"; ExpectTiledCulling = $true; ExpectTileSize = 32 },
     [pscustomobject]@{ Name = "deferred-tiled-heatmap"; Argument = "--verify-pbr-deferred-tiled-heatmap"; Capture = "out/pbr_deferred_tiled_heatmap_verification.ppm"; ExpectTiledCulling = $true; ExpectTiledHeatmap = $true },
     [pscustomobject]@{ Name = "import"; Argument = "--verify-pbr-import"; Capture = "out/pbr_import_verification.ppm" }
 )
@@ -301,6 +302,7 @@ foreach ($mode in $selectedModes) {
         else {
             $columns = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridSize=(\d+)x(\d+)" -Group 1
             $rows = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridSize=(\d+)x(\d+)" -Group 2
+            $tileSize = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridTileSize=(\d+)" -Group 1
             $gridPointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridPointLights=(\d+)" -Group 1
             $fullIndices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridFullIndices=(\d+)" -Group 1
             $indices = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridIndices=(\d+)" -Group 1
@@ -314,13 +316,16 @@ foreach ($mode in $selectedModes) {
             if ($null -eq $pointLights -or [int]$pointLights -le 0) {
                 $pointLights = Get-RegexValue -Text $rendererLine -Pattern "pbrDeferredTiledLightGridMaxTileLights=(\d+)" -Group 1
             }
-            if ($null -eq $columns -or $null -eq $rows -or $null -eq $indices -or $null -eq $occupiedTiles -or $null -eq $reportedTileCount -or $null -eq $pointLights -or $null -eq $fullIndices -or $null -eq $culledIndices) {
+            if ($null -eq $columns -or $null -eq $rows -or $null -eq $tileSize -or $null -eq $indices -or $null -eq $occupiedTiles -or $null -eq $reportedTileCount -or $null -eq $pointLights -or $null -eq $fullIndices -or $null -eq $culledIndices) {
                 $failures.Add("$($mode.Name): tiled culling stats were incomplete")
             }
             else {
                 $fullGlobalLoopIndexCount = [int]$columns * [int]$rows * [int]$pointLights
                 $tileCount = [int]$columns * [int]$rows
                 $expectedCulledIndices = [int]$fullIndices - [int]$indices
+                if ($mode.PSObject.Properties.Name -contains "ExpectTileSize" -and [int]$tileSize -ne [int]$mode.ExpectTileSize) {
+                    $failures.Add("$($mode.Name): tiled light grid tile size did not match expected override ($tileSize != $($mode.ExpectTileSize))")
+                }
                 if ([int]$fullIndices -ne $fullGlobalLoopIndexCount) {
                     $failures.Add("$($mode.Name): tiled full index count did not match grid dimensions and point lights ($fullIndices != $fullGlobalLoopIndexCount)")
                 }

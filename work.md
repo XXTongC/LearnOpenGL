@@ -1905,3 +1905,19 @@ Tiled light grid 的诊断已从“实际 index 数和 occupancy”扩展为“�
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，focused tiled 输出 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：14 个 PBR verification mode 全部通过；`deferred-tiled-lights` 与 `deferred-tiled-heatmap` 均确认 `7200 -> 2890`，裁掉 `4310` 个 tiled point-light index 入口。
+
+### 2026-05-21 PBR Deferred Tiled Light Tile Size Verification
+
+Tiled light grid 的 tile size 配置现在有专用 verification 覆盖：
+
+- `RuntimePBRVerificationConfig` 新增 `pbrDeferredTileSizeOverride`，verification 可以显式覆盖 `RendererFramePassProfile::pbrDeferredTileSize`。
+- 新增命令行模式 `--verify-pbr-deferred-tiled-lights-32`，复用 sparse tiled light probe，但把 tile size 从默认 `16px` 改为 `32px`。
+- `tools/verify_pbr.ps1` 默认 PBR 回归从 14 个模式扩展为 15 个模式，新增 `deferred-tiled-lights-32`。
+- `tools/verify_pbr.ps1` 对该模式新增 tile size 断言，确保 runtime stats 中的 `pbrDeferredTiledLightGridTileSize` 必须等于 `32`。
+
+这一步验证的是 profile-driven tile size 不是 UI 上的虚设配置，而是真的影响 tiled grid 维度和 full index baseline。后续调试不同 tile size、评估 CPU tiled / clustered culling 策略时，可以直接用该模式做回归。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights-32`：构建通过，输出 `pbrDeferredTiledLightGridSize=40x23`、`pbrDeferredTiledLightGridTileSize=32`、`pbrDeferredTiledLightGridFullIndices=1840`、`pbrDeferredTiledLightGridIndices=762`、`pbrDeferredTiledLightGridCulledIndices=1078`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：15 个 PBR verification mode 全部通过。
