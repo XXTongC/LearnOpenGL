@@ -1711,3 +1711,29 @@ PBR alpha mask 已从主视图扩展到 shadow map / PBR shadow atlas：
 - `RendererFrameStats`、Debug UI 和 `--verify-pbr*` 输出新增 legacy shadow 与 PBR atlas 的 alpha-masked shadow draw call 统计。
 
 这一步补上了 alpha mask first stage 的最大缺口：cutout 材质不再只在主视图镂空，而是也能用 alpha discard 写入 shadow depth。后续仍可优化为更少 shader switch 或更明确的 cutout queue，但当前行为已经具备可验证的 producer-consumer 链路。
+
+### 2026-05-21 PBR Verification Script
+
+PBR 验证链路已从“手动逐个命令运行”推进到“一键回归脚本”：
+
+- 新增 `tools/verify_pbr.ps1`，默认会通过 VS DevCmd + MSBuild 构建 `Debug|x64`，再顺序运行所有 `--verify-pbr*` 模式。
+- 脚本会把每个模式的 stdout / stderr 写到 `out/pbr_verify_<mode>.log`，并生成 `out/pbr_verification_summary.txt`。
+- summary 会解析 PPM capture，输出尺寸、文件大小、非黑像素比例和 RGB 均值，用于快速判断 capture 是否非空、是否明显偏离预期。
+- 脚本把进程退出码和 PPM 有效性作为失败条件；`Failed to open logfile.` 这类非致命 stderr 会被保留在日志里，但不会误判为验证失败。
+- 支持 `-SkipBuild` 和 `-Modes`，可以只跑局部模式，例如 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -Modes deferred,deferred-alpha-mask`。
+
+本轮已执行默认全量验证，`Debug|x64` 构建通过，11 个 PBR 验证模式全部通过：
+
+- `forward`
+- `forward-no-atlas`
+- `ibl-debug`
+- `gbuffer`
+- `gbuffer-debug`
+- `deferred`
+- `deferred-no-atlas`
+- `deferred-transparent`
+- `deferred-emissive`
+- `deferred-material-ibl`
+- `deferred-alpha-mask`
+
+这一步不改变渲染行为，但显著降低后续 PBR 重构的回归成本。下一步继续做 clustered / tiled light list 或 PBR asset import 前，应先保持这个脚本作为基本 gate，避免继续只靠人工观察窗口判断。

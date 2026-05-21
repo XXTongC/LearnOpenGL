@@ -1934,3 +1934,8 @@
 - 当前剩余明显问题：C 盘空间仍偏低，完整 MSBuild / runtime smoke 需要继续关注输出体积；PBR IBL 已有自动化 scene/capture 验证但还没有人工视觉审阅；工程内仍没有默认真实 HDR environment 资源；PBR deferred path 还缺更多 material feature parity、clustered light culling / tile index list，以及更正式的透明策略例如 OIT / weighted blended transparency。
 - 下一步建议目标：开始把 deferred light buffer 演进为 clustered / tiled light index list，或继续补 PBR asset import 的 material mapping。
 - 已在桌面生成并更新重构报告 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，内容覆盖当前分支最新状态、已完成工作、与重构前工程的区别、runtime / renderer / PBR / UI profile 架构差异、Mermaid 示意图、验证证据和后续建议。
+- 完成第一百四十二轮 PBR verification automation：
+  - 新增 [tools/verify_pbr.ps1](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\verify_pbr.ps1)，默认执行 `Debug|x64` 构建并顺序运行所有 PBR verification mode。
+  - 脚本会为每个模式写入 `out/pbr_verify_<mode>.log`，并生成 `out/pbr_verification_summary.txt`，summary 会解析 PPM capture 的尺寸、文件大小、非黑比例和 RGB 均值。
+  - 脚本支持 `-SkipBuild` 和 `-Modes`，可用来快速只跑局部回归，例如 `deferred` 或 `deferred-alpha-mask`。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1`，MSBuild `Debug|x64` 通过，`forward`、`forward-no-atlas`、`ibl-debug`、`gbuffer`、`gbuffer-debug`、`deferred`、`deferred-no-atlas`、`deferred-transparent`、`deferred-emissive`、`deferred-material-ibl` 和 `deferred-alpha-mask` 全部通过并生成有效 PPM。
