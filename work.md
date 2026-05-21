@@ -1959,3 +1959,18 @@ Tiled light grid 的 point light influence cutoff 已从硬编码常量提升为
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-untiled-lights`：构建通过，输出 `pbrDeferredLightingDrawCalls=1`、`pbrDeferredLightBufferBound=yes`、`pbrDeferredLightBufferPointLights=2/16`、`pbrDeferredTiledLightsEnabled=no`、`pbrDeferredTiledLightGridBound=no`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：17 个 PBR verification mode 全部通过。
+
+### 2026-05-21 PBR Deferred Tiled Light Grid Config Object
+
+Tiled light grid 的 `bind(...)` 接口已从松散参数收敛为配置对象：
+
+- 新增 `PBRDeferredTiledLightGridConfig`，当前包含 `tileSize` 与 `lightCutoff`。
+- `PBRDeferredTiledLightGrid::bind(...)` 现在接收 `const PBRDeferredTiledLightGridConfig&`，避免继续在调用点扩散多个 loose parameters。
+- `PBRDeferredLightingPass` 与 `PBRDeferredTiledLightDebugPass` 都从 `RendererFramePassProfile` 构造同一类 grid config，保证 deferred lighting consumer 和 heatmap debug consumer 使用相同参数形态。
+- 当前行为保持不变，验证输出仍保持 sparse tiled 场景 `7200 -> 2890`；这一步主要是 API 形态重构，为后续 clustered / GPU culling 继续加入 z slices、strategy、max lights per tile、depth-aware culling 等参数预留扩展点。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`：构建通过，focused tiled 输出 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures -Modes deferred-tiled-heatmap`：heatmap consumer 验证通过，输出 `pbrDeferredTiledLightDebugDrawCalls=1`、`pbrDeferredTiledLightGridBound=yes`、`pbrDeferredTiledLightGridIndices=2890`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：17 个 PBR verification mode 全部通过。

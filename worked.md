@@ -2041,3 +2041,14 @@
   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Deferred Untiled Fallback Verification` 技术记录。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-untiled-lights`，`Debug|x64` 构建通过，输出 `pbrDeferredLightingDrawCalls=1`、`pbrDeferredLightBufferBound=yes`、`pbrDeferredLightBufferPointLights=2/16`、`pbrDeferredTiledLightsEnabled=no`、`pbrDeferredTiledLightGridBound=no`。
   - 执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，17 个 PBR verification mode 全部通过。
+- 完成第一百五十九轮桌面重构详细报告更新：
+  - 已重写 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，报告覆盖当前已完成工作、与原始 `text2` 的架构差异、runtime / renderer / UI profile / PBR deferred / tiled light grid 的 Mermaid 示意图、17 模式验证状态、当前未提交的 `PBRDeferredTiledLightGridConfig` 改动，以及后续 PBR / clustered lighting 缺口。
+  - 报告中记录最新已推送提交为 `11af4a2 Verify PBR deferred untiled fallback`，并明确当前工作区除 `imgui.ini` 外仍有 tiled grid config API 收敛改动尚未提交。
+  - 报告引用最近一次完整验证结果：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，17 个 PBR verification mode 全部通过。
+- 完成第一百六十轮 PBR deferred tiled light grid config object：
+  - 更新 [renderer\PBRDeferredTiledLightGrid.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredTiledLightGrid.h) 和 [renderer\PBRDeferredTiledLightGrid.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredTiledLightGrid.cpp)，新增 `PBRDeferredTiledLightGridConfig`，并将 `PBRDeferredTiledLightGrid::bind(...)` 从松散 `tileSize/lightCutoff` 参数改为接收 config object。
+  - 更新 [renderer\PBRDeferredLightingPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredLightingPass.cpp) 和 [renderer\PBRDeferredTiledLightDebugPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDeferredTiledLightDebugPass.cpp)，deferred lighting pass 与 tiled heatmap debug pass 现在都从 `RendererFramePassProfile` 构造同一类 tiled grid config 后传入 grid builder。
+  - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Deferred Tiled Light Grid Config Object` 技术记录，说明该接口形态为后续 clustered / GPU culling 参数扩展预留空间。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights`，`Debug|x64` 构建通过，focused tiled 输出保持 `pbrDeferredTiledLightGridFullIndices=7200`、`pbrDeferredTiledLightGridIndices=2890`、`pbrDeferredTiledLightGridCulledIndices=4310`。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures -Modes deferred-tiled-heatmap`，heatmap consumer 验证通过，输出 `pbrDeferredTiledLightDebugDrawCalls=1`、`pbrDeferredTiledLightGridBound=yes`、`pbrDeferredTiledLightGridIndices=2890`。
+  - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，17 个 PBR verification mode 全部通过。

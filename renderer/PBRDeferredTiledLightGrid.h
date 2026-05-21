@@ -7,6 +7,12 @@
 
 namespace GLframework
 {
+	struct PBRDeferredTiledLightGridConfig
+	{
+		int tileSize{ 16 };
+		float lightCutoff{ 0.01f };
+	};
+
 	struct PBRDeferredTiledLightGridStats
 	{
 		bool bound{ false };
@@ -36,8 +42,7 @@ namespace GLframework
 			const MaterialBindingContext& context,
 			unsigned int targetWidth,
 			unsigned int targetHeight,
-			int tileSize,
-			float lightCutoff
+			const PBRDeferredTiledLightGridConfig& config
 		);
 
 		static constexpr unsigned int tileBufferBindingPoint()

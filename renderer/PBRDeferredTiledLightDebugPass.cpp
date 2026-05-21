@@ -31,12 +31,15 @@ PBRDeferredTiledLightDebugPassStats PBRDeferredTiledLightDebugPass::render(
 		return stats;
 	}
 
+	const PBRDeferredTiledLightGridConfig tiledGridConfig{
+		profile.pbrDeferredTileSize,
+		profile.pbrDeferredTiledLightCutoff
+	};
 	stats.gridStats = mTiledLightGrid.bind(
 		context,
 		targetWidth,
 		targetHeight,
-		profile.pbrDeferredTileSize,
-		profile.pbrDeferredTiledLightCutoff
+		tiledGridConfig
 	);
 	if (!stats.gridStats.bound)
 	{

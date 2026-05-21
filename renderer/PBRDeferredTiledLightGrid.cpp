@@ -213,14 +213,13 @@ PBRDeferredTiledLightGridStats PBRDeferredTiledLightGrid::bind(
 	const MaterialBindingContext& context,
 	unsigned int targetWidth,
 	unsigned int targetHeight,
-	int tileSize,
-	float lightCutoff
+	const PBRDeferredTiledLightGridConfig& config
 )
 {
 	PBRDeferredTiledLightGridStats stats{};
 	stats.enabled = true;
-	stats.tileSize = std::max(tileSize, 1);
-	stats.lightCutoff = std::max(lightCutoff, 0.001f);
+	stats.tileSize = std::max(config.tileSize, 1);
+	stats.lightCutoff = std::max(config.lightCutoff, 0.001f);
 	if (!context.camera || targetWidth == 0 || targetHeight == 0)
 	{
 		return stats;
