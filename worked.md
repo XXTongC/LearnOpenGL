@@ -2093,3 +2093,6 @@
   - 更新 [work.md](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\work.md)，补充 `PBR Verification Mode Descriptor Table` 技术记录。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -DiscardCaptures -Modes deferred-tiled-lights-cutoff-005`，`Debug|x64` 构建通过，输出 `pbrDeferredTiledLightGridCutoff=0.050000`、`pbrDeferredTiledLightGridIndices=714`、`pbrDeferredTiledLightGridCulledIndices=6486`。
   - 已执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 PBR 回归 19 个 verification mode 全部通过。
+- 完成第一百六十九轮桌面重构报告同步：
+  - 已同步 [PBR_refactor_report.md](C:\Users\asus\Desktop\PBR_refactor_report.md)，将最新已推送提交更新为 `cbc0196 Data-drive PBR verification mode arguments`，并补充 `PbrVerificationModeDescriptor` 表、focused cutoff 验证和 19 模式回归结果。
+  - 报告的下一步建议已从“数据化 verification mode”更新为 clustered / GPU light culling 设计、共享 verification manifest、真实资产视觉基准、material parity 和透明策略。
