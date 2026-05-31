@@ -7,7 +7,6 @@
 
 #include "AppRuntimeContext.h"
 #include "RuntimeFramePasses.h"
-#include "RuntimeFramePipeline.h"
 #include "RuntimeFramePipelineProfile.h"
 
 namespace

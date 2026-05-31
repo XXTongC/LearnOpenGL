@@ -7856,3 +7856,26 @@ Subagent 审查：
 
 - 这是 renderer backend contract frame DTO include boundary cleanup，不改变 backend virtual API、runtime frame pipeline adapter、no-op backend behavior、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Frame Pipeline Context Header Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit。审计确认：`RuntimeFramePipeline.h` 与 `RuntimeFramePasses.h` 为了 frame pipeline/pass 函数签名直接 include 完整 `AppRuntimeContext.h`，但 public header 只需要引用类型声明；真正读取 `AppRuntimeContext` 与 `RuntimeFramePipelineConfig` 字段的是 `.cpp`。更窄边界是：public headers 只 forward declare context/config，implementation 显式 include 完整依赖。
+
+新增与修改：
+
+- `RuntimeFramePipeline.h` 移除 `AppRuntimeContext.h` include，改为 forward declare `GLframework::AppRuntimeContext`。
+- `RuntimeFramePipeline.cpp` 显式 include `AppRuntimeContext.h`，因为 implementation 读取 `context.profiles.framePipelineProfile`。
+- `RuntimeFramePasses.h` 移除 `AppRuntimeContext.h` 与 `RuntimeFramePipeline.h` include，改为 forward declare `GLframework::AppRuntimeContext` 与 `RuntimeFramePipelineConfig`。
+- `RuntimeFramePasses.cpp` 显式 include `AppRuntimeContext.h` 与 `RuntimeFramePipeline.h`，因为 implementation 读取 context resources/profile 字段和 config framebuffer size。
+- `RuntimeFramePassRegistry.cpp` 移除不再需要的 `RuntimeFramePipeline.h` include，只保留 registry implementation 实际读取 context profile 所需的完整 context include。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeFramePipeline.h` 与 `RuntimeFramePasses.h` 不再 include 完整 `AppRuntimeContext.h`，完整 context/config include 已下沉到 implementation。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `RuntimeFramePassRegistry.cpp`、`RuntimeFramePasses.cpp`、`RuntimeFramePipeline.cpp` 与 `RuntimeRendererFrameBridgeAdapter.cpp`；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime frame pipeline/pass context header boundary cleanup，不改变 runtime frame pass order、frame pass execution、runtime backend adapter frame plan key、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

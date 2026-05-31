@@ -1,5 +1,7 @@
 #include "RuntimeFramePasses.h"
 
+#include "AppRuntimeContext.h"
+#include "RuntimeFramePipeline.h"
 #include "../materials/material.h"
 #include "../renderer/renderer.h"
 

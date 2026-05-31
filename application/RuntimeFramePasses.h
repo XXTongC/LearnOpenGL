@@ -1,10 +1,14 @@
 #pragma once
 
-#include "AppRuntimeContext.h"
-#include "RuntimeFramePipeline.h"
+namespace GLframework
+{
+	struct AppRuntimeContext;
+}
 
 namespace GL_RUNTIME
 {
+	struct RuntimeFramePipelineConfig;
+
 	class RuntimeSceneColorPass
 	{
 	public:

@@ -1,5 +1,6 @@
 #include "RuntimeFramePipeline.h"
 
+#include "AppRuntimeContext.h"
 #include "RuntimeFramePassRegistry.h"
 
 namespace GL_RUNTIME
