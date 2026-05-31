@@ -252,6 +252,7 @@ passed
 - Frame Render Targets Framebuffer Header Boundary Cleanup 已接入：`FrameRenderTargets.h` 不再 include 完整 `framebuffer/framebuffer.h`，只 forward declare `Framebuffer` / `Texture`；实际 FBO 创建、FBO id 查询和 attachment 访问集中到 `FrameRenderTargets.cpp`。
 - PostProcess Pass Header Boundary Cleanup 已接入：`PostProcessPass.h` 不再 include 完整 framebuffer/mesh/shader/settings headers，只 forward declare 引用参数类型；post-process resolve/composite/bloom 执行依赖集中到 `PostProcessPass.cpp`。
 - Bloom Header Framebuffer Boundary Cleanup 已接入：`Bloom.h` 不再 include 完整 core/framebuffer/geometry/shader headers，只 forward declare `Framebuffer` / `Texture` / `Shader` / `Geometry`；Bloom FBO 创建、texture binding 和 shader/quad 操作集中到 `Bloom.cpp`。
+- Environment Texture Header Boundary Cleanup 已接入：`EnvironmentRenderTargets.h` 与 `EnvironmentProfile.h` 不再 include 完整 `framework/texture.h`，只 forward declare `Texture`；环境贴图创建、HDR/procedural texture 创建、IBL debug/precompute 和 PBR IBL/deferred lighting 中实际解引用 texture 的 implementation 显式 include 完整 texture 头。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -312,6 +313,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Bloom Header Framebuffer Boundary Cleanup 已接入后，`Bloom.h` 只保留 `Framebuffer` / `Texture` / `Shader` / `Geometry` 的 forward declarations，完整 Bloom FBO/shader/geometry 执行依赖下沉到 `Bloom.cpp`；下一步继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+当前最新修正：Environment Texture Header Boundary Cleanup 已接入后，`EnvironmentRenderTargets.h` 与 `EnvironmentProfile.h` 只保留 `Texture` forward declaration，完整 texture/OpenGL 依赖下沉到环境资源 implementation 和实际 IBL/PBR texture 消费方；下一步继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Bloom header framebuffer boundary cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Environment texture header boundary cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。

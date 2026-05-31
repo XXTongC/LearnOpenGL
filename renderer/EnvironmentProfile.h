@@ -3,8 +3,6 @@
 #include <memory>
 #include <string>
 
-#include "framework/texture.h"
-
 namespace GL_EDITOR
 {
 	class PropertyBuilder;
@@ -12,6 +10,8 @@ namespace GL_EDITOR
 
 namespace GLframework
 {
+	class Texture;
+
 	struct EnvironmentProfile
 	{
 		std::string hdrEquirectangularPath{};

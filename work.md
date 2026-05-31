@@ -7990,3 +7990,26 @@ Subagent 审查：
 
 - 这是 Bloom public include boundary cleanup，不改变 Bloom FBO 创建、blur ping-pong、bright extraction、post-process composite、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Environment Texture Header Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit。审计确认：`EnvironmentRenderTargets.h` 和 `EnvironmentProfile.h` 只需要在 public API 中声明 `std::shared_ptr<Texture>`，但直接 include 完整 `framework/texture.h`，导致 runtime profile state、scene setup、renderer facade 和 IBL/PBR 调用路径继承 texture/OpenGL 实现细节。更窄边界是：环境资源 public headers 只 forward declare `Texture`，实际创建、绑定和读取 texture id/unit/target 的 implementation 显式 include 完整 texture 头。
+
+新增与修改：
+
+- `EnvironmentRenderTargets.h` 移除 `framework/texture.h` include，新增 `Texture` forward declaration，保留现有 environment map / irradiance / prefilter / BRDF LUT shared pointer API。
+- `EnvironmentProfile.h` 移除 `framework/texture.h` include，新增 `Texture` forward declaration，保留 `EnvironmentTextureLoader` 返回 texture handle 的 public API。
+- `EnvironmentRenderTargets.cpp` 与 `EnvironmentProfile.cpp` 显式 include `framework/texture.h`，因为 implementation 创建 HDR cubemap、float texture、HDR/procedural equirectangular texture 并写入 texture metadata。
+- `IBLDebugPass.cpp`、`IBLPrecomputePass.cpp`、`PBRDeferredLightingPass.cpp` 和 `PBRIBLResourceBinder.cpp` 显式 include `framework/texture.h`，因为这些 consumer 实际解引用 environment texture handle、读取 unit/target/id 或调用 `Bind()`。
+
+已完成验证：
+
+- 静态检查确认 `EnvironmentRenderTargets.h` 与 `EnvironmentProfile.h` 不再 include 完整 texture header，只保留 `Texture` forward declaration。
+- 第一次 focused verification 暴露 `IBLDebugPass.cpp` 与 `PBRDeferredLightingPass.cpp` 仍依赖从 environment headers 间接获得完整 `Texture`；已改为在实际 consumer `.cpp` 中显式 include `framework/texture.h`，没有退回宽头。
+- 修正后 focused verification 通过：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`；MSBuild 明确编译 `EnvironmentProfile.cpp`、`EnvironmentRenderTargets.cpp`、`IBLDebugPass.cpp`、`IBLPrecomputePass.cpp`、`PBRDeferredLightingPass.cpp`、`PBRIBLResourceBinder.cpp`、runtime profile loader 和 scene setup 相关 translation units；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Environment texture public include boundary cleanup，不改变 environment target allocation、HDR/procedural texture loading、IBL debug/precompute、PBR IBL binding、deferred lighting、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

@@ -5,6 +5,7 @@
 #include "camera/camera.h"
 #include "core.h"
 #include "framework/geometry.h"
+#include "framework/texture.h"
 #include "renderer/EnvironmentRenderTargets.h"
 #include "renderer/MeshDraw.h"
 #include "renderer/PBRDeferredLightCullingConfig.h"

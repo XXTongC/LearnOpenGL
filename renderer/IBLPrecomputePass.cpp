@@ -1,5 +1,6 @@
 #include "IBLPrecomputePass.h"
 
+#include "framework/texture.h"
 #include "renderer/MeshDraw.h"
 
 using namespace GLframework;

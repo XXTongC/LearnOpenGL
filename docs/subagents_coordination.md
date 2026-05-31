@@ -187,14 +187,20 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Bloom Header Framebuffer Boundary Cleanup
+### Current Round: Environment Texture Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `renderer/Bloom/Bloom.h`
-- `renderer/Bloom/Bloom.cpp`
+- `renderer/EnvironmentRenderTargets.h`
+- `renderer/EnvironmentRenderTargets.cpp`
+- `renderer/EnvironmentProfile.h`
+- `renderer/EnvironmentProfile.cpp`
+- `renderer/IBLDebugPass.cpp`
+- `renderer/IBLPrecomputePass.cpp`
+- `renderer/PBRDeferredLightingPass.cpp`
+- `renderer/PBRIBLResourceBinder.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -205,7 +211,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Bloom framebuffer/texture/shader/geometry forward declarations and explicit implementation includes remain parent-reviewed.
+- Environment texture forward declarations and explicit implementation/consumer includes remain parent-reviewed.
 
 Rules for this round:
 
@@ -1662,7 +1668,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-05-31 Bloom Header Framebuffer Boundary Cleanup.
+Round: 2026-05-31 Environment Texture Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1670,22 +1676,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: remove complete core/framebuffer/geometry/shader propagation from `Bloom.h`, forward declare referenced types, and keep bloom FBO/shader/geometry execution dependencies in `Bloom.cpp`.
+- Current local implementation target for this slice: remove complete `framework/texture.h` propagation from `EnvironmentRenderTargets.h` and `EnvironmentProfile.h`, forward declare `Texture`, and keep complete texture dependencies in the environment implementations plus IBL/PBR consumers that dereference texture handles.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the Bloom Header Framebuffer Boundary Cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the Environment Texture Header Boundary Cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `renderer/Bloom/Bloom.h`, `renderer/Bloom/Bloom.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `renderer/EnvironmentRenderTargets.h`, `renderer/EnvironmentRenderTargets.cpp`, `renderer/EnvironmentProfile.h`, `renderer/EnvironmentProfile.cpp`, `renderer/IBLDebugPass.cpp`, `renderer/IBLPrecomputePass.cpp`, `renderer/PBRDeferredLightingPass.cpp`, `renderer/PBRIBLResourceBinder.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
-- Previous round's Frame Render Targets framebuffer header cleanup was parent-owned and had no delegated write scope.
-- Previous round's Engine Lifecycle Snapshot header cleanup was parent-owned and had no delegated write scope.
+- Previous round's Bloom header framebuffer cleanup was parent-owned and had no delegated write scope.
 - Previous round's PostProcess Pass header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Frame Render Targets framebuffer header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Engine Lifecycle Snapshot header cleanup was parent-owned and had no delegated write scope.

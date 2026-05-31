@@ -1,5 +1,7 @@
 #include "EnvironmentRenderTargets.h"
 
+#include "framework/texture.h"
+
 using namespace GLframework;
 
 namespace

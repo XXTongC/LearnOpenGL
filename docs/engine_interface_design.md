@@ -443,7 +443,8 @@ public:
 233. Frame Render Targets Framebuffer Header Boundary Cleanup 已完成第一版：`FrameRenderTargets.h` 不再 include 完整 `framebuffer/framebuffer.h`，只 forward declare `Framebuffer` / `Texture`；实际 FBO 创建、FBO id 查询和 attachment 访问集中到 `FrameRenderTargets.cpp`。
 234. PostProcess Pass Header Boundary Cleanup 已完成第一版：`PostProcessPass.h` 不再 include 完整 framebuffer/mesh/shader/settings headers，只 forward declare 引用参数类型；post-process resolve/composite/bloom 执行依赖集中到 `PostProcessPass.cpp`。
 235. Bloom Header Framebuffer Boundary Cleanup 已完成第一版：`Bloom.h` 不再 include 完整 core/framebuffer/geometry/shader headers，只 forward declare `Framebuffer` / `Texture` / `Shader` / `Geometry`；Bloom FBO 创建、texture binding 和 shader/quad 操作集中到 `Bloom.cpp`。
-236. 下一步建议继续 runtime/renderer header surface audit，或回到 Engine public header 低风险 implementation detail audit。renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+236. Environment Texture Header Boundary Cleanup 已完成第一版：`EnvironmentRenderTargets.h` 与 `EnvironmentProfile.h` 不再 include 完整 `framework/texture.h`，只 forward declare `Texture`；环境贴图创建、HDR/procedural texture 创建、IBL debug/precompute 和 PBR IBL/deferred lighting 中实际解引用 texture 的 implementation 显式 include 完整 texture 头。
+237. 下一步建议继续 runtime/renderer header surface audit，或回到 Engine public header 低风险 implementation detail audit。renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

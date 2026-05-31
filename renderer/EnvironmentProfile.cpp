@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 
+#include "framework/texture.h"
 #include "stb_image.h"
 #include "tools/config/ProfileConfigIO.h"
 #include "tools/inspector/PropertySchema.h"

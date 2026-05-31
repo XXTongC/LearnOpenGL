@@ -2,10 +2,10 @@
 
 #include <memory>
 
-#include "framework/texture.h"
-
 namespace GLframework
 {
+	class Texture;
+
 	struct EnvironmentRenderTargetSettings
 	{
 		unsigned int environmentSize{ 512 };
