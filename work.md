@@ -8102,3 +8102,25 @@ Subagent 审查：
 
 - 这是 MaterialBinder public include boundary cleanup，不改变 legacy/Phong/PBR material binding 分发逻辑、texture unit 绑定、shader uniform layout、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 PBR Material Binder Header Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit。审计确认：`PBRMaterialBinder.h` 只声明 PBR material binding facade，却为了一个 `bind(...)` 函数签名直接 include 完整 `framework/shader.h`、`PBRMaterial.h`、`mesh/mesh.h` 和 `MaterialBindingContext.h`。真正的 PBR object uniforms、forward lights、shadow resources、surface textures 与 IBL binding 编排全部在 `PBRMaterialBinder.cpp` 中，header 可以只保留参数类型前置声明。
+
+新增与修改：
+
+- `PBRMaterialBinder.h` 移除完整 shader、PBR material、mesh 和 material binding context includes。
+- `PBRMaterialBinder.h` 新增 `Shader`、`PBRMaterial`、`Mesh` 和 `MaterialBindingContext` forward declarations，保留现有 `bind(...)` public API。
+- `PBRMaterialBinder.cpp` 显式 include `framework/shader.h`、`materials/pbrMaterial/PBRMaterial.h`、`mesh/mesh.h` 和 `renderer/MaterialBindingContext.h`，因为 implementation 实际校验 binding context 并转发到 PBR object/light/shadow/surface/IBL binders。
+
+已完成验证：
+
+- 静态检查确认 `PBRMaterialBinder.h` 不再 include 完整 shader/PBR material/mesh/material binding context headers，`PBRMaterialBinder.cpp` 显式 include 所需完整依赖。
+- 静态检查确认调用点集中在 `MaterialBinder.cpp` 与 `PBRSceneRenderPass.cpp`，PBRMaterialBinder public API 未改名也未改变参数。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `MaterialBinder.cpp`、`PBRMaterialBinder.cpp` 与 `PBRSceneRenderPass.cpp`；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBRMaterialBinder public include boundary cleanup，不改变 PBR object uniform、light/shadow/surface/IBL binding 顺序、shader uniform layout、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
