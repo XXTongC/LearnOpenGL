@@ -8036,3 +8036,25 @@ Subagent 审查：
 
 - 这是 IBL precompute pass public include boundary cleanup，不改变 environment cubemap capture、irradiance convolution、prefilter map、BRDF LUT、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Light Resource Binder Header Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit。审计确认：`LightResourceBinder.h` 为了一个 forward-light uniform 绑定入口直接 include 完整 `framework/shader.h`、`ambientLight.h`、`directionalLight.h`、`pointLight.h` 和 `spotLight.h`，但 header 只需要声明 `std::shared_ptr` 参数类型；真正写 shader uniform、读取 light 字段和查询 `PointLightShadow::getMAX_POINT_LIGHT()` 的逻辑全部在 implementation 内。
+
+新增与修改：
+
+- `LightResourceBinder.h` 移除完整 shader/light implementation includes。
+- `LightResourceBinder.h` 新增 `Shader`、`DirectionalLight`、`SpotLight`、`PointLight` 和 `AmbientLight` forward declarations，保留现有 `bindForwardLights(...)` public API。
+- `LightResourceBinder.cpp` 显式 include `framework/shader.h` 与 light implementation headers，确保 uniform 写入和 light 字段读取依赖位于实际实现文件。
+
+已完成验证：
+
+- 静态检查确认 `LightResourceBinder.h` 不再 include 完整 shader/light headers，`LightResourceBinder.cpp` 显式 include 所需完整依赖。
+- 静态检查确认调用点仍集中在 `MaterialBinder.cpp` 与 `PBRMaterialBinder.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `LightResourceBinder.cpp`、`MaterialBinder.cpp` 与 `PBRMaterialBinder.cpp`；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 LightResourceBinder public include boundary cleanup，不改变 forward light uniform layout、Phong/PBR material binding、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

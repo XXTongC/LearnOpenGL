@@ -2,7 +2,12 @@
 
 #include <string>
 
+#include "framework/shader.h"
+#include "light/ambientLight.h"
+#include "light/directionalLight.h"
+#include "light/pointLight.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
+#include "light/spotLight.h"
 
 using namespace GLframework;
 

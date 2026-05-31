@@ -3,14 +3,14 @@
 #include <memory>
 #include <vector>
 
-#include "framework/shader.h"
-#include "light/ambientLight.h"
-#include "light/directionalLight.h"
-#include "light/pointLight.h"
-#include "light/spotLight.h"
-
 namespace GLframework
 {
+	class AmbientLight;
+	class DirectionalLight;
+	class PointLight;
+	class Shader;
+	class SpotLight;
+
 	class LightResourceBinder
 	{
 	public:

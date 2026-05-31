@@ -254,6 +254,7 @@ passed
 - Bloom Header Framebuffer Boundary Cleanup 已接入：`Bloom.h` 不再 include 完整 core/framebuffer/geometry/shader headers，只 forward declare `Framebuffer` / `Texture` / `Shader` / `Geometry`；Bloom FBO 创建、texture binding 和 shader/quad 操作集中到 `Bloom.cpp`。
 - Environment Texture Header Boundary Cleanup 已接入：`EnvironmentRenderTargets.h` 与 `EnvironmentProfile.h` 不再 include 完整 `framework/texture.h`，只 forward declare `Texture`；环境贴图创建、HDR/procedural texture 创建、IBL debug/precompute 和 PBR IBL/deferred lighting 中实际解引用 texture 的 implementation 显式 include 完整 texture 头。
 - IBL Precompute Pass Header Boundary Cleanup 已接入：`IBLPrecomputePass.h` 不再 include 完整 environment targets、texture、mesh、shader library headers，也不再通过 private helper 暴露 `glm::mat4`；capture projection/view helper 和完整 IBL precompute 执行依赖集中到 `IBLPrecomputePass.cpp`。
+- Light Resource Binder Header Boundary Cleanup 已接入：`LightResourceBinder.h` 不再 include 完整 `framework/shader.h` 或 light implementation headers，只 forward declare shader/light 参数类型；实际 uniform 写入和 light 字段读取依赖集中到 `LightResourceBinder.cpp`。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -314,6 +315,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：IBL Precompute Pass Header Boundary Cleanup 已接入后，`IBLPrecomputePass.h` 只保留 environment targets、texture、mesh、shader、shader library 前置声明，完整 capture-view/texture/shader/library 依赖下沉到 `IBLPrecomputePass.cpp`；下一步继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+当前最新修正：Light Resource Binder Header Boundary Cleanup 已接入后，`LightResourceBinder.h` 只保留 shader/light 参数类型前置声明，完整 shader uniform 写入和 light 字段读取依赖下沉到 `LightResourceBinder.cpp`；下一步继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 IBL precompute pass header boundary cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 light resource binder header boundary cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
