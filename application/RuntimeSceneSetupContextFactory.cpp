@@ -30,7 +30,7 @@ namespace GL_RUNTIME
 			config.height,
 			config.texturePath,
 			context.profiles.environmentProfile(),
-			context.profiles.pbrPreviewProfile,
+			context.profiles.pbrPreviewProfile(),
 			context.profiles.pbrLightRigProfile(),
 			&engine,
 			context.engineAttachments.engineWorld,

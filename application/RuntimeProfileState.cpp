@@ -6,6 +6,7 @@
 #include "../tools/sceneSetup/PBRCameraRigProfile.h"
 #include "../tools/sceneSetup/PBRExperimentProfile.h"
 #include "../tools/sceneSetup/PBRLightRigProfile.h"
+#include "../tools/sceneSetup/PBRPreviewProfile.h"
 
 GL_RUNTIME::RuntimeProfileState::RuntimeProfileState()
 	: framePipelineProfilePath(RuntimeFramePipelineProfileStorage::defaultPath())
@@ -17,6 +18,7 @@ GL_RUNTIME::RuntimeProfileState::RuntimeProfileState()
 	, mPostProcessSettings(std::make_unique<GLframework::PostProcessSettings>())
 	, mEnvironmentProfile(std::make_unique<GLframework::EnvironmentProfile>())
 	, mPBRLightRigProfile(std::make_unique<GL_SCENE::PBRLightRigProfile>())
+	, mPBRPreviewProfile(std::make_unique<GL_SCENE::PBRPreviewProfile>())
 	, mPBRCameraRigProfile(std::make_unique<GL_SCENE::PBRCameraRigProfile>())
 {
 }
@@ -55,6 +57,16 @@ GL_SCENE::PBRLightRigProfile& GL_RUNTIME::RuntimeProfileState::pbrLightRigProfil
 const GL_SCENE::PBRLightRigProfile& GL_RUNTIME::RuntimeProfileState::pbrLightRigProfile() const
 {
 	return *mPBRLightRigProfile;
+}
+
+GL_SCENE::PBRPreviewProfile& GL_RUNTIME::RuntimeProfileState::pbrPreviewProfile()
+{
+	return *mPBRPreviewProfile;
+}
+
+const GL_SCENE::PBRPreviewProfile& GL_RUNTIME::RuntimeProfileState::pbrPreviewProfile() const
+{
+	return *mPBRPreviewProfile;
 }
 
 GL_SCENE::PBRCameraRigProfile& GL_RUNTIME::RuntimeProfileState::pbrCameraRigProfile()

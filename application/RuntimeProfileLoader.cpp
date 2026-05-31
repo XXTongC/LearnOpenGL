@@ -8,6 +8,7 @@
 #include "../tools/Logger/LogManager.h"
 #include "../tools/sceneSetup/PBRCameraRigProfile.h"
 #include "../tools/sceneSetup/PBRExperimentProfile.h"
+#include "../tools/sceneSetup/PBRPreviewProfile.h"
 
 namespace
 {
@@ -76,7 +77,7 @@ namespace
 	{
 		if (GL_SCENE::PBRPreviewProfileStorage::loadFromFile(
 			context.profiles.pbrPreviewProfilePath,
-			context.profiles.pbrPreviewProfile
+			context.profiles.pbrPreviewProfile()
 		))
 		{
 			LogInfo("PBR preview profile loaded from " + context.profiles.pbrPreviewProfilePath);
@@ -92,7 +93,7 @@ namespace
 			context.profiles.pbrExperimentProfilePath,
 			context.profiles.environmentProfile(),
 			context.profiles.postProcessSettings(),
-			context.profiles.pbrPreviewProfile,
+			context.profiles.pbrPreviewProfile(),
 			context.profiles.pbrLightRigProfile(),
 			context.profiles.pbrCameraRigProfile()
 		))

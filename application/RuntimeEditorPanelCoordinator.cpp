@@ -29,7 +29,7 @@ namespace GL_RUNTIME
 			context.engineAttachments.rendererSubsystem,
 			&context.profiles.environmentProfile(),
 			&context.profiles.environmentProfilePath,
-			&context.profiles.pbrPreviewProfile,
+			&context.profiles.pbrPreviewProfile(),
 			&context.profiles.pbrPreviewProfilePath,
 			&context.profiles.pbrExperimentProfilePath,
 			&context.profiles.pbrLightRigProfile(),
