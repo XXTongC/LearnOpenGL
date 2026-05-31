@@ -62,6 +62,13 @@ namespace GLengine
 
 	struct ScenePackageLoadResult
 	{
+		ScenePackageLoadResult();
+		~ScenePackageLoadResult();
+		ScenePackageLoadResult(ScenePackageLoadResult&&) noexcept;
+		ScenePackageLoadResult& operator=(ScenePackageLoadResult&&) noexcept;
+		ScenePackageLoadResult(const ScenePackageLoadResult&) = delete;
+		ScenePackageLoadResult& operator=(const ScenePackageLoadResult&) = delete;
+
 		bool loaded{ false };
 		std::unique_ptr<World> world{ nullptr };
 		int actorCount{ 0 };

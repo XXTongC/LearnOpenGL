@@ -7813,3 +7813,25 @@ Subagent 审查：
 
 - 这是 Engine legacy scene transform public header boundary cleanup，不改变 legacy scene import/export semantics、Transform 数据结构、Engine World minimal scene、scene package/import verification、renderer backend contract 或 PBR pass。
 - 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到通用 renderer backend contract/header surface audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Engine ScenePackage Load Result World Owner Boundary Cleanup
+
+本轮继续 Engine public header 的低风险 ownership boundary audit。审计确认：`ScenePackage.h` 已 forward declare `World`，但 `ScenePackageLoadResult` 直接按值持有 `std::unique_ptr<World>` 且使用隐式析构/移动 special members。更窄边界是：在 header 中显式声明 move-only special members，把析构和 move default 定义下沉到 `ScenePackage.cpp`，由 implementation 侧完整 include `World.h`。
+
+新增与修改：
+
+- `ScenePackageLoadResult` 显式声明 default constructor、out-of-line destructor、move constructor 和 move assignment。
+- `ScenePackageLoadResult` 显式删除 copy constructor 和 copy assignment，保持 load result 的 move-only ownership 语义。
+- `ScenePackage.cpp` 在包含完整 `World.h` 的 translation unit 中 default `ScenePackageLoadResult` special members，避免调用方通过 header 承担 incomplete `World` owner 析构。
+
+已完成验证：
+
+- 静态检查确认 `ScenePackage.h` 不 include `World.h`，`ScenePackage.cpp` 显式 include 完整 `World.h`。
+- 静态检查确认 `loadScenePackage(...)` 调用点继续以返回值或局部 `ScenePackageLoadResult` 使用 move-only result。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,import,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `ScenePackage.cpp`、Engine World verification 和 imported asset verification；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine ScenePackage load result World owner boundary cleanup，不改变 scene package save/load schema、World ownership transfer、package graph validation、imported asset package verification、renderer backend contract 或 PBR pass。
+- 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到通用 renderer backend contract/header surface audit；当前仍不建议继续扩张 PBR 功能。

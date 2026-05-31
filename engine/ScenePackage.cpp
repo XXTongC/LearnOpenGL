@@ -26,6 +26,11 @@
 
 using namespace GLengine;
 
+GLengine::ScenePackageLoadResult::ScenePackageLoadResult() = default;
+GLengine::ScenePackageLoadResult::~ScenePackageLoadResult() = default;
+GLengine::ScenePackageLoadResult::ScenePackageLoadResult(GLengine::ScenePackageLoadResult&&) noexcept = default;
+GLengine::ScenePackageLoadResult& GLengine::ScenePackageLoadResult::operator=(GLengine::ScenePackageLoadResult&&) noexcept = default;
+
 namespace
 {
 	constexpr const char* kScenePackageSchema = "engine.world.scenePackage.v1";
