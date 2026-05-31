@@ -1,7 +1,12 @@
 #include "IBLPrecomputePass.h"
 
+#include <array>
+
+#include "framework/shader.h"
 #include "framework/texture.h"
+#include "renderer/EnvironmentRenderTargets.h"
 #include "renderer/MeshDraw.h"
+#include "renderer/ShaderLibrary.h"
 
 using namespace GLframework;
 
@@ -28,6 +33,18 @@ namespace
 	glm::mat4 createCaptureProjection()
 	{
 		return glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+	}
+
+	std::array<glm::mat4, 6> createCaptureViews()
+	{
+		return {
+			glm::lookAt(glm::vec3(0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+			glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f))
+		};
 	}
 }
 
@@ -187,18 +204,6 @@ bool IBLPrecomputePass::computeBrdfLut(
 	const bool rendered = MeshDraw::drawIndexed(screenQuad);
 	shader->end();
 	return rendered;
-}
-
-std::array<glm::mat4, 6> IBLPrecomputePass::createCaptureViews() const
-{
-	return {
-		glm::lookAt(glm::vec3(0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
-		glm::lookAt(glm::vec3(0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
-		glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-		glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)),
-		glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
-		glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f))
-	};
 }
 
 bool IBLPrecomputePass::renderCubemapFaces(

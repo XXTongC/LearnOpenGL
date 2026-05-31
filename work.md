@@ -8013,3 +8013,26 @@ Subagent 审查：
 
 - 这是 Environment texture public include boundary cleanup，不改变 environment target allocation、HDR/procedural texture loading、IBL debug/precompute、PBR IBL binding、deferred lighting、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 IBL Precompute Pass Header Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit。审计确认：`IBLPrecomputePass.h` 为了引用参数和一个 private capture-view helper 直接 include 完整 `EnvironmentRenderTargets.h`、`framework/texture.h`、`mesh/mesh.h` 与 `ShaderLibrary.h`，并通过 private `std::array<glm::mat4, 6>` helper 把 GLM capture-view 类型暴露到 public header。更窄边界是：IBL precompute pass header 只 forward declare 参数类型，capture projection/view helper 和实际 environment/texture/shader/mesh 执行依赖留在 implementation。
+
+新增与修改：
+
+- `IBLPrecomputePass.h` 移除 `<array>`、`EnvironmentRenderTargets.h`、`framework/texture.h`、`mesh/mesh.h` 与 `ShaderLibrary.h` includes。
+- `IBLPrecomputePass.h` 新增 `EnvironmentRenderTargets`、`Texture`、`Mesh`、`Shader` 与 `ShaderLibrary` forward declarations，保留现有 precompute public API。
+- `IBLPrecomputePass.h` 移除 private `createCaptureViews()` 声明，避免 header 暴露 `glm::mat4`。
+- `IBLPrecomputePass.cpp` 显式 include `<array>`、`framework/shader.h`、`framework/texture.h`、`renderer/EnvironmentRenderTargets.h`、`renderer/MeshDraw.h` 与 `renderer/ShaderLibrary.h`，并把 `createCaptureViews()` 改为 anonymous-namespace helper。
+
+已完成验证：
+
+- 静态检查确认 `IBLPrecomputePass.h` 不再 include 完整 environment targets、texture、mesh、shader library headers，也不再出现 `<array>` 或 `glm::mat4` private helper。
+- 静态检查确认 `IBLPrecomputePass.cpp` 显式持有完整 precompute execution dependencies，renderer facade 仍按值持有 `IBLPrecomputePass`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `IBLPrecomputePass.cpp`、`renderer.cpp`、runtime verification、scene setup 和 RendererSubsystem 相关 translation units；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 IBL precompute pass public include boundary cleanup，不改变 environment cubemap capture、irradiance convolution、prefilter map、BRDF LUT、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

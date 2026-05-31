@@ -1,15 +1,15 @@
 #pragma once
 
-#include <array>
 #include <memory>
-
-#include "EnvironmentRenderTargets.h"
-#include "framework/texture.h"
-#include "mesh/mesh.h"
-#include "ShaderLibrary.h"
 
 namespace GLframework
 {
+	class EnvironmentRenderTargets;
+	class Mesh;
+	class Shader;
+	class ShaderLibrary;
+	class Texture;
+
 	class IBLPrecomputePass
 	{
 	public:
@@ -39,7 +39,6 @@ namespace GLframework
 		) const;
 
 	private:
-		std::array<glm::mat4, 6> createCaptureViews() const;
 		bool renderCubemapFaces(
 			EnvironmentRenderTargets& targets,
 			const std::shared_ptr<Texture>& outputCubemap,
