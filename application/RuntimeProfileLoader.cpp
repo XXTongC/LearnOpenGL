@@ -29,7 +29,7 @@ namespace
 	{
 		if (GLframework::PostProcessSettingsStorage::loadFromFile(
 			context.profiles.postProcessSettingsPath,
-			context.profiles.postProcessSettings
+			context.profiles.postProcessSettings()
 		))
 		{
 			LogInfo("Postprocess settings loaded from " + context.profiles.postProcessSettingsPath);
@@ -91,7 +91,7 @@ namespace
 		if (GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 			context.profiles.pbrExperimentProfilePath,
 			context.profiles.environmentProfile(),
-			context.profiles.postProcessSettings,
+			context.profiles.postProcessSettings(),
 			context.profiles.pbrPreviewProfile,
 			context.profiles.pbrLightRigProfile,
 			context.profiles.pbrCameraRigProfile()

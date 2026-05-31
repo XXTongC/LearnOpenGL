@@ -9,6 +9,7 @@
 #include "RuntimeFramePipelineProfile.h"
 #include "../engine/RendererBackendFrameTypes.h"
 #include "../renderer/FrameRenderTargets.h"
+#include "../renderer/PostProcessSettings.h"
 
 namespace
 {
@@ -70,7 +71,7 @@ namespace
 
 	bool isBloomReady(const GLframework::AppRuntimeContext& context)
 	{
-		if (!context.profiles.postProcessSettings.bloomEnabled)
+		if (!context.profiles.postProcessSettings().bloomEnabled)
 		{
 			return true;
 		}

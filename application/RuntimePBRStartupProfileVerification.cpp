@@ -2,6 +2,7 @@
 
 #include "AppRuntimeContext.h"
 #include "../renderer/EnvironmentProfile.h"
+#include "../renderer/PostProcessSettings.h"
 
 namespace GL_RUNTIME
 {
@@ -16,11 +17,12 @@ namespace GL_RUNTIME
 		environmentProfile.proceduralGroundIntensity = 0.15f;
 		environmentProfile.proceduralSunIntensity = 4.0f;
 
-		context.profiles.postProcessSettings.exposure = 1.0f;
-		context.profiles.postProcessSettings.bloomEnabled = true;
-		context.profiles.postProcessSettings.bloomThreshold = 1.0f;
-		context.profiles.postProcessSettings.bloomIntensity = 0.04f;
-		context.profiles.postProcessSettings.bloomIterations = 6;
+		auto& postProcessSettings = context.profiles.postProcessSettings();
+		postProcessSettings.exposure = 1.0f;
+		postProcessSettings.bloomEnabled = true;
+		postProcessSettings.bloomThreshold = 1.0f;
+		postProcessSettings.bloomIntensity = 0.04f;
+		postProcessSettings.bloomIterations = 6;
 
 		context.profiles.framePipelineProfile.sceneColorPassEnabled = true;
 		context.profiles.framePipelineProfile.sceneResolvePassEnabled = true;

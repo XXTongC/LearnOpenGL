@@ -23,7 +23,7 @@ namespace GL_RUNTIME
 			&context.profiles.framePipelineProfile,
 			&context.profiles.framePipelineProfilePath,
 			&context.profiles.rendererFramePassProfilePath,
-			&context.profiles.postProcessSettings,
+			&context.profiles.postProcessSettings(),
 			&context.profiles.postProcessSettingsPath,
 			context.renderResources.renderer,
 			context.engineAttachments.rendererSubsystem,

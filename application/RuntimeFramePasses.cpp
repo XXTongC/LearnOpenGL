@@ -5,6 +5,7 @@
 #include "../materials/material.h"
 #include "../renderer/FrameRenderTargets.h"
 #include "../renderer/PostProcessPass.h"
+#include "../renderer/PostProcessSettings.h"
 #include "../renderer/renderer.h"
 
 namespace GL_RUNTIME
@@ -32,7 +33,8 @@ namespace GL_RUNTIME
 
 	void RuntimeBloomPass::execute(GLframework::AppRuntimeContext& context)
 	{
-		if (!context.profiles.postProcessSettings.bloomEnabled)
+		const auto& postProcessSettings = context.profiles.postProcessSettings();
+		if (!postProcessSettings.bloomEnabled)
 		{
 			return;
 		}
@@ -41,14 +43,14 @@ namespace GL_RUNTIME
 			context.renderResources.bloom,
 			context.renderResources.frameRenderTargets().getResolved(),
 			context.renderResources.frameRenderTargets().getBloomBright(),
-			context.profiles.postProcessSettings.bloomThreshold
+			postProcessSettings.bloomThreshold
 		);
 		context.renderResources.postProcessPass().blurBloom(
 			context.renderResources.bloom,
 			context.renderResources.frameRenderTargets().getBloomBright(),
 			context.renderResources.frameRenderTargets().getBloomPing(),
 			context.renderResources.frameRenderTargets().getBloomPong(),
-			context.profiles.postProcessSettings.bloomIterations
+			postProcessSettings.bloomIterations
 		);
 	}
 
@@ -60,7 +62,7 @@ namespace GL_RUNTIME
 		context.renderResources.postProcessPass().renderScreenComposite(
 			context.renderResources.screenQuad,
 			context.renderResources.renderer->getShader(GLframework::MaterialType::ScreenMaterial),
-			context.profiles.postProcessSettings,
+			context.profiles.postProcessSettings(),
 			config.framebufferWidth,
 			config.framebufferHeight
 		);

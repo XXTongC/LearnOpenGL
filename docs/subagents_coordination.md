@@ -1866,6 +1866,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `application/RuntimeProfileState.h`, `application/RuntimeProfileState.cpp`, `application/RuntimeProfileLoader.cpp`, `application/RuntimePBRLightCameraRigVerification.cpp`, `application/RuntimeEditorPanelCoordinator.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime profile state environment profile owner boundary cleanup is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `application/RuntimeProfileState.h`, `application/RuntimeProfileState.cpp`, `application/RuntimeProfileLoader.cpp`, `application/RuntimePBRStartupProfileVerification.cpp`, `application/RuntimeSceneSetupContextFactory.cpp`, `application/RuntimeEditorPanelCoordinator.cpp`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime profile state post-process settings owner boundary cleanup is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `application/RuntimeProfileState.h`, `application/RuntimeProfileState.cpp`, `application/RuntimeProfileLoader.cpp`, `application/RuntimePBRStartupProfileVerification.cpp`, `application/RuntimeFramePasses.cpp`, `application/RuntimeRendererFrameBridgeAdapter.cpp`, `application/RuntimeEditorPanelCoordinator.cpp`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

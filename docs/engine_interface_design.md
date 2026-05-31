@@ -494,7 +494,8 @@ public:
 284. Runtime Render Resource FrameRenderTargets Owner Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再传播 `FrameRenderTargets.h`，frame render targets 由 implementation-owned pointer 持有，runtime frame pass、backend readiness、scene setup 和 resize callback 路径通过访问器取得引用。
 285. Runtime Profile State Camera Rig Owner Boundary Cleanup 已完成第一版：`RuntimeProfileState.h` 不再传播 `PBRCameraRigProfile.h`，camera rig profile 由 implementation-owned pointer 持有，profile loader、PBR light/camera verification 和 debug controller context 构造通过访问器取得引用。
 286. Runtime Profile State Environment Profile Owner Boundary Cleanup 已完成第一版：`RuntimeProfileState.h` 不再传播 `EnvironmentProfile.h`，environment profile 由 implementation-owned pointer 持有，startup verification、profile loader、scene setup 和 debug controller context 构造通过访问器取得引用。
-287. 下一步建议继续 runtime profile/state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+287. Runtime Profile State PostProcess Settings Owner Boundary Cleanup 已完成第一版：`RuntimeProfileState.h` 不再传播 `PostProcessSettings.h`，post-process settings 由 implementation-owned pointer 持有，profile loader、startup verification、runtime frame pass、renderer backend readiness 和 debug controller context 构造通过访问器取得引用。
+288. 下一步建议继续 runtime profile/state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 
