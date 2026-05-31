@@ -6,6 +6,7 @@
 #include "AppRuntimeContext.h"
 #include "RuntimeInputController.h"
 #include "RuntimeViewport.h"
+#include "RuntimeWindowLifecycleTypes.h"
 #include "../tools/Logger/LogManager.h"
 
 namespace GL_RUNTIME

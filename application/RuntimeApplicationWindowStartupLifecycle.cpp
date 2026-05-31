@@ -4,6 +4,7 @@
 #include "RuntimeApplicationState.h"
 #include "RuntimeGraphicsLifecycle.h"
 #include "RuntimeWindowLifecycle.h"
+#include "RuntimeWindowLifecycleTypes.h"
 
 namespace GL_RUNTIME
 {

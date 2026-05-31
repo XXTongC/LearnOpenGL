@@ -8596,3 +8596,25 @@ Subagent 审查：
 
 - 这是 runtime viewport public header boundary cleanup，不改变 viewport apply、resize acceptance、camera aspect sync、post-process input texture sync、GUI frame rendering、Engine World verification、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续 application composition root 的窗口/GUI/viewport 依赖显式化，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Window Lifecycle Header Boundary Cleanup
+
+本轮继续 application composition root 显式依赖收敛，不扩张 PBR 功能。审计确认：`RuntimeWindowLifecycle.h` 只是窗口生命周期 facade，但仍直接 include `RuntimeWindowLifecycleTypes.h`，导致只需要调用 `destroy()` 的 shutdown destroy bridge 也会间接看到 window config/snapshot/callback DTO 的完整定义。
+
+新增与修改：
+
+- `RuntimeWindowLifecycle.h` 改为只 forward declare `RuntimeWindowConfig`、`RuntimeWindowCallbackContext` 与 `RuntimeWindowSnapshot`，public API 保留 initialize/capture/destroy facade。
+- `RuntimeWindowLifecycle.cpp` 显式 include `RuntimeWindowLifecycleTypes.h`，完整 callback context 存储、window init 参数读取和 snapshot 构造依赖集中到实现文件。
+- `RuntimeApplicationFrameRunBridge.cpp` 显式 include `RuntimeWindowLifecycleTypes.h`，因为它按值接收 `RuntimeWindowSnapshot` 并读取 framebuffer width/height/native window。
+- `RuntimeApplicationWindowStartupLifecycle.cpp` 显式 include `RuntimeWindowLifecycleTypes.h`，因为它构造 callback context 并按值返回 window snapshot。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeWindowLifecycle.h` 不再传播 window lifecycle DTO 完整定义；实际构造、返回或读取 DTO 字段的 implementation 显式 include `RuntimeWindowLifecycleTypes.h`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeApplicationFrameRunBridge.cpp`、`RuntimeApplicationShutdownDestroyBridge.cpp`、`RuntimeApplicationWindowStartupLifecycle.cpp` 与 `RuntimeWindowLifecycle.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime window lifecycle public header boundary cleanup，不改变窗口初始化、callback context、resize/input callback、window snapshot、shutdown destroy、runtime frame pipeline、Engine World verification 或 renderer backend contract。
+- 下一步建议继续 application composition root 中 shell/config/window/GUI headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
