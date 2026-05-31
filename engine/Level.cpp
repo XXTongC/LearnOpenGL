@@ -1,5 +1,6 @@
 #include "engine/Level.h"
 
+#include "engine/Actor.h"
 #include "engine/World.h"
 
 #include <utility>
@@ -10,6 +11,8 @@ Level::Level(std::string name)
 	: EngineObject(std::move(name))
 {
 }
+
+Level::~Level() = default;
 
 World* Level::getWorld() const
 {

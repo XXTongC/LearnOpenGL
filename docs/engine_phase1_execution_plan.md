@@ -242,6 +242,7 @@ passed
 - Engine AddSubsystem Context Helper Boundary Cleanup 已接入：`Engine::addSubsystem(...)` public template 不再直接解引用 `mContext`，initialized-subsystem context handoff 下沉到 `Engine.cpp` 私有 helper。
 - Engine World Persistent Level Header Boundary Cleanup 已接入：`World.h` 不再 include 完整 `Level.h`，persistent level 通过 forward declaration + out-of-line destructor 隐藏；实际构造/遍历 Level 的实现文件显式 include `Level.h`。
 - Engine Actor Root SceneComponent Header Boundary Cleanup 已接入：`Actor.h` 不再 include 完整 `SceneComponent.h`，root component pointer API 改由 forward declaration 暴露；`Actor.cpp` 显式 include `SceneComponent.h` 以支持 register/dynamic_cast 逻辑。
+- Engine Level Actor Header Boundary Cleanup 已接入：`Level.h` 不再 include 完整 `Actor.h`，actor owner 列表通过 forward declaration + out-of-line destructor 隐藏；实际遍历/生命周期调用 actor 的 implementation 显式 include `Actor.h`，`spawnActor<T>` 调用点继续由具体 actor 类型 include 保障。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -302,6 +303,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Runtime Renderer Backend Catalog Registry Object API Cleanup 已接入后，`RuntimeRendererBackendCatalog.h` 不再公开返回具体 `RendererBackendRegistry` object 的 `makeRegistry()` API；下一步优先继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前不建议继续扩张 PBR pass。
+当前最新修正：Engine Level Actor Header Boundary Cleanup 已接入后，`Level.h` 不再为了 actor owner 列表 include 完整 `Actor.h`；下一步优先继续 Engine public header 低风险 include audit，或回到通用 renderer backend contract/header surface audit；当前不建议继续扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime renderer backend catalog registry object API cleanup 后，下一步优先继续通用 renderer backend contract/header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Engine Level actor header cleanup 后，下一步优先继续 Engine public header 低风险 include audit 或通用 renderer backend contract/header surface audit；当前不建议继续扩张 PBR pass。

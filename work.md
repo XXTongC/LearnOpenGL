@@ -7769,3 +7769,25 @@ Subagent 审查：
 
 - 这是 Runtime renderer backend catalog registry object API cleanup，不改变 backend key、selection fallback、attachment desc、registry/no-op backend behavior、Engine World verification 或 PBR pass。
 - 后续建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Engine Level Actor Header Boundary Cleanup
+
+本轮回到 Engine public header 的低风险 include audit。审计确认：`Level.h` 为了 actor owner list 和 `spawnActor<T>` public include 完整 `Actor.h`，导致只需要 Level facade 或 actor count 的调用点也继承完整 Actor API。更窄边界是：`Level.h` forward declare `Actor`，析构下沉到 `.cpp`，完整 actor lifecycle/ownership 操作只留在 `Level.cpp` 和实际构造具体 actor 类型的调用点。
+
+新增与修改：
+
+- `Level.h` 移除 `Actor.h` include，新增 `class Actor;` forward declaration。
+- `Level` destructor 从 inline default 改为 out-of-line，保证 `std::vector<std::unique_ptr<Actor>>` incomplete type 析构安全。
+- `Level.cpp` 显式 include `Actor.h`，因为 implementation 调用 actor lifecycle、ownership handoff 和 actor method。
+
+已完成验证：
+
+- 静态检查确认 `Level.h` 不再 include `Actor.h`，只保留 forward declaration、`std::unique_ptr<Actor>` owner list 和 `spawnActor<T>` facade。
+- 静态检查确认当前 `spawnActor<T>` 调用点已经显式 include `Actor.h` 或 `ActorAdapters.h`，不依赖 `Level.h` 的传递 include。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,import,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `Level.cpp`、`World.cpp`、`ScenePackage.cpp`、`LegacySceneWorldBuilder.cpp`、Engine World verification 和 editor world/snapshot 相关实现；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine Level actor public header boundary cleanup，不改变 World/Level/Actor ownership semantics、spawnActor 行为、scene package/import verification、Engine World verification、renderer backend contract 或 PBR pass。
+- 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到通用 renderer backend contract/header surface audit；当前仍不建议继续扩张 PBR 功能。

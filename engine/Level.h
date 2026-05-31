@@ -6,18 +6,18 @@
 #include <utility>
 #include <vector>
 
-#include "engine\Actor.h"
 #include "engine\EngineObject.h"
 
 namespace GLengine
 {
+	class Actor;
 	class World;
 
 	class Level : public EngineObject
 	{
 	public:
 		explicit Level(std::string name = {});
-		~Level() override = default;
+		~Level() override;
 
 		World* getWorld() const;
 		const std::vector<std::unique_ptr<Actor>>& getActors() const;
