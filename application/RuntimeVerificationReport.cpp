@@ -7,6 +7,7 @@
 #include "../engine/AssetRegistry.h"
 #include "../engine/AssetSubsystem.h"
 #include "../engine/Engine.h"
+#include "../engine/EngineLifecycleSnapshot.h"
 #include "../engine/RendererSubsystem.h"
 #include "../tools/Logger/LogManager.h"
 #include "AppRuntimeContext.h"

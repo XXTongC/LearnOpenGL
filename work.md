@@ -7901,3 +7901,26 @@ Subagent 审查：
 
 - 这是 runtime frame pass registry key lookup header boundary cleanup，不改变 pass key matching、pass order parsing、runtime backend adapter frame plan key、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Engine Lifecycle Snapshot Header Boundary Cleanup
+
+本轮转向 Engine public header 的低风险 include audit。审计确认：`Engine.h` 只是在 public API 中按值返回 `EngineLifecycleSnapshot`，但仍直接 include 完整 `EngineLifecycleSnapshot.h`，导致任何包含 Engine facade 的调用点都会继承 lifecycle snapshot DTO 的完整定义。更窄边界是：`Engine.h` 只 forward declare 返回 DTO，实际构造或读取快照字段的 translation unit 显式 include 完整快照头。
+
+新增与修改：
+
+- `Engine.h` 移除 `EngineLifecycleSnapshot.h` include，改为 forward declare `EngineLifecycleSnapshot`。
+- `Engine.cpp` 显式 include `EngineLifecycleSnapshot.h`，因为 `captureLifecycleSnapshot()` 实际构造并填充快照字段。
+- `EngineDiagnosticsPanel.cpp` 显式 include `EngineLifecycleSnapshot.h`，因为 diagnostics UI 读取快照字段并构造默认快照。
+- `RuntimeVerificationReport.cpp` 显式 include `EngineLifecycleSnapshot.h`，因为 runtime verification report 获取快照并传递给 formatter。
+
+已完成验证：
+
+- 静态检查确认 `Engine.h` 不再 include 完整 `EngineLifecycleSnapshot.h`，只保留 forward declaration 与 `captureLifecycleSnapshot()` 返回声明。
+- 静态检查确认 `Engine.cpp`、Engine diagnostics panel 和 runtime verification report 都显式 include 完整快照头。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `Engine.cpp`、`EngineDiagnosticsPanel.cpp` 和 `RuntimeVerificationReport.cpp`；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine lifecycle snapshot DTO include boundary cleanup，不改变 `Engine::captureLifecycleSnapshot()` API、Engine diagnostics panel、runtime verification output、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到 runtime/renderer header surface audit；当前仍不建议继续扩张 PBR 功能。

@@ -6,13 +6,13 @@
 #include <utility>
 #include <vector>
 
-#include "engine\EngineLifecycleSnapshot.h"
 #include "engine\EngineSubsystem.h"
 
 namespace GLengine
 {
 	struct EngineContext;
 	struct EngineDesc;
+	struct EngineLifecycleSnapshot;
 	class World;
 
 	class Engine

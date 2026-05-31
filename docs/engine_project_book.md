@@ -287,6 +287,7 @@ flowchart TD
 - Renderer Backend Contract Frame DTO Header Boundary Cleanup 已完成第一版：`RendererBackend.h` 不再 include 完整 `RendererBackendFrameTypes.h`，backend contract 只 forward declare `RendererFrameIntent` / `RendererFrameResult`；实际读取 frame intent 或构造 frame result 的 runtime backend implementation 显式 include DTO 头。
 - Runtime Frame Pipeline Context Header Boundary Cleanup 已完成第一版：`RuntimeFramePipeline.h` 与 `RuntimeFramePasses.h` 不再 include 完整 `AppRuntimeContext.h`，frame pipeline/pass public headers 只保留 runtime context/config forward declarations；实际读取 context/config 字段的 implementation 显式 include 完整头。
 - Runtime Frame Pass Registry Key String View Boundary Cleanup 已完成第一版：`RuntimeFramePassRegistry.h` 的 pass key lookup 改为 `std::string_view`，registry public header 不再为了只读 key 查询 include `<string>`；trim/token 字符串处理保留在 implementation。
+- Engine Lifecycle Snapshot Header Boundary Cleanup 已完成第一版：`Engine.h` 不再 include 完整 `EngineLifecycleSnapshot.h`，只 forward declare `EngineLifecycleSnapshot`；实际构造或读取快照字段的 `Engine.cpp`、Engine diagnostics panel 和 runtime verification report 显式 include 完整快照头。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已完成第一版：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已完成第一版：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已完成第一版：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -345,6 +346,6 @@ flowchart TD
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Frame Pass Registry Key String View Boundary Cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Engine Lifecycle Snapshot Header Boundary Cleanup 后，下一步优先继续 Engine public header 的低风险 include audit 或 runtime/renderer header surface audit；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Frame Pass Registry Key String View Boundary Cleanup 已接入后，frame pass registry public header 的 pass key lookup 使用 `std::string_view`，不再为了只读查询传播 `<string>`；下一步继续 runtime/renderer header surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
+当前最新修正：Engine Lifecycle Snapshot Header Boundary Cleanup 已接入后，`Engine.h` 只保留 lifecycle snapshot 返回类型的 forward declaration，完整快照 DTO 依赖下沉到 `Engine.cpp` 与实际读取字段的 diagnostics/reporting translation units；下一步继续 Engine public header 的低风险 include audit 或 runtime/renderer header surface audit；当前不建议继续扩张 PBR 功能。

@@ -61,6 +61,7 @@ Current phase:
 - `EngineLifecycleSnapshot.h` now owns `EngineSubsystemLifecycleSummary` and `EngineLifecycleSnapshot`, so runtime engine verification report formatting can read snapshot data without including the full `Engine.h` owner header.
 - `EngineRunMode.h` now owns `EngineRunMode`, so lifecycle snapshot/report paths can depend on the run-mode enum without including the full `EngineContext.h` desc/context data model.
 - `EngineDesc.h` now owns `EngineDesc`, so application startup/config policy paths can construct engine startup parameters without including the full per-frame `EngineContext.h`.
+- `Engine.h` now forward-declares `EngineLifecycleSnapshot`; complete lifecycle snapshot dependencies are localized to `Engine.cpp` and diagnostics/reporting translation units that read snapshot fields.
 - `Engine.h` no longer exposes full `EngineContext.h` or `World.h`; it forward-declares `EngineContext`, `EngineDesc`, and `World`, while `Engine.cpp` owns the complete context/world dependencies and `EngineContext` storage.
 - `Engine::addSubsystem(...)` no longer dereferences `mContext` inside the public template body; initialized-subsystem context handoff is routed through an out-of-line `Engine.cpp` helper.
 - `RuntimeApplicationShutdownCleanupBridge` now receives `RuntimeVerificationConfig` directly; the shell-config-to-verification-config mapping is localized to `RuntimeApplicationShutdownLifecycle.cpp`.
@@ -184,14 +185,16 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Runtime Frame Pass Registry Key String View Boundary Cleanup
+### Current Round: Engine Lifecycle Snapshot Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `application/RuntimeFramePassRegistry.cpp`
-- `application/RuntimeFramePassRegistry.h`
+- `engine/Engine.h`
+- `engine/Engine.cpp`
+- `tools/editor/EngineDiagnosticsPanel.cpp`
+- `application/RuntimeVerificationReport.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -202,7 +205,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Runtime frame pass registry key lookup signature and string normalization behavior remain parent-reviewed.
+- Engine lifecycle snapshot return boundary and explicit implementation/diagnostics includes remain parent-reviewed.
 
 Rules for this round:
 
@@ -1659,7 +1662,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-05-31 Runtime Frame Pass Registry Key String View Boundary Cleanup.
+Round: 2026-05-31 Engine Lifecycle Snapshot Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1667,20 +1670,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: change `RuntimeFramePassRegistry::findPassByKey(...)` from `const std::string&` to `std::string_view`, remove public `<string>` propagation from the registry header, and keep concrete trim/token string handling in the registry implementation.
+- Current local implementation target for this slice: remove the complete `EngineLifecycleSnapshot.h` include from `Engine.h`, forward declare the return DTO, and make implementation/diagnostics/reporting translation units include the full snapshot header explicitly.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the Runtime Frame Pass Registry Key String View Boundary Cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the Engine Lifecycle Snapshot Header Boundary Cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `application/RuntimeFramePassRegistry.h`, `application/RuntimeFramePassRegistry.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `engine/Engine.h`, `engine/Engine.cpp`, `tools/editor/EngineDiagnosticsPanel.cpp`, `application/RuntimeVerificationReport.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Runtime Frame Pass Registry key string_view cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Frame Pipeline context header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Renderer Backend Contract frame DTO header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Engine ScenePackage Load Result World owner cleanup was parent-owned and had no delegated write scope.

@@ -3,6 +3,7 @@
 #include "../../engine/AssetRegistry.h"
 #include "../../engine/AssetSubsystem.h"
 #include "../../engine/Engine.h"
+#include "../../engine/EngineLifecycleSnapshot.h"
 #include "../../engine/Level.h"
 #include "../../engine/RendererSubsystemFrameBridgeStats.h"
 #include "../../engine/RendererSubsystem.h"
