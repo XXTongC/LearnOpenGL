@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "../../engine/WorldLegacySceneExporter.h"
+#include "../../engine/LegacySceneWorldStats.h"
 
 namespace GLengine
 {

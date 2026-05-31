@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "../../engine/LegacySceneWorldBuilder.h"
+#include "../../engine/LegacySceneWorldStats.h"
 #include "SceneSetupPipelineConfig.h"
 #include "WorldDrivenSceneSetup.h"
 

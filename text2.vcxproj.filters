@@ -1001,6 +1001,9 @@
     <ClInclude Include="engine\LegacySceneWorldBuilder.h">
       <Filter>include\GLengine</Filter>
     </ClInclude>
+    <ClInclude Include="engine\LegacySceneWorldStats.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
     <ClInclude Include="engine\Level.h">
       <Filter>include\GLengine</Filter>
     </ClInclude>

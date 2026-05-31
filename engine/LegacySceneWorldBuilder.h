@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "engine/LegacySceneWorldStats.h"
 #include "engine/PersistentIdPolicy.h"
 
 namespace GLframework
@@ -17,26 +18,6 @@ namespace GLengine
 	class Level;
 	struct Transform;
 	class World;
-
-	struct LegacySceneImportStats
-	{
-		int visitedObjects{ 0 };
-		int meshActors{ 0 };
-		int lightActors{ 0 };
-		int legacyObjectActors{ 0 };
-		int componentAttachments{ 0 };
-		int actorsWithPersistentIds{ 0 };
-		int sceneComponentsWithPersistentIds{ 0 };
-		int assetHandles{ 0 };
-		int meshAssetHandles{ 0 };
-		int materialAssetHandles{ 0 };
-		int textureAssetHandles{ 0 };
-
-		int importedActorCount() const
-		{
-			return meshActors + lightActors + legacyObjectActors;
-		}
-	};
 
 	struct LegacySceneImportOptions
 	{

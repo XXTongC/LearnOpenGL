@@ -10,6 +10,7 @@
 #include "../../engine/SceneComponent.h"
 #include "../../engine/Transform.h"
 #include "../../engine/World.h"
+#include "../../engine/WorldLegacySceneExporter.h"
 #include "../../framework/geometry.h"
 #include "../../framework/object.h"
 #include "../../framework/scene.h"

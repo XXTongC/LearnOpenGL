@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "engine/LegacySceneWorldStats.h"
+
 namespace GLframework
 {
 	class Object;
@@ -13,18 +15,6 @@ namespace GLengine
 	class Level;
 	class World;
 	struct Transform;
-
-	struct WorldLegacySceneExportStats
-	{
-		int visitedActors{ 0 };
-		int visitedSceneComponents{ 0 };
-		int exportedObjects{ 0 };
-		int exportedMeshes{ 0 };
-		int exportedLights{ 0 };
-		int exportedLegacyObjects{ 0 };
-		int sceneRootObjects{ 0 };
-		int objectAttachments{ 0 };
-	};
 
 	class WorldLegacySceneExporter
 	{

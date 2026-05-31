@@ -369,6 +369,7 @@
     <ClInclude Include="engine\EngineRunMode.h" />
     <ClInclude Include="engine\EngineSubsystem.h" />
     <ClInclude Include="engine\LegacySceneWorldBuilder.h" />
+    <ClInclude Include="engine\LegacySceneWorldStats.h" />
     <ClInclude Include="engine\Level.h" />
     <ClInclude Include="engine\PersistentIdPolicy.h" />
     <ClInclude Include="engine\RendererBackend.h" />

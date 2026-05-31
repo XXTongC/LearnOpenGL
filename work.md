@@ -8754,3 +8754,29 @@ Subagent 审查：
 
 - 这是 Engine subsystem public header boundary cleanup，不改变 Engine subsystem ownership、addSubsystem template behavior、Engine initialization/tick/shutdown order、runtime subsystem health diagnostics、Engine World verification、renderer backend contract 或 PBR pass。
 - 下一步建议继续 Engine public headers 的低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Legacy Scene World Stats Header Extraction
+
+本轮继续 Engine/scene setup public header boundary cleanup，不扩张 PBR 功能。审计确认：`SceneSetupPipeline.h` 只需要 legacy import stats DTO，却为了 `LegacySceneImportStats` 直接 include 完整 `LegacySceneWorldBuilder.h`；`WorldDrivenSceneSetup.h` 只需要 world export stats DTO，却为了 `WorldLegacySceneExportStats` 直接 include 完整 `WorldLegacySceneExporter.h`。这让 scene setup pipeline facade 用户间接看到 legacy world import/export 行为 API。
+
+新增与修改：
+
+- 新增 `LegacySceneWorldStats.h`，集中承载 `LegacySceneImportStats` 和 `WorldLegacySceneExportStats`。
+- `LegacySceneWorldBuilder.h` 移除 inline stats 定义，改为 include stats 窄头；builder 行为 API 保持不变。
+- `WorldLegacySceneExporter.h` 移除 inline stats 定义，改为 include stats 窄头；exporter 行为 API 保持不变。
+- `SceneSetupPipeline.h` 改为 include `LegacySceneWorldStats.h`，不再为了 result DTO include 完整 builder 行为头。
+- `WorldDrivenSceneSetup.h` 改为 include `LegacySceneWorldStats.h`，不再为了 result DTO include 完整 exporter 行为头。
+- `WorldDrivenSceneSetup.cpp` 显式 include `WorldLegacySceneExporter.h`，因为 implementation 实际调用 `WorldLegacySceneExporter::exportWorldToScene(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 header。
+
+已完成验证：
+
+- 静态检查确认 scene setup public headers 不再 include 完整 builder/exporter 行为头，stats DTO 统一来自 `LegacySceneWorldStats.h`。
+- 首次 focused verification 因 mode 名误写为旧 `pbr-import` 被脚本拒绝，未进入构建；已改用当前脚本 mode `import`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,import,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 runtime Engine World verification、imported asset verification、scene setup pipeline/report、legacy scene world builder/exporter 和 world-driven scene setup。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 legacy scene world stats header extraction，不改变 legacy scene mirror import/export stats 字段、world-driven scene setup、scene package、imported asset verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 Engine/scene setup public headers 的低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；当前仍不建议继续扩张 PBR 功能。
