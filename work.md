@@ -7654,3 +7654,25 @@ Subagent 审查：
 
 - 这是 Engine Actor root SceneComponent public header boundary cleanup，不改变 Actor/component ownership、root component registration、scene package/import verification、Engine World verification、renderer backend contract 或 PBR pass。
 - 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到 callback/bootstrapper include surface audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Engine AssetSubsystem Registry Header Boundary Cleanup
+
+本轮继续 Engine public header 的低风险 implementation detail audit。审计确认：`AssetSubsystem.h` 为了按值持有 `AssetRegistry` public include 完整 `AssetRegistry.h`，导致只需要 AssetSubsystem facade 的调用点也获得 registry storage/API surface。更窄边界是：`AssetSubsystem.h` forward declare `AssetRegistry`，registry 由 private owning pointer 持有，完整 registry 依赖只留在 subsystem implementation 和真正访问 registry API 的调用点。
+
+新增与修改：
+
+- `AssetSubsystem.h` 移除 `AssetRegistry.h` include，新增 `class AssetRegistry;` forward declaration。
+- `AssetSubsystem` 的 registry 成员从按值持有改为 `std::unique_ptr<AssetRegistry>`，构造/析构改为 out-of-line，保证 incomplete type 析构安全。
+- `AssetSubsystem.cpp` 显式 include `AssetRegistry.h`，负责 `std::make_unique<AssetRegistry>()` 构造、`getRegistry()` 解引用和 `clear()` cleanup。
+- `RuntimeVerificationReport.cpp` 显式 include `AssetRegistry.h`，因为 cleanup report 读取 `assetSubsystem->getRegistry().count()`，不再依赖 `AssetSubsystem.h` 的传递 include。
+
+已完成验证：
+
+- 静态检查确认 `AssetSubsystem.h` 不再 include `AssetRegistry.h`，只保留 forward declaration、`std::unique_ptr<AssetRegistry>` 和 registry facade API。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,import,renderer-backend-registry-noop -DiscardCaptures`：构建通过；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine AssetSubsystem registry public header boundary cleanup，不改变 asset registry ownership semantics、lifecycle cleanup、import/package verification、Engine subsystem cleanup、renderer backend contract 或 PBR pass。
+- 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到 callback/bootstrapper include surface audit；当前仍不建议继续扩张 PBR 功能。

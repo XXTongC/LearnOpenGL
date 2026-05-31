@@ -1,15 +1,18 @@
 #pragma once
 
-#include "engine/AssetRegistry.h"
+#include <memory>
+
 #include "engine/EngineSubsystem.h"
 
 namespace GLengine
 {
+	class AssetRegistry;
+
 	class AssetSubsystem : public EngineSubsystem
 	{
 	public:
-		AssetSubsystem() = default;
-		~AssetSubsystem() override = default;
+		AssetSubsystem();
+		~AssetSubsystem() override;
 
 		bool initialize(EngineContext& context) override;
 		void tick(EngineContext& context) override;
@@ -25,7 +28,7 @@ namespace GLengine
 		int getTickCount() const;
 
 	private:
-		AssetRegistry mRegistry{};
+		std::unique_ptr<AssetRegistry> mRegistry{};
 		int mTickCount{ 0 };
 		bool mInitialized{ false };
 	};

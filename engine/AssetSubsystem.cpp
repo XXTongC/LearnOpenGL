@@ -1,6 +1,17 @@
 #include "engine/AssetSubsystem.h"
 
+#include <memory>
+
+#include "engine/AssetRegistry.h"
+
 using namespace GLengine;
+
+AssetSubsystem::AssetSubsystem()
+	: mRegistry(std::make_unique<AssetRegistry>())
+{
+}
+
+AssetSubsystem::~AssetSubsystem() = default;
 
 bool AssetSubsystem::initialize(EngineContext&)
 {
@@ -39,17 +50,20 @@ int AssetSubsystem::getTickCountForDiagnostics() const
 
 AssetRegistry& AssetSubsystem::getRegistry()
 {
-	return mRegistry;
+	return *mRegistry;
 }
 
 const AssetRegistry& AssetSubsystem::getRegistry() const
 {
-	return mRegistry;
+	return *mRegistry;
 }
 
 void AssetSubsystem::clear()
 {
-	mRegistry.clear();
+	if (mRegistry)
+	{
+		mRegistry->clear();
+	}
 }
 
 bool AssetSubsystem::isInitialized() const

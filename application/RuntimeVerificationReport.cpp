@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 
+#include "../engine/AssetRegistry.h"
 #include "../engine/AssetSubsystem.h"
 #include "../engine/Engine.h"
 #include "../engine/RendererSubsystem.h"
