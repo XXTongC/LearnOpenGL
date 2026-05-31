@@ -188,6 +188,7 @@
     <ClCompile Include="application\RuntimeContentSceneLifecycle.cpp" />
     <ClCompile Include="application\RuntimeContentVerificationLifecycle.cpp" />
     <ClCompile Include="application\RuntimeEditorLifecycle.cpp" />
+    <ClCompile Include="application\RuntimeEditorLifecycleState.cpp" />
     <ClCompile Include="application\RuntimeEditorPanelCoordinator.cpp" />
     <ClCompile Include="application\RuntimeEngineLifecycle.cpp" />
     <ClCompile Include="application\RuntimeEngineWorldVerification.cpp" />

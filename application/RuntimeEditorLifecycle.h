@@ -9,7 +9,7 @@ namespace GL_RUNTIME
 {
 	struct RuntimeFrameCallbacks;
 	struct RuntimeEditorLifecycleConfig;
-	struct RuntimeEditorLifecycleState;
+	class RuntimeEditorLifecycleState;
 
 	class RuntimeEditorLifecycle
 	{

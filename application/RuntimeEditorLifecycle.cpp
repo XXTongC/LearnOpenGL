@@ -38,8 +38,8 @@ namespace GL_RUNTIME
 				{
 					RuntimeEditorPanelCoordinator::drawPanels(
 						context,
-						state.selection,
-						state.editTransactions,
+						state.selection(),
+						state.editTransactions(),
 						config.editorOrbitAngle
 					);
 				}

@@ -471,6 +471,9 @@
     <ClCompile Include="application\RuntimeEditorLifecycle.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeEditorLifecycleState.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeEditorPanelCoordinator.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>

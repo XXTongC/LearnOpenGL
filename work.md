@@ -8550,3 +8550,27 @@ Subagent 审查：
 
 - 这是 editor diagnostics/debug controller context header extraction，不改变 debug controller panel draw order、Engine diagnostics panel 内容、runtime editor panel coordinator wiring、Engine World editor create verification、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续 editor/runtime public header audit，优先处理 RuntimeEditor lifecycle state owner 边界或继续收敛 application/editor composition root 的显式依赖；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Editor Lifecycle State Owner Boundary Cleanup
+
+本轮继续 editor/runtime public header audit，不扩张 PBR 功能。审计确认：`RuntimeEditorLifecycleState.h` 仍直接暴露 `SelectionContext` 和 `EditTransactionLog` 字段，即使上一轮已经把它们移动到 `EditorSelectionState.h`，application state 和 lifecycle 调用点仍能看到 editor selection/transaction 的完整布局。这不符合 runtime state owner 边界的长期方向。
+
+新增与修改：
+
+- `RuntimeEditorLifecycleState.h` 改为 class owner，只 forward declare `SelectionContext` 与 `EditTransactionLog`，通过 private `std::unique_ptr<Impl>` 隐藏完整 editor state layout。
+- 新增 `RuntimeEditorLifecycleState.cpp`，集中 include `EditorSelectionState.h` 并完整拥有 `SelectionContext` 与 `EditTransactionLog`。
+- `RuntimeEditorLifecycle.cpp` 从直接读取 `state.selection` / `state.editTransactions` 改为调用 `state.selection()` / `state.editTransactions()`。
+- `RuntimeApplicationState.h` 与 `RuntimeEditorLifecycle.h` 的前置声明统一为 `class RuntimeEditorLifecycleState`，避免 MSVC 对 `struct`/`class` 不一致产生 C4099 与链接符号不一致。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `RuntimeEditorLifecycleState.cpp`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeEditorLifecycleState.h` 不再 include `EditorSelectionState.h`，完整 selection/transaction state 只在 `RuntimeEditorLifecycleState.cpp` 中可见。
+- 首次 focused build 暴露旧前置声明仍使用 `struct RuntimeEditorLifecycleState`，MSVC 产生 C4099 并导致链接符号不一致；已将所有前置声明统一为 `class RuntimeEditorLifecycleState` 后重新验证。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 application/editor lifecycle 和 state owner 路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime editor lifecycle state owner boundary cleanup，不改变 selection 初始化、edit transaction state、debug/controller panels、Engine World editor create verification、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续 application/editor composition root 显式依赖收敛，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。

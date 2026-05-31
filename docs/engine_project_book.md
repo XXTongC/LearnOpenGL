@@ -316,6 +316,7 @@ flowchart TD
 - Runtime Editor Panel Coordinator Header Boundary Cleanup 已完成第一版：`RuntimeEditorPanelCoordinator.h` 不再传播完整 `AppRuntimeContext`、debug controller panel 或 editor panels headers，只 forward declare facade 参数/返回类型；完整 runtime context 字段读取、debug/editor panel context 构造和 draw function 调用依赖集中到 coordinator implementation。
 - Editor Selection State Header Extraction 已完成第一版：新增 `EditorSelectionState.h` 承载 selection context、edit transaction log 与 selection helper 声明；`RuntimeEditorLifecycleState.h` 不再 include 完整 `EditorPanels.h`，`EditorPanels.h` 收敛为 panel context/draw facade。
 - Editor Diagnostics Context Header Extraction 已完成第一版：新增 `DebugControllerContext.h` 与 `EngineDiagnosticsContext.h` 承载 debug/diagnostics DTO；`DebugControllerPanel.h` 与 `EngineDiagnosticsPanel.h` 收敛为 draw facade，实际 context 构造/字段读取依赖集中到 implementation 和 coordinator。
+- Runtime Editor Lifecycle State Owner Boundary Cleanup 已完成第一版：`RuntimeEditorLifecycleState.h` 不再 include `EditorSelectionState.h` 或暴露 selection/transaction 字段；完整 editor state 由 `RuntimeEditorLifecycleState.cpp` 通过 PImpl 拥有，runtime editor lifecycle 通过访问器取得引用。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已完成第一版：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已完成第一版：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已完成第一版：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -374,6 +375,6 @@ flowchart TD
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Editor Diagnostics Context Header Extraction 后，下一步优先继续 editor/runtime public header 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Editor Lifecycle State Owner Boundary Cleanup 后，下一步优先继续 application/editor composition root 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Editor Diagnostics Context Header Extraction 已接入后，`DebugControllerPanel.h` 与 `EngineDiagnosticsPanel.h` 不再承载完整 context DTO，只保留 draw facade；`DebugControllerContext.h` 与 `EngineDiagnosticsContext.h` 成为独立 DTO 窄头；下一步继续 editor/runtime public header include audit，但不扩张 PBR pass。
+当前最新修正：Runtime Editor Lifecycle State Owner Boundary Cleanup 已接入后，`RuntimeEditorLifecycleState.h` 不再暴露 selection/transaction 字段，完整 editor state layout 下沉到 `RuntimeEditorLifecycleState.cpp`；下一步继续 application/editor composition root 显式依赖收敛，但不扩张 PBR pass。

@@ -19,7 +19,7 @@ namespace GL_EXPERIMENTS
 
 namespace GL_RUNTIME
 {
-	struct RuntimeEditorLifecycleState;
+	class RuntimeEditorLifecycleState;
 	struct RuntimeEngineLifecycleState;
 	struct RuntimeFrameLifecycleState;
 
