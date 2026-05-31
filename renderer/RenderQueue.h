@@ -3,12 +3,14 @@
 #include <memory>
 #include <vector>
 
-#include "camera/camera.h"
-#include "framework/scene.h"
-#include "mesh/mesh.h"
+class Camera;
 
 namespace GLframework
 {
+	class Mesh;
+	class Object;
+	class Scene;
+
 	class RenderQueue
 	{
 	public:

@@ -8393,3 +8393,26 @@ Subagent 审查：
 
 - 这是 deferred lighting / light grid public include boundary cleanup，不改变 deferred lighting draw、SSBO light packing、CPU tiled light grid、GPU clustered light grid、tiled/clustered heatmap debug、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Renderer Infrastructure and Runtime Input Header Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit，不扩张 PBR 功能。审计确认：`RenderQueue.h`、`ShadowRenderer.h`、`ShaderLibrary.h`、`PBRShadowAtlasRenderTargets.h` 与 `RuntimeInputController.h` 的 public surface 多数只需要 pointer/reference/shared_ptr 参数或 by-value registry container；实际 camera、scene、mesh、shader、GL core 和 camera-control 操作均发生在对应 `.cpp`。read-only sidecar `Pauli` 额外审计了下一候选头文件，建议把 `RuntimeInputController.h` 的 camera/control headers 改为 forward declarations；该建议已由 parent 本地实现，sidecar 未编辑文件。
+
+新增与修改：
+
+- `RenderQueue.h` 移除完整 `camera/camera.h`、`framework/scene.h` 与 `mesh/mesh.h` includes，新增 `Camera`、`Scene`、`Object` 与 `Mesh` forward declarations；`RenderQueue.cpp` 显式 include 这些完整依赖。
+- `ShadowRenderer.h` 移除完整 camera、light、mesh 与 shader-library includes，只保留 by-value pass 成员所需的 `DirectionalShadowRenderPass.h` / `PointShadowRenderPass.h` 和 stats 头；`ShadowRenderer.cpp` 显式 include camera、directional/point light、mesh 与 shader library。
+- `ShaderLibrary.h` 移除完整 `shader.h` include，只 forward declare `Shader`，继续保留 `material.h` 因为 `MaterialType` 是 map key 和 public 参数值类型；`ShaderLibrary.cpp` 显式 include `framework/shader.h`。
+- `PBRShadowAtlasRenderTargets.h` 移除 `core.h`，因为 public stats 只暴露 unsigned texture/framebuffer ids；`PBRShadowAtlasRenderTargets.cpp` 显式 include `core.h` 以保留 GL texture/framebuffer 操作依赖。
+- `RuntimeInputController.h` 移除 `camera/camera.h` 与 `camera/cameracontrol.h` includes，只 forward declare `Camera` 与 `CameraControl`；完整 camera/control 操作继续留在 `RuntimeInputController.cpp`。
+
+已完成验证：
+
+- 静态检查确认上述 headers 不再传播 camera/scene/mesh/shader/core/camera-control implementation-only headers，完整依赖均下沉到 `.cpp`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确编译 `RenderQueue.cpp`、`ShadowRenderer.cpp`、`ShaderLibrary.cpp`、`PBRShadowAtlasRenderTargets.cpp`、`RuntimeInputController.cpp` 与 `RuntimeWindowLifecycle.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 renderer infrastructure / runtime input public include boundary cleanup，不改变 render queue projection/sort、shadow renderer pass dispatch、shader creation、shadow atlas target prepare、runtime input routing、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，优先审计 `renderer/renderer.h` 这类宽 facade，但只做低风险 include/ownership 边界收敛；当前仍不建议继续扩张 PBR 功能。

@@ -461,7 +461,8 @@ public:
 251. Scene Render Pass Header Boundary Cleanup 已完成第一版：`SceneRenderPass.h` 不再 include 完整 material、mesh、material binding context、shader 或 shader library headers，只 forward declare legacy scene draw pass 参数类型；实际 material 选择、render state、shader binding 和 mesh draw 依赖集中到 `SceneRenderPass.cpp`。
 252. PBR Shadow Atlas Render Pass Header Boundary Cleanup 已完成第一版：`PBRShadowAtlasRenderPass.h` 不再 include 完整 camera、directional/point light、mesh 或 shader library headers，只保留 atlas stats/render-target 类型头和参数前置声明；实际 CSM cascade、point shadow cubemap face、alpha-mask shadow shader、mesh draw 和 shader uniform 依赖集中到 `PBRShadowAtlasRenderPass.cpp`。
 253. PBR Deferred Lighting Grid Header Boundary Cleanup 已完成第一版：`PBRDeferredLightingPass.h`、`PBRDeferredLightBuffer.h`、`PBRDeferredTiledLightGrid.h` 与 `PBRDeferredClusteredLightGrid.h` 不再 include 完整 material binding context、mesh 或 GL core headers，只保留必要 stats/config/value-member 类型、`glm::ivec4` 轻量头和参数前置声明；实际 context 字段读取、light packing、CPU tiled/clustered grid 构建、GPU clustered dispatch、lighting quad mesh 和 GL buffer 操作依赖集中到对应 `.cpp`。
-254. 下一步建议继续 runtime/renderer header surface audit，或回到 Engine public header 低风险 implementation detail audit。renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+254. Renderer Infrastructure and Runtime Input Header Boundary Cleanup 已完成第一版：`RenderQueue.h`、`ShadowRenderer.h`、`ShaderLibrary.h`、`PBRShadowAtlasRenderTargets.h` 与 `RuntimeInputController.h` 不再传播 camera/scene/mesh/shader/core/camera-control 等 implementation-only headers；实际 render queue projection/sort、shadow renderer pass dispatch、shader construction、shadow atlas GL texture allocation 和 input controller camera/control 操作依赖集中到对应 `.cpp`。
+255. 下一步建议继续 runtime/renderer header surface audit，优先审计 `renderer/renderer.h` 这类宽 facade，但只做低风险 include/ownership 边界收敛；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

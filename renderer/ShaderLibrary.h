@@ -4,10 +4,11 @@
 #include <memory>
 
 #include "material.h"
-#include "shader.h"
 
 namespace GLframework
 {
+	class Shader;
+
 	class ShaderLibrary
 	{
 	public:

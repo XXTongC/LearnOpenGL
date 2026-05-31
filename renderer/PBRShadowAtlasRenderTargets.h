@@ -3,8 +3,6 @@
 #include <memory>
 #include <vector>
 
-#include "core.h"
-
 namespace GLframework
 {
 	class DirectionalLight;

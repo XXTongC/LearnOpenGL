@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "framework/shader.h"
+
 void GLframework::ShaderLibrary::initialize()
 {
 	mMaterialShaders[MaterialType::PhongMaterial] = createShader("shaders/phong/phong_V2.vert", "shaders/phong/phong_V2.frag");

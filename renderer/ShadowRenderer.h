@@ -3,17 +3,19 @@
 #include <memory>
 #include <vector>
 
-#include "camera/camera.h"
 #include "DirectionalShadowRenderPass.h"
-#include "light/directionalLight.h"
-#include "light/pointLight.h"
-#include "mesh/mesh.h"
 #include "PointShadowRenderPass.h"
-#include "renderer/ShaderLibrary.h"
 #include "renderer/ShadowRenderStats.h"
+
+class Camera;
 
 namespace GLframework
 {
+	class DirectionalLight;
+	class Mesh;
+	class PointLight;
+	class ShaderLibrary;
+
 	class ShadowRenderer
 	{
 	public:

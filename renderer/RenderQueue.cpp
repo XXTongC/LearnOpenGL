@@ -2,7 +2,10 @@
 
 #include <algorithm>
 
+#include "camera/camera.h"
+#include "framework/scene.h"
 #include "materials/material.h"
+#include "mesh/mesh.h"
 
 using namespace GLframework;
 

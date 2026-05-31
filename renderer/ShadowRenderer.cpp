@@ -1,5 +1,11 @@
 #include "ShadowRenderer.h"
 
+#include "camera/camera.h"
+#include "light/directionalLight.h"
+#include "light/pointLight.h"
+#include "mesh/mesh.h"
+#include "renderer/ShaderLibrary.h"
+
 using namespace GLframework;
 
 ShadowRenderStats ShadowRenderer::render(

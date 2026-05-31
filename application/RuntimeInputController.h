@@ -1,7 +1,7 @@
 #pragma once
 
-#include "camera/camera.h"
-#include "camera/cameracontrol.h"
+class Camera;
+class CameraControl;
 
 namespace GL_RUNTIME
 {

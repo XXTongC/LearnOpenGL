@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "core.h"
 #include "light/directionalLight.h"
 #include "light/pointLight.h"
 #include "light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
