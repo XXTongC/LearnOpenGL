@@ -1,6 +1,8 @@
 #include "PBRIBLResourceBinder.h"
 
+#include "framework/shader.h"
 #include "framework/texture.h"
+#include "materials/pbrMaterial/PBRMaterial.h"
 #include "renderer/EnvironmentRenderTargets.h"
 
 using namespace GLframework;

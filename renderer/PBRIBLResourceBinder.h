@@ -2,12 +2,11 @@
 
 #include <memory>
 
-#include "framework/shader.h"
-#include "materials/pbrMaterial/PBRMaterial.h"
-
 namespace GLframework
 {
 	class EnvironmentRenderTargets;
+	class PBRMaterial;
+	class Shader;
 
 	class PBRIBLResourceBinder
 	{

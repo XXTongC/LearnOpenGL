@@ -452,7 +452,8 @@ public:
 242. PBR Object Uniform Binder Header Boundary Cleanup 已完成第一版：`PBRObjectUniformBinder.h` 不再 include 完整 `framework/shader.h`、`PBRMaterial.h`、`mesh/mesh.h` 或 `MaterialBindingContext.h`，只 forward declare shader、PBR material、mesh 和 material binding context 参数类型；实际 model/view/projection/normal matrix、camera position、opacity/time uniform 写入依赖集中到 `PBRObjectUniformBinder.cpp`。
 243. PBR Shadow Resource Binder Header Boundary Cleanup 已完成第一版：`PBRShadowResourceBinder.h` 不再 include 完整 `framework/shader.h` 或 `MaterialBindingContext.h`，只 forward declare shader 和 material binding context 参数类型；实际 CSM shadow、PBR shadow atlas、point shadow atlas、camera 和 shader uniform 依赖集中到 `PBRShadowResourceBinder.cpp`。
 244. PBR Surface Resource Binder Header Boundary Cleanup 已完成第一版：`PBRSurfaceResourceBinder.h` 不再 include 完整 `framework/shader.h` 或 `PBRMaterial.h`，只 forward declare shader 和 PBR material 参数类型；实际 surface uniform、texture slot、texture binding 和 shader/material 依赖集中到 `PBRSurfaceResourceBinder.cpp`。
-245. 下一步建议继续 runtime/renderer header surface audit，或回到 Engine public header 低风险 implementation detail audit。renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+245. PBR IBL Resource Binder Header Boundary Cleanup 已完成第一版：`PBRIBLResourceBinder.h` 不再 include 完整 `framework/shader.h` 或 `PBRMaterial.h`，只 forward declare shader、PBR material 和 environment targets 参数类型；实际 IBL readiness 判断、IBL float slot、environment target 和 texture binding 依赖集中到 `PBRIBLResourceBinder.cpp`。
+246. 下一步建议继续 runtime/renderer header surface audit，或回到 Engine public header 低风险 implementation detail audit。renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

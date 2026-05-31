@@ -8190,3 +8190,25 @@ Subagent 审查：
 
 - 这是 PBRSurfaceResourceBinder public include boundary cleanup，不改变 surface uniform / texture binding、alpha mask/channel uniform、shader uniform layout、forward/deferred PBR 路径、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 PBR IBL Resource Binder Header Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit。审计确认：`PBRIBLResourceBinder.h` 只声明 PBR IBL readiness 判断和 IBL texture binding 入口，却为了 `canUseIBL(...)` / `bind(...)` 函数签名直接 include 完整 `framework/shader.h` 和 `PBRMaterial.h`。真正读取 material IBL 开关、IBL float slots、environment targets、shader uniform 与 texture binding 的逻辑全部在 `PBRIBLResourceBinder.cpp` 中，header 可以只保留参数类型前置声明。
+
+新增与修改：
+
+- `PBRIBLResourceBinder.h` 移除完整 shader 和 PBR material includes。
+- `PBRIBLResourceBinder.h` 新增 `Shader` 与 `PBRMaterial` forward declarations，并保留已有 `EnvironmentRenderTargets` forward declaration；现有 `canUseIBL(...)` 与 `bind(...)` public API 不变。
+- `PBRIBLResourceBinder.cpp` 显式 include `framework/shader.h`、`framework/texture.h`、`materials/pbrMaterial/PBRMaterial.h` 和 `renderer/EnvironmentRenderTargets.h`，因为 implementation 实际读取 material/environment/texture API 并写 shader uniform。
+
+已完成验证：
+
+- 静态检查确认 `PBRIBLResourceBinder.h` 不再 include 完整 shader/PBR material headers，`PBRIBLResourceBinder.cpp` 显式 include 所需完整依赖。
+- 静态检查确认调用点集中在 `PBRMaterialBinder.cpp`，PBRIBLResourceBinder public API 未改名也未改变参数。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `PBRIBLResourceBinder.cpp` 与 `PBRMaterialBinder.cpp`；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBRIBLResourceBinder public include boundary cleanup，不改变 `useIBL` 判断、IBL strength uniforms、irradiance/prefilter/BRDF LUT texture binding、shader uniform layout、forward/deferred PBR 路径、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
