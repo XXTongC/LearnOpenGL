@@ -2,11 +2,10 @@
 
 #include <memory>
 
-#include "RuntimeApplicationConfig.h"
-
 namespace GL_RUNTIME
 {
 	struct RuntimeBootstrapperCallbacks;
+	struct RuntimeApplicationShellConfig;
 	struct RuntimeApplicationState;
 
 	class RuntimeApplicationShell
@@ -25,6 +24,6 @@ namespace GL_RUNTIME
 
 	private:
 		std::unique_ptr<RuntimeApplicationState> mState{};
-		RuntimeApplicationShellConfig mConfig{};
+		std::unique_ptr<RuntimeApplicationShellConfig> mConfig{};
 	};
 }

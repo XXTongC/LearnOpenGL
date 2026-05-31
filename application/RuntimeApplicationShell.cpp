@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "RuntimeApplicationCallbackBinder.h"
+#include "RuntimeApplicationConfig.h"
 #include "RuntimeApplicationState.h"
 #include "RuntimeBootstrapperCallbacks.h"
 
@@ -11,12 +12,13 @@ namespace GL_RUNTIME
 {
 	RuntimeApplicationShell::RuntimeApplicationShell()
 		: mState(std::make_unique<RuntimeApplicationState>())
+		, mConfig(std::make_unique<RuntimeApplicationShellConfig>())
 	{
 	}
 
 	RuntimeApplicationShell::RuntimeApplicationShell(RuntimeApplicationShellConfig config)
 		: mState(std::make_unique<RuntimeApplicationState>())
-		, mConfig(std::move(config))
+		, mConfig(std::make_unique<RuntimeApplicationShellConfig>(std::move(config)))
 	{
 	}
 
@@ -26,6 +28,6 @@ namespace GL_RUNTIME
 
 	RuntimeBootstrapperCallbacks RuntimeApplicationShell::makeCallbacks()
 	{
-		return RuntimeApplicationCallbackBinder::makeCallbacks(*mState, mConfig);
+		return RuntimeApplicationCallbackBinder::makeCallbacks(*mState, *mConfig);
 	}
 }

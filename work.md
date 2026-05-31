@@ -7586,3 +7586,27 @@ Subagent 审查：
 
 - 这是 runtime frame callback DTO header boundary cleanup，不改变 frame loop、GUI callback gating、editor callback construction、runtime renderer backend contract、Engine World verification 或 PBR pass。
 - 后续建议继续 callback/bootstrapper include surface audit，或回到 Engine public header 低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Application Shell Config Header Boundary Cleanup
+
+本轮继续 callback/bootstrapper include surface audit。审计确认：`RuntimeApplicationShell.h` 仍为了按值持有 `RuntimeApplicationShellConfig` include 完整 `RuntimeApplicationConfig.h`，导致 shell facade 用户被完整 application config aggregate 污染。更窄边界是：shell header forward declare config，shell implementation 拥有完整 config 依赖。
+
+新增与修改：
+
+- `RuntimeApplicationShell.h` 移除 `RuntimeApplicationConfig.h` include，新增 `RuntimeApplicationShellConfig` forward declaration。
+- `RuntimeApplicationShell` 的 config 成员从按值持有改为 `std::unique_ptr<RuntimeApplicationShellConfig>`，析构/移动仍保持 out-of-line。
+- `RuntimeApplicationShell.cpp` 显式 include `RuntimeApplicationConfig.h`，default ctor 构造默认 config，config ctor move 到 owning pointer。
+- `makeCallbacks()` 解引用 `*mConfig` 传给 `RuntimeApplicationCallbackBinder::makeCallbacks(...)`。
+- `RuntimeApplicationRunner.cpp` 仍显式 include `RuntimeApplicationConfig.h`，因为 composition root 按值接收并移动 shell config。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationShell.h` 不再 include `RuntimeApplicationConfig.h`。
+- 静态检查确认 `RuntimeApplicationShell.h` 通过 `std::unique_ptr<RuntimeApplicationShellConfig>` 隐藏完整 config 类型，`RuntimeApplicationShell.cpp` 负责 `std::make_unique<RuntimeApplicationShellConfig>` 构造。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `RuntimeApplicationRunner.cpp` 与 `RuntimeApplicationShell.cpp`；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime application shell config header boundary cleanup，不改变 bootstrapper callback construction、startup/frame/shutdown callback 顺序、runtime frame loop、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续 callback/bootstrapper include surface audit，或回到 Engine public header 低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

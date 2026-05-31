@@ -104,6 +104,7 @@ Current phase:
 - `RuntimeFrameLifecycleConfig.h` and `RuntimeFrameLifecycleState.h` now own frame lifecycle config/state separately; the old compatibility aggregator `RuntimeFrameLifecycleTypes.h` has been removed, so callers use the narrow canonical header they actually need.
 - `RuntimeFrameRunnerTypes.h` now owns `RuntimeFrameConfig`, so `RuntimeFrameRunner.h` exposes only the runner facade, callback DTO forward declaration, and a config forward declaration.
 - `RuntimeFrameRunner.h` and `RuntimeFrameLifecycle.h` now expose no-callback overloads instead of `RuntimeFrameCallbacks` default arguments, so complete callback DTO dependencies stay in implementation files and the frame run bridge that constructs editor callbacks.
+- `RuntimeApplicationShell.h` now hides `RuntimeApplicationShellConfig` behind a private owning pointer, so shell users do not include the full application config aggregate just to hold or invoke the shell facade.
 - `RuntimeEditorLifecycle` now owns application-side editor lifecycle composition: GUI host initialization, editor panel frame callback creation, selection state, and edit transaction state.
 - `RuntimeEditorLifecycle.h` now forward-declares `RuntimeFrameCallbacks`; the full callback DTO dependency is localized to `RuntimeEditorLifecycle.cpp` and frame editor callback bridge implementation paths that construct or consume the complete value.
 - `RuntimeGraphicsLifecycle` now owns application-side startup graphics composition: window setup prompt, viewport initialization, clear color setup, and OpenGL capability diagnostics.
@@ -179,17 +180,14 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Runtime Frame Callback Default Argument Header Boundary Cleanup
+### Current Round: Runtime Application Shell Config Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `application/RuntimeFrameRunner.h`
-- `application/RuntimeFrameRunner.cpp`
-- `application/RuntimeFrameLifecycle.h`
-- `application/RuntimeFrameLifecycle.cpp`
-- `application/RuntimeApplicationFrameRunBridge.cpp`
+- `application/RuntimeApplicationShell.h`
+- `application/RuntimeApplicationShell.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -200,7 +198,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- callback DTO default-argument include surface and overload compatibility remain parent-reviewed.
+- shell config ownership, incomplete-type destructor safety, and callback binding behavior remain parent-reviewed.
 
 Rules for this round:
 
@@ -1657,7 +1655,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-05-31 Runtime Frame Callback Default Argument Header Boundary Cleanup.
+Round: 2026-05-31 Runtime Application Shell Config Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1665,20 +1663,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: replace `RuntimeFrameCallbacks` default arguments in public runner/lifecycle headers with explicit no-callback overloads, so public headers can forward-declare the callback DTO and keep the complete callback header in implementation files.
+- Current local implementation target for this slice: hide `RuntimeApplicationShellConfig` behind a private owning pointer in `RuntimeApplicationShell.h`, so the shell facade can forward-declare the config while complete config access stays in implementation/composition-root files.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the runtime frame callback default-argument header cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the runtime application shell config header cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `application/RuntimeFrameRunner.h`, `application/RuntimeFrameRunner.cpp`, `application/RuntimeFrameLifecycle.h`, `application/RuntimeFrameLifecycle.cpp`, `application/RuntimeApplicationFrameRunBridge.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `application/RuntimeApplicationShell.h`, `application/RuntimeApplicationShell.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's runtime frame callback default-argument header cleanup was parent-owned and had no delegated write scope.
 - Previous round's RendererSubsystem implementation-state header boundary cleanup was parent-owned after read-only `Einstein` audit and had no delegated write scope.
 - Completed read-only sidecar subagent `Einstein` audited the RendererSubsystem implementation-state header boundary, changed no files, found no source blocker, confirmed incomplete-type `std::unique_ptr` handling and explicit complete-type call-site includes, and reported missing `work.md` / `worked.md` current-round records that the parent integrated.
 - Previous round's Engine addSubsystem context helper cleanup was parent-owned and had no delegated write scope.

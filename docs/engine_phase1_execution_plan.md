@@ -231,6 +231,7 @@ passed
 - Runtime Application Frame Bridge Implementation Include Cleanup 已接入：frame continue/run bridge headers 已是 forward boundary，`RuntimeApplicationFrameLifecycle.cpp`、`RuntimeApplicationFrameContinueBridge.cpp` 与 `RuntimeApplicationFrameRunBridge.cpp` 移除冗余完整 config/state include。
 - Runtime Application Shutdown Bridge Implementation Include Cleanup 已接入：shutdown lifecycle facade `.cpp` 与 cleanup bridge `.cpp` 移除冗余完整 config/state include，verification bridge 保留真正读取 `config.verification` 所需 include。
 - Runtime Application Startup Bridge Include Surface Cleanup 已接入：startup facade/content/editor/engine implementation 移除冗余完整 config/state include，graphics startup public header 改为 forward declare shell config。
+- Runtime Application Shell Config Header Boundary Cleanup 已接入：`RuntimeApplicationShell.h` 不再 include 完整 `RuntimeApplicationConfig.h`，shell config 改由 private owning pointer 持有；完整 config 依赖局部化到 shell implementation 和 runner composition root。
 - Runtime Application Config Policy Header Include Surface Cleanup 已接入：`RuntimeApplicationConfigPolicy.h` 改为 forward declaration boundary，完整 config/lifecycle/EngineContext 依赖局部化到 `.cpp` 与需要完整 `EngineDesc` 的调用点。
 - Runtime Content Config Policy Header Include Surface Cleanup 已接入：`RuntimeContentConfigPolicy.h` 改为 forward declaration boundary，完整 shell/content config 依赖局部化到 `.cpp` 与显式消费返回临时对象的 content startup 调用点。
 - Runtime Content Lifecycle Header Config Forward Boundary Cleanup 已接入：`RuntimeContentLifecycle.h` 改为 forward declare `RuntimeContentLifecycleConfig`，完整 config DTO 依赖局部化到 lifecycle implementation 与 content startup 调用点。
@@ -294,6 +295,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Runtime Frame Callback Default Argument Header Boundary Cleanup 已接入后，`RuntimeFrameRunner.h` 与 `RuntimeFrameLifecycle.h` 不再为了 callback 默认参数 include 完整 `RuntimeFrameCallbacks.h`；下一步优先继续 callback/bootstrapper include surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前不建议继续扩张 PBR pass。
+当前最新修正：Runtime Application Shell Config Header Boundary Cleanup 已接入后，`RuntimeApplicationShell.h` 不再为了持有 shell config include 完整 `RuntimeApplicationConfig.h`；下一步优先继续 callback/bootstrapper include surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前不建议继续扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Frame Callback default-argument header cleanup 后，下一步优先继续 callback/bootstrapper include surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Application Shell config header cleanup 后，下一步优先继续 callback/bootstrapper include surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR pass。
