@@ -197,14 +197,13 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Runtime Frame Clock Private State PIMPL Cleanup
+### Current Round: Application Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `application/RuntimeFrameClock.h`
-- `application/RuntimeFrameClock.cpp`
+- `application/Application.h`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -215,7 +214,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Runtime frame clock private-state PIMPL cleanup remains parent-reviewed.
+- Application public header boundary cleanup remains parent-reviewed.
 
 Rules for this round:
 
@@ -1672,7 +1671,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-06-01 Runtime Frame Clock Private State PIMPL Cleanup.
+Round: 2026-06-01 Application Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1680,20 +1679,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: hide `RuntimeFrameClock` chrono-backed private state behind `std::unique_ptr<Impl>`, while keeping the public header to the clock facade API and forward declarations.
+- Current local implementation target for this slice: remove implementation-only texture/logger dependencies from `Application.h`, while keeping the window/application facade API unchanged.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the Runtime Frame Clock private-state PIMPL cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the Application header boundary cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `application/RuntimeFrameClock.h`, `application/RuntimeFrameClock.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `application/Application.h`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Runtime Frame Clock Private State PIMPL Cleanup was parent-owned and had no delegated write scope.
 - Previous round's Legacy Experiment Runner Private State PIMPL Cleanup was parent-owned and had no delegated write scope.
 - Previous round's Legacy Experiment Runner Implementation Split was parent-owned and had no delegated write scope.
 - Previous round's Material Types Header Extraction was parent-owned and had no delegated write scope.

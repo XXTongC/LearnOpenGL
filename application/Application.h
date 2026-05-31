@@ -1,10 +1,7 @@
 #pragma once
 #define GL_APP GL_APPLICATION::Application::getInstance()
-#include <cstdint>
-#include "texture.h"
-#include "tools/Logger/Logger.h"
-extern Logger logger;
 
+#include <cstdint>
 
 struct GLFWwindow;
 

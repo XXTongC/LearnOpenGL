@@ -8976,3 +8976,25 @@ Subagent 审查：
 
 - 这是 runtime frame clock private state PIMPL cleanup，不改变固定 delta、实时 delta、max delta clamp、frame lifecycle、Engine tick、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root / runtime context state 的依赖边界收敛，尤其是 remaining runtime state headers 的 implementation detail exposure；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Application Header Boundary Cleanup
+
+本轮继续 application runtime public header include surface 收敛，不扩张 PBR 功能。审计确认：`Application.h` 作为窗口/application facade 只需要 `GLFWwindow` 前置声明、callback typedef 和尺寸/window API，却仍直接 include `texture.h`、`tools/Logger/Logger.h`，并声明未使用的 `extern Logger logger`；这些依赖会让 frame/window lifecycle 调用点间接获得 texture/logger implementation surface。
+
+新增与修改：
+
+- `Application.h` 移除 `texture.h` include。
+- `Application.h` 移除 `tools/Logger/Logger.h` include。
+- `Application.h` 移除未使用的 `extern Logger logger` 声明。
+- `Application.h` 保留 `GL_APP` 兼容宏、`GLFWwindow` 前置声明、callback typedef、窗口尺寸/window/cursor API 和 init/update/destroy facade，行为不变。
+
+已完成验证：
+
+- 静态检查确认 `Application.h` 不再传播 texture/logger headers 或 `extern Logger logger`，`LogManager` 依赖仍保留在 `Application.cpp` 和真实日志调用点。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `Application.cpp`、`RuntimeFrameLifecycle.cpp` 和 `RuntimeWindowLifecycle.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 application header boundary cleanup，不改变窗口创建、callback 绑定、cursor/window snapshot、frame loop、Engine tick、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root / runtime context state 的依赖边界收敛，优先审计 remaining runtime state/config headers 的 implementation detail exposure；当前仍不建议继续扩张 PBR 功能。

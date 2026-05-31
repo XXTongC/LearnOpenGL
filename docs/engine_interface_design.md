@@ -487,7 +487,8 @@ public:
 277. Legacy Experiment Runner Implementation Split 已完成第一版：`LegacyExperimentRunner` 不再是 header-only，历史实验构建/更新逻辑迁入 `.cpp`，public header 只保留 `RuntimeContext`、实验 API 声明和类型前置声明。
 278. Legacy Experiment Runner Private State PIMPL Cleanup 已完成第一版：`LegacyExperimentRunner.h` 不再暴露 solar system / orbiting point light 私有状态布局、历史实验 enable flags 或 `Object` 依赖，完整历史实验状态由 `.cpp` 中的 `Impl` 拥有。
 279. Runtime Frame Clock Private State PIMPL Cleanup 已完成第一版：`RuntimeFrameClock.h` 不再传播 `<chrono>` 或 `RuntimeFrameClockTypes.h`，完整 steady-clock time point 与 tick state 由 `.cpp` 中的 `Impl` 拥有。
-280. 下一步建议继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+280. Application Header Boundary Cleanup 已完成第一版：`Application.h` 不再传播 `texture.h`、`Logger.h` 或未使用的 `extern Logger logger`，窗口/application facade 只保留 callback、window 和 lifecycle API。
+281. 下一步建议继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 
