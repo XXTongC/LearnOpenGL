@@ -7968,3 +7968,25 @@ Subagent 审查：
 
 - 这是 PostProcessPass public include boundary cleanup，不改变 resolve/composite/bloom 执行逻辑、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Bloom Header Framebuffer Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit。审计确认：`Bloom.h` 只需要声明 Bloom 对象内部持有的 `std::shared_ptr<Framebuffer>` / `std::shared_ptr<Texture>` / `std::shared_ptr<Shader>` / `std::shared_ptr<Geometry>`，但它直接 include 完整 `core.h`、`framebuffer/framebuffer.h`、`framework/geometry.h` 和 `framework/shader.h`，导致任何包含 Bloom facade 的调用点都会继承 OpenGL core、framebuffer、shader 和 geometry 实现细节。更窄边界是：Bloom header 只 forward declare 引用类型，实际 FBO 创建、texture binding、shader uniform 和 quad draw 依赖留在 implementation。
+
+新增与修改：
+
+- `Bloom.h` 移除完整 core、framebuffer、geometry 和 shader includes。
+- `Bloom.h` 新增 `Framebuffer`、`Texture`、`Shader` 和 `Geometry` forward declarations，保留现有 shared pointer 成员与 public API。
+- `Bloom.cpp` 显式 include `core.h`、`framebuffer/framebuffer.h`、`framework/geometry.h` 与 `framework/shader.h`，因为 implementation 执行 Bloom FBO setup、blur ping-pong、bright extraction、texture binding 和 shader/quad 操作。
+
+已完成验证：
+
+- 静态检查确认 `Bloom.h` 不再 include 完整 Bloom implementation dependency headers，`Bloom.cpp` 显式 include 所需完整依赖。
+- 静态检查确认 Bloom 使用路径仍覆盖 scene setup、post-process pass、runtime frame registry/profile/adapter 和 runtime resource state。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `Bloom.cpp`、`PostProcessPass.cpp`、scene setup 和 runtime scene setup lifecycle/report；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Bloom public include boundary cleanup，不改变 Bloom FBO 创建、blur ping-pong、bright extraction、post-process composite、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

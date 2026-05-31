@@ -1,10 +1,15 @@
 #pragma once
-#include "../../core.h"
-#include "../../framebuffer/framebuffer.h"
-#include "../../framework/geometry.h"
-#include "../../framework/shader.h"
+
+#include <memory>
+#include <vector>
+
 namespace GLframework
 {
+	class Framebuffer;
+	class Geometry;
+	class Shader;
+	class Texture;
+
 	class Bloom
 	{
 	private:

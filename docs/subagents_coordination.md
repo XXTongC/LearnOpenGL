@@ -187,14 +187,14 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: PostProcess Pass Header Boundary Cleanup
+### Current Round: Bloom Header Framebuffer Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `renderer/PostProcessPass.h`
-- `renderer/PostProcessPass.cpp`
+- `renderer/Bloom/Bloom.h`
+- `renderer/Bloom/Bloom.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -205,7 +205,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Post-process pass reference-parameter forward declarations and explicit implementation includes remain parent-reviewed.
+- Bloom framebuffer/texture/shader/geometry forward declarations and explicit implementation includes remain parent-reviewed.
 
 Rules for this round:
 
@@ -1655,14 +1655,14 @@ Scope:
 
 Task:
 
-- Audit whether `RuntimeFrameRunner` config/parameter DTOs can be isolated behind a lightweight types header without changing frame loop behavior.
-- Confirm the parent-owned extraction should not alter editor callback execution, legacy experiment ticking, GUI gating, verification capture timing, renderer backend contract output, or PBR pass behavior.
-- Confirm the slice remains an application runtime boundary cleanup and does not expand renderer/PBR scope.
+- Audit whether Bloom public header dependencies can be narrowed without changing bloom framebuffer allocation, blur passes, bright extraction, composite pass, renderer backend contract output, or PBR pass behavior.
+- Confirm the parent-owned extraction should not alter scene setup, post-process frame execution, runtime frame plan ordering, verification capture timing, renderer backend contract output, or PBR pass behavior.
+- Confirm the slice remains a renderer header boundary cleanup and does not expand renderer/PBR scope.
 - Report include drift, API leak, project registration requirements, stale documentation, or missing verification coverage without editing files unless assigned a disjoint write scope.
 
 ## Current Active Agent Round
 
-Round: 2026-05-31 PostProcess Pass Header Boundary Cleanup.
+Round: 2026-05-31 Bloom Header Framebuffer Boundary Cleanup.
 
 Parent local work:
 
@@ -1670,20 +1670,23 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: remove complete framebuffer/mesh/shader/settings propagation from `PostProcessPass.h`, forward declare referenced types, and keep post-process execution dependencies in `PostProcessPass.cpp`.
+- Current local implementation target for this slice: remove complete core/framebuffer/geometry/shader propagation from `Bloom.h`, forward declare referenced types, and keep bloom FBO/shader/geometry execution dependencies in `Bloom.cpp`.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the PostProcess Pass Header Boundary Cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the Bloom Header Framebuffer Boundary Cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `renderer/PostProcessPass.h`, `renderer/PostProcessPass.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `renderer/Bloom/Bloom.h`, `renderer/Bloom/Bloom.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Frame Render Targets framebuffer header cleanup was parent-owned and had no delegated write scope.
+- Previous round's Engine Lifecycle Snapshot header cleanup was parent-owned and had no delegated write scope.
+- Previous round's PostProcess Pass header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Frame Render Targets framebuffer header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Engine Lifecycle Snapshot header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Frame Pass Registry key string_view cleanup was parent-owned and had no delegated write scope.

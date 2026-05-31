@@ -1,5 +1,14 @@
 #include "Bloom.h"
 
+#include <algorithm>
+#include <cmath>
+#include <memory>
+
+#include "core.h"
+#include "framebuffer/framebuffer.h"
+#include "framework/geometry.h"
+#include "framework/shader.h"
+
 using namespace GLframework;
 
 Bloom::Bloom(int width,int height, int min_Resolution)
