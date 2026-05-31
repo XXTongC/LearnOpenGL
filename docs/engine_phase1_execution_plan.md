@@ -287,6 +287,7 @@ passed
 - Engine Actor Component Header Boundary Cleanup 已接入：`Actor.h` 不再传播完整 `ActorComponent.h`，Actor 析构和 component lifecycle API 调用集中到 `Actor.cpp`。
 - Engine Subsystem Public Header Boundary Cleanup 已接入：`Engine.h` 不再传播完整 `EngineSubsystem.h`，完整 subsystem lifecycle/diagnostics API 调用集中到 `Engine.cpp`。
 - Legacy Scene World Stats Header Extraction 已接入：新增 `LegacySceneWorldStats.h` 承载 legacy import/export stats DTO，scene setup pipeline public headers 不再传播完整 builder/exporter 行为头。
+- World Driven Scene Stats Header Extraction 已接入：新增 `WorldDrivenSceneStats.h` 承载 world-driven scene probe/minimal scene stats DTO，`SceneSetupPipeline.h` 不再为了 result stats 传播完整 `WorldDrivenSceneSetup.h` 行为头，formatter/scene builder 依赖改由 implementation 显式 include。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -347,6 +348,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Legacy Scene World Stats Header Extraction 已接入后，scene setup pipeline public headers 不再为了 result stats 传播完整 legacy builder/exporter 行为头；下一步继续 Engine/scene setup public header 低风险 include audit，但不扩张 PBR pass。
+当前最新修正：World Driven Scene Stats Header Extraction 已接入后，scene setup pipeline public headers 不再为了 world-driven result stats 传播完整 scene setup 行为头；下一步继续 Engine/scene setup public header 低风险 include audit，但不扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Legacy Scene World stats header extraction 后，下一步优先继续 Engine/scene setup public header 低风险 include audit，或回到 application composition root 显式依赖收敛；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 World Driven Scene stats header extraction 后，下一步优先继续 Engine/scene setup public header 低风险 include audit，或回到 application composition root 显式依赖收敛；当前不建议继续扩张 PBR pass。

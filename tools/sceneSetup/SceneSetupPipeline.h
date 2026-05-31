@@ -4,7 +4,7 @@
 
 #include "../../engine/LegacySceneWorldStats.h"
 #include "SceneSetupPipelineConfig.h"
-#include "WorldDrivenSceneSetup.h"
+#include "WorldDrivenSceneStats.h"
 
 namespace GL_SCENE
 {

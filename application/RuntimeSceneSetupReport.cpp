@@ -5,6 +5,7 @@
 
 #include "../tools/Logger/LogManager.h"
 #include "../tools/sceneSetup/SceneSetupPipeline.h"
+#include "../tools/sceneSetup/WorldDrivenSceneSetup.h"
 
 namespace GL_RUNTIME
 {

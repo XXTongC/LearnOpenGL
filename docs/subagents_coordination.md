@@ -104,6 +104,7 @@ Current phase:
 - `RuntimeLegacyExperimentLifecycle` now owns legacy experiment runtime context construction, startup enable hooks, and per-frame update, so `RuntimeFrameRunner` no longer depends on `RuntimeScenePreparer` for legacy experiment ticking.
 - `SceneSetupPipelineConfig.h` now owns the lightweight scene setup pipeline config DTO, so `RuntimeScenePrepareConfig.h` no longer exposes the full `SceneSetupPipeline.h` API surface.
 - `LegacySceneWorldStats.h` now owns legacy scene import/export stats DTOs, so scene setup pipeline result headers no longer expose full legacy world builder/exporter behavior APIs just to store stats.
+- `WorldDrivenSceneStats.h` now owns world-driven scene probe/minimal-scene result DTOs, so `SceneSetupPipeline.h` no longer exposes full `WorldDrivenSceneSetup.h` behavior APIs just to store result stats.
 - `RuntimeSceneSetupReport` now owns scene setup result stdout/logger reporting and the renderer prepared log line, so `RuntimeScenePreparer` no longer directly depends on logger/stdout or scene setup stats formatters.
 - `RuntimeSceneSetupContextFactory` now owns the `AppRuntimeContext` to `GL_SCENE::SetupContext` field mapping, so `RuntimeScenePreparer` no longer exposes or implements `makeSceneSetupContext(...)`.
 - `RuntimeSceneSetupPipelineLifecycle` now owns setup context creation, scene setup pipeline execution, and prepared-scene setup reporting, so `RuntimeScenePreparer` no longer directly includes full `SceneSetupPipeline.h`.
@@ -190,18 +191,17 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Legacy Scene World Stats Header Extraction
+### Current Round: World Driven Scene Stats Header Extraction
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `engine/LegacySceneWorldStats.h`
-- `engine/LegacySceneWorldBuilder.h`
-- `engine/WorldLegacySceneExporter.h`
+- `tools/sceneSetup/WorldDrivenSceneStats.h`
 - `tools/sceneSetup/SceneSetupPipeline.h`
+- `tools/sceneSetup/SceneSetupPipeline.cpp`
 - `tools/sceneSetup/WorldDrivenSceneSetup.h`
-- `tools/sceneSetup/WorldDrivenSceneSetup.cpp`
+- `application/RuntimeSceneSetupReport.cpp`
 - `text2.vcxproj`
 - `text2.vcxproj.filters`
 - `docs/subagents_coordination.md`
@@ -214,7 +214,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Legacy scene world stats header extraction remains parent-reviewed.
+- World-driven scene stats header extraction remains parent-reviewed.
 
 Rules for this round:
 
@@ -1671,7 +1671,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-06-01 Legacy Scene World Stats Header Extraction.
+Round: 2026-06-01 World Driven Scene Stats Header Extraction.
 
 Parent local work:
 
@@ -1679,21 +1679,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: extract legacy scene import/export stats into `LegacySceneWorldStats.h` so scene setup public headers no longer propagate full builder/exporter behavior headers just for result DTO fields.
+- Current local implementation target for this slice: extract world-driven scene probe/minimal-scene result stats into `WorldDrivenSceneStats.h` so `SceneSetupPipeline.h` no longer propagates full `WorldDrivenSceneSetup.h` behavior APIs just for result DTO fields.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the Legacy Scene World stats header extraction is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the World Driven Scene stats header extraction is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `engine/LegacySceneWorldStats.h`, `engine/LegacySceneWorldBuilder.h`, `engine/WorldLegacySceneExporter.h`, `tools/sceneSetup/SceneSetupPipeline.h`, `tools/sceneSetup/WorldDrivenSceneSetup.h`, `tools/sceneSetup/WorldDrivenSceneSetup.cpp`, project/filter files, docs, and logs.
+- Parent-owned write scope for this round: `tools/sceneSetup/WorldDrivenSceneStats.h`, `tools/sceneSetup/SceneSetupPipeline.h`, `tools/sceneSetup/SceneSetupPipeline.cpp`, `tools/sceneSetup/WorldDrivenSceneSetup.h`, `application/RuntimeSceneSetupReport.cpp`, project/filter files, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
-- Previous round's Engine Subsystem Public Header Boundary Cleanup was parent-owned and had no delegated write scope.
+- Previous round's Legacy Scene World Stats Header Extraction was parent-owned and had no delegated write scope.
 - Previous round's Engine Actor Component Header Boundary Cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Application Config Backend Key Default Boundary Cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Frame Lifecycle State owner cleanup was parent-owned and had no delegated write scope.

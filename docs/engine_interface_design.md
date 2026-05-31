@@ -478,7 +478,8 @@ public:
 268. Engine Actor Component Header Boundary Cleanup 已完成第一版：`Actor.h` 不再 include 完整 `ActorComponent.h`，只 forward declare component 指针/owner 类型；`Actor` 析构迁入 `Actor.cpp`，完整 component lifecycle API 依赖局部化到 Actor implementation 和实际 inspector/snapshot/export 调用点。
 269. Engine Subsystem Public Header Boundary Cleanup 已完成第一版：`Engine.h` 不再 include 完整 `EngineSubsystem.h`，只 forward declare subsystem owner 类型；完整 subsystem initialize/tick/shutdown/diagnostics API 依赖局部化到 `Engine.cpp` 和具体 subsystem 派生类 headers。
 270. Legacy Scene World Stats Header Extraction 已完成第一版：新增 `LegacySceneWorldStats.h` 承载 legacy import/export stats DTO；`SceneSetupPipeline.h` 与 `WorldDrivenSceneSetup.h` 不再为了 result stats 传播完整 legacy builder/exporter 行为头。
-271. 下一步建议继续 Engine/scene setup public header 低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+271. World Driven Scene Stats Header Extraction 已完成第一版：新增 `WorldDrivenSceneStats.h` 承载 world-driven scene probe/minimal scene stats DTO；`SceneSetupPipeline.h` 不再为了 result stats 传播完整 `WorldDrivenSceneSetup.h` 行为头，formatter 与 add scene 行为依赖局部化到 implementation。
+272. 下一步建议继续 Engine/scene setup public header 低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

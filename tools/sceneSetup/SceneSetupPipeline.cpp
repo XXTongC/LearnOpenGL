@@ -4,6 +4,7 @@
 #include "../../engine/LegacySceneWorldBuilder.h"
 #include "../../engine/World.h"
 #include "SceneSetup.h"
+#include "WorldDrivenSceneSetup.h"
 
 namespace
 {

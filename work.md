@@ -8780,3 +8780,27 @@ Subagent 审查：
 
 - 这是 legacy scene world stats header extraction，不改变 legacy scene mirror import/export stats 字段、world-driven scene setup、scene package、imported asset verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 Engine/scene setup public headers 的低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 World Driven Scene Stats Header Extraction
+
+本轮继续 Engine/scene setup public header boundary cleanup，不扩张 PBR 功能。审计确认：`SceneSetupPipeline.h` 仍为了 `WorldDrivenMinimalSceneStats` 和 `WorldDrivenSceneProbeStats` by-value result 字段 include 完整 `WorldDrivenSceneSetup.h`。这会让 pipeline facade 用户间接看到 add scene probe/minimal scene 和 formatter 行为 API。
+
+新增与修改：
+
+- 新增 `WorldDrivenSceneStats.h`，集中承载 `WorldDrivenSceneProbeStats` 和 `WorldDrivenMinimalSceneStats`。
+- `WorldDrivenSceneSetup.h` 移除 inline stats 定义，改为 include stats 窄头；add scene 和 formatter 行为 API 保持不变。
+- `SceneSetupPipeline.h` 改为 include `WorldDrivenSceneStats.h`，不再为了 result DTO include 完整 world-driven scene setup 行为头。
+- `SceneSetupPipeline.cpp` 显式 include `WorldDrivenSceneSetup.h`，因为 implementation 实际调用 `addEngineWorldMinimalScene(...)` 与 `addEngineWorldSceneProbe(...)`。
+- `RuntimeSceneSetupReport.cpp` 显式 include `WorldDrivenSceneSetup.h`，因为它实际调用 world-driven stats formatter。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 header。
+
+已完成验证：
+
+- 静态检查确认 `SceneSetupPipeline.h` 不再 include `WorldDrivenSceneSetup.h`，formatter 和 add scene 行为依赖局部化到 implementation。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,import,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeSceneSetupPipelineLifecycle.cpp`、`RuntimeSceneSetupReport.cpp`、`SceneSetupPipeline.cpp` 和 `WorldDrivenSceneSetup.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 world-driven scene stats header extraction，不改变 world-driven scene probe/minimal scene 构造、stats 字段、formatter 输出、legacy mirror、scene package、imported asset verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 Engine/scene setup public headers 的低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；当前仍不建议继续扩张 PBR 功能。

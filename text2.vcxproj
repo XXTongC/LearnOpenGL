@@ -968,6 +968,7 @@
     <ClInclude Include="tools\sceneSetup\SceneSetup.h" />
     <ClInclude Include="tools\sceneSetup\SceneSetupPipeline.h" />
     <ClInclude Include="tools\sceneSetup\SceneSetupPipelineConfig.h" />
+    <ClInclude Include="tools\sceneSetup\WorldDrivenSceneStats.h" />
     <ClInclude Include="tools\sceneSetup\WorldDrivenSceneSetup.h" />
     <ClInclude Include="tools\ObjectPool\ObjectPool.h" />
     <ClInclude Include="tools\ScreenShot.h" />
