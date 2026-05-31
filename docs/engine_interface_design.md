@@ -432,7 +432,8 @@ public:
 222. Renderer Backend Frame Types Header Extraction 已完成第一版：新增 `RendererBackendFrameTypes.h` 承载 `RendererFrameIntent` / `RendererFrameResult`，frame bridge public headers 不再为了 frame DTO 或 backend slot snapshot 传递完整 `RendererBackend.h` / `RendererSubsystemBackendSlot.h`。
 223. RendererSubsystem Backend Slot Header Boundary Cleanup 已完成第一版：`RendererSubsystemBackendSlot.h` 不再 include 完整 `RendererBackend.h`，backend owner 通过 forward declaration + out-of-line destructor 隐藏；实际调用 backend virtual API 的 implementation 显式 include `RendererBackend.h`。
 224. Runtime Renderer Backend Catalog Registry Header Boundary Cleanup 已完成第一版：`RuntimeRendererBackendCatalog.h` 不再 include 完整 `RendererBackendRegistry.h`，catalog public surface 只传播 registry DTO/types 与 registry forward declaration；完整 registry 构造和查询依赖局部化到 catalog implementation。
-225. 下一步建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 低风险 implementation detail audit。renderer 侧只推进通用 backend contract，不扩张 PBR pass。
+225. Runtime Renderer Backend Catalog Registry Object API Cleanup 已完成第一版：`RuntimeRendererBackendCatalog.h` 不再公开返回具体 `RendererBackendRegistry` object 的 `makeRegistry()` API；registry 构造收敛为 catalog implementation-local helper，public facade 只保留轻量 key/query/selection/attachment API。
+226. 下一步建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 低风险 implementation detail audit。renderer 侧只推进通用 backend contract，不扩张 PBR pass。
 
 ## 约束
 

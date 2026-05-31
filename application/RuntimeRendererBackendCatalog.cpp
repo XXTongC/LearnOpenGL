@@ -9,6 +9,22 @@ namespace GL_RUNTIME
 	{
 		constexpr const char* RendererSubsystemOwnerKey = "engine-renderer-subsystem";
 		constexpr const char* EngineOwnedOwnership = "engine-owned";
+
+		GLengine::RendererBackendRegistry makeRegistry()
+		{
+			return GLengine::RendererBackendRegistry({
+				{
+					RuntimeRendererBackendKeys::runtimeFramePipelineBackendKey(),
+					"Runtime Frame Pipeline Adapter",
+					true
+				},
+				{
+					RuntimeRendererBackendKeys::testNoOpBackendKey(),
+					"Test No-op Renderer Backend",
+					false
+				}
+			});
+		}
 	}
 
 	const char* RuntimeRendererBackendCatalog::runtimeFramePipelineBackendKey()
@@ -24,22 +40,6 @@ namespace GL_RUNTIME
 	const char* RuntimeRendererBackendCatalog::defaultBackendKey()
 	{
 		return RuntimeRendererBackendKeys::defaultBackendKey();
-	}
-
-	GLengine::RendererBackendRegistry RuntimeRendererBackendCatalog::makeRegistry()
-	{
-		return GLengine::RendererBackendRegistry({
-			{
-				RuntimeRendererBackendKeys::runtimeFramePipelineBackendKey(),
-				"Runtime Frame Pipeline Adapter",
-				true
-			},
-			{
-				RuntimeRendererBackendKeys::testNoOpBackendKey(),
-				"Test No-op Renderer Backend",
-				false
-			}
-		});
 	}
 
 	std::vector<GLengine::RendererBackendRegistration> RuntimeRendererBackendCatalog::registeredBackends()

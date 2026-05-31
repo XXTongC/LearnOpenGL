@@ -182,7 +182,7 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Runtime Renderer Backend Catalog Registry Header Boundary Cleanup
+### Current Round: Runtime Renderer Backend Catalog Registry Object API Cleanup
 
 Parent mode: implementation owner.
 
@@ -200,7 +200,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Runtime renderer backend catalog include surface, lightweight registry DTO exposure, and explicit complete `RendererBackendRegistry` include localization remain parent-reviewed.
+- Runtime renderer backend catalog facade surface, internal registry helper ownership, and removal of registry object exposure remain parent-reviewed.
 
 Rules for this round:
 
@@ -1657,7 +1657,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-05-31 Runtime Renderer Backend Catalog Registry Header Boundary Cleanup.
+Round: 2026-05-31 Runtime Renderer Backend Catalog Registry Object API Cleanup.
 
 Parent local work:
 
@@ -1665,20 +1665,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: remove the complete `RendererBackendRegistry.h` dependency from `RuntimeRendererBackendCatalog.h`, expose only lightweight registry DTOs plus a forward declaration, and keep complete registry construction/queries localized to the catalog implementation.
+- Current local implementation target for this slice: remove public exposure of the concrete `RendererBackendRegistry` object from `RuntimeRendererBackendCatalog.h` by moving `makeRegistry()` to a catalog implementation-local helper while preserving lightweight key/query/selection/attachment facade APIs.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the Runtime renderer backend catalog registry header cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the Runtime renderer backend catalog registry object API cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
 - Parent-owned write scope for this round: `application/RuntimeRendererBackendCatalog.h`, `application/RuntimeRendererBackendCatalog.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Runtime renderer backend catalog registry header cleanup was parent-owned and had no delegated write scope.
 - Previous round's RendererSubsystem backend slot header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Renderer Backend frame types header extraction was parent-owned and had no delegated write scope.
 - Previous round's Engine AssetSubsystem registry header cleanup was parent-owned and had no delegated write scope.

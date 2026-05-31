@@ -5,11 +5,6 @@
 
 #include "../engine/RendererBackendRegistryTypes.h"
 
-namespace GLengine
-{
-	class RendererBackendRegistry;
-}
-
 namespace GL_RUNTIME
 {
 	class RuntimeRendererBackendCatalog
@@ -18,7 +13,6 @@ namespace GL_RUNTIME
 		static const char* runtimeFramePipelineBackendKey();
 		static const char* testNoOpBackendKey();
 		static const char* defaultBackendKey();
-		static GLengine::RendererBackendRegistry makeRegistry();
 		static std::vector<GLengine::RendererBackendRegistration> registeredBackends();
 		static bool isRegisteredBackendKey(std::string_view backendKey);
 		static GLengine::RendererBackendSelection resolveBackendSelection(std::string_view backendKey);

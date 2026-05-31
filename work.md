@@ -7747,3 +7747,25 @@ Subagent 审查：
 
 - 这是 Runtime renderer backend catalog registry header boundary cleanup，不改变 backend key、selection fallback、attachment desc、registry/no-op backend behavior、Engine World verification 或 PBR pass。
 - 后续建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Renderer Backend Catalog Registry Object API Cleanup
+
+本轮继续上一轮 catalog header surface cleanup。审计确认：`RuntimeRendererBackendCatalog::makeRegistry()` 只在 `RuntimeRendererBackendCatalog.cpp` 内部被 `registeredBackends()`、`isRegisteredBackendKey(...)`、`resolveBackendSelection(...)` 和 `makeRendererSubsystemAttachmentDesc(...)` 使用，外部源代码没有调用该 API。继续把它留在 public header 会让 catalog facade 公开具体 `RendererBackendRegistry` object，边界仍偏宽。更窄边界是：`makeRegistry()` 变为 implementation-local helper，public header 只保留 key/query/selection/attachment facade。
+
+新增与修改：
+
+- `RuntimeRendererBackendCatalog.h` 删除 `RuntimeRendererBackendCatalog::makeRegistry()` public declaration。
+- `RuntimeRendererBackendCatalog.h` 删除 `RendererBackendRegistry` forward declaration，header 不再暴露 concrete registry object type。
+- `RuntimeRendererBackendCatalog.cpp` 新增 anonymous-namespace `makeRegistry()` helper，保留原有 backend registration 列表、selection fallback 和 attachment desc 行为。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeRendererBackendCatalog.h` 不再暴露 `makeRegistry()` 或 `RendererBackendRegistry` object type，只保留轻量 registry DTO/types facade。
+- 静态检查确认外部源代码没有 `RuntimeRendererBackendCatalog::makeRegistry` 调用；`registeredBackends()` 与 `isRegisteredBackendKey(...)` 仍作为轻量 query facade 保留。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,import,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `RuntimeRendererBackendCatalog.cpp` 和 `RuntimeRendererBackendAttachmentLifecycle.cpp`；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime renderer backend catalog registry object API cleanup，不改变 backend key、selection fallback、attachment desc、registry/no-op backend behavior、Engine World verification 或 PBR pass。
+- 后续建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
