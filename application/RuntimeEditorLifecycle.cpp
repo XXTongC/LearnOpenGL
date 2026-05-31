@@ -5,6 +5,7 @@
 #include "RuntimeFrameCallbacks.h"
 #include "RuntimeEditorPanelCoordinator.h"
 #include "RuntimeGuiHost.h"
+#include "RuntimeGuiHostTypes.h"
 
 namespace GL_RUNTIME
 {

@@ -1268,6 +1268,9 @@
     <ClInclude Include="application\RuntimeGuiHost.h">
       <Filter>include\Application</Filter>
     </ClInclude>
+    <ClInclude Include="application\RuntimeGuiHostTypes.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
     <ClInclude Include="application\RuntimeInputController.h">
       <Filter>include\Application</Filter>
     </ClInclude>

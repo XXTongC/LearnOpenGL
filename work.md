@@ -8618,3 +8618,26 @@ Subagent 审查：
 
 - 这是 runtime window lifecycle public header boundary cleanup，不改变窗口初始化、callback context、resize/input callback、window snapshot、shutdown destroy、runtime frame pipeline、Engine World verification 或 renderer backend contract。
 - 下一步建议继续 application composition root 中 shell/config/window/GUI headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime GUI Host Types Header Extraction
+
+本轮继续 application composition root 中 shell/config/window/GUI headers 的显式依赖收敛，不扩张 PBR 功能。审计确认：`RuntimeGuiHost.h` 同时承担 GUI facade 与 GUI context DTO 定义职责，并为了 `RuntimeGuiFrameContext::drawPanels` 直接 include `<functional>`。这会让只需要调用 GUI host facade 的路径被迫看到完整 DTO 与 callback storage。
+
+新增与修改：
+
+- 新增 `RuntimeGuiHostTypes.h`，承载 `RuntimeGuiInitContext` 与 `RuntimeGuiFrameContext`，并把 `<functional>` 与 `GLFWwindow` forward declaration 保留在 DTO 窄头。
+- `RuntimeGuiHost.h` 收敛为 GUI host facade，只 forward declare `RuntimeGuiInitContext` 与 `RuntimeGuiFrameContext`，不再传播 `<functional>`。
+- `RuntimeGuiHost.cpp` 显式 include `RuntimeGuiHostTypes.h`，因为它读取 window/glslVersion/drawPanels 字段并执行 ImGui frame。
+- `RuntimeEditorLifecycle.cpp` 显式 include `RuntimeGuiHostTypes.h`，因为它构造 GUI init/frame context 并传入 editor panel draw lambda。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `RuntimeGuiHostTypes.h`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeGuiHost.h` 不再 include `<functional>` 或承载 GUI DTO 定义；完整 GUI context 只由 types 头和实际构造/读取 context 的 implementation 使用。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeEditorLifecycle.cpp` 与 `RuntimeGuiHost.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime GUI host types header extraction，不改变 GUI 初始化、ImGui frame order、editor panel draw callback、viewport restore、Engine World verification、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。

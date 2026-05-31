@@ -5,6 +5,7 @@
 #include "../third_party/imgui/imgui_impl_glfw.h"
 #include "../third_party/imgui/imgui_impl_opengl3.h"
 #include "../tools/Logger/LogManager.h"
+#include "RuntimeGuiHostTypes.h"
 #include "RuntimeViewport.h"
 
 namespace GL_RUNTIME

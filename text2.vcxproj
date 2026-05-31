@@ -550,6 +550,7 @@
     <ClInclude Include="application\RuntimeRendererBackendKeys.h" />
     <ClInclude Include="application\RuntimeRendererFrameBridgeAdapter.h" />
     <ClInclude Include="application\RuntimeGuiHost.h" />
+    <ClInclude Include="application\RuntimeGuiHostTypes.h" />
     <ClInclude Include="application\RuntimeInputController.h" />
     <ClInclude Include="application\RuntimePBRLightCameraRigVerification.h" />
     <ClInclude Include="application\RuntimePBRPassProfileVerification.h" />

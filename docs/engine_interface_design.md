@@ -471,7 +471,8 @@ public:
 261. Runtime Editor Lifecycle State Owner Boundary Cleanup 已完成第一版：`RuntimeEditorLifecycleState.h` 不再 include `EditorSelectionState.h` 或暴露 selection/transaction 字段；完整 `SelectionContext` 与 `EditTransactionLog` 由 `RuntimeEditorLifecycleState.cpp` 通过 PImpl 拥有，runtime editor lifecycle 通过访问器取得引用。
 262. Runtime Viewport Header Boundary Cleanup 已完成第一版：`RuntimeViewport.h` 不再 include 完整 camera、screen material 或 frame render targets headers，只 forward declare resize/viewport facade 参数类型；实际 camera aspect、post-process texture sync 和 GLFW framebuffer size 依赖集中到实现文件使用点。
 263. Runtime Window Lifecycle Header Boundary Cleanup 已完成第一版：`RuntimeWindowLifecycle.h` 不再 include `RuntimeWindowLifecycleTypes.h`，只 forward declare window lifecycle DTO；实际 window callback context、snapshot 构造和 frame run/window startup DTO 字段读取依赖集中到 implementation 使用点。
-264. 下一步建议继续 application composition root 中 shell/config/window/GUI headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+264. Runtime GUI Host Types Header Extraction 已完成第一版：新增 `RuntimeGuiHostTypes.h` 承载 GUI init/frame context；`RuntimeGuiHost.h` 收敛为 host facade，不再传播 `<functional>` 或 DTO 字段，实际 GUI context 构造/读取依赖集中到 editor lifecycle 和 GUI host implementation。
+265. 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 
