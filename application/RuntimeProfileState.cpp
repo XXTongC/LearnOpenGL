@@ -1,5 +1,6 @@
 #include "RuntimeProfileState.h"
 
+#include "RuntimeFramePipelineProfile.h"
 #include "../renderer/EnvironmentProfile.h"
 #include "../renderer/PostProcessSettings.h"
 #include "../renderer/RendererFramePassProfile.h"
@@ -15,6 +16,7 @@ GL_RUNTIME::RuntimeProfileState::RuntimeProfileState()
 	, environmentProfilePath(GLframework::EnvironmentProfileStorage::defaultPath())
 	, pbrPreviewProfilePath(GL_SCENE::PBRPreviewProfileStorage::defaultPath())
 	, pbrExperimentProfilePath(GL_SCENE::PBRExperimentProfileStorage::defaultPath())
+	, mFramePipelineProfile(std::make_unique<RuntimeFramePipelineProfile>())
 	, mPostProcessSettings(std::make_unique<GLframework::PostProcessSettings>())
 	, mEnvironmentProfile(std::make_unique<GLframework::EnvironmentProfile>())
 	, mPBRLightRigProfile(std::make_unique<GL_SCENE::PBRLightRigProfile>())
@@ -28,6 +30,16 @@ GL_RUNTIME::RuntimeProfileState::~RuntimeProfileState() = default;
 GL_RUNTIME::RuntimeProfileState::RuntimeProfileState(RuntimeProfileState&&) noexcept = default;
 
 GL_RUNTIME::RuntimeProfileState& GL_RUNTIME::RuntimeProfileState::operator=(RuntimeProfileState&&) noexcept = default;
+
+GL_RUNTIME::RuntimeFramePipelineProfile& GL_RUNTIME::RuntimeProfileState::framePipelineProfile()
+{
+	return *mFramePipelineProfile;
+}
+
+const GL_RUNTIME::RuntimeFramePipelineProfile& GL_RUNTIME::RuntimeProfileState::framePipelineProfile() const
+{
+	return *mFramePipelineProfile;
+}
 
 GLframework::PostProcessSettings& GL_RUNTIME::RuntimeProfileState::postProcessSettings()
 {

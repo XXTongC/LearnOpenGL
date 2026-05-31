@@ -1,6 +1,7 @@
 #include "RuntimePBRStartupProfileVerification.h"
 
 #include "AppRuntimeContext.h"
+#include "RuntimeFramePipelineProfile.h"
 #include "../renderer/EnvironmentProfile.h"
 #include "../renderer/PostProcessSettings.h"
 
@@ -24,10 +25,11 @@ namespace GL_RUNTIME
 		postProcessSettings.bloomIntensity = 0.04f;
 		postProcessSettings.bloomIterations = 6;
 
-		context.profiles.framePipelineProfile.sceneColorPassEnabled = true;
-		context.profiles.framePipelineProfile.sceneResolvePassEnabled = true;
-		context.profiles.framePipelineProfile.bloomPassEnabled = true;
-		context.profiles.framePipelineProfile.screenCompositePassEnabled = true;
-		context.profiles.framePipelineProfile.passOrder = "SceneColor,SceneResolve,Bloom,ScreenComposite";
+		auto& framePipelineProfile = context.profiles.framePipelineProfile();
+		framePipelineProfile.sceneColorPassEnabled = true;
+		framePipelineProfile.sceneResolvePassEnabled = true;
+		framePipelineProfile.bloomPassEnabled = true;
+		framePipelineProfile.screenCompositePassEnabled = true;
+		framePipelineProfile.passOrder = "SceneColor,SceneResolve,Bloom,ScreenComposite";
 	}
 }

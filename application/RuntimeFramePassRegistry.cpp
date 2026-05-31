@@ -33,22 +33,22 @@ namespace
 
 	bool isSceneColorPassEnabled(const GLframework::AppRuntimeContext& context)
 	{
-		return context.profiles.framePipelineProfile.sceneColorPassEnabled;
+		return context.profiles.framePipelineProfile().sceneColorPassEnabled;
 	}
 
 	bool isSceneResolvePassEnabled(const GLframework::AppRuntimeContext& context)
 	{
-		return context.profiles.framePipelineProfile.sceneResolvePassEnabled;
+		return context.profiles.framePipelineProfile().sceneResolvePassEnabled;
 	}
 
 	bool isBloomPassEnabled(const GLframework::AppRuntimeContext& context)
 	{
-		return context.profiles.framePipelineProfile.bloomPassEnabled;
+		return context.profiles.framePipelineProfile().bloomPassEnabled;
 	}
 
 	bool isScreenCompositePassEnabled(const GLframework::AppRuntimeContext& context)
 	{
-		return context.profiles.framePipelineProfile.screenCompositePassEnabled;
+		return context.profiles.framePipelineProfile().screenCompositePassEnabled;
 	}
 
 	void executeSceneColorPass(

@@ -9214,3 +9214,28 @@ Subagent 审查：
 
 - 这是 Runtime profile state preview profile owner boundary cleanup，不改变 preview profile 默认路径、profile loading、PBR experiment profile loading、verification preview/material preset、showcase spheres、minimal scene preview disable、scene setup、debug controller 指针传递、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root / runtime context state 依赖边界收敛；`RuntimeProfileState.h` 当前已经不再直接传播 environment/post-process/PBR preview/light/camera profile 完整头，后续可以转向 remaining runtime state/resource owner 或 legacy/runtime public header audit。
+
+### 2026-06-01 Runtime Profile State Frame Pipeline Profile Owner Boundary Cleanup
+
+本轮继续 application runtime profile/state public header include surface 收敛，不扩张 PBR 功能。审计确认：`RuntimeProfileState.h` 仍为了按值持有 `RuntimeFramePipelineProfile` 直接 include `RuntimeFramePipelineProfile.h`；但 frame pipeline profile 的真实读写集中在 startup verification、profile loader、frame pass registry、frame pipeline、renderer backend frame plan key 和 editor/debug controller context 构造，访问面可控。
+
+新增与修改：
+
+- `RuntimeProfileState.h` 移除 `RuntimeFramePipelineProfile.h` include，改为 forward declare `GL_RUNTIME::RuntimeFramePipelineProfile`。
+- `RuntimeProfileState` 改为通过 private `std::unique_ptr<GL_RUNTIME::RuntimeFramePipelineProfile>` 持有 frame pipeline profile，继续禁用拷贝并保留移动语义。
+- `RuntimeProfileState` 新增 `framePipelineProfile()` / `framePipelineProfile() const` 访问器。
+- `RuntimeProfileState.cpp` 显式 include `RuntimeFramePipelineProfile.h`，集中创建、销毁和访问 frame pipeline profile owner。
+- `RuntimeEditorPanelCoordinator.cpp`、`RuntimeFramePipeline.cpp`、`RuntimeFramePassRegistry.cpp`、`RuntimePBRStartupProfileVerification.cpp`、`RuntimeProfileLoader.cpp` 与 `RuntimeRendererFrameBridgeAdapter.cpp` 改为通过访问器读取、写入或传递 frame pipeline profile。
+- 第一次 focused build 暴露 `RuntimeProfileLoader.cpp` 原先依赖间接 include 才能看到 `RuntimeFramePipelineProfileStorage`；本轮已在真实 storage 使用点补充显式 `RuntimeFramePipelineProfile.h` include。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeProfileState.h` 不再传播 `RuntimeFramePipelineProfile.h`，旧字段式 `context.profiles.framePipelineProfile` 访问已迁移为访问器调用。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；第一次构建失败点已修复后，五条 focused verification mode 全部通过。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime profile state frame pipeline profile owner boundary cleanup，不改变 pass order、pass enable flags、profile loading、backend readiness、frame plan key、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root / runtime context state 依赖边界收敛，或转向 remaining runtime render resource owner/shared_ptr audit；当前仍不建议扩张 PBR pass。

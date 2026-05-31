@@ -3,8 +3,6 @@
 #include <memory>
 #include <string>
 
-#include "RuntimeFramePipelineProfile.h"
-
 namespace GLframework
 {
 	struct EnvironmentProfile;
@@ -20,6 +18,8 @@ namespace GL_SCENE
 
 namespace GL_RUNTIME
 {
+	struct RuntimeFramePipelineProfile;
+
 	struct RuntimeProfileState
 	{
 		RuntimeProfileState();
@@ -30,7 +30,6 @@ namespace GL_RUNTIME
 		RuntimeProfileState(RuntimeProfileState&&) noexcept;
 		RuntimeProfileState& operator=(RuntimeProfileState&&) noexcept;
 
-		RuntimeFramePipelineProfile framePipelineProfile{};
 		std::string framePipelineProfilePath{};
 		std::string rendererFramePassProfilePath{};
 		std::string postProcessSettingsPath{};
@@ -38,6 +37,8 @@ namespace GL_RUNTIME
 		std::string pbrPreviewProfilePath{};
 		std::string pbrExperimentProfilePath{};
 
+		RuntimeFramePipelineProfile& framePipelineProfile();
+		const RuntimeFramePipelineProfile& framePipelineProfile() const;
 		GLframework::PostProcessSettings& postProcessSettings();
 		const GLframework::PostProcessSettings& postProcessSettings() const;
 		GLframework::EnvironmentProfile& environmentProfile();
@@ -50,6 +51,7 @@ namespace GL_RUNTIME
 		const GL_SCENE::PBRCameraRigProfile& pbrCameraRigProfile() const;
 
 	private:
+		std::unique_ptr<RuntimeFramePipelineProfile> mFramePipelineProfile{};
 		std::unique_ptr<GLframework::PostProcessSettings> mPostProcessSettings{};
 		std::unique_ptr<GLframework::EnvironmentProfile> mEnvironmentProfile{};
 		std::unique_ptr<GL_SCENE::PBRLightRigProfile> mPBRLightRigProfile{};

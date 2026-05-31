@@ -1,6 +1,7 @@
 #include "RuntimeProfileLoader.h"
 
 #include "AppRuntimeContext.h"
+#include "RuntimeFramePipelineProfile.h"
 #include "../renderer/EnvironmentProfile.h"
 #include "../renderer/PostProcessSettings.h"
 #include "../renderer/RendererFramePassProfile.h"
@@ -44,7 +45,7 @@ namespace
 	{
 		if (GL_RUNTIME::RuntimeFramePipelineProfileStorage::loadFromFile(
 			context.profiles.framePipelineProfilePath,
-			context.profiles.framePipelineProfile
+			context.profiles.framePipelineProfile()
 		))
 		{
 			LogInfo("Runtime frame pipeline profile loaded from " + context.profiles.framePipelineProfilePath);

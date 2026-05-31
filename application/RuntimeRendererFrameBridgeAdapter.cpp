@@ -125,7 +125,7 @@ namespace GL_RUNTIME
 
 	bool RuntimeRendererFrameBridgeAdapter::isBackendReady() const
 	{
-		const auto passPlan = RuntimeFramePassRegistry::buildPassPlan(mContext.profiles.framePipelineProfile);
+		const auto passPlan = RuntimeFramePassRegistry::buildPassPlan(mContext.profiles.framePipelineProfile());
 		for (const auto* pass : passPlan)
 		{
 			if (!pass || !pass->shouldExecute(mContext))
@@ -162,7 +162,7 @@ namespace GL_RUNTIME
 		});
 
 		return {
-			makeFramePlanKey(context.profiles.framePipelineProfile),
+			makeFramePlanKey(context.profiles.framePipelineProfile()),
 			pipelineStats.plannedPassCount,
 			pipelineStats.executedPassCount,
 			pipelineStats.skippedPassCount
