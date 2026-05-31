@@ -224,6 +224,7 @@ passed
 - Runtime Verification Stop Policy extraction 已接入：新增 `RuntimeVerificationStopPolicy`，把 verification max-frame stop condition 从 `RuntimeVerificationLifecycle` 中拆出，保持 public API、frame loop 和 verification max-frame 语义不变。
 - Runtime Verification Lifecycle Header Forward Boundary 已接入：`RuntimeVerificationLifecycle.h` 不再传递 include `AppRuntimeContext.h` 或 `RuntimeVerificationConfig.h`，只保留 facade API 所需的 forward declarations；需要完整 config 的 `RuntimeFrameLifecycle.h` 改为显式 include。
 - Runtime Frame Callbacks Header extraction 已接入：新增 `RuntimeFrameCallbacks.h`，让 frame lifecycle、frame runner 与 editor callback bridge 共用轻量 callback DTO，降低 `RuntimeFrameLifecycle.h` 对 runner/context/legacy experiment runner 的传递依赖。
+- Runtime Frame Callback Default Argument Header Boundary Cleanup 已接入：`RuntimeFrameRunner.h` 与 `RuntimeFrameLifecycle.h` 用无 callback overload 替代 `RuntimeFrameCallbacks` 默认参数，public headers 只 forward declare callback DTO；完整 callback include 局部化到 runner/lifecycle implementation 和实际构造 editor frame callbacks 的 frame run bridge。
 - Runtime Frame Lifecycle Types Header extraction 已被后续窄头拆分取代：frame lifecycle config/state DTO 已从 `RuntimeFrameLifecycle.h` 中拆出，facade header 只保留行为入口和 forward declaration；当前 canonical 入口是 `RuntimeFrameLifecycleConfig.h` 与 `RuntimeFrameLifecycleState.h`。
 - Runtime Application Frame Editor Callback Bridge Header Boundary 已接入：`RuntimeApplicationFrameEditorCallbackBridge.h` 不再 include `RuntimeFrameCallbacks.h`，只 forward declare callback DTO，完整依赖局部化到 `.cpp`。
 - Runtime Frame Runner Types Header extraction 已接入：新增 `RuntimeFrameRunnerTypes.h`，把 `RuntimeFrameConfig` 从 `RuntimeFrameRunner.h` 中拆出，runner facade header 只保留 run entry、callback DTO 和 config forward declaration。
@@ -293,6 +294,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：RendererSubsystem Implementation State Header Boundary Cleanup 已接入后，RendererSubsystem public header 不再暴露 backend slot / frame execution / frame bridge state 实现头；下一步优先继续 Engine public header 的低风险 implementation detail audit，或回到 callback/bootstrapper include surface audit；当前不建议继续扩张 PBR pass。
+当前最新修正：Runtime Frame Callback Default Argument Header Boundary Cleanup 已接入后，`RuntimeFrameRunner.h` 与 `RuntimeFrameLifecycle.h` 不再为了 callback 默认参数 include 完整 `RuntimeFrameCallbacks.h`；下一步优先继续 callback/bootstrapper include surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前不建议继续扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 RendererSubsystem implementation state header cleanup 后，下一步优先继续 Engine public header 的低风险 include audit 或 callback/bootstrapper include audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Frame Callback default-argument header cleanup 后，下一步优先继续 callback/bootstrapper include surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR pass。

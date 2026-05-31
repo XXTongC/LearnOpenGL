@@ -1,7 +1,5 @@
 #pragma once
 
-#include "RuntimeFrameCallbacks.h"
-
 namespace GLframework
 {
 	struct AppRuntimeContext;
@@ -20,6 +18,7 @@ namespace GLengine
 
 namespace GL_RUNTIME
 {
+	struct RuntimeFrameCallbacks;
 	struct RuntimeFrameLifecycleConfig;
 	struct RuntimeFrameLifecycleState;
 
@@ -41,8 +40,19 @@ namespace GL_RUNTIME
 			RuntimeFrameLifecycleState& state,
 			const RuntimeFrameLifecycleConfig& config,
 			unsigned int framebufferWidth,
+			unsigned int framebufferHeight
+		);
+
+		static void runFrame(
+			GLframework::AppRuntimeContext& context,
+			GLengine::Engine& engine,
+			GLengine::RendererSubsystem* rendererSubsystem,
+			GL_EXPERIMENTS::LegacyExperimentRunner& legacyExperiments,
+			RuntimeFrameLifecycleState& state,
+			const RuntimeFrameLifecycleConfig& config,
+			unsigned int framebufferWidth,
 			unsigned int framebufferHeight,
-			const RuntimeFrameCallbacks& callbacks = {}
+			const RuntimeFrameCallbacks& callbacks
 		);
 	};
 }

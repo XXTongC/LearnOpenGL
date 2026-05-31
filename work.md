@@ -7561,3 +7561,28 @@ Subagent 审查：
 
 - 这是 RendererSubsystem public header implementation-state cleanup，不改变 renderer backend contract、frame bridge stats 语义、frame execution、Engine World verification 或 PBR pass。
 - 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到 callback/bootstrapper include surface audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Frame Callback Default Argument Header Boundary Cleanup
+
+本轮继续 callback/bootstrapper include surface audit。审计确认：`RuntimeFrameRunner.h` 与 `RuntimeFrameLifecycle.h` 仍为了 `const RuntimeFrameCallbacks& callbacks = {}` 默认参数 include 完整 `RuntimeFrameCallbacks.h`。这会让只需要 runner/lifecycle facade 的调用点被 callback DTO 的完整定义污染。更窄的边界是：public headers 暴露无 callback overload 与显式 callback overload，完整 callback DTO 只在 implementation 中构造或读取。
+
+新增与修改：
+
+- `RuntimeFrameRunner.h` 移除 `RuntimeFrameCallbacks.h` include，改为 forward declare `RuntimeFrameCallbacks`。
+- `RuntimeFrameRunner.h/.cpp` 新增无 callback overload：无 callback 入口在 `.cpp` 内构造空 `RuntimeFrameCallbacks{}` 后转发到显式 callback overload。
+- `RuntimeFrameLifecycle.h` 移除 `RuntimeFrameCallbacks.h` include，改为 forward declare `RuntimeFrameCallbacks`。
+- `RuntimeFrameLifecycle.h/.cpp` 新增无 callback `runFrame(...)` overload：无 callback 入口在 `.cpp` 内构造空 callback DTO 后转发到显式 callback overload。
+- `RuntimeFrameRunner.cpp` 与 `RuntimeFrameLifecycle.cpp` 显式 include `RuntimeFrameCallbacks.h`，因为 implementation 需要构造和读取 callback DTO。
+- 初次 focused build 暴露 `RuntimeApplicationFrameRunBridge.cpp` 需要完整 `RuntimeFrameCallbacks`：该实现文件通过 `RuntimeApplicationFrameEditorCallbackBridge::makeFrameCallbacks(...)` 构造 editor callback DTO 并传给 frame lifecycle；已补显式 include `RuntimeFrameCallbacks.h`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeFrameRunner.h` 与 `RuntimeFrameLifecycle.h` 不再 include `RuntimeFrameCallbacks.h`。
+- 静态检查确认 `RuntimeFrameRunner.h` 与 `RuntimeFrameLifecycle.h` 不再使用 `callbacks = {}` 默认参数。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：修正 frame run bridge 显式 include 后构建通过；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime frame callback DTO header boundary cleanup，不改变 frame loop、GUI callback gating、editor callback construction、runtime renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续 callback/bootstrapper include surface audit，或回到 Engine public header 低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

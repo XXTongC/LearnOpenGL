@@ -4,6 +4,7 @@
 #include "RuntimeApplicationFrameEditorCallbackBridge.h"
 #include "RuntimeApplicationState.h"
 #include "RuntimeEngineLifecycleState.h"
+#include "RuntimeFrameCallbacks.h"
 #include "RuntimeFrameLifecycle.h"
 #include "RuntimeFrameLifecycleConfig.h"
 #include "RuntimeWindowLifecycle.h"

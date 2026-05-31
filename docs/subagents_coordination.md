@@ -102,7 +102,8 @@ Current phase:
 - `RuntimeContentLifecycle.h` now forward-declares `RuntimeContentLifecycleConfig`; full config DTO access is localized to `RuntimeContentLifecycle.cpp` and `RuntimeApplicationContentStartupLifecycle.cpp`.
 - `RuntimeFrameLifecycle` now owns application-side frame lifecycle composition: max-frame continue checks, frame clock state, runtime frame runner invocation, rendered frame count, GUI callback gating, and verification capture state.
 - `RuntimeFrameLifecycleConfig.h` and `RuntimeFrameLifecycleState.h` now own frame lifecycle config/state separately; the old compatibility aggregator `RuntimeFrameLifecycleTypes.h` has been removed, so callers use the narrow canonical header they actually need.
-- `RuntimeFrameRunnerTypes.h` now owns `RuntimeFrameConfig`, so `RuntimeFrameRunner.h` exposes only the runner facade, callback DTO, and a config forward declaration.
+- `RuntimeFrameRunnerTypes.h` now owns `RuntimeFrameConfig`, so `RuntimeFrameRunner.h` exposes only the runner facade, callback DTO forward declaration, and a config forward declaration.
+- `RuntimeFrameRunner.h` and `RuntimeFrameLifecycle.h` now expose no-callback overloads instead of `RuntimeFrameCallbacks` default arguments, so complete callback DTO dependencies stay in implementation files and the frame run bridge that constructs editor callbacks.
 - `RuntimeEditorLifecycle` now owns application-side editor lifecycle composition: GUI host initialization, editor panel frame callback creation, selection state, and edit transaction state.
 - `RuntimeEditorLifecycle.h` now forward-declares `RuntimeFrameCallbacks`; the full callback DTO dependency is localized to `RuntimeEditorLifecycle.cpp` and frame editor callback bridge implementation paths that construct or consume the complete value.
 - `RuntimeGraphicsLifecycle` now owns application-side startup graphics composition: window setup prompt, viewport initialization, clear color setup, and OpenGL capability diagnostics.
@@ -178,18 +179,17 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: RendererSubsystem Implementation State Header Boundary Cleanup
+### Current Round: Runtime Frame Callback Default Argument Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `engine/RendererSubsystem.h`
-- `engine/RendererSubsystem.cpp`
-- `application/RuntimeRendererBackendAttachmentLifecycle.cpp`
-- `tools/editor/EngineDiagnosticsPanel.cpp`
-- `text2.vcxproj`
-- `text2.vcxproj.filters`
+- `application/RuntimeFrameRunner.h`
+- `application/RuntimeFrameRunner.cpp`
+- `application/RuntimeFrameLifecycle.h`
+- `application/RuntimeFrameLifecycle.cpp`
+- `application/RuntimeApplicationFrameRunBridge.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -199,10 +199,8 @@ Delegated mode: read-only advisory.
 
 Delegated scope:
 
-- Renderer subsystem header boundary audit after parent implementation.
-- Incomplete-type destructor safety and explicit complete-type include audit.
-- Documentation consistency audit for this round.
-- No delegated write scope. Any finding is advisory and must be integrated by the parent.
+- none. This slice is parent-owned and does not start a new sidecar.
+- callback DTO default-argument include surface and overload compatibility remain parent-reviewed.
 
 Rules for this round:
 
@@ -1659,7 +1657,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-05-31 RendererSubsystem Implementation State Header Boundary Cleanup.
+Round: 2026-05-31 Runtime Frame Callback Default Argument Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1667,20 +1665,22 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: hide `RendererSubsystem` backend slot, frame execution bridge, and frame bridge state implementation members behind private owning pointers so the public subsystem header does not include those implementation headers.
+- Current local implementation target for this slice: replace `RuntimeFrameCallbacks` default arguments in public runner/lifecycle headers with explicit no-callback overloads, so public headers can forward-declare the callback DTO and keep the complete callback header in implementation files.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- Completed read-only sidecar subagent `Einstein` audited the RendererSubsystem implementation-state header boundary, changed no files, found no source blocker, confirmed incomplete-type `std::unique_ptr` handling and explicit complete-type call-site includes, and reported missing `work.md` / `worked.md` current-round records for parent integration.
-- No active sidecar remains open in this round after `Einstein` completed.
-- Parent-owned write scope for this round: `engine/RendererSubsystem.h`, `engine/RendererSubsystem.cpp`, `application/RuntimeRendererBackendAttachmentLifecycle.cpp`, `tools/editor/EngineDiagnosticsPanel.cpp`, docs, and logs.
+- No new sidecar subagent is started in this round; the runtime frame callback default-argument header cleanup is parent-owned and has no delegated write scope.
+- No active sidecar remains open in this round.
+- Parent-owned write scope for this round: `application/RuntimeFrameRunner.h`, `application/RuntimeFrameRunner.cpp`, `application/RuntimeFrameLifecycle.h`, `application/RuntimeFrameLifecycle.cpp`, `application/RuntimeApplicationFrameRunBridge.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's RendererSubsystem implementation-state header boundary cleanup was parent-owned after read-only `Einstein` audit and had no delegated write scope.
+- Completed read-only sidecar subagent `Einstein` audited the RendererSubsystem implementation-state header boundary, changed no files, found no source blocker, confirmed incomplete-type `std::unique_ptr` handling and explicit complete-type call-site includes, and reported missing `work.md` / `worked.md` current-round records that the parent integrated.
 - Previous round's Engine addSubsystem context helper cleanup was parent-owned and had no delegated write scope.
 - Previous round's Engine public header context ownership boundary cleanup was parent-owned after read-only `Erdos` audit and had no delegated write scope.
 - Completed read-only sidecar subagent `Erdos` audited `Engine.h` / `Engine.cpp`, changed no files, found no blocking issue, confirmed forward declarations and out-of-line `EngineContext` construction are sufficient, and reported only a non-blocking optional helper if a stricter no-public-header-dereference boundary is desired later.

@@ -5,12 +5,23 @@
 #include "../engine/Engine.h"
 #include "../engine/RendererSubsystem.h"
 #include "../renderer/renderer.h"
+#include "RuntimeFrameCallbacks.h"
 #include "RuntimeLegacyExperimentLifecycle.h"
 #include "RuntimeFrameRunnerTypes.h"
 #include "RuntimeRendererFrameBridgeAdapter.h"
 
 namespace GL_RUNTIME
 {
+	void RuntimeFrameRunner::run(
+		GLframework::AppRuntimeContext& context,
+		GL_EXPERIMENTS::LegacyExperimentRunner& legacyExperiments,
+		const RuntimeFrameConfig& config
+	)
+	{
+		RuntimeFrameCallbacks callbacks{};
+		run(context, legacyExperiments, config, callbacks);
+	}
+
 	void RuntimeFrameRunner::run(
 		GLframework::AppRuntimeContext& context,
 		GL_EXPERIMENTS::LegacyExperimentRunner& legacyExperiments,

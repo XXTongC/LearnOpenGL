@@ -1,6 +1,7 @@
 #include "RuntimeFrameLifecycle.h"
 
 #include "Application.h"
+#include "RuntimeFrameCallbacks.h"
 #include "RuntimeFrameLifecycleConfig.h"
 #include "RuntimeFrameLifecycleState.h"
 #include "RuntimeFrameRunner.h"
@@ -43,6 +44,31 @@ namespace GL_RUNTIME
 		}
 
 		return GL_APP->update();
+	}
+
+	void RuntimeFrameLifecycle::runFrame(
+		GLframework::AppRuntimeContext& context,
+		GLengine::Engine& engine,
+		GLengine::RendererSubsystem* rendererSubsystem,
+		GL_EXPERIMENTS::LegacyExperimentRunner& legacyExperiments,
+		RuntimeFrameLifecycleState& state,
+		const RuntimeFrameLifecycleConfig& config,
+		unsigned int framebufferWidth,
+		unsigned int framebufferHeight
+	)
+	{
+		RuntimeFrameCallbacks callbacks{};
+		runFrame(
+			context,
+			engine,
+			rendererSubsystem,
+			legacyExperiments,
+			state,
+			config,
+			framebufferWidth,
+			framebufferHeight,
+			callbacks
+		);
 	}
 
 	void RuntimeFrameLifecycle::runFrame(
