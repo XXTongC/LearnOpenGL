@@ -293,6 +293,7 @@ flowchart TD
 - Renderer Backend Registry Types Header Extraction 已完成第一版：新增 `RendererBackendRegistryTypes.h` 承载 attachment desc、registration 与 selection metadata，registry/catalog/factory metadata 路径不再通过完整 `RendererBackend.h` 传递依赖。
 - Renderer Backend Frame Types Header Extraction 已完成第一版：新增 `RendererBackendFrameTypes.h` 承载 `RendererFrameIntent` / `RendererFrameResult`，frame bridge public headers 不再为了 frame DTO 或 backend slot snapshot 传递完整 `RendererBackend.h` / `RendererSubsystemBackendSlot.h`。
 - RendererSubsystem Backend Slot Header Boundary Cleanup 已完成第一版：`RendererSubsystemBackendSlot.h` 不再 include 完整 `RendererBackend.h`，backend owner 通过 forward declaration + out-of-line destructor 隐藏；实际调用 backend virtual API 的 implementation 显式 include `RendererBackend.h`。
+- Runtime Renderer Backend Catalog Registry Header Boundary Cleanup 已完成第一版：`RuntimeRendererBackendCatalog.h` 不再 include 完整 `RendererBackendRegistry.h`，catalog public surface 只传播 registry DTO/types 与 registry forward declaration；完整 registry 构造和查询依赖局部化到 catalog implementation。
 - Runtime Renderer Backend Keys Header Extraction 已完成第一版：新增 `RuntimeRendererBackendKeys.h` 承载 runtime/default/no-op backend key helper，config、verification args 与 factory implementation 不再为了 key 常量依赖 catalog/registry。
 - Runtime Window Lifecycle Types Header Extraction 已完成第一版：新增 `RuntimeWindowLifecycleTypes.h` 承载 window config/snapshot/callback DTO，application config 不再为了 `RuntimeWindowConfig` 间接包含完整 window lifecycle 和 runtime context。
 - Runtime Frame Clock Config Header Extraction 已完成第一版：新增 `RuntimeFrameClockTypes.h` 承载 `RuntimeFrameClockConfig`，application config 不再为了 frame clock config 间接包含完整 frame clock 行为头和 `<chrono>`。
@@ -337,6 +338,6 @@ flowchart TD
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 RendererSubsystem Backend Slot Header Boundary Cleanup 后，下一步优先继续通用 renderer backend contract/header surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Renderer Backend Catalog Registry Header Boundary Cleanup 后，下一步优先继续通用 renderer backend contract/header surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：RendererSubsystem Backend Slot Header Boundary Cleanup 已接入后，`RendererSubsystemBackendSlot.h` 不再为了持有 backend owner include 完整 `RendererBackend.h`；下一步优先继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前不建议继续扩张 PBR 功能。
+当前最新修正：Runtime Renderer Backend Catalog Registry Header Boundary Cleanup 已接入后，`RuntimeRendererBackendCatalog.h` 不再为了 backend selection/attachment facade include 完整 `RendererBackendRegistry.h`；下一步优先继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前不建议继续扩张 PBR 功能。

@@ -7725,3 +7725,25 @@ Subagent 审查：
 
 - 这是 RendererSubsystem backend slot header boundary cleanup，不改变 renderer backend virtual contract、backend ownership semantics、runtime frame bridge execution、backend registry/no-op backend behavior、Engine World verification 或 PBR pass。
 - 后续建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Renderer Backend Catalog Registry Header Boundary Cleanup
+
+本轮继续通用 renderer backend contract/header surface audit。审计确认：`RuntimeRendererBackendCatalog.h` 为了 backend catalog facade public include 完整 `RendererBackendRegistry.h`，但外部调用方主要需要 backend key、registered backend DTO、selection 和 attachment desc；完整 registry 构造与查询只发生在 catalog implementation 内。更窄边界是：catalog header 只 include `RendererBackendRegistryTypes.h` 并 forward declare `RendererBackendRegistry`，完整 registry 依赖下沉到 `.cpp`。
+
+新增与修改：
+
+- `RuntimeRendererBackendCatalog.h` 移除 `RendererBackendRegistry.h` include，改为 include `RendererBackendRegistryTypes.h`。
+- `RuntimeRendererBackendCatalog.h` 新增 `class RendererBackendRegistry;` forward declaration，保留现有 catalog public API。
+- `RuntimeRendererBackendCatalog.cpp` 显式 include `RendererBackendRegistry.h`，因为 implementation 构造 registry 并调用 registry 查询 API。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeRendererBackendCatalog.h` 不再 include `RendererBackendRegistry.h`，只传播 registry DTO/types 与 registry forward declaration。
+- 静态检查确认 `RuntimeRendererBackendCatalog.cpp` 保留完整 `RendererBackendRegistry.h` include，attachment lifecycle 调用方继续只使用 catalog facade。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,import,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `RuntimeRendererBackendCatalog.cpp` 和 `RuntimeRendererBackendAttachmentLifecycle.cpp`；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime renderer backend catalog registry header boundary cleanup，不改变 backend key、selection fallback、attachment desc、registry/no-op backend behavior、Engine World verification 或 PBR pass。
+- 后续建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

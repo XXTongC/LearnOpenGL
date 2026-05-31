@@ -1,6 +1,7 @@
 #include "RuntimeRendererBackendCatalog.h"
 
 #include "RuntimeRendererBackendKeys.h"
+#include "../engine/RendererBackendRegistry.h"
 
 namespace GL_RUNTIME
 {

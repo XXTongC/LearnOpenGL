@@ -3,7 +3,12 @@
 #include <string_view>
 #include <vector>
 
-#include "../engine/RendererBackendRegistry.h"
+#include "../engine/RendererBackendRegistryTypes.h"
+
+namespace GLengine
+{
+	class RendererBackendRegistry;
+}
 
 namespace GL_RUNTIME
 {
