@@ -476,7 +476,8 @@ public:
 266. Runtime Frame Lifecycle State Owner Boundary Cleanup 已完成第一版：`RuntimeFrameLifecycleState.h` 不再 include `RuntimeFrameClock.h` 或暴露 frame clock/count/capture fields；完整 state layout 由 `RuntimeFrameLifecycleState.cpp` 通过 PImpl 拥有，frame lifecycle implementation 通过访问器 reset/tick/count/capture。
 267. Runtime Application Config Backend Key Default Boundary Cleanup 已完成第一版：`RuntimeApplicationConfig.h` 不再 include `RuntimeRendererBackendKeys.h`；默认 renderer backend key 由 `RuntimeApplicationConfig.cpp` 的 shell config 默认构造函数设置，backend key helper 依赖局部化到 config implementation 和实际 backend selection/verification override 使用点。
 268. Engine Actor Component Header Boundary Cleanup 已完成第一版：`Actor.h` 不再 include 完整 `ActorComponent.h`，只 forward declare component 指针/owner 类型；`Actor` 析构迁入 `Actor.cpp`，完整 component lifecycle API 依赖局部化到 Actor implementation 和实际 inspector/snapshot/export 调用点。
-269. 下一步建议继续 Engine public header 低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+269. Engine Subsystem Public Header Boundary Cleanup 已完成第一版：`Engine.h` 不再 include 完整 `EngineSubsystem.h`，只 forward declare subsystem owner 类型；完整 subsystem initialize/tick/shutdown/diagnostics API 依赖局部化到 `Engine.cpp` 和具体 subsystem 派生类 headers。
+270. 下一步建议继续 Engine public header 低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

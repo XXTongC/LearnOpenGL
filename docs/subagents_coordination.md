@@ -66,6 +66,7 @@ Current phase:
 - `EngineDesc.h` now owns `EngineDesc`, so application startup/config policy paths can construct engine startup parameters without including the full per-frame `EngineContext.h`.
 - `Engine.h` now forward-declares `EngineLifecycleSnapshot`; complete lifecycle snapshot dependencies are localized to `Engine.cpp` and diagnostics/reporting translation units that read snapshot fields.
 - `Engine.h` no longer exposes full `EngineContext.h` or `World.h`; it forward-declares `EngineContext`, `EngineDesc`, and `World`, while `Engine.cpp` owns the complete context/world dependencies and `EngineContext` storage.
+- `Engine.h` now also forward-declares `EngineSubsystem`; complete subsystem lifecycle and diagnostics API dependencies are localized to `Engine.cpp` and concrete subsystem headers.
 - `Engine::addSubsystem(...)` no longer dereferences `mContext` inside the public template body; initialized-subsystem context handoff is routed through an out-of-line `Engine.cpp` helper.
 - `RuntimeApplicationShutdownCleanupBridge` now receives `RuntimeVerificationConfig` directly; the shell-config-to-verification-config mapping is localized to `RuntimeApplicationShutdownLifecycle.cpp`.
 - `RuntimeApplicationShutdownLifecycle` now receives `RuntimeVerificationConfig` directly; `RuntimeApplicationCallbackBinder` owns the shell-config-to-verification-config mapping for cleanup callbacks.
@@ -188,14 +189,14 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Engine Actor Component Header Boundary Cleanup
+### Current Round: Engine Subsystem Public Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `engine/Actor.h`
-- `engine/Actor.cpp`
+- `engine/Engine.h`
+- `engine/Engine.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -206,7 +207,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Engine Actor component header cleanup remains parent-reviewed.
+- Engine subsystem public header cleanup remains parent-reviewed.
 
 Rules for this round:
 
@@ -1663,7 +1664,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-06-01 Engine Actor Component Header Boundary Cleanup.
+Round: 2026-06-01 Engine Subsystem Public Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1671,20 +1672,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: remove the full `ActorComponent.h` include from `Actor.h`, move Actor destruction out-of-line, and localize component lifecycle API calls to `Actor.cpp`.
+- Current local implementation target for this slice: remove the full `EngineSubsystem.h` include from `Engine.h` and localize subsystem lifecycle/diagnostics API calls to `Engine.cpp`.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the Engine Actor component header cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the Engine subsystem public header cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `engine/Actor.h`, `engine/Actor.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `engine/Engine.h`, `engine/Engine.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Engine Actor Component Header Boundary Cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Application Config Backend Key Default Boundary Cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Frame Lifecycle State owner cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Graphics Lifecycle Types header extraction was parent-owned and had no delegated write scope.

@@ -4,6 +4,7 @@
 
 #include "engine/EngineContext.h"
 #include "engine/EngineLifecycleSnapshot.h"
+#include "engine/EngineSubsystem.h"
 #include "engine/Level.h"
 #include "engine/World.h"
 

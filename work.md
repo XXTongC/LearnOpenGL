@@ -8733,3 +8733,24 @@ Subagent 审查：
 
 - 这是 Engine Actor component header boundary cleanup，不改变 Actor ownership、component registration、root component inference、begin/tick/end play、Engine World editor create、scene package、legacy mirror、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 Engine public headers 的低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Engine Subsystem Public Header Boundary Cleanup
+
+本轮继续 Engine public header 低风险 include audit，不扩张 PBR 功能。审计确认：`Engine.h` 仍直接 include `EngineSubsystem.h`，但 public facade 只需要保存 `std::unique_ptr<EngineSubsystem>`、声明 helper，并在 `addSubsystem<T>(...)` 的实例化点验证 `T` 派生自 `EngineSubsystem`。完整 subsystem 生命周期调用已经集中在 `Engine.cpp`。
+
+新增与修改：
+
+- `Engine.h` 移除 `EngineSubsystem.h` include，改为 forward declare `EngineSubsystem`。
+- `Engine.cpp` 显式 include `EngineSubsystem.h`，集中持有 subsystem `initialize(...)`、`tick(...)`、`shutdown(...)`、diagnostics name/init/tick count 的完整接口依赖。
+- `addSubsystem<T>(...)` 的 `std::is_base_of_v<EngineSubsystem, T>` 校验保持在模板实例化点；实际调用点仍显式 include `AssetSubsystem.h` / `RendererSubsystem.h`，因此保留完整基类关系证据。
+
+已完成验证：
+
+- 静态检查确认 `Engine.h` 不再 include `EngineSubsystem.h`，完整 subsystem API 依赖只保留在 `Engine.cpp` 和具体 subsystem 派生类 headers。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `Engine.cpp`、runtime engine lifecycle、runtime frame lifecycle/runner、verification report、engine diagnostics panel 和 scene setup pipeline。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine subsystem public header boundary cleanup，不改变 Engine subsystem ownership、addSubsystem template behavior、Engine initialization/tick/shutdown order、runtime subsystem health diagnostics、Engine World verification、renderer backend contract 或 PBR pass。
+- 下一步建议继续 Engine public headers 的低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；当前仍不建议继续扩张 PBR 功能。

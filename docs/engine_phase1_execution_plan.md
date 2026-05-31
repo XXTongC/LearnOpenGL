@@ -285,6 +285,7 @@ passed
 - Runtime Frame Lifecycle State Owner Boundary Cleanup 已接入：`RuntimeFrameLifecycleState.h` 不再传播 `RuntimeFrameClock.h`、`<chrono>` 或 frame state 字段 layout；完整 state 由 implementation 通过 PImpl 拥有。
 - Runtime Application Config Backend Key Default Boundary Cleanup 已接入：`RuntimeApplicationConfig.h` 不再传播 `RuntimeRendererBackendKeys.h`；默认 renderer backend key 由 config implementation 设置。
 - Engine Actor Component Header Boundary Cleanup 已接入：`Actor.h` 不再传播完整 `ActorComponent.h`，Actor 析构和 component lifecycle API 调用集中到 `Actor.cpp`。
+- Engine Subsystem Public Header Boundary Cleanup 已接入：`Engine.h` 不再传播完整 `EngineSubsystem.h`，完整 subsystem lifecycle/diagnostics API 调用集中到 `Engine.cpp`。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -345,6 +346,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Engine Actor Component Header Boundary Cleanup 已接入后，`Actor.h` 不再传播完整 `ActorComponent.h`，Actor 析构和 component lifecycle 调用集中到 `Actor.cpp`；下一步继续 Engine public header 低风险 include audit，但不扩张 PBR pass。
+当前最新修正：Engine Subsystem Public Header Boundary Cleanup 已接入后，`Engine.h` 不再传播完整 `EngineSubsystem.h`，完整 subsystem lifecycle/diagnostics 调用集中到 `Engine.cpp`；下一步继续 Engine public header 低风险 include audit，但不扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Engine Actor component header cleanup 后，下一步优先继续 Engine public header 低风险 include audit，或回到 application composition root 显式依赖收敛；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Engine subsystem public header cleanup 后，下一步优先继续 Engine public header 低风险 include audit，或回到 application composition root 显式依赖收敛；当前不建议继续扩张 PBR pass。
