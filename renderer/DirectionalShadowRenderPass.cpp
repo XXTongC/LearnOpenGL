@@ -1,8 +1,14 @@
 #include "DirectionalShadowRenderPass.h"
 
+#include "camera/camera.h"
+#include "core.h"
+#include "framework/shader.h"
+#include "light/directionalLight.h"
 #include "light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
+#include "mesh/mesh.h"
 #include "renderer/PBRAlphaShadowBinder.h"
 #include "renderer/ShadowMeshDraw.h"
+#include "renderer/ShaderLibrary.h"
 
 using namespace GLframework;
 

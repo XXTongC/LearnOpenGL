@@ -3,14 +3,16 @@
 #include <memory>
 #include <vector>
 
-#include "camera/camera.h"
-#include "light/directionalLight.h"
-#include "mesh/mesh.h"
-#include "renderer/ShaderLibrary.h"
 #include "renderer/ShadowRenderStats.h"
+
+class Camera;
 
 namespace GLframework
 {
+	class DirectionalLight;
+	class Mesh;
+	class ShaderLibrary;
+
 	class DirectionalShadowRenderPass
 	{
 	public:

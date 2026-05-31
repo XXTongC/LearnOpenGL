@@ -1,9 +1,14 @@
 #include "PointShadowRenderPass.h"
 
 #include "camera/perspectivecamera.h"
+#include "core.h"
+#include "framework/shader.h"
+#include "light/pointLight.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
+#include "mesh/mesh.h"
 #include "renderer/PBRAlphaShadowBinder.h"
 #include "renderer/ShadowMeshDraw.h"
+#include "renderer/ShaderLibrary.h"
 #include "tools/tools.h"
 
 using namespace GLframework;

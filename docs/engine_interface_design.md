@@ -455,7 +455,8 @@ public:
 245. PBR IBL Resource Binder Header Boundary Cleanup 已完成第一版：`PBRIBLResourceBinder.h` 不再 include 完整 `framework/shader.h` 或 `PBRMaterial.h`，只 forward declare shader、PBR material 和 environment targets 参数类型；实际 IBL readiness 判断、IBL float slot、environment target 和 texture binding 依赖集中到 `PBRIBLResourceBinder.cpp`。
 246. Shadow Resource Binder Header Boundary Cleanup 已完成第一版：`ShadowResourceBinder.h` 不再 include 完整 `camera/camera.h`、`framework/shader.h`、`directionalLight.h` 或 `pointLight.h`，只 forward declare 全局 `Camera` 以及 shader/light 参数类型；实际 CSM、point shadow、fallback directional shadow、shader uniform 和 light/camera 字段读取依赖集中到 `ShadowResourceBinder.cpp`。
 247. PBR Alpha Shadow Binder Header Boundary Cleanup 已完成第一版：`PBRAlphaShadowBinder.h` 不再 include 完整 `framework/shader.h` 或 `mesh/mesh.h`，只 forward declare shader 和 mesh 参数类型，并显式 include glm 类型头；实际 alpha-masked PBR mesh 判断、alpha cutoff/albedo map shadow uniform 写入、mesh/material/texture 访问依赖集中到 `PBRAlphaShadowBinder.cpp`。
-248. 下一步建议继续 runtime/renderer header surface audit，或回到 Engine public header 低风险 implementation detail audit。renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+248. Shadow Render Pass Header Boundary Cleanup 已完成第一版：`DirectionalShadowRenderPass.h` 与 `PointShadowRenderPass.h` 不再 include 完整 camera/light/mesh/shader-library headers，只 forward declare `Camera`、light、mesh 和 shader library 参数类型；实际 shadow framebuffer、camera/light 字段、mesh draw、shader uniform 和 alpha-shadow 分支依赖集中到对应 `.cpp`。
+249. 下一步建议继续 runtime/renderer header surface audit，或回到 Engine public header 低风险 implementation detail audit。renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

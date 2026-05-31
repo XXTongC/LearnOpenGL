@@ -3,13 +3,14 @@
 #include <memory>
 #include <vector>
 
-#include "light/pointLight.h"
-#include "mesh/mesh.h"
-#include "renderer/ShaderLibrary.h"
 #include "renderer/ShadowRenderStats.h"
 
 namespace GLframework
 {
+	class Mesh;
+	class PointLight;
+	class ShaderLibrary;
+
 	class PointShadowRenderPass
 	{
 	public:

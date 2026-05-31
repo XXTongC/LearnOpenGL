@@ -8257,3 +8257,26 @@ Subagent 审查：
 
 - 这是 PBRAlphaShadowBinder public include boundary cleanup，不改变 alpha-masked PBR mesh 判断、alpha cutoff/albedo map shadow binding、directional/point shadow alpha-mask draw path、shader uniform layout、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Shadow Render Pass Header Boundary Cleanup
+
+本轮继续 renderer header surface audit。审计确认：`DirectionalShadowRenderPass.h` 与 `PointShadowRenderPass.h` 只声明 shadow render pass 的 `render(...)` 入口，却为了函数签名直接 include 完整 camera/light/mesh/shader-library headers。真正读取 camera near/far、directional/point light shadow、mesh model matrix、shader uniforms、shadow framebuffer 和 alpha-shadow 分支的逻辑全部在对应 `.cpp` 中，header 可以只保留参数类型前置声明。`ShadowRenderStats.h` 继续保留在 header 中，避免调用方拿到返回值时缺失轻量 stats 定义。
+
+新增与修改：
+
+- `DirectionalShadowRenderPass.h` 移除完整 `camera/camera.h`、`light/directionalLight.h`、`mesh/mesh.h` 和 `renderer/ShaderLibrary.h` includes。
+- `DirectionalShadowRenderPass.h` 新增全局 `Camera` forward declaration，并在 `GLframework` namespace 内新增 `DirectionalLight`、`Mesh` 与 `ShaderLibrary` forward declarations。
+- `PointShadowRenderPass.h` 移除完整 `light/pointLight.h`、`mesh/mesh.h` 和 `renderer/ShaderLibrary.h` includes，并新增 `PointLight`、`Mesh` 与 `ShaderLibrary` forward declarations。
+- `DirectionalShadowRenderPass.cpp` 与 `PointShadowRenderPass.cpp` 显式 include 实际使用的 camera/light/mesh/shader/core dependencies。
+
+已完成验证：
+
+- 静态检查确认两个 render pass header 不再 include 完整 camera/light/mesh/shader-library headers，完整依赖已下沉到对应 `.cpp`。
+- 静态检查确认调用点集中在 `ShadowRenderer.h` 的 pass 成员持有，以及对应 `.cpp` render definitions；public API 未改名也未改变参数。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,forward-no-atlas,deferred,deferred-no-atlas,deferred-alpha-mask,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `DirectionalShadowRenderPass.cpp` 与 `PointShadowRenderPass.cpp`；八条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Directional/Point shadow render pass public include boundary cleanup，不改变 CSM shadow pass、point shadow pass、alpha-masked shadow path、shadow draw statistics、shader uniform layout、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
