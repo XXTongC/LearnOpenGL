@@ -245,6 +245,7 @@ passed
 - Engine Level Actor Header Boundary Cleanup 已接入：`Level.h` 不再 include 完整 `Actor.h`，actor owner 列表通过 forward declaration + out-of-line destructor 隐藏；实际遍历/生命周期调用 actor 的 implementation 显式 include `Actor.h`，`spawnActor<T>` 调用点继续由具体 actor 类型 include 保障。
 - Engine Legacy Scene Transform Header Boundary Cleanup 已接入：`LegacySceneWorldBuilder.h` 与 `WorldLegacySceneExporter.h` 不再 include 完整 `Transform.h`，Transform 只通过 forward declaration 暴露；实际读取/写入 transform 字段的 import/export implementation 显式 include `Transform.h`。
 - Engine ScenePackage Load Result World Owner Boundary Cleanup 已接入：`ScenePackageLoadResult` 的 `std::unique_ptr<World>` 特殊成员改为 out-of-line default，完整 `World.h` 依赖保持在 `ScenePackage.cpp`，load result 继续保持 move-only 返回语义。
+- Renderer Backend Contract Frame DTO Header Boundary Cleanup 已接入：`RendererBackend.h` 不再 include 完整 `RendererBackendFrameTypes.h`，backend contract 只 forward declare `RendererFrameIntent` / `RendererFrameResult`；实际读取 frame intent 或构造 frame result 的 runtime backend implementation 显式 include DTO 头。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -305,6 +306,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Engine ScenePackage Load Result World Owner Boundary Cleanup 已接入后，`ScenePackageLoadResult` 的 `World` owner 析构和 move special members 下沉到 `ScenePackage.cpp`；下一步优先继续 Engine public header 低风险 include audit，或回到通用 renderer backend contract/header surface audit；当前不建议继续扩张 PBR pass。
+当前最新修正：Renderer Backend Contract Frame DTO Header Boundary Cleanup 已接入后，`RendererBackend.h` 只暴露 backend contract 和 DTO 前置声明，完整 frame DTO 依赖下沉到 concrete runtime backend implementation；下一步继续通用 renderer backend contract/header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Engine ScenePackage load result owner cleanup 后，下一步优先继续 Engine public header 低风险 include audit 或通用 renderer backend contract/header surface audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 renderer backend contract DTO include cleanup 后，下一步优先继续通用 renderer backend contract/header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。

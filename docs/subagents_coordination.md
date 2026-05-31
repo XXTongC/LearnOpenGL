@@ -29,7 +29,7 @@ Current phase:
 - `RuntimeRendererFrameBridgeAdapter` implements the engine-side `RendererBackend` contract and owns the translation from the legacy `RuntimeFramePipeline` result to engine-side neutral frame result fields.
 - `RendererBackend` exposes a stable backend key and backend readiness state before frames are executed; the current runtime adapter checks readiness against the enabled frame pass dependencies.
 - `RendererSubsystem` now records backend lifecycle stats: backend state, attach/detach count, and ready/not-ready frame counts.
-- `RendererBackend.h` now owns only the renderer backend interface contract types: `RendererBackend`, `RendererFrameIntent`, and `RendererFrameResult`.
+- `RendererBackend.h` now owns only the renderer backend interface contract and forward declares `RendererFrameIntent` / `RendererFrameResult`; complete frame DTO definitions live in `RendererBackendFrameTypes.h` and are included by concrete backend implementations that read or construct them.
 - `RendererBackendRegistryTypes.h` owns renderer backend registry metadata: `RendererBackendAttachmentDesc`, `RendererBackendRegistration`, and `RendererBackendSelection`.
 - Renderer backend registry/catalog/factory metadata paths no longer need the full `RendererBackend.h` interface header unless they create, own, or invoke a concrete backend.
 - `RuntimeRendererBackendKeys.h` owns lightweight runtime/default/no-op backend key helpers, so config, verification args, and factory implementation do not need to include the catalog/registry API just to compare or store backend keys.
@@ -182,14 +182,15 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Engine ScenePackage Load Result World Owner Boundary Cleanup
+### Current Round: Renderer Backend Contract Frame DTO Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `engine/ScenePackage.h`
-- `engine/ScenePackage.cpp`
+- `engine/RendererBackend.h`
+- `application/RuntimeNoOpRendererBackend.cpp`
+- `application/RuntimeRendererFrameBridgeAdapter.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -200,7 +201,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Engine scene package load result world owner special-member boundary and move-only return semantics remain parent-reviewed.
+- Renderer backend contract DTO include boundary and runtime backend adapter/no-op backend compile coverage remain parent-reviewed.
 
 Rules for this round:
 
@@ -1657,7 +1658,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-05-31 Engine ScenePackage Load Result World Owner Boundary Cleanup.
+Round: 2026-05-31 Renderer Backend Contract Frame DTO Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1665,20 +1666,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: move `ScenePackageLoadResult`'s `std::unique_ptr<World>` special members out of `ScenePackage.h` and into `ScenePackage.cpp`, preserving move-only load result return semantics while keeping complete `World.h` dependency localized to the implementation.
+- Current local implementation target for this slice: remove `RendererBackendFrameTypes.h` from `RendererBackend.h`, forward declare `RendererFrameIntent` / `RendererFrameResult` in the backend contract, and make concrete backend implementation files include the DTO header explicitly where they inspect frame intent fields or construct frame results.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the Engine ScenePackage Load Result World owner cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the Renderer Backend Contract Frame DTO Header Boundary Cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `engine/ScenePackage.h`, `engine/ScenePackage.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `engine/RendererBackend.h`, `application/RuntimeNoOpRendererBackend.cpp`, `application/RuntimeRendererFrameBridgeAdapter.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Engine ScenePackage Load Result World owner cleanup was parent-owned and had no delegated write scope.
 - Previous round's Engine Legacy Scene Transform header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Engine Level Actor header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime renderer backend catalog registry object API cleanup was parent-owned and had no delegated write scope.

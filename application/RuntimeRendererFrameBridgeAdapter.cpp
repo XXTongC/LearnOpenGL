@@ -7,6 +7,7 @@
 #include "RuntimeFramePassRegistry.h"
 #include "RuntimeFramePipeline.h"
 #include "RuntimeFramePipelineProfile.h"
+#include "../engine/RendererBackendFrameTypes.h"
 
 namespace
 {

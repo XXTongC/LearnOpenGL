@@ -1,10 +1,10 @@
 #pragma once
 
-#include "engine/RendererBackendFrameTypes.h"
-
 namespace GLengine
 {
 	struct EngineContext;
+	struct RendererFrameIntent;
+	struct RendererFrameResult;
 
 	class RendererBackend
 	{

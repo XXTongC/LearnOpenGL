@@ -436,7 +436,8 @@ public:
 226. Engine Level Actor Header Boundary Cleanup 已完成第一版：`Level.h` 不再 include 完整 `Actor.h`，actor owner 列表通过 forward declaration + out-of-line destructor 隐藏；实际遍历/生命周期调用 actor 的 implementation 显式 include `Actor.h`，`spawnActor<T>` 调用点继续由具体 actor 类型 include 保障。
 227. Engine Legacy Scene Transform Header Boundary Cleanup 已完成第一版：`LegacySceneWorldBuilder.h` 与 `WorldLegacySceneExporter.h` 不再 include 完整 `Transform.h`，Transform 只通过 forward declaration 暴露；实际读取/写入 transform 字段的 import/export implementation 显式 include `Transform.h`。
 228. Engine ScenePackage Load Result World Owner Boundary Cleanup 已完成第一版：`ScenePackageLoadResult` 的 `std::unique_ptr<World>` 特殊成员改为 out-of-line default，完整 `World.h` 依赖保持在 `ScenePackage.cpp`，load result 继续保持 move-only 返回语义。
-229. 下一步建议继续 Engine public header 低风险 implementation detail audit，或回到通用 renderer backend contract/header surface audit。renderer 侧只推进通用 backend contract，不扩张 PBR pass。
+229. Renderer Backend Contract Frame DTO Header Boundary Cleanup 已完成第一版：`RendererBackend.h` 不再 include 完整 `RendererBackendFrameTypes.h`，backend contract 只 forward declare `RendererFrameIntent` / `RendererFrameResult`；实际读取 frame intent 或构造 frame result 的 runtime backend implementation 显式 include DTO 头。
+230. 下一步建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 低风险 implementation detail audit。renderer 侧只推进通用 backend contract，不扩张 PBR pass。
 
 ## 约束
 

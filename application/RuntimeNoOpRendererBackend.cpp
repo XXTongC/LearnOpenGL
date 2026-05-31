@@ -1,6 +1,7 @@
 #include "RuntimeNoOpRendererBackend.h"
 
 #include "core.h"
+#include "../engine/RendererBackendFrameTypes.h"
 
 namespace GL_RUNTIME
 {

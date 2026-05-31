@@ -7835,3 +7835,24 @@ Subagent 审查：
 
 - 这是 Engine ScenePackage load result World owner boundary cleanup，不改变 scene package save/load schema、World ownership transfer、package graph validation、imported asset package verification、renderer backend contract 或 PBR pass。
 - 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到通用 renderer backend contract/header surface audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Renderer Backend Contract Frame DTO Header Boundary Cleanup
+
+本轮回到通用 renderer backend contract/header surface audit。审计确认：`RendererBackend.h` 为了声明 backend virtual API 直接 include 完整 `RendererBackendFrameTypes.h`，导致只需要 backend interface 的调用点也继承 frame intent/result DTO 的完整定义。更窄边界是：backend contract header 只 forward declare `RendererFrameIntent` / `RendererFrameResult`，实际读取 DTO 字段或构造结果的 concrete backend implementation 显式 include DTO 头。
+
+新增与修改：
+
+- `RendererBackend.h` 移除 `RendererBackendFrameTypes.h` include，改为 forward declare `RendererFrameIntent` 与 `RendererFrameResult`。
+- `RuntimeNoOpRendererBackend.cpp` 显式 include `RendererBackendFrameTypes.h`，因为 no-op backend 读取 framebuffer width/height 并返回 frame result aggregate。
+- `RuntimeRendererFrameBridgeAdapter.cpp` 显式 include `RendererBackendFrameTypes.h`，因为 runtime adapter 读取 frame intent 并构造 neutral frame result。
+
+已完成验证：
+
+- 静态检查确认 `RendererBackend.h` 不再 include `RendererBackendFrameTypes.h`，完整 DTO include 只保留在 concrete backend implementation。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `RuntimeNoOpRendererBackend.cpp`、`RuntimeRendererFrameBridgeAdapter.cpp`、`RendererSubsystem.cpp`、`RendererSubsystemBackendSlot.cpp` 与 `RendererSubsystemFrameExecutionBridge.cpp`；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 renderer backend contract frame DTO include boundary cleanup，不改变 backend virtual API、runtime frame pipeline adapter、no-op backend behavior、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
