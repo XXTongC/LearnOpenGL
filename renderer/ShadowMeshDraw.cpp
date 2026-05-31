@@ -1,5 +1,7 @@
 #include "ShadowMeshDraw.h"
 
+#include "materials/material.h"
+#include "mesh/mesh.h"
 #include "renderer/MeshDraw.h"
 
 using namespace GLframework;

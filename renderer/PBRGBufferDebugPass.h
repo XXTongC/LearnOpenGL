@@ -2,10 +2,9 @@
 
 #include <memory>
 
-#include "mesh/mesh.h"
-
 namespace GLframework
 {
+	class Mesh;
 	class PBRGBufferRenderTargets;
 	struct RendererFramePassProfile;
 	class Shader;

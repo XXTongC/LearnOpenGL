@@ -8280,3 +8280,25 @@ Subagent 审查：
 
 - 这是 Directional/Point shadow render pass public include boundary cleanup，不改变 CSM shadow pass、point shadow pass、alpha-masked shadow path、shadow draw statistics、shader uniform layout、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Draw Helper Debug Quad Header Boundary Cleanup
+
+本轮继续 renderer header surface audit。审计确认：`MeshDraw.h`、`ShadowMeshDraw.h` 以及 IBL/GBuffer/tiled/clustered debug quad pass headers 只通过 `std::shared_ptr<Mesh>` 保存或传递 mesh，却直接 include 完整 `mesh/mesh.h`；`ShadowMeshDraw.h` 还额外 include 完整 `materials/material.h`，但 material type 判断实际只发生在 implementation。真正需要完整 mesh/material 类型的代码集中在 indexed draw、post-process material 判断和 debug screen quad 构造路径，均位于 `.cpp`。
+
+新增与修改：
+
+- `MeshDraw.h` 移除完整 `mesh/mesh.h` include，新增 `Mesh` forward declaration；`MeshDraw.cpp` 显式 include `mesh/mesh.h`。
+- `ShadowMeshDraw.h` 移除完整 `materials/material.h` 与 `mesh/mesh.h` includes，新增 `Mesh` forward declaration；`ShadowMeshDraw.cpp` 显式 include material/mesh 完整类型。
+- `IBLDebugPass.h`、`PBRGBufferDebugPass.h`、`PBRDeferredTiledLightDebugPass.h` 与 `PBRDeferredClusteredLightDebugPass.h` 移除完整 mesh include，新增 `Mesh` forward declaration；对应 `.cpp` 显式 include `mesh/mesh.h`，因为 implementation 构造 screen quad mesh 并调用 `setName(...)`。
+
+已完成验证：
+
+- 静态检查确认上述 draw helper / debug quad headers 不再 include 完整 mesh/material headers，完整依赖均下沉到 implementation。
+- 静态检查确认调用点覆盖 IBL debug、G-buffer debug、tiled/clustered heatmap、PBR depth/G-buffer/scene pass、shadow pass 与 no-op backend 统计路径。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred-alpha-mask,ibl-debug,gbuffer-debug,deferred-tiled-heatmap,deferred-clustered-heatmap,renderer-backend-registry-noop,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `MeshDraw.cpp`、`ShadowMeshDraw.cpp`、`IBLDebugPass.cpp`、`PBRGBufferDebugPass.cpp`、`PBRDeferredTiledLightDebugPass.cpp` 与 `PBRDeferredClusteredLightDebugPass.cpp`；八条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 draw helper / debug quad pass public include boundary cleanup，不改变 indexed mesh draw、instanced mesh draw、shadow post-process skip 判定、IBL debug quad、G-buffer debug quad、tiled/clustered heatmap debug quad、shader uniform layout、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

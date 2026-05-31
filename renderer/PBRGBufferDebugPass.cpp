@@ -4,6 +4,7 @@
 
 #include "core.h"
 #include "framework/geometry.h"
+#include "mesh/mesh.h"
 #include "renderer/MeshDraw.h"
 #include "renderer/PBRGBufferRenderTargets.h"
 #include "renderer/RendererFramePassProfile.h"

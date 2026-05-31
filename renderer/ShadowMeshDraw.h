@@ -3,11 +3,10 @@
 #include <memory>
 #include <vector>
 
-#include "materials/material.h"
-#include "mesh/mesh.h"
-
 namespace GLframework
 {
+	class Mesh;
+
 	class ShadowMeshDraw
 	{
 	public:

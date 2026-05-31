@@ -2,11 +2,10 @@
 
 #include <memory>
 
-#include "mesh/mesh.h"
-
 namespace GLframework
 {
 	class EnvironmentRenderTargets;
+	class Mesh;
 	struct RendererFramePassProfile;
 	class Shader;
 	class ShaderLibrary;

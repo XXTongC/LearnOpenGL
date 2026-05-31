@@ -304,6 +304,7 @@ flowchart TD
 - Shadow Resource Binder Header Boundary Cleanup 已完成第一版：`ShadowResourceBinder.h` 不再 include 完整 `camera/camera.h`、`framework/shader.h`、`directionalLight.h` 或 `pointLight.h`，只 forward declare 全局 `Camera` 以及 shader/light 参数类型；实际 CSM、point shadow、fallback directional shadow、shader uniform 和 light/camera 字段读取依赖集中到 `ShadowResourceBinder.cpp`。
 - PBR Alpha Shadow Binder Header Boundary Cleanup 已完成第一版：`PBRAlphaShadowBinder.h` 不再 include 完整 `framework/shader.h` 或 `mesh/mesh.h`，只 forward declare shader/mesh 参数类型并显式 include glm 类型头；实际 alpha-masked PBR mesh 判断、shader uniform、mesh/material/texture 依赖集中到 `PBRAlphaShadowBinder.cpp`。
 - Shadow Render Pass Header Boundary Cleanup 已完成第一版：`DirectionalShadowRenderPass.h` 与 `PointShadowRenderPass.h` 不再 include 完整 camera/light/mesh/shader-library headers，只 forward declare 参数类型并保留轻量 stats 头；实际 shadow framebuffer、camera/light 字段、mesh draw、shader uniform 和 alpha-shadow 分支依赖集中到各自 `.cpp`。
+- Draw Helper Debug Quad Header Boundary Cleanup 已完成第一版：`MeshDraw.h`、`ShadowMeshDraw.h` 和 IBL/GBuffer/tiled/clustered debug quad pass headers 不再 include 完整 `mesh/mesh.h` 或 `materials/material.h`，只 forward declare mesh 参数/成员类型；实际 mesh draw、screen quad 构造和 material type 判断依赖集中到对应 `.cpp`。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已完成第一版：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已完成第一版：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已完成第一版：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -362,6 +363,6 @@ flowchart TD
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Shadow Render Pass Header Boundary Cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Draw Helper Debug Quad Header Boundary Cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Shadow Render Pass Header Boundary Cleanup 已接入后，`DirectionalShadowRenderPass.h` 与 `PointShadowRenderPass.h` 只保留参数类型前置声明和 shadow stats 返回类型，完整 camera/light/mesh/shader-library 依赖下沉到对应 `.cpp`；下一步继续 runtime/renderer header surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
+当前最新修正：Draw Helper Debug Quad Header Boundary Cleanup 已接入后，`MeshDraw.h`、`ShadowMeshDraw.h` 和 IBL/GBuffer/tiled/clustered debug quad pass headers 只保留 mesh 前置声明，完整 mesh/material 依赖下沉到对应 `.cpp`；下一步继续 runtime/renderer header surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。

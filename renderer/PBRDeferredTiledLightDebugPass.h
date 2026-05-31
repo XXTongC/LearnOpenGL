@@ -2,12 +2,12 @@
 
 #include <memory>
 
-#include "mesh/mesh.h"
 #include "renderer/PBRDeferredTiledLightGrid.h"
 
 namespace GLframework
 {
 	struct MaterialBindingContext;
+	class Mesh;
 	struct RendererFramePassProfile;
 	class Shader;
 	class ShaderLibrary;

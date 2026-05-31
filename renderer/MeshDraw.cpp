@@ -1,6 +1,7 @@
 #include "MeshDraw.h"
 
 #include "mesh/instancedMesh.h"
+#include "mesh/mesh.h"
 
 using namespace GLframework;
 
