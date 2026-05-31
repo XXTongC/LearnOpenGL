@@ -8824,3 +8824,23 @@ Subagent 审查：
 
 - 这是 PBR light rig profile header boundary cleanup，不改变 light rig 默认值、light apply/copy 行为、point light count、pressure-light verification、showcase camera/light setup、Engine World verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 Engine/scene setup public headers 的低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 PBR Experiment Profile Header Boundary Cleanup
+
+本轮继续 scene setup/profile public header include audit，不扩张 PBR 功能。审计确认：`PBRExperimentProfile.h` 只暴露 `PBRExperimentProfileStorage` facade，所有 environment/postprocess/preview/light/camera profile 参数都以引用传递，但 header 直接 include 了这些完整 profile/settings 头，导致 experiment preset 用户间接获得完整 profile implementation surface。
+
+新增与修改：
+
+- `PBRExperimentProfile.h` 移除 `EnvironmentProfile.h`、`PostProcessSettings.h`、`PBRCameraRigProfile.h`、`PBRLightRigProfile.h` 和 `PBRPreviewProfile.h` include，改为 forward declare 引用参数类型。
+- `PBRExperimentProfile.cpp` 显式 include 上述完整 profile/settings headers，因为 implementation 实际复制 profile、构造 `PropertyBuilder`、调用 `visitEditableProperties(...)`、应用 material profile reference 并执行 config 读写。
+
+已完成验证：
+
+- 静态检查确认 `PBRExperimentProfile.h` 不再传播完整 profile/settings 头，完整 profile API 依赖只保留在 `PBRExperimentProfile.cpp` 和其他真实读取调用点。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,showcase-spheres,deferred-tiled-lights-pressure,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `PBRExperimentProfile.cpp`、`DebugControllerPanel.cpp`、`RuntimeProfileLoader.cpp` 和相关 runtime/profile paths。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBR experiment profile header boundary cleanup，不改变 experiment profile 文件格式、enabled gate、prefix mapping、material profile reference apply、light/camera/preview profile 行为、runtime profile loading、Engine World verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 Engine/scene setup public headers 的低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；当前仍不建议继续扩张 PBR 功能。

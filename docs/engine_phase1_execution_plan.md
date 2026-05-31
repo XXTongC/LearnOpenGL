@@ -289,6 +289,7 @@ passed
 - Legacy Scene World Stats Header Extraction 已接入：新增 `LegacySceneWorldStats.h` 承载 legacy import/export stats DTO，scene setup pipeline public headers 不再传播完整 builder/exporter 行为头。
 - World Driven Scene Stats Header Extraction 已接入：新增 `WorldDrivenSceneStats.h` 承载 world-driven scene probe/minimal scene stats DTO，`SceneSetupPipeline.h` 不再为了 result stats 传播完整 `WorldDrivenSceneSetup.h` 行为头，formatter/scene builder 依赖改由 implementation 显式 include。
 - PBR Light Rig Profile Header Boundary Cleanup 已接入：`PBRLightRigProfile.h` 不再传播完整 ambient/directional/point/spot light 行为头，只保留 `glm` 值类型和 light 参数前置声明；实际 light 创建、字段读写和 point shadow count 更新依赖集中到 `PBRLightRigProfile.cpp`。
+- PBR Experiment Profile Header Boundary Cleanup 已接入：`PBRExperimentProfile.h` 不再传播 environment/postprocess/preview/light/camera profile 完整头，只保留 storage facade 与引用参数前置声明；实际 profile 复制、property builder 和 config 读写依赖集中到 `PBRExperimentProfile.cpp`。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -349,6 +350,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：PBR Light Rig Profile Header Boundary Cleanup 已接入后，scene setup/profile public headers 不再为了 light rig apply/copy 参数传播完整 light 行为头；下一步继续 Engine/scene setup public header 低风险 include audit，但不扩张 PBR pass。
+当前最新修正：PBR Experiment Profile Header Boundary Cleanup 已接入后，experiment profile public facade 不再为了引用参数传播完整 environment/postprocess/preview/light/camera profile 头；下一步继续 Engine/scene setup public header 低风险 include audit，但不扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 PBR Light Rig profile header cleanup 后，下一步优先继续 Engine/scene setup public header 低风险 include audit，或回到 application composition root 显式依赖收敛；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 PBR Experiment profile header cleanup 后，下一步优先继续 Engine/scene setup public header 低风险 include audit，或回到 application composition root 显式依赖收敛；当前不建议继续扩张 PBR pass。

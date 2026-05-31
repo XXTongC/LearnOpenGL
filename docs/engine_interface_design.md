@@ -480,7 +480,8 @@ public:
 270. Legacy Scene World Stats Header Extraction 已完成第一版：新增 `LegacySceneWorldStats.h` 承载 legacy import/export stats DTO；`SceneSetupPipeline.h` 与 `WorldDrivenSceneSetup.h` 不再为了 result stats 传播完整 legacy builder/exporter 行为头。
 271. World Driven Scene Stats Header Extraction 已完成第一版：新增 `WorldDrivenSceneStats.h` 承载 world-driven scene probe/minimal scene stats DTO；`SceneSetupPipeline.h` 不再为了 result stats 传播完整 `WorldDrivenSceneSetup.h` 行为头，formatter 与 add scene 行为依赖局部化到 implementation。
 272. PBR Light Rig Profile Header Boundary Cleanup 已完成第一版：`PBRLightRigProfile.h` 不再 include 完整 light 行为头，只保留 `glm` 值类型和 light 参数前置声明；实际 ambient/directional/spot/point light 创建、字段读写和 point shadow count 更新依赖局部化到 `PBRLightRigProfile.cpp`。
-273. 下一步建议继续 Engine/scene setup public header 低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+273. PBR Experiment Profile Header Boundary Cleanup 已完成第一版：`PBRExperimentProfile.h` 不再 include 完整 environment/postprocess/preview/light/camera profile 头，只保留 storage facade 和引用参数前置声明；实际 profile 复制、PropertyBuilder 构造和 config 读写依赖局部化到 `PBRExperimentProfile.cpp`。
+274. 下一步建议继续 Engine/scene setup public header 低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

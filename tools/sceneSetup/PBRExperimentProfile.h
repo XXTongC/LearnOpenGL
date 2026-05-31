@@ -2,14 +2,18 @@
 
 #include <string>
 
-#include "../../renderer/EnvironmentProfile.h"
-#include "../../renderer/PostProcessSettings.h"
-#include "PBRCameraRigProfile.h"
-#include "PBRLightRigProfile.h"
-#include "PBRPreviewProfile.h"
+namespace GLframework
+{
+	struct EnvironmentProfile;
+	struct PostProcessSettings;
+}
 
 namespace GL_SCENE
 {
+	struct PBRCameraRigProfile;
+	struct PBRLightRigProfile;
+	struct PBRPreviewProfile;
+
 	class PBRExperimentProfileStorage
 	{
 	public:

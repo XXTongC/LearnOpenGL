@@ -5,6 +5,11 @@
 
 #include "../config/ProfileConfigIO.h"
 #include "../config/ProfileConfigParser.h"
+#include "../../renderer/EnvironmentProfile.h"
+#include "../../renderer/PostProcessSettings.h"
+#include "PBRCameraRigProfile.h"
+#include "PBRLightRigProfile.h"
+#include "PBRPreviewProfile.h"
 
 namespace
 {

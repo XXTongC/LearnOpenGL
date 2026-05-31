@@ -106,6 +106,7 @@ Current phase:
 - `LegacySceneWorldStats.h` now owns legacy scene import/export stats DTOs, so scene setup pipeline result headers no longer expose full legacy world builder/exporter behavior APIs just to store stats.
 - `WorldDrivenSceneStats.h` now owns world-driven scene probe/minimal-scene result DTOs, so `SceneSetupPipeline.h` no longer exposes full `WorldDrivenSceneSetup.h` behavior APIs just to store result stats.
 - `PBRLightRigProfile.h` now forwards runtime light parameter types and includes only explicit `glm` value types; full light behavior headers are localized to the light rig implementation that creates and reads lights.
+- `PBRExperimentProfile.h` now forwards environment/postprocess/preview/light/camera profile parameter types; full profile definitions and config/property builder dependencies are localized to the experiment profile implementation.
 - `RuntimeSceneSetupReport` now owns scene setup result stdout/logger reporting and the renderer prepared log line, so `RuntimeScenePreparer` no longer directly depends on logger/stdout or scene setup stats formatters.
 - `RuntimeSceneSetupContextFactory` now owns the `AppRuntimeContext` to `GL_SCENE::SetupContext` field mapping, so `RuntimeScenePreparer` no longer exposes or implements `makeSceneSetupContext(...)`.
 - `RuntimeSceneSetupPipelineLifecycle` now owns setup context creation, scene setup pipeline execution, and prepared-scene setup reporting, so `RuntimeScenePreparer` no longer directly includes full `SceneSetupPipeline.h`.
@@ -192,14 +193,14 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: PBR Light Rig Profile Header Boundary Cleanup
+### Current Round: PBR Experiment Profile Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `tools/sceneSetup/PBRLightRigProfile.h`
-- `tools/sceneSetup/PBRLightRigProfile.cpp`
+- `tools/sceneSetup/PBRExperimentProfile.h`
+- `tools/sceneSetup/PBRExperimentProfile.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -210,7 +211,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- PBR light rig profile header boundary cleanup remains parent-reviewed.
+- PBR experiment profile header boundary cleanup remains parent-reviewed.
 
 Rules for this round:
 
@@ -1667,7 +1668,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-06-01 PBR Light Rig Profile Header Boundary Cleanup.
+Round: 2026-06-01 PBR Experiment Profile Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1675,21 +1676,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: remove concrete light behavior headers from `PBRLightRigProfile.h` by using explicit `glm` value includes and light parameter forward declarations, while keeping complete light creation/field access in `PBRLightRigProfile.cpp`.
+- Current local implementation target for this slice: remove full environment/postprocess/preview/light/camera profile headers from `PBRExperimentProfile.h` by using reference-parameter forward declarations, while keeping complete profile copy/property/config access in `PBRExperimentProfile.cpp`.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the PBR Light Rig profile header cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the PBR Experiment profile header cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `tools/sceneSetup/PBRLightRigProfile.h`, `tools/sceneSetup/PBRLightRigProfile.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `tools/sceneSetup/PBRExperimentProfile.h`, `tools/sceneSetup/PBRExperimentProfile.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
-- Previous round's World Driven Scene Stats Header Extraction was parent-owned and had no delegated write scope.
+- Previous round's PBR Light Rig Profile Header Boundary Cleanup was parent-owned and had no delegated write scope.
 - Previous round's Engine Actor Component Header Boundary Cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Application Config Backend Key Default Boundary Cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Frame Lifecycle State owner cleanup was parent-owned and had no delegated write scope.
