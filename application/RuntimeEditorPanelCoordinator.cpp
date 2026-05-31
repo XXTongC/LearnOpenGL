@@ -1,6 +1,7 @@
 #include "RuntimeEditorPanelCoordinator.h"
 
 #include "../engine/AssetSubsystem.h"
+#include "../framework/scene.h"
 
 namespace GL_RUNTIME
 {

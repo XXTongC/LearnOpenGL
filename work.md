@@ -8462,3 +8462,25 @@ Subagent 审查：
 
 - 这是 scene setup context public include boundary cleanup，不改变 default scene prepare、PBR preview prepare、screen pass setup、environment precompute、light rig application、Engine World minimal/probe/package scene setup、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续 runtime/scene setup 或 editor public header include audit，优先处理只传递上下文/DTO 的 headers；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Editor Panels Public Header Boundary Cleanup
+
+本轮继续 editor public header include audit，不扩张 PBR 功能。审计确认：`tools/editor/EditorPanels.h` 主要公开 selection/context DTO、edit transaction log 和 draw/selection 函数声明，但之前直接 include 完整 camera、directional/point/spot light、shadow、object 和 scene headers。该 header 被 runtime editor lifecycle state 与 panel coordinator 引用，完整 framework/light/camera 依赖会继续污染 application state/coordinator 编译边界。
+
+新增与修改：
+
+- `EditorPanels.h` 移除完整 camera/light/shadow/object/scene includes，只保留标准库和 `glm`，并 forward declare `Camera`、`Object`、`Shadow`、`Scene`、directional/point/spot light 以及 Engine editor DTO 中需要的 engine 类型。
+- `EditorPanels.cpp` 显式 include camera、orthographic/perspective camera、object、scene、light、shadow、mesh 和 engine/editor dependencies，因为 implementation 实际读取 object/light/shadow/camera/scene/component 字段并绘制 inspector/hierarchy。
+- `RuntimeEditorPanelCoordinator.cpp` 显式 include `framework/scene.h`，因为该 translation unit 把 `std::shared_ptr<Scene>` 传给接收 `std::shared_ptr<Object>` 的 selection 初始化 API，需要完整继承关系完成 shared_ptr 派生转换。
+
+已完成验证：
+
+- 静态检查确认 `EditorPanels.h` 不再 include 完整 camera/light/shadow/object/scene headers，完整依赖集中到 `EditorPanels.cpp`。
+- focused verification 初次构建暴露 `RuntimeEditorPanelCoordinator.cpp` 依赖 `Scene -> Object` 完整继承关系；已在实际转换发生的 `.cpp` 补齐 `framework/scene.h`，没有把 scene include 放回 `EditorPanels.h`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeEditorPanelCoordinator.cpp` 与 `EditorPanels.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 editor panels public include boundary cleanup，不改变 hierarchy panel、asset browser、selection inspector、selection state、edit transaction log、Engine World editor create verification、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续 editor/runtime public header audit，优先处理 coordinator/debug panel 这类上下文 DTO header；当前仍不建议继续扩张 PBR 功能。

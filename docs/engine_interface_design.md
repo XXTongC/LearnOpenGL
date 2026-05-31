@@ -464,7 +464,8 @@ public:
 254. Renderer Infrastructure and Runtime Input Header Boundary Cleanup 已完成第一版：`RenderQueue.h`、`ShadowRenderer.h`、`ShaderLibrary.h`、`PBRShadowAtlasRenderTargets.h` 与 `RuntimeInputController.h` 不再传播 camera/scene/mesh/shader/core/camera-control 等 implementation-only headers；实际 render queue projection/sort、shadow renderer pass dispatch、shader construction、shadow atlas GL texture allocation 和 input controller camera/control 操作依赖集中到对应 `.cpp`。
 255. Renderer Facade PImpl Header Boundary Cleanup 已完成第一版：`renderer.h` 不再按私有成员传播 render pass、queue、shadow renderer、shader library、render target、scene/camera/light/mesh/shader/core 等 implementation-only headers；`Renderer` 的内部渲染状态迁入 `Renderer::Impl` 并由 `renderer.cpp` 完整拥有，实际读取 stats/profile/environment/scene 的调用点改为显式 include 所需窄头。
 256. SceneSetup Context Header Boundary Cleanup 已完成第一版：`SceneSetup.h` 不再传播 scene/light/material/mesh/Bloom/environment/frame-target/renderer/profile 完整 headers，只保留 `SetupContext` 引用/shared_ptr 契约和前置声明；实际 scene setup 构造、pipeline context 字段读取和 runtime lifecycle 按值持有完整 context 的依赖集中到对应 `.cpp`。
-257. 下一步建议继续 runtime/scene setup 或 editor public header include audit，优先处理只传递上下文/DTO 的 headers；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+257. Editor Panels Public Header Boundary Cleanup 已完成第一版：`EditorPanels.h` 不再传播完整 camera/light/shadow/object/scene headers，只保留 selection/context DTO、edit transaction log、`glm` 值类型和前置声明；实际 hierarchy/inspector/selection 绘制依赖集中到 `EditorPanels.cpp`，`Scene -> Object` shared_ptr 转换依赖显式保留在 runtime editor panel coordinator implementation。
+258. 下一步建议继续 editor/runtime public header include audit，优先处理 coordinator/debug panel 这类上下文 DTO header；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

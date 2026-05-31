@@ -6,14 +6,9 @@
 #include <utility>
 #include <vector>
 
-#include "../../camera/camera.h"
-#include "../../light/directionalLight.h"
-#include "../../light/shadow/shadow.h"
-#include "../../framework/object.h"
-#include "../../light/pointLight.h"
-#include "../../framework/scene.h"
-#include "../../light/spotLight.h"
 #include "../../third_party/glm/glm.hpp"
+
+class Camera;
 
 namespace GLengine
 {
@@ -22,6 +17,16 @@ namespace GLengine
 	class AssetRegistry;
 	class SceneComponent;
 	class World;
+}
+
+namespace GLframework
+{
+	class DirectionalLight;
+	class Object;
+	class PointLight;
+	class Scene;
+	class Shadow;
+	class SpotLight;
 }
 
 namespace GL_EDITOR
