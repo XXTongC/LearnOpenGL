@@ -1,8 +1,17 @@
 #pragma once
 
-#include "AppRuntimeContext.h"
-#include "../tools/editor/DebugControllerPanel.h"
-#include "../tools/editor/EditorPanels.h"
+namespace GLframework
+{
+	struct AppRuntimeContext;
+}
+
+namespace GL_EDITOR
+{
+	struct DebugControllerContext;
+	struct EditorPanelContext;
+	class EditTransactionLog;
+	struct SelectionContext;
+}
 
 namespace GL_RUNTIME
 {

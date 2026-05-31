@@ -1,7 +1,10 @@
 #include "RuntimeEditorPanelCoordinator.h"
 
+#include "AppRuntimeContext.h"
 #include "../engine/AssetSubsystem.h"
 #include "../framework/scene.h"
+#include "../tools/editor/DebugControllerPanel.h"
+#include "../tools/editor/EditorPanels.h"
 
 namespace GL_RUNTIME
 {

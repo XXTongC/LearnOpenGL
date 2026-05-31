@@ -313,6 +313,7 @@ flowchart TD
 - Renderer Facade PImpl Header Boundary Cleanup 已完成第一版：`renderer.h` 不再传播 render pass、queue、shadow renderer、shader library、render target、scene/camera/light/mesh/shader/core 等 implementation-only headers；`Renderer` 内部渲染状态迁入 `Renderer::Impl` 并由 `renderer.cpp` 完整拥有，runtime/editor 调用点按真实字段读取补齐显式 include。
 - SceneSetup Context Header Boundary Cleanup 已完成第一版：`SceneSetup.h` 不再传播 scene/light/material/mesh/Bloom/environment/frame-target/renderer/profile 完整 headers，只保留 `SetupContext` 引用/shared_ptr 契约和前置声明；实际 scene setup 构造、pipeline context 字段读取和 runtime lifecycle 按值持有完整 context 的依赖集中到对应 `.cpp`。
 - Editor Panels Public Header Boundary Cleanup 已完成第一版：`EditorPanels.h` 不再传播完整 camera/light/shadow/object/scene headers，只保留 selection/context DTO、edit transaction log、`glm` 值类型和前置声明；实际 hierarchy/inspector/selection 绘制依赖集中到 `EditorPanels.cpp`，runtime editor panel coordinator 显式 include `scene.h` 以支持 `Scene -> Object` shared_ptr 转换。
+- Runtime Editor Panel Coordinator Header Boundary Cleanup 已完成第一版：`RuntimeEditorPanelCoordinator.h` 不再传播完整 `AppRuntimeContext`、debug controller panel 或 editor panels headers，只 forward declare facade 参数/返回类型；完整 runtime context 字段读取、debug/editor panel context 构造和 draw function 调用依赖集中到 coordinator implementation。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已完成第一版：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已完成第一版：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已完成第一版：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -371,6 +372,6 @@ flowchart TD
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Editor Panels Public Header Boundary Cleanup 后，下一步优先继续 editor/runtime public header 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Editor Panel Coordinator Header Boundary Cleanup 后，下一步优先继续 editor/runtime public header 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Editor Panels Public Header Boundary Cleanup 已接入后，`EditorPanels.h` 不再传播完整 camera/light/shadow/object/scene headers；selection/context DTO 和 edit transaction log 仍保留完整定义，实际 hierarchy/inspector/selection 绘制依赖集中到 `EditorPanels.cpp`，runtime editor panel coordinator 显式 include `scene.h` 以支持派生 shared_ptr 转换；下一步继续 editor/runtime public header include audit，但不扩张 PBR pass。
+当前最新修正：Runtime Editor Panel Coordinator Header Boundary Cleanup 已接入后，`RuntimeEditorPanelCoordinator.h` 不再传播完整 `AppRuntimeContext`、debug controller panel 或 editor panels headers；完整 runtime context 字段读取、debug/editor panel context 构造和 draw function 调用依赖集中到 coordinator implementation；下一步继续 editor/runtime public header include audit，但不扩张 PBR pass。

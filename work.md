@@ -8484,3 +8484,24 @@ Subagent 审查：
 
 - 这是 editor panels public include boundary cleanup，不改变 hierarchy panel、asset browser、selection inspector、selection state、edit transaction log、Engine World editor create verification、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续 editor/runtime public header audit，优先处理 coordinator/debug panel 这类上下文 DTO header；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Editor Panel Coordinator Header Boundary Cleanup
+
+本轮继续 editor/runtime public header include audit，不扩张 PBR 功能。审计确认：`RuntimeEditorPanelCoordinator.h` 是 application 侧 editor panel facade，但之前直接 include 完整 `AppRuntimeContext.h`、`DebugControllerPanel.h` 和 `EditorPanels.h`。该 header 的 public surface 只声明以 `AppRuntimeContext&`、`SelectionContext&`、`EditTransactionLog&` 传参以及返回 debug/editor panel context DTO 的静态函数，不需要向 `RuntimeEditorLifecycle.cpp` 这类调用点传播完整 runtime context 与 editor UI DTO 依赖。
+
+新增与修改：
+
+- `RuntimeEditorPanelCoordinator.h` 移除完整 `AppRuntimeContext.h`、`DebugControllerPanel.h` 与 `EditorPanels.h` includes，改为 forward declare `AppRuntimeContext`、`DebugControllerContext`、`EditorPanelContext`、`EditTransactionLog` 和 `SelectionContext`。
+- `RuntimeEditorPanelCoordinator.cpp` 显式 include 完整 `AppRuntimeContext.h`、`DebugControllerPanel.h` 与 `EditorPanels.h`，因为 implementation 实际读取 runtime context 字段、构造 debug/editor panel context DTO，并调用 editor draw functions。
+- `RuntimeEditorPanelCoordinator.cpp` 继续显式 include `framework/scene.h`，保留上一轮修正的 `Scene -> Object` shared_ptr 派生转换完整类型依赖。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeEditorPanelCoordinator.h` 不再 include 完整 runtime context/debug panel/editor panels headers，完整依赖集中到 coordinator implementation。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeEditorLifecycle.cpp` 与 `RuntimeEditorPanelCoordinator.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime editor panel coordinator public include boundary cleanup，不改变 debug controller context composition、editor panel context composition、draw panel order、selection state、Engine World editor create verification、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续 editor/runtime public header audit，优先处理 DebugControllerPanel context header 或 RuntimeEditorLifecycle headers；当前仍不建议继续扩张 PBR 功能。
