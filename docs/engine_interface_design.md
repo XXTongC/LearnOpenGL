@@ -457,7 +457,8 @@ public:
 247. PBR Alpha Shadow Binder Header Boundary Cleanup 已完成第一版：`PBRAlphaShadowBinder.h` 不再 include 完整 `framework/shader.h` 或 `mesh/mesh.h`，只 forward declare shader 和 mesh 参数类型，并显式 include glm 类型头；实际 alpha-masked PBR mesh 判断、alpha cutoff/albedo map shadow uniform 写入、mesh/material/texture 访问依赖集中到 `PBRAlphaShadowBinder.cpp`。
 248. Shadow Render Pass Header Boundary Cleanup 已完成第一版：`DirectionalShadowRenderPass.h` 与 `PointShadowRenderPass.h` 不再 include 完整 camera/light/mesh/shader-library headers，只 forward declare `Camera`、light、mesh 和 shader library 参数类型；实际 shadow framebuffer、camera/light 字段、mesh draw、shader uniform 和 alpha-shadow 分支依赖集中到对应 `.cpp`。
 249. Draw Helper Debug Quad Header Boundary Cleanup 已完成第一版：`MeshDraw.h`、`ShadowMeshDraw.h` 和 IBL/GBuffer/tiled/clustered debug quad pass headers 不再 include 完整 `mesh/mesh.h` 或 `materials/material.h`，只 forward declare mesh 参数/成员类型；实际 indexed mesh draw、screen quad 构造、material type 判断和 GL draw 调用依赖集中到对应 `.cpp`。
-250. 下一步建议继续 runtime/renderer header surface audit，或回到 Engine public header 低风险 implementation detail audit。renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+250. PBR Draw Pass Header Boundary Cleanup 已完成第一版：`PBRDepthPrepass.h`、`PBRGBufferPass.h` 与 `PBRSceneRenderPass.h` 不再 include 完整 mesh、material binding context 或 shader library headers，只 forward declare mesh/context/shader 参数类型；实际 PBR material 判断、depth/G-buffer/PBR forward shader binding、G-buffer target 和 mesh draw 依赖集中到对应 `.cpp`。
+251. 下一步建议继续 runtime/renderer header surface audit，或回到 Engine public header 低风险 implementation detail audit。renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

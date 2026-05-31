@@ -1,9 +1,13 @@
 #include "PBRDepthPrepass.h"
 
+#include "framework/shader.h"
 #include "materials/material.h"
 #include "materials/pbrMaterial/PBRMaterial.h"
+#include "mesh/mesh.h"
 #include "renderer/DepthPrepassBinder.h"
+#include "renderer/MaterialBindingContext.h"
 #include "renderer/MeshDraw.h"
+#include "renderer/ShaderLibrary.h"
 
 using namespace GLframework;
 

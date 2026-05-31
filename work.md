@@ -8302,3 +8302,26 @@ Subagent 审查：
 
 - 这是 draw helper / debug quad pass public include boundary cleanup，不改变 indexed mesh draw、instanced mesh draw、shadow post-process skip 判定、IBL debug quad、G-buffer debug quad、tiled/clustered heatmap debug quad、shader uniform layout、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 PBR Draw Pass Header Boundary Cleanup
+
+本轮继续 renderer header surface audit。审计确认：`PBRDepthPrepass.h`、`PBRGBufferPass.h` 与 `PBRSceneRenderPass.h` 只通过函数签名传递 `Mesh`、`MaterialBindingContext` 与 `ShaderLibrary`，但直接 include 完整 mesh、context 和 shader library headers。真正读取 camera/context 字段、判断 PBR material、写 shader uniform、准备 G-buffer target、执行 mesh draw 的逻辑全部在对应 `.cpp` 中，header 可以只保留参数类型前置声明。
+
+新增与修改：
+
+- `PBRDepthPrepass.h` 移除完整 `mesh/mesh.h`、`renderer/MaterialBindingContext.h` 与 `renderer/ShaderLibrary.h` includes，新增 `Mesh`、`Shader`、`ShaderLibrary` 与 `MaterialBindingContext` forward declarations。
+- `PBRGBufferPass.h` 移除完整 `MaterialBindingContext.h` 与 `mesh/mesh.h` includes，新增 `Mesh` 与 `MaterialBindingContext` forward declarations，保留已有 G-buffer render targets / shader library 前置声明。
+- `PBRSceneRenderPass.h` 移除完整 `mesh/mesh.h`、`renderer/MaterialBindingContext.h` 与 `renderer/ShaderLibrary.h` includes，新增 `Mesh`、`ShaderLibrary` 与 `MaterialBindingContext` forward declarations。
+- `PBRDepthPrepass.cpp`、`PBRGBufferPass.cpp` 与 `PBRSceneRenderPass.cpp` 显式 include 实际使用的 shader、mesh、material binding context 和 shader library 完整依赖。
+
+已完成验证：
+
+- 静态检查确认三个 PBR draw pass headers 不再 include 完整 mesh/context/shader-library headers，完整依赖均下沉到 `.cpp`。
+- 静态检查确认调用点集中在 `renderer.h` pass 成员、`RendererFrameContext.h` 前置声明、`RendererFramePassRegistry.cpp` pass 调用和对应 implementation definitions。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,gbuffer,gbuffer-debug,deferred-alpha-mask,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `PBRDepthPrepass.cpp`、`PBRGBufferPass.cpp` 与 `PBRSceneRenderPass.cpp`；八条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBR depth/G-buffer/forward scene pass public include boundary cleanup，不改变 depth prepass alpha-mask skip、G-buffer target setup、PBR object/surface/material binding、PBR draw statistics、shader uniform layout、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

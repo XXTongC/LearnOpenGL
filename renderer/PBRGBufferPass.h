@@ -3,11 +3,10 @@
 #include <memory>
 #include <vector>
 
-#include "MaterialBindingContext.h"
-#include "mesh/mesh.h"
-
 namespace GLframework
 {
+	struct MaterialBindingContext;
+	class Mesh;
 	class PBRGBufferRenderTargets;
 	class ShaderLibrary;
 

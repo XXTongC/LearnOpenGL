@@ -2,10 +2,14 @@
 
 #include <iostream>
 
+#include "framework/shader.h"
 #include "materials/pbrMaterial/PBRMaterial.h"
+#include "mesh/mesh.h"
+#include "renderer/MaterialBindingContext.h"
 #include "renderer/MeshDraw.h"
 #include "renderer/PBRMaterialBinder.h"
 #include "renderer/RenderState.h"
+#include "renderer/ShaderLibrary.h"
 
 using namespace GLframework;
 

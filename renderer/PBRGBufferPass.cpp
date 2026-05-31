@@ -1,7 +1,10 @@
 #include "PBRGBufferPass.h"
 
 #include "core.h"
+#include "framework/shader.h"
 #include "materials/pbrMaterial/PBRMaterial.h"
+#include "mesh/mesh.h"
+#include "renderer/MaterialBindingContext.h"
 #include "renderer/MeshDraw.h"
 #include "renderer/PBRGBufferRenderTargets.h"
 #include "renderer/PBRObjectUniformBinder.h"

@@ -3,12 +3,13 @@
 #include <memory>
 #include <vector>
 
-#include "mesh/mesh.h"
-#include "renderer/MaterialBindingContext.h"
-#include "renderer/ShaderLibrary.h"
-
 namespace GLframework
 {
+	struct MaterialBindingContext;
+	class Mesh;
+	class Shader;
+	class ShaderLibrary;
+
 	class PBRDepthPrepass
 	{
 	public:
