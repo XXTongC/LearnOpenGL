@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <string>
 
+#include "DebugControllerContext.h"
+#include "EngineDiagnosticsContext.h"
 #include "EngineDiagnosticsPanel.h"
 #include "../../application/RuntimeFramePipelineProfile.h"
 #include "../../renderer/EnvironmentRenderTargets.h"

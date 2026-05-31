@@ -8527,3 +8527,26 @@ Subagent 审查：
 
 - 这是 editor selection/transaction state header extraction，不改变 selection 初始化、hierarchy/asset browser/inspector 绘制、edit transaction undo/dirty state、Engine World editor create verification、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续 editor/runtime public header audit，优先处理 DebugControllerContext 与 EngineDiagnosticsContext 的 DTO 分离或 RuntimeEditor lifecycle state owner 边界；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Editor Diagnostics Context Header Extraction
+
+本轮继续 editor/runtime public header audit，不扩张 PBR 功能。审计确认：`DebugControllerPanel.h` 和 `EngineDiagnosticsPanel.h` 仍同时承担 panel draw facade 与 context DTO 定义职责；这会让只需要调用绘制入口或只需要构造 context 的代码无法选择更窄依赖。
+
+新增与修改：
+
+- 新增 `tools/editor/DebugControllerContext.h`，承载 `DebugControllerContext` 以及 runtime/editor/renderer/profile/light/camera 相关前置声明和轻量标准库依赖。
+- 新增 `tools/editor/EngineDiagnosticsContext.h`，承载 `EngineDiagnosticsContext` 和 Engine subsystem/world 前置声明。
+- `DebugControllerPanel.h` 与 `EngineDiagnosticsPanel.h` 收敛为 draw facade，只 forward declare 对应 context 并声明 draw 函数。
+- `DebugControllerPanel.cpp`、`EngineDiagnosticsPanel.cpp` 和 `RuntimeEditorPanelCoordinator.cpp` 在实际构造或读取 context 字段的位置显式 include 对应 DTO 窄头。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 header，并保留 panel headers 的 VS filter 归类。
+
+已完成验证：
+
+- 静态检查确认 `DebugControllerPanel.h` / `EngineDiagnosticsPanel.h` 不再承载完整 context DTO，DTO 定义进入独立窄头，项目文件注册完整。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeEditorPanelCoordinator.cpp`、`DebugControllerPanel.cpp` 与 `EngineDiagnosticsPanel.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 editor diagnostics/debug controller context header extraction，不改变 debug controller panel draw order、Engine diagnostics panel 内容、runtime editor panel coordinator wiring、Engine World editor create verification、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续 editor/runtime public header audit，优先处理 RuntimeEditor lifecycle state owner 边界或继续收敛 application/editor composition root 的显式依赖；当前仍不建议继续扩张 PBR 功能。

@@ -467,7 +467,8 @@ public:
 257. Editor Panels Public Header Boundary Cleanup 已完成第一版：`EditorPanels.h` 不再传播完整 camera/light/shadow/object/scene headers，只保留 selection/context DTO、edit transaction log、`glm` 值类型和前置声明；实际 hierarchy/inspector/selection 绘制依赖集中到 `EditorPanels.cpp`，`Scene -> Object` shared_ptr 转换依赖显式保留在 runtime editor panel coordinator implementation。
 258. Runtime Editor Panel Coordinator Header Boundary Cleanup 已完成第一版：`RuntimeEditorPanelCoordinator.h` 不再传播完整 `AppRuntimeContext`、debug controller panel 或 editor panels headers，只 forward declare facade 参数/返回类型；完整 runtime context 字段读取、debug/editor panel context 构造和 draw function 调用依赖集中到 coordinator implementation。
 259. Editor Selection State Header Extraction 已完成第一版：新增 `EditorSelectionState.h` 承载 selection context 与 edit transaction log，`RuntimeEditorLifecycleState.h` 不再为了持有 editor state include 完整 `EditorPanels.h`；`EditorPanels.h` 收敛为 panel context/draw facade，selection helper 声明随 state 窄头提供。
-260. 下一步建议继续 editor/runtime public header include audit，优先处理 DebugControllerContext 与 EngineDiagnosticsContext 的 DTO 分离或 RuntimeEditor lifecycle state owner 边界；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+260. Editor Diagnostics Context Header Extraction 已完成第一版：新增 `DebugControllerContext.h` 与 `EngineDiagnosticsContext.h` 承载 debug/diagnostics DTO；`DebugControllerPanel.h` 与 `EngineDiagnosticsPanel.h` 收敛为 draw facade，只 forward declare context，实际构造/字段读取依赖集中到 implementation 和 coordinator。
+261. 下一步建议继续 editor/runtime public header include audit，优先处理 RuntimeEditor lifecycle state owner 边界或 application/editor composition root 显式依赖；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

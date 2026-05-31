@@ -276,6 +276,7 @@ passed
 - Editor Panels Public Header Boundary Cleanup 已接入：`EditorPanels.h` 不再传播完整 camera/light/shadow/object/scene headers，只保留 selection/context DTO、edit transaction log、`glm` 值类型和前置声明；实际 hierarchy/inspector/selection 绘制依赖集中到 `EditorPanels.cpp`，runtime editor panel coordinator 显式 include `scene.h` 以支持 `Scene -> Object` shared_ptr 转换。
 - Runtime Editor Panel Coordinator Header Boundary Cleanup 已接入：`RuntimeEditorPanelCoordinator.h` 不再传播完整 `AppRuntimeContext`、debug controller panel 或 editor panels headers，只 forward declare facade 参数/返回类型；完整 runtime context 字段读取、debug/editor panel context 构造和 draw function 调用依赖集中到 coordinator implementation。
 - Editor Selection State Header Extraction 已接入：新增 `EditorSelectionState.h` 承载 selection context、edit transaction log 与 selection helper 声明；`RuntimeEditorLifecycleState.h` 不再 include 完整 `EditorPanels.h`，`EditorPanels.h` 收敛为 panel context/draw facade。
+- Editor Diagnostics Context Header Extraction 已接入：新增 `DebugControllerContext.h` 与 `EngineDiagnosticsContext.h` 承载 debug/diagnostics DTO；`DebugControllerPanel.h` 与 `EngineDiagnosticsPanel.h` 收敛为 draw facade，实际 context 构造/字段读取依赖集中到 implementation 和 coordinator。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -336,6 +337,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Editor Selection State Header Extraction 已接入后，`RuntimeEditorLifecycleState.h` 不再为了 `SelectionContext` 与 `EditTransactionLog` include 完整 `EditorPanels.h`；selection/transaction state 已进入 `EditorSelectionState.h`，panel header 只保留 panel context/draw facade；下一步继续 editor/runtime public header include audit，但不扩张 PBR pass。
+当前最新修正：Editor Diagnostics Context Header Extraction 已接入后，`DebugControllerPanel.h` 与 `EngineDiagnosticsPanel.h` 不再承载完整 context DTO，只保留 draw facade；`DebugControllerContext.h` 与 `EngineDiagnosticsContext.h` 成为独立 DTO 窄头；下一步继续 editor/runtime public header include audit，但不扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 editor selection state header extraction 后，下一步优先继续 editor/runtime public header 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 editor diagnostics context header extraction 后，下一步优先继续 editor/runtime public header 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。

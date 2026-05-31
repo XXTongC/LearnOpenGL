@@ -1,5 +1,6 @@
 #include "EngineDiagnosticsPanel.h"
 
+#include "EngineDiagnosticsContext.h"
 #include "../../engine/AssetRegistry.h"
 #include "../../engine/AssetSubsystem.h"
 #include "../../engine/Engine.h"

@@ -2750,7 +2750,13 @@
     <ClInclude Include="tools\sceneSetup\WorldDrivenSceneSetup.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
+    <ClInclude Include="tools\editor\DebugControllerContext.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
     <ClInclude Include="tools\editor\DebugControllerPanel.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\editor\EngineDiagnosticsContext.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\editor\EngineDiagnosticsPanel.h">
