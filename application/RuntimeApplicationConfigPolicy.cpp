@@ -3,7 +3,7 @@
 #include "RuntimeApplicationConfig.h"
 #include "RuntimeEditorLifecycleConfig.h"
 #include "RuntimeFrameLifecycleConfig.h"
-#include "RuntimeGraphicsLifecycle.h"
+#include "RuntimeGraphicsLifecycleTypes.h"
 #include "../engine/EngineDesc.h"
 
 namespace GL_RUNTIME

@@ -1235,6 +1235,9 @@
     <ClInclude Include="application\RuntimeGraphicsLifecycle.h">
       <Filter>include\Application</Filter>
     </ClInclude>
+    <ClInclude Include="application\RuntimeGraphicsLifecycleTypes.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
     <ClInclude Include="application\RuntimeLegacyExperimentLifecycle.h">
       <Filter>include\Application</Filter>
     </ClInclude>

@@ -2,6 +2,7 @@
 
 #include "RuntimeApplicationConfigPolicy.h"
 #include "RuntimeGraphicsLifecycle.h"
+#include "RuntimeGraphicsLifecycleTypes.h"
 
 namespace GL_RUNTIME
 {

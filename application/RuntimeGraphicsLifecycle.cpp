@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "RuntimeGraphicsLifecycleTypes.h"
 #include "RuntimeViewport.h"
 #include "core.h"
 

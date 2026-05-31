@@ -281,6 +281,7 @@ passed
 - Runtime Viewport Header Boundary Cleanup 已接入：`RuntimeViewport.h` 不再传播完整 camera、screen material 或 frame render targets headers；实际 camera aspect、post-process input texture sync 和 GLFW framebuffer size 依赖集中到 implementation 使用点。
 - Runtime Window Lifecycle Header Boundary Cleanup 已接入：`RuntimeWindowLifecycle.h` 不再传播 window lifecycle DTO 完整定义；实际 callback context、snapshot 构造和 frame/window startup DTO 字段读取依赖集中到 implementation 使用点。
 - Runtime GUI Host Types Header Extraction 已接入：新增 `RuntimeGuiHostTypes.h` 承载 GUI init/frame context；`RuntimeGuiHost.h` 收敛为 host facade，不再传播 `<functional>` 或 DTO 字段。
+- Runtime Graphics Lifecycle Types Header Extraction 已接入：新增 `RuntimeGraphicsLifecycleTypes.h` 承载 graphics lifecycle config；`RuntimeGraphicsLifecycle.h` 收敛为 graphics facade，不再传播 config DTO 字段。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -341,6 +342,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Runtime GUI Host Types Header Extraction 已接入后，`RuntimeGuiHost.h` 不再传播 GUI context DTO 或 `<functional>`，完整 GUI context 构造/读取依赖集中到 types 头和 implementation 使用点；下一步继续 application composition root 显式依赖收敛，但不扩张 PBR pass。
+当前最新修正：Runtime Graphics Lifecycle Types Header Extraction 已接入后，`RuntimeGraphicsLifecycle.h` 不再传播 graphics lifecycle config DTO 字段，完整 config 构造/读取依赖集中到 types 头和 implementation 使用点；下一步继续 application composition root 显式依赖收敛，但不扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 runtime GUI host types extraction 后，下一步优先继续 application composition root 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 runtime graphics lifecycle types extraction 后，下一步优先继续 application composition root 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。

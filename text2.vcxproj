@@ -539,6 +539,7 @@
     <ClInclude Include="application\RuntimeFrameRunner.h" />
     <ClInclude Include="application\RuntimeFrameRunnerTypes.h" />
     <ClInclude Include="application\RuntimeGraphicsLifecycle.h" />
+    <ClInclude Include="application\RuntimeGraphicsLifecycleTypes.h" />
     <ClInclude Include="application\RuntimeLegacyExperimentLifecycle.h" />
     <ClInclude Include="application\RuntimeNoOpRendererBackend.h" />
     <ClInclude Include="application\RuntimeCameraLightState.h" />

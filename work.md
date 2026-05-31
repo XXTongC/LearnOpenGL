@@ -8641,3 +8641,27 @@ Subagent 审查：
 
 - 这是 runtime GUI host types header extraction，不改变 GUI 初始化、ImGui frame order、editor panel draw callback、viewport restore、Engine World verification、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Graphics Lifecycle Types Header Extraction
+
+本轮继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，不扩张 PBR 功能。审计确认：`RuntimeGraphicsLifecycle.h` 同时承担 graphics lifecycle facade 与 `RuntimeGraphicsLifecycleConfig` DTO 定义职责，导致只需要调用 `reportWindowSetupPrompt()` 的窗口启动路径也间接看到完整 graphics startup config。
+
+新增与修改：
+
+- 新增 `RuntimeGraphicsLifecycleTypes.h`，承载 `RuntimeGraphicsLifecycleConfig`。
+- `RuntimeGraphicsLifecycle.h` 收敛为 graphics lifecycle facade，只 forward declare `RuntimeGraphicsLifecycleConfig`。
+- `RuntimeGraphicsLifecycle.cpp` 显式 include `RuntimeGraphicsLifecycleTypes.h`，因为它读取 viewport、clear color 和 OpenGL capabilities report 字段。
+- `RuntimeApplicationConfigPolicy.cpp` 显式 include `RuntimeGraphicsLifecycleTypes.h`，因为它构造 graphics lifecycle config。
+- `RuntimeApplicationGraphicsStartupLifecycle.cpp` 显式 include `RuntimeGraphicsLifecycleTypes.h`，因为它把 policy 返回的完整 config prvalue 传给 `initializeAfterWindow(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 header。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeGraphicsLifecycle.h` 只保留 facade 与 config 前置声明，完整 config 定义只由 types 头和实际构造/读取 config 的 implementation 使用。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeApplicationConfigPolicy.cpp`、`RuntimeApplicationGraphicsStartupLifecycle.cpp`、`RuntimeApplicationWindowStartupLifecycle.cpp` 与 `RuntimeGraphicsLifecycle.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime graphics lifecycle types header extraction，不改变 window setup prompt、viewport initialization、clear color、OpenGL capabilities report、runtime frame pipeline、Engine World verification、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
