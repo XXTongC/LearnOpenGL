@@ -8235,3 +8235,25 @@ Subagent 审查：
 
 - 这是 ShadowResourceBinder public include boundary cleanup，不改变 CSM shadow resource binding、point shadow resource binding、directional fallback shadow uniform、legacy material shadow path、PBR no-atlas fallback path、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 PBR Alpha Shadow Binder Header Boundary Cleanup
+
+本轮继续 renderer header surface audit。审计确认：`PBRAlphaShadowBinder.h` 只声明 alpha-masked PBR mesh 判断和 directional/point shadow alpha binding 入口，却为了函数签名直接 include 完整 `framework/shader.h` 与 `mesh/mesh.h`。真正读取 mesh material、判断 `PBRMaterial` alpha mask、绑定 alpha cutoff/albedo map、写 shadow shader uniform 的逻辑全部在 `PBRAlphaShadowBinder.cpp` 中，header 可以只保留参数类型前置声明；因为 public API 直接使用 `glm::mat4` / `glm::vec3`，header 需要显式保留 glm 类型头，不能依赖 shader/mesh 的传递 include。
+
+新增与修改：
+
+- `PBRAlphaShadowBinder.h` 移除完整 shader 和 mesh includes。
+- `PBRAlphaShadowBinder.h` 新增 `Shader` 与 `Mesh` forward declarations，并显式 include `third_party/glm/glm.hpp`；现有 `isAlphaMaskedPbrMesh(...)`、`bindDirectional(...)` 与 `bindPoint(...)` public API 不变。
+- `PBRAlphaShadowBinder.cpp` 显式 include `framework/shader.h`、`mesh/mesh.h` 和 `materials/pbrMaterial/PBRMaterial.h`，因为 implementation 实际读取 mesh/material API 并写 shader uniform。
+
+已完成验证：
+
+- 静态检查确认 `PBRAlphaShadowBinder.h` 不再 include 完整 shader/mesh headers，`PBRAlphaShadowBinder.cpp` 显式 include 所需完整依赖。
+- 静态检查确认调用点集中在 `DirectionalShadowRenderPass.cpp`、`PBRShadowAtlasRenderPass.cpp` 与 `PointShadowRenderPass.cpp`，PBRAlphaShadowBinder public API 未改名也未改变参数。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,forward-no-atlas,deferred,deferred-no-atlas,deferred-alpha-mask,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `DirectionalShadowRenderPass.cpp`、`PBRAlphaShadowBinder.cpp`、`PBRShadowAtlasRenderPass.cpp` 与 `PointShadowRenderPass.cpp`；八条 focused verification mode 全部通过，并覆盖 alpha-mask shadow 统计。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBRAlphaShadowBinder public include boundary cleanup，不改变 alpha-masked PBR mesh 判断、alpha cutoff/albedo map shadow binding、directional/point shadow alpha-mask draw path、shader uniform layout、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

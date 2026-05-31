@@ -2,11 +2,13 @@
 
 #include <memory>
 
-#include "framework/shader.h"
-#include "mesh/mesh.h"
+#include "third_party/glm/glm.hpp"
 
 namespace GLframework
 {
+	class Mesh;
+	class Shader;
+
 	class PBRAlphaShadowBinder
 	{
 	public:

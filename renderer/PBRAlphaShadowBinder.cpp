@@ -1,6 +1,8 @@
 #include "PBRAlphaShadowBinder.h"
 
+#include "framework/shader.h"
 #include "materials/pbrMaterial/PBRMaterial.h"
+#include "mesh/mesh.h"
 
 using namespace GLframework;
 

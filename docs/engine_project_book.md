@@ -302,6 +302,7 @@ flowchart TD
 - PBR Surface Resource Binder Header Boundary Cleanup 已完成第一版：`PBRSurfaceResourceBinder.h` 不再 include 完整 `framework/shader.h` 或 `PBRMaterial.h`，只 forward declare 参数类型；实际 surface uniform、texture slot、texture binding 和 shader/material 依赖集中到 `PBRSurfaceResourceBinder.cpp`。
 - PBR IBL Resource Binder Header Boundary Cleanup 已完成第一版：`PBRIBLResourceBinder.h` 不再 include 完整 `framework/shader.h` 或 `PBRMaterial.h`，只 forward declare shader、PBR material 和 environment targets 参数类型；实际 IBL readiness 判断、IBL float slot、environment target 和 texture binding 依赖集中到 `PBRIBLResourceBinder.cpp`。
 - Shadow Resource Binder Header Boundary Cleanup 已完成第一版：`ShadowResourceBinder.h` 不再 include 完整 `camera/camera.h`、`framework/shader.h`、`directionalLight.h` 或 `pointLight.h`，只 forward declare 全局 `Camera` 以及 shader/light 参数类型；实际 CSM、point shadow、fallback directional shadow、shader uniform 和 light/camera 字段读取依赖集中到 `ShadowResourceBinder.cpp`。
+- PBR Alpha Shadow Binder Header Boundary Cleanup 已完成第一版：`PBRAlphaShadowBinder.h` 不再 include 完整 `framework/shader.h` 或 `mesh/mesh.h`，只 forward declare shader/mesh 参数类型并显式 include glm 类型头；实际 alpha-masked PBR mesh 判断、shader uniform、mesh/material/texture 依赖集中到 `PBRAlphaShadowBinder.cpp`。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已完成第一版：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已完成第一版：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已完成第一版：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -360,6 +361,6 @@ flowchart TD
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Shadow Resource Binder Header Boundary Cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 PBR Alpha Shadow Binder Header Boundary Cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Shadow Resource Binder Header Boundary Cleanup 已接入后，`ShadowResourceBinder.h` 只保留全局 `Camera`、shader、directional light 和 point light 参数类型前置声明，完整 CSM/point/fallback shadow resource binding 依赖下沉到 `ShadowResourceBinder.cpp`；下一步继续 runtime/renderer header surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
+当前最新修正：PBR Alpha Shadow Binder Header Boundary Cleanup 已接入后，`PBRAlphaShadowBinder.h` 只保留 shader/mesh 参数类型前置声明和显式 glm 类型头，完整 alpha-masked PBR mesh 判断、material/texture 读取和 shadow shader uniform 写入依赖下沉到 `PBRAlphaShadowBinder.cpp`；下一步继续 runtime/renderer header surface audit 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
