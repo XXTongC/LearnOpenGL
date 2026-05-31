@@ -1,7 +1,11 @@
 #include "PostProcessPass.h"
 
 #include "core.h"
+#include "framework/shader.h"
+#include "framebuffer/framebuffer.h"
 #include "materials/screenMaterial.h"
+#include "mesh/mesh.h"
+#include "PostProcessSettings.h"
 #include "renderer/Bloom/Bloom.h"
 
 using namespace GLframework;

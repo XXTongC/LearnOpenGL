@@ -7946,3 +7946,25 @@ Subagent 审查：
 
 - 这是 FrameRenderTargets framebuffer/texture include boundary cleanup，不改变 framebuffer 创建/resize、Bloom attachment access、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 PostProcess Pass Header Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit。审计确认：`PostProcessPass.h` 为了引用参数直接 include 完整 `framework/shader.h`、`framebuffer/framebuffer.h`、`mesh/mesh.h` 和 `PostProcessSettings.h`，导致 `RuntimeRenderResourceState.h` 只为了按值持有一个 `PostProcessPass` 也被迫继承 framebuffer/mesh/shader/settings 实现依赖。更窄边界是：post-process pass header 只 forward declare 引用参数类型，实际 resolve/composite/bloom 执行依赖留在 implementation。
+
+新增与修改：
+
+- `PostProcessPass.h` 移除完整 framebuffer、mesh、shader 和 post-process settings includes。
+- `PostProcessPass.h` 新增 `Framebuffer`、`Mesh`、`Shader`、`Bloom` 和 `PostProcessSettings` forward declarations，保留现有 shared pointer/reference API。
+- `PostProcessPass.cpp` 显式 include `framebuffer/framebuffer.h`、`mesh/mesh.h`、`framework/shader.h` 与 `PostProcessSettings.h`，因为 implementation 调用 FBO、mesh material/geometry、shader uniforms 和 settings 字段。
+
+已完成验证：
+
+- 静态检查确认 `PostProcessPass.h` 不再传播完整 renderer implementation headers，`PostProcessPass.cpp` 显式 include 所需完整依赖。
+- 静态检查确认现有调用路径集中在 `RuntimeFramePasses.cpp` 和 `RuntimeRenderResourceState.h`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `PostProcessPass.cpp`、runtime frame passes 和 runtime renderer bridge；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PostProcessPass public include boundary cleanup，不改变 resolve/composite/bloom 执行逻辑、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

@@ -30,6 +30,7 @@ Current phase:
 - `RuntimeFramePipeline.h` and `RuntimeFramePasses.h` now forward declare `AppRuntimeContext`; complete runtime context dependency is kept in frame pipeline/pass implementations that read context fields.
 - `RuntimeFramePassRegistry.h` uses `std::string_view` for pass key lookup, so registry key queries no longer force public `<string>` propagation.
 - `FrameRenderTargets.h` now forward-declares `Framebuffer` and `Texture`; complete framebuffer/texture implementation dependencies are localized to `FrameRenderTargets.cpp`.
+- `PostProcessPass.h` now forward-declares framebuffer, mesh, shader, bloom, and post-process settings types; complete render implementation dependencies are localized to `PostProcessPass.cpp`.
 - `RendererBackend` exposes a stable backend key and backend readiness state before frames are executed; the current runtime adapter checks readiness against the enabled frame pass dependencies.
 - `RendererSubsystem` now records backend lifecycle stats: backend state, attach/detach count, and ready/not-ready frame counts.
 - `RendererBackend.h` now owns only the renderer backend interface contract and forward declares `RendererFrameIntent` / `RendererFrameResult`; complete frame DTO definitions live in `RendererBackendFrameTypes.h` and are included by concrete backend implementations that read or construct them.
@@ -186,14 +187,14 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Frame Render Targets Framebuffer Header Boundary Cleanup
+### Current Round: PostProcess Pass Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `renderer/FrameRenderTargets.h`
-- `renderer/FrameRenderTargets.cpp`
+- `renderer/PostProcessPass.h`
+- `renderer/PostProcessPass.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -204,7 +205,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Frame render target framebuffer/texture forward declarations and explicit implementation include remain parent-reviewed.
+- Post-process pass reference-parameter forward declarations and explicit implementation includes remain parent-reviewed.
 
 Rules for this round:
 
@@ -1661,7 +1662,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-05-31 Frame Render Targets Framebuffer Header Boundary Cleanup.
+Round: 2026-05-31 PostProcess Pass Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1669,20 +1670,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: remove complete `framebuffer/framebuffer.h` propagation from `FrameRenderTargets.h`, forward declare `Framebuffer` / `Texture`, and keep FBO creation/attachment access in `FrameRenderTargets.cpp`.
+- Current local implementation target for this slice: remove complete framebuffer/mesh/shader/settings propagation from `PostProcessPass.h`, forward declare referenced types, and keep post-process execution dependencies in `PostProcessPass.cpp`.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the Frame Render Targets Framebuffer Header Boundary Cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the PostProcess Pass Header Boundary Cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `renderer/FrameRenderTargets.h`, `renderer/FrameRenderTargets.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `renderer/PostProcessPass.h`, `renderer/PostProcessPass.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Frame Render Targets framebuffer header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Engine Lifecycle Snapshot header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Frame Pass Registry key string_view cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Frame Pipeline context header cleanup was parent-owned and had no delegated write scope.

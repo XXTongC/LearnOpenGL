@@ -2,14 +2,13 @@
 
 #include <memory>
 
-#include "framework/shader.h"
-#include "framebuffer/framebuffer.h"
-#include "mesh/mesh.h"
-#include "PostProcessSettings.h"
-
 namespace GLframework
 {
 	class Bloom;
+	class Framebuffer;
+	class Mesh;
+	struct PostProcessSettings;
+	class Shader;
 
 	class PostProcessPass
 	{
