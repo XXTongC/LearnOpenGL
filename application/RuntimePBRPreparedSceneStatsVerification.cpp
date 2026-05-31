@@ -5,9 +5,11 @@
 #include <string>
 
 #include "../framework/object.h"
+#include "../framework/scene.h"
 #include "../materials/material.h"
 #include "../materials/pbrMaterial/PBRMaterial.h"
 #include "../mesh/mesh.h"
+#include "../renderer/EnvironmentRenderTargets.h"
 #include "../renderer/renderer.h"
 #include "../tools/Logger/LogManager.h"
 #include "AppRuntimeContext.h"

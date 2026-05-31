@@ -4,6 +4,7 @@
 
 #include "AppRuntimeContext.h"
 #include "RuntimeVerificationConfig.h"
+#include "../renderer/RendererFramePassProfile.h"
 #include "../renderer/renderer.h"
 
 namespace GL_RUNTIME

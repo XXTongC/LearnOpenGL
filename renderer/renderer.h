@@ -1,45 +1,35 @@
 #pragma once
-#include "core.h"
+#include <memory>
 #include <vector>
-#include "mesh/mesh.h"
-#include "framebuffer.h"
-#include "camera.h"
-#include "shader.h"
-#include "EnvironmentRenderTargets.h"
-#include "FrameRenderState.h"
-#include "IBLPrecomputePass.h"
-#include "IBLDebugPass.h"
-#include "PBRDepthPrepass.h"
-#include "PBRDeferredClusteredLightDebugPass.h"
-#include "PBRDeferredLightingPass.h"
-#include "PBRDeferredTiledLightDebugPass.h"
-#include "PBRGBufferPass.h"
-#include "PBRGBufferDebugPass.h"
-#include "PBRGBufferRenderTargets.h"
-#include "PBRSceneRenderPass.h"
-#include "PBRShadowAtlasRenderPass.h"
-#include "PBRShadowAtlasRenderTargets.h"
-#include "RenderQueue.h"
-#include "RendererFrameStats.h"
-#include "RendererFramePassProfile.h"
-#include "RendererGpuTimerQueryPool.h"
-#include "SceneRenderPass.h"
-#include "ShadowRenderer.h"
-#include "ShaderLibrary.h"
-#include "directionalLight.h"
-#include "ambientLight.h"
-#include "pointLight.h"
-#include "spotLight.h"
-#include "scene.h"
+
+#include "third_party/glm/glm.hpp"
+
+class Camera;
+
 namespace GLframework
 {
+	class AmbientLight;
+	class DirectionalLight;
+	class EnvironmentRenderTargets;
 	struct EnvironmentProfile;
+	class IBLPrecomputePass;
+	class Material;
+	enum class MaterialType;
+	class Mesh;
+	class PointLight;
+	struct RendererFramePassProfile;
+	struct RendererFrameStats;
+	class Scene;
+	class Shader;
+	class SpotLight;
+	class Texture;
 
 	class Renderer
 	{
 	public:
 		Renderer();
-		~Renderer() = default;
+		~Renderer();
+
 		std::shared_ptr<Shader> getShader(MaterialType type);
 		std::shared_ptr<Shader> getIBLCaptureShader() const;
 		std::shared_ptr<Shader> getIBLBrdfLutShader() const;
@@ -69,30 +59,12 @@ namespace GLframework
 			unsigned int fbo = 0
 		);
 		void setClearColor(glm::vec3 color);
+
 	public:
 		std::shared_ptr<Material> mGlobalMaterial{nullptr};
-private:
-		ShaderLibrary mShaderLibrary{};
-		FrameRenderState mFrameRenderState{};
-		RenderQueue mRenderQueue{};
-		ShadowRenderer mShadowRenderer{};
-		SceneRenderPass mSceneRenderPass{};
-		PBRDepthPrepass mPbrDepthPrepass{};
-		PBRGBufferPass mPbrGBufferPass{};
-		PBRDeferredLightingPass mPbrDeferredLightingPass{};
-		PBRDeferredTiledLightDebugPass mPbrDeferredTiledLightDebugPass{};
-		PBRDeferredClusteredLightDebugPass mPbrDeferredClusteredLightDebugPass{};
-		PBRGBufferDebugPass mPbrGBufferDebugPass{};
-		PBRSceneRenderPass mPbrSceneRenderPass{};
-		IBLDebugPass mIblDebugPass{};
-		PBRShadowAtlasRenderPass mPbrShadowAtlasPass{};
-		PBRShadowAtlasRenderTargets mPbrShadowAtlasTargets{};
-		PBRGBufferRenderTargets mPbrGBufferTargets{};
-		EnvironmentRenderTargets mEnvironmentRenderTargets{};
-		IBLPrecomputePass mIblPrecomputePass{};
-		RendererGpuTimerQueryPool mGpuTimerQueries{};
-		RendererFrameStats mLastFrameStats{};
-		RendererFramePassProfile mFramePassProfile{};
 
+	private:
+		struct Impl;
+		std::unique_ptr<Impl> mImpl;
 	};
 }

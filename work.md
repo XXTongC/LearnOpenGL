@@ -8416,3 +8416,27 @@ Subagent 审查：
 
 - 这是 renderer infrastructure / runtime input public include boundary cleanup，不改变 render queue projection/sort、shadow renderer pass dispatch、shader creation、shadow atlas target prepare、runtime input routing、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，优先审计 `renderer/renderer.h` 这类宽 facade，但只做低风险 include/ownership 边界收敛；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Renderer Facade PImpl Header Boundary Cleanup
+
+本轮继续 renderer header surface audit，不扩张 PBR 功能。审计确认：`renderer/renderer.h` 是当前 renderer 侧最宽的 public facade，之前因为私有成员按值持有 render queue、shadow renderer、scene/PBR/deferred/IBL/shadow atlas passes、render targets、shader library、GPU timer、frame stats/profile 等实现对象，导致任何 include `renderer.h` 的调用点都会间接接收大量 camera/scene/mesh/light/shader/core/pass 依赖。这些依赖实际只服务于 `Renderer` 的内部执行，不应成为 renderer facade 的 public include contract。
+
+新增与修改：
+
+- `Renderer` 私有 render-state/pass/target/library/timer/profile 成员迁入 `Renderer::Impl`，由 `renderer.cpp` 通过 `std::unique_ptr<Impl>` 完整拥有和构造。
+- `renderer.h` 移除 `core.h`、mesh/framebuffer/camera/shader、render pass、render queue、shadow renderer、shader library、light 和 scene 等完整 implementation headers，只保留 `<memory>`、`<vector>` 与 `glm`，并为 public API 参数/返回类型增加 forward declarations。
+- `Renderer::~Renderer()` 改为 out-of-line default，使 `std::unique_ptr<Impl>` 的完整类型需求停留在 `renderer.cpp`。
+- `renderer.cpp` 显式 include 所有实际构造/调用 render passes、render targets、shader library、frame context、scene/camera/light/mesh/shader/texture 的完整依赖，保持行为集中在 implementation。
+- 由于 `renderer.h` 不再传递完整类型，补齐实际读取 `Scene`、`EnvironmentRenderTargets`、`RendererFrameStats`、`RendererFramePassProfile`、`EnvironmentProfile`、`PostProcessSettings` 等字段的 runtime verification/profile/editor `.cpp` 显式 includes。
+
+已完成验证：
+
+- 静态检查确认 `renderer.h` 当前只 include `<memory>`、`<vector>` 和 `third_party/glm/glm.hpp`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；覆盖 forward/deferred renderer、Engine World minimal scene 和 no-op backend registry 路径。
+- 初次 focused build 暴露了多个历史传递 include 依赖，已按实际使用点补齐显式 includes，而不是把依赖放回 `renderer.h`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 renderer facade ownership/include boundary cleanup，不改变 shader lookup、environment precompute、frame pass plan、shadow atlas/G-buffer/deferred/PBR/legacy scene pass 执行、runtime frame pipeline、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 下一步建议继续收敛宽 facade 和 runtime/editor 调用点的显式依赖，但仍应避免继续扩张 PBR 功能；renderer 侧后续优先服务 Engine runtime/backend contract，而不是继续堆叠材质模型特性。

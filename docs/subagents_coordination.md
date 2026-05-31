@@ -187,21 +187,15 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Renderer Infrastructure and Runtime Input Header Boundary Cleanup
+### Current Round: Renderer Facade PImpl Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `renderer/RenderQueue.h`
-- `renderer/RenderQueue.cpp`
-- `renderer/ShadowRenderer.h`
-- `renderer/ShadowRenderer.cpp`
-- `renderer/ShaderLibrary.h`
-- `renderer/ShaderLibrary.cpp`
-- `renderer/PBRShadowAtlasRenderTargets.h`
-- `renderer/PBRShadowAtlasRenderTargets.cpp`
-- `application/RuntimeInputController.h`
+- `renderer/renderer.h`
+- `renderer/renderer.cpp`
+- runtime/editor call sites that need explicit includes after `renderer.h` stops forwarding implementation headers
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -211,9 +205,8 @@ Delegated mode: read-only advisory.
 
 Delegated scope:
 
-- Read-only sidecar `Pauli` audits the next safe include-surface candidate and must not edit files.
-- Parent accepted Pauli's `RuntimeInputController.h` pointer-only forward declaration recommendation as a local follow-up in this round.
-- Renderer infrastructure header dependency moves and runtime input header forward declarations remain parent-reviewed.
+- none. This slice is parent-owned and does not start a new sidecar.
+- `renderer.h` public facade pImpl conversion and implementation-only renderer pass dependencies remain parent-reviewed.
 
 Rules for this round:
 
@@ -1670,7 +1663,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-06-01 Renderer Infrastructure and Runtime Input Header Boundary Cleanup.
+Round: 2026-06-01 Renderer Facade PImpl Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1678,21 +1671,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: remove complete camera/scene/mesh/shader/core/camera-control headers from renderer infrastructure and runtime input public headers where they are only needed by implementation; keep value-member and enum dependencies intact.
+- Current local implementation target for this slice: move `Renderer` private render-state/pass members behind an implementation object so `renderer.h` no longer exposes concrete render pass, queue, shadow renderer, shader library, frame state, framebuffer target, light, camera, mesh, scene, or GL core headers.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- Read-only sidecar `Pauli` audited renderer/runtime/engine public headers, changed no files, and recommended `RuntimeInputController.h` as the smallest safe pointer-only follow-up.
-- Parent accepted Pauli's `RuntimeInputController.h` recommendation and implemented it locally; no sidecar had write ownership.
+- No new sidecar subagent is started in this round; the renderer facade pImpl cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `renderer/RenderQueue.h`, `renderer/RenderQueue.cpp`, `renderer/ShadowRenderer.h`, `renderer/ShadowRenderer.cpp`, `renderer/ShaderLibrary.h`, `renderer/ShaderLibrary.cpp`, `renderer/PBRShadowAtlasRenderTargets.h`, `renderer/PBRShadowAtlasRenderTargets.cpp`, `application/RuntimeInputController.h`, docs, and logs.
+- Parent-owned write scope for this round: `renderer/renderer.h`, `renderer/renderer.cpp`, runtime/editor explicit include call sites, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Renderer Infrastructure and Runtime Input header cleanup accepted read-only sidecar `Pauli`'s `RuntimeInputController.h` recommendation; all source edits were parent-owned.
 - Previous round's PBR Deferred Lighting Grid header cleanup was parent-owned and had no delegated write scope.
 - Previous round's PBR Shadow Atlas Render Pass header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Scene Render Pass header cleanup was parent-owned and had no delegated write scope.

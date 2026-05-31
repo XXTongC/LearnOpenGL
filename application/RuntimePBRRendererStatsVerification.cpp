@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 
+#include "../renderer/RendererFrameStats.h"
 #include "../renderer/renderer.h"
 #include "../tools/Logger/LogManager.h"
 #include "AppRuntimeContext.h"

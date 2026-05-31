@@ -5,6 +5,7 @@
 
 #include "RuntimeVerificationConfig.h"
 #include "../framework/geometry.h"
+#include "../framework/scene.h"
 #include "../materials/pbrMaterial/PBRMaterial.h"
 #include "../mesh/mesh.h"
 #include "../renderer/renderer.h"

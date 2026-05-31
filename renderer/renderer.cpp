@@ -1,16 +1,75 @@
 #include "renderer.h"
 
+#include "core.h"
+#include "framework/geometry.h"
+#include "framework/scene.h"
+#include "framework/shader.h"
+#include "framework/texture.h"
+#include "mesh/mesh.h"
+#include "renderer/EnvironmentRenderTargets.h"
 #include "renderer/EnvironmentProfile.h"
+#include "renderer/FrameRenderState.h"
+#include "renderer/IBLDebugPass.h"
+#include "renderer/IBLPrecomputePass.h"
+#include "renderer/PBRDepthPrepass.h"
+#include "renderer/PBRDeferredClusteredLightDebugPass.h"
+#include "renderer/PBRDeferredLightingPass.h"
+#include "renderer/PBRDeferredTiledLightDebugPass.h"
+#include "renderer/PBRGBufferDebugPass.h"
+#include "renderer/PBRGBufferPass.h"
+#include "renderer/PBRGBufferRenderTargets.h"
+#include "renderer/PBRSceneRenderPass.h"
+#include "renderer/PBRShadowAtlasRenderPass.h"
+#include "renderer/PBRShadowAtlasRenderTargets.h"
+#include "renderer/RenderQueue.h"
 #include "renderer/RendererFrameContext.h"
 #include "renderer/RendererFramePassRegistry.h"
+#include "renderer/RendererFramePassProfile.h"
+#include "renderer/RendererFrameStats.h"
+#include "renderer/RendererGpuTimerQueryPool.h"
+#include "renderer/SceneRenderPass.h"
+#include "renderer/ShaderLibrary.h"
+#include "renderer/ShadowRenderer.h"
 
 using namespace GLframework;
 
-Renderer::Renderer()
+struct Renderer::Impl
 {
-	mShaderLibrary.initialize();
-	mEnvironmentRenderTargets.initialize();
+	Impl()
+	{
+		shaderLibrary.initialize();
+		environmentRenderTargets.initialize();
+	}
+
+	ShaderLibrary shaderLibrary{};
+	FrameRenderState frameRenderState{};
+	RenderQueue renderQueue{};
+	ShadowRenderer shadowRenderer{};
+	SceneRenderPass sceneRenderPass{};
+	PBRDepthPrepass pbrDepthPrepass{};
+	PBRGBufferPass pbrGBufferPass{};
+	PBRDeferredLightingPass pbrDeferredLightingPass{};
+	PBRDeferredTiledLightDebugPass pbrDeferredTiledLightDebugPass{};
+	PBRDeferredClusteredLightDebugPass pbrDeferredClusteredLightDebugPass{};
+	PBRGBufferDebugPass pbrGBufferDebugPass{};
+	PBRSceneRenderPass pbrSceneRenderPass{};
+	IBLDebugPass iblDebugPass{};
+	PBRShadowAtlasRenderPass pbrShadowAtlasPass{};
+	PBRShadowAtlasRenderTargets pbrShadowAtlasTargets{};
+	PBRGBufferRenderTargets pbrGBufferTargets{};
+	EnvironmentRenderTargets environmentRenderTargets{};
+	IBLPrecomputePass iblPrecomputePass{};
+	RendererGpuTimerQueryPool gpuTimerQueries{};
+	RendererFrameStats lastFrameStats{};
+	RendererFramePassProfile framePassProfile{};
+};
+
+Renderer::Renderer()
+	: mImpl(std::make_unique<Impl>())
+{
 }
+
+Renderer::~Renderer() = default;
 
 void Renderer::setClearColor(glm::vec3 color)
 {
@@ -19,52 +78,52 @@ void Renderer::setClearColor(glm::vec3 color)
 
 std::shared_ptr<Shader> Renderer::getShader(MaterialType type)
 {
-	return mShaderLibrary.get(type);
+	return mImpl->shaderLibrary.get(type);
 }
 
 std::shared_ptr<Shader> Renderer::getIBLCaptureShader() const
 {
-	return mShaderLibrary.getEquirectangularToCubemapShader();
+	return mImpl->shaderLibrary.getEquirectangularToCubemapShader();
 }
 
 std::shared_ptr<Shader> Renderer::getIBLBrdfLutShader() const
 {
-	return mShaderLibrary.getBrdfLutShader();
+	return mImpl->shaderLibrary.getBrdfLutShader();
 }
 
 const EnvironmentRenderTargets& Renderer::getEnvironmentRenderTargets() const
 {
-	return mEnvironmentRenderTargets;
+	return mImpl->environmentRenderTargets;
 }
 
 EnvironmentRenderTargets& Renderer::getEnvironmentRenderTargets()
 {
-	return mEnvironmentRenderTargets;
+	return mImpl->environmentRenderTargets;
 }
 
 const IBLPrecomputePass& Renderer::getIBLPrecomputePass() const
 {
-	return mIblPrecomputePass;
+	return mImpl->iblPrecomputePass;
 }
 
 IBLPrecomputePass& Renderer::getIBLPrecomputePass()
 {
-	return mIblPrecomputePass;
+	return mImpl->iblPrecomputePass;
 }
 
 const RendererFrameStats& Renderer::getLastFrameStats() const
 {
-	return mLastFrameStats;
+	return mImpl->lastFrameStats;
 }
 
 const RendererFramePassProfile& Renderer::getFramePassProfile() const
 {
-	return mFramePassProfile;
+	return mImpl->framePassProfile;
 }
 
 RendererFramePassProfile& Renderer::getFramePassProfile()
 {
-	return mFramePassProfile;
+	return mImpl->framePassProfile;
 }
 
 bool Renderer::precomputeEnvironment(
@@ -73,29 +132,29 @@ bool Renderer::precomputeEnvironment(
 	const std::shared_ptr<Mesh>& brdfQuad
 )
 {
-	mEnvironmentRenderTargets.setPrecomputedEnvironment(false);
+	mImpl->environmentRenderTargets.setPrecomputedEnvironment(false);
 
-	if (!mIblPrecomputePass.captureEnvironmentMap(equirectangularMap, mEnvironmentRenderTargets, captureCube, mShaderLibrary))
+	if (!mImpl->iblPrecomputePass.captureEnvironmentMap(equirectangularMap, mImpl->environmentRenderTargets, captureCube, mImpl->shaderLibrary))
 	{
 		return false;
 	}
 
-	if (!mIblPrecomputePass.computeIrradianceMap(mEnvironmentRenderTargets, captureCube, mShaderLibrary))
+	if (!mImpl->iblPrecomputePass.computeIrradianceMap(mImpl->environmentRenderTargets, captureCube, mImpl->shaderLibrary))
 	{
 		return false;
 	}
 
-	if (!mIblPrecomputePass.computePrefilterMap(mEnvironmentRenderTargets, captureCube, mShaderLibrary))
+	if (!mImpl->iblPrecomputePass.computePrefilterMap(mImpl->environmentRenderTargets, captureCube, mImpl->shaderLibrary))
 	{
 		return false;
 	}
 
-	if (!mIblPrecomputePass.computeBrdfLut(mEnvironmentRenderTargets, brdfQuad, mShaderLibrary))
+	if (!mImpl->iblPrecomputePass.computeBrdfLut(mImpl->environmentRenderTargets, brdfQuad, mImpl->shaderLibrary))
 	{
 		return false;
 	}
 
-	mEnvironmentRenderTargets.setPrecomputedEnvironment(true);
+	mImpl->environmentRenderTargets.setPrecomputedEnvironment(true);
 	return true;
 }
 
@@ -133,9 +192,9 @@ void Renderer::render(
 	unsigned int fbo
 )
 {
-	mLastFrameStats = {};
-	mPbrShadowAtlasTargets.resetFrameStats();
-	mGpuTimerQueries.beginFrame(mFramePassProfile.rendererGpuTimingEnabled, mLastFrameStats);
+	mImpl->lastFrameStats = {};
+	mImpl->pbrShadowAtlasTargets.resetFrameStats();
+	mImpl->gpuTimerQueries.beginFrame(mImpl->framePassProfile.rendererGpuTimingEnabled, mImpl->lastFrameStats);
 	RendererFrameContext frameContext{
 		scene,
 		camera,
@@ -145,32 +204,32 @@ void Renderer::render(
 		ambient,
 		mGlobalMaterial,
 		fbo,
-		&mFrameRenderState,
-		&mRenderQueue,
-		&mShadowRenderer,
-		&mSceneRenderPass,
-		&mPbrDepthPrepass,
-		&mPbrGBufferPass,
-		&mPbrDeferredLightingPass,
-		&mPbrDeferredTiledLightDebugPass,
-		&mPbrDeferredClusteredLightDebugPass,
-		&mPbrGBufferDebugPass,
-		&mPbrSceneRenderPass,
-		&mIblDebugPass,
-		&mPbrShadowAtlasPass,
-		&mPbrShadowAtlasTargets,
-		&mPbrGBufferTargets,
-		&mShaderLibrary,
-		&mEnvironmentRenderTargets,
-		&mFramePassProfile,
-		&mGpuTimerQueries,
-		&mLastFrameStats
+		&mImpl->frameRenderState,
+		&mImpl->renderQueue,
+		&mImpl->shadowRenderer,
+		&mImpl->sceneRenderPass,
+		&mImpl->pbrDepthPrepass,
+		&mImpl->pbrGBufferPass,
+		&mImpl->pbrDeferredLightingPass,
+		&mImpl->pbrDeferredTiledLightDebugPass,
+		&mImpl->pbrDeferredClusteredLightDebugPass,
+		&mImpl->pbrGBufferDebugPass,
+		&mImpl->pbrSceneRenderPass,
+		&mImpl->iblDebugPass,
+		&mImpl->pbrShadowAtlasPass,
+		&mImpl->pbrShadowAtlasTargets,
+		&mImpl->pbrGBufferTargets,
+		&mImpl->shaderLibrary,
+		&mImpl->environmentRenderTargets,
+		&mImpl->framePassProfile,
+		&mImpl->gpuTimerQueries,
+		&mImpl->lastFrameStats
 	};
 
 	const auto passPlan = RendererFramePassRegistry::buildPassPlan(
 		mGlobalMaterial
-			? mFramePassProfile.globalMaterialOverridePassOrder
-			: mFramePassProfile.defaultPassOrder
+			? mImpl->framePassProfile.globalMaterialOverridePassOrder
+			: mImpl->framePassProfile.defaultPassOrder
 	);
 	for (const auto* pass : passPlan)
 	{
@@ -179,5 +238,5 @@ void Renderer::render(
 			RendererFramePassRegistry::executePass(*pass, frameContext);
 		}
 	}
-	mGpuTimerQueries.endFrame(mLastFrameStats);
+	mImpl->gpuTimerQueries.endFrame(mImpl->lastFrameStats);
 }

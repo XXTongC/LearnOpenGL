@@ -1,6 +1,9 @@
 #include "RuntimeProfileLoader.h"
 
 #include "AppRuntimeContext.h"
+#include "../renderer/EnvironmentProfile.h"
+#include "../renderer/PostProcessSettings.h"
+#include "../renderer/RendererFramePassProfile.h"
 #include "../renderer/renderer.h"
 #include "../tools/Logger/LogManager.h"
 

@@ -12,6 +12,7 @@
 #include "../engine/PersistentIdPolicy.h"
 #include "../engine/ScenePackage.h"
 #include "../engine/World.h"
+#include "../framework/scene.h"
 #include "../tools/Logger/LogManager.h"
 #include "AppRuntimeContext.h"
 
