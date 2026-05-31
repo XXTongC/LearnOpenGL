@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "../../materials/pbrMaterial/PBRMaterial.h"
+#include "../../materials/pbrMaterial/PBRMaterialProfile.h"
 #include "../../third_party/glm/glm.hpp"
 
 namespace GL_EDITOR

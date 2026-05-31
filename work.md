@@ -8844,3 +8844,25 @@ Subagent 审查：
 
 - 这是 PBR experiment profile header boundary cleanup，不改变 experiment profile 文件格式、enabled gate、prefix mapping、material profile reference apply、light/camera/preview profile 行为、runtime profile loading、Engine World verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 Engine/scene setup public headers 的低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 PBR Material Profile Header Extraction
+
+本轮继续 scene setup/profile public header include audit，不扩张 PBR 功能。审计确认：`PBRPreviewProfile.h` 只需要 `PBRMaterialProfile` 与 `PBRMaterialProfileStorage`，却直接 include 完整 `PBRMaterial.h`，导致 preview profile 用户间接获得 runtime material、texture slot、Material base class 等实现面。
+
+新增与修改：
+
+- 新增 `materials/pbrMaterial/PBRMaterialProfile.h`，集中承载 `PBRMaterialProfile` 与 `PBRMaterialProfileStorage`，只保留 `glm` 值类型、`std::string` 路径接口、`PBRMaterial` 前置声明和 `PropertyBuilder` 前置声明。
+- `PBRMaterial.h` 改为 include `PBRMaterialProfile.h`，自身只保留真实 runtime `PBRMaterial`、texture slot 和 uniform slot API。
+- `PBRPreviewProfile.h` 改为 include `PBRMaterialProfile.h`，不再为了 preview config by-value material preset 暴露完整 runtime material 行为头。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 profile header。
+
+已完成验证：
+
+- 静态检查确认 `PBRPreviewProfile.h` 不再 include `PBRMaterial.h`，完整 material API 依赖保留在 `PBRMaterial.cpp`、scene setup implementation、renderer/material binder 和真实材质读取调用点。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,texture-set,deferred-texture-set,showcase-spheres,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `PBRMaterial.cpp`、`PBRPreviewProfile.cpp`、`PBRExperimentProfile.cpp`、`DebugControllerPanel.cpp` 与相关 runtime/profile paths。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBR material profile header extraction，不改变 material profile schema、material preset 文件格式、preview profile 字段、texture set 场景、showcase 场景、Engine World verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 Engine/scene setup public headers 的低风险 include audit，或回到 application composition root 显式依赖收敛；当前仍不建议继续扩张 PBR 功能。

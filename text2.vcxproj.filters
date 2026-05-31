@@ -1418,6 +1418,9 @@
     <ClInclude Include="materials\pbrMaterial\PBRMaterial.h">
       <Filter>include\GLframework\material\pbrMaterial</Filter>
     </ClInclude>
+    <ClInclude Include="materials\pbrMaterial\PBRMaterialProfile.h">
+      <Filter>include\GLframework\material\pbrMaterial</Filter>
+    </ClInclude>
     <ClInclude Include="light\light.h">
       <Filter>include\GLframework\light</Filter>
     </ClInclude>
