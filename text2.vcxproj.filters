@@ -402,6 +402,9 @@
     <ClCompile Include="application\RuntimeApplicationGraphicsStartupLifecycle.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationConfig.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeApplicationConfigPolicy.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>

@@ -474,7 +474,8 @@ public:
 264. Runtime GUI Host Types Header Extraction 已完成第一版：新增 `RuntimeGuiHostTypes.h` 承载 GUI init/frame context；`RuntimeGuiHost.h` 收敛为 host facade，不再传播 `<functional>` 或 DTO 字段，实际 GUI context 构造/读取依赖集中到 editor lifecycle 和 GUI host implementation。
 265. Runtime Graphics Lifecycle Types Header Extraction 已完成第一版：新增 `RuntimeGraphicsLifecycleTypes.h` 承载 graphics lifecycle config；`RuntimeGraphicsLifecycle.h` 收敛为 graphics facade，只 forward declare config，实际 config 构造/字段读取依赖集中到 config policy、graphics startup 和 lifecycle implementation。
 266. Runtime Frame Lifecycle State Owner Boundary Cleanup 已完成第一版：`RuntimeFrameLifecycleState.h` 不再 include `RuntimeFrameClock.h` 或暴露 frame clock/count/capture fields；完整 state layout 由 `RuntimeFrameLifecycleState.cpp` 通过 PImpl 拥有，frame lifecycle implementation 通过访问器 reset/tick/count/capture。
-267. 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+267. Runtime Application Config Backend Key Default Boundary Cleanup 已完成第一版：`RuntimeApplicationConfig.h` 不再 include `RuntimeRendererBackendKeys.h`；默认 renderer backend key 由 `RuntimeApplicationConfig.cpp` 的 shell config 默认构造函数设置，backend key helper 依赖局部化到 config implementation 和实际 backend selection/verification override 使用点。
+268. 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

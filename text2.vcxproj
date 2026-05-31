@@ -165,6 +165,7 @@
     <ClCompile Include="application\RuntimeApplicationFrameRunBridge.cpp" />
     <ClCompile Include="application\RuntimeApplicationFrameStartupLifecycle.cpp" />
     <ClCompile Include="application\RuntimeApplicationGraphicsStartupLifecycle.cpp" />
+    <ClCompile Include="application\RuntimeApplicationConfig.cpp" />
     <ClCompile Include="application\RuntimeApplicationConfigPolicy.cpp" />
     <ClCompile Include="application\RuntimeApplicationEntry.cpp" />
     <ClCompile Include="application\RuntimeApplicationRunner.cpp" />

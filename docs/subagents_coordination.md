@@ -36,7 +36,7 @@ Current phase:
 - `RendererBackend.h` now owns only the renderer backend interface contract and forward declares `RendererFrameIntent` / `RendererFrameResult`; complete frame DTO definitions live in `RendererBackendFrameTypes.h` and are included by concrete backend implementations that read or construct them.
 - `RendererBackendRegistryTypes.h` owns renderer backend registry metadata: `RendererBackendAttachmentDesc`, `RendererBackendRegistration`, and `RendererBackendSelection`.
 - Renderer backend registry/catalog/factory metadata paths no longer need the full `RendererBackend.h` interface header unless they create, own, or invoke a concrete backend.
-- `RuntimeRendererBackendKeys.h` owns lightweight runtime/default/no-op backend key helpers, so config, verification args, and factory implementation do not need to include the catalog/registry API just to compare or store backend keys.
+- `RuntimeRendererBackendKeys.h` owns lightweight runtime/default/no-op backend key helpers; application config default construction, verification args, catalog, and factory use it locally without making `RuntimeApplicationConfig.h` propagate the helper.
 - `RuntimeWindowLifecycleTypes.h` owns window lifecycle DTOs (`RuntimeWindowConfig`, `RuntimeWindowSnapshot`, and `RuntimeWindowCallbackContext`), so application config and snapshot-only startup code do not need the full window lifecycle behavior header or `AppRuntimeContext.h`.
 - `RuntimeFrameClockTypes.h` owns `RuntimeFrameClockConfig`, so application config does not need the full frame clock behavior header or `<chrono>` just to store frame timing options.
 - `RuntimeFrameLifecycleConfig.h` owns frame lifecycle config separately from `RuntimeFrameLifecycleState.h`, and `RuntimeFrameLifecycleState.h` now hides `RuntimeFrameClock` behind an implementation owner; config/state users no longer receive the clock behavior header or `<chrono>` through these lifecycle DTO boundaries.
@@ -187,17 +187,14 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Runtime Frame Lifecycle State Owner Boundary Cleanup
+### Current Round: Runtime Application Config Backend Key Default Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `application/RuntimeFrameLifecycleState.h`
-- `application/RuntimeFrameLifecycleState.cpp`
-- `application/RuntimeFrameLifecycle.cpp`
-- `application/RuntimeApplicationState.h`
-- `application/RuntimeFrameLifecycle.h`
+- `application/RuntimeApplicationConfig.h`
+- `application/RuntimeApplicationConfig.cpp`
 - `text2.vcxproj`
 - `text2.vcxproj.filters`
 - `docs/subagents_coordination.md`
@@ -210,7 +207,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Runtime frame lifecycle state owner cleanup and project registration remain parent-reviewed.
+- Runtime application config backend key default cleanup and project registration remain parent-reviewed.
 
 Rules for this round:
 
@@ -1667,7 +1664,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-06-01 Runtime Frame Lifecycle State Owner Boundary Cleanup.
+Round: 2026-06-01 Runtime Application Config Backend Key Default Boundary Cleanup.
 
 Parent local work:
 
@@ -1675,20 +1672,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: hide `RuntimeFrameClock`, rendered-frame count, and verification capture flag layout behind `RuntimeFrameLifecycleState` PImpl while keeping frame lifecycle behavior in `RuntimeFrameLifecycle.cpp`.
+- Current local implementation target for this slice: move the default renderer backend key selection out of `RuntimeApplicationConfig.h` into `RuntimeApplicationConfig.cpp`, so the config data header no longer propagates `RuntimeRendererBackendKeys.h`.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the runtime frame lifecycle state owner cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the runtime application config backend key default cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `application/RuntimeFrameLifecycleState.h`, `application/RuntimeFrameLifecycleState.cpp`, `application/RuntimeFrameLifecycle.cpp`, `application/RuntimeApplicationState.h`, `application/RuntimeFrameLifecycle.h`, `text2.vcxproj`, `text2.vcxproj.filters`, docs, and logs.
+- Parent-owned write scope for this round: `application/RuntimeApplicationConfig.h`, `application/RuntimeApplicationConfig.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Runtime Frame Lifecycle State owner cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Graphics Lifecycle Types header extraction was parent-owned and had no delegated write scope.
 - Previous round's Runtime GUI Host Types header extraction was parent-owned and had no delegated write scope.
 - Previous round's Runtime Window Lifecycle header cleanup was parent-owned and had no delegated write scope.

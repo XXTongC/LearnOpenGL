@@ -8688,3 +8688,25 @@ Subagent 审查：
 
 - 这是 runtime frame lifecycle state owner boundary cleanup，不改变 frame clock fixed-delta policy、rendered frame counting、verification max-frame stop、verification capture flag、runtime frame pipeline、Engine World verification、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Application Config Backend Key Default Boundary Cleanup
+
+本轮继续 application shell/config/runner 显式依赖收敛，不扩张 PBR 功能。审计确认：`RuntimeApplicationConfig.h` 为了 `RuntimeApplicationShellConfig::rendererBackendKey` 的默认值直接 include `RuntimeRendererBackendKeys.h`。这让所有需要 shell config 数据形状的路径也间接看到 renderer backend key policy helper，而默认 backend 选择本质上是 config implementation/policy 细节。
+
+新增与修改：
+
+- `RuntimeApplicationConfig.h` 移除 `RuntimeRendererBackendKeys.h` include。
+- `RuntimeApplicationShellConfig` 增加 out-of-line 默认构造函数，`rendererBackendKey` 字段保留为普通 `std::string` 数据字段。
+- 新增 `RuntimeApplicationConfig.cpp`，显式 include `RuntimeRendererBackendKeys.h` 并在默认构造函数中设置 `RuntimeRendererBackendKeys::defaultBackendKey()`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 implementation 文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationConfig.h` 不再引用 `RuntimeRendererBackendKeys`，默认 backend key helper 只在 config implementation、catalog/factory 和 verification args 的实际使用点出现。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeApplicationConfig.cpp`、config policy、entry/runner/shell、window startup、content config policy 与 verification args。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime application config backend key default boundary cleanup，不改变 default runtime renderer backend、no-op backend verification override、shell config argument parsing、runtime frame pipeline、Engine World verification、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
