@@ -2,9 +2,13 @@
 
 #include <memory>
 
-#include "camera/camera.h"
-#include "materials/screenMaterial.h"
-#include "renderer/FrameRenderTargets.h"
+class Camera;
+
+namespace GLframework
+{
+	class FrameRenderTargets;
+	class ScreenMaterial;
+}
 
 namespace GL_RUNTIME
 {

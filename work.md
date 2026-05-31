@@ -8574,3 +8574,25 @@ Subagent 审查：
 
 - 这是 runtime editor lifecycle state owner boundary cleanup，不改变 selection 初始化、edit transaction state、debug/controller panels、Engine World editor create verification、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续 application/editor composition root 显式依赖收敛，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Viewport Header Boundary Cleanup
+
+本轮继续 application/editor composition root 显式依赖收敛，不扩张 PBR 功能。审计确认：`RuntimeViewport.h` 只是提供 viewport/resize facade 与 resize context，但仍直接 include `camera/camera.h`、`materials/screenMaterial.h` 和 `renderer/FrameRenderTargets.h`，会让只调用 `applyViewport()` 的 GUI/graphics startup 路径也间接依赖 camera、post-process material 与 frame target 完整实现。
+
+新增与修改：
+
+- `RuntimeViewport.h` 改为只 forward declare 全局 `Camera`、`GLframework::FrameRenderTargets` 与 `GLframework::ScreenMaterial`，public API 保留指针、引用和 `std::shared_ptr` 契约。
+- `RuntimeViewport.cpp` 显式 include `camera/perspectivecamera.h`、`materials/screenMaterial.h` 与 `renderer/FrameRenderTargets.h`，完整 resize/camera/post-process input texture 操作依赖集中到实现文件。
+- focused build 暴露 `RuntimeGuiHost.cpp` 之前依赖 `RuntimeViewport.h` 间接获得 GLFW 函数声明；已在 `RuntimeGuiHost.cpp` 显式 include `third_party/GLFW/glfw3.h`，把 `glfwGetFramebufferSize()` 的依赖放回实际使用点。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeViewport.h` 不再传播 camera/material/frame target 完整实现头，`RuntimeViewport.cpp` 与 `RuntimeGuiHost.cpp` 在使用点显式 include 完整依赖。
+- 首次 focused verification build 失败，原因是移除传递 include 后 `RuntimeGuiHost.cpp` 缺少 `glfwGetFramebufferSize()` 声明；已补充显式 GLFW include 后修复。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeGuiHost.cpp`、`RuntimeViewport.cpp` 与 `RuntimeWindowLifecycle.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime viewport public header boundary cleanup，不改变 viewport apply、resize acceptance、camera aspect sync、post-process input texture sync、GUI frame rendering、Engine World verification、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续 application composition root 的窗口/GUI/viewport 依赖显式化，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。

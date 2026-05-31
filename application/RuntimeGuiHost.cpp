@@ -1,5 +1,6 @@
 #include "RuntimeGuiHost.h"
 
+#include "../third_party/GLFW/glfw3.h"
 #include "../third_party/imgui/imgui.h"
 #include "../third_party/imgui/imgui_impl_glfw.h"
 #include "../third_party/imgui/imgui_impl_opengl3.h"

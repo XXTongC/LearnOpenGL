@@ -469,7 +469,8 @@ public:
 259. Editor Selection State Header Extraction 已完成第一版：新增 `EditorSelectionState.h` 承载 selection context 与 edit transaction log，`RuntimeEditorLifecycleState.h` 不再为了持有 editor state include 完整 `EditorPanels.h`；`EditorPanels.h` 收敛为 panel context/draw facade，selection helper 声明随 state 窄头提供。
 260. Editor Diagnostics Context Header Extraction 已完成第一版：新增 `DebugControllerContext.h` 与 `EngineDiagnosticsContext.h` 承载 debug/diagnostics DTO；`DebugControllerPanel.h` 与 `EngineDiagnosticsPanel.h` 收敛为 draw facade，只 forward declare context，实际构造/字段读取依赖集中到 implementation 和 coordinator。
 261. Runtime Editor Lifecycle State Owner Boundary Cleanup 已完成第一版：`RuntimeEditorLifecycleState.h` 不再 include `EditorSelectionState.h` 或暴露 selection/transaction 字段；完整 `SelectionContext` 与 `EditTransactionLog` 由 `RuntimeEditorLifecycleState.cpp` 通过 PImpl 拥有，runtime editor lifecycle 通过访问器取得引用。
-262. 下一步建议继续 application/editor composition root 显式依赖收敛，或转向 Engine public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+262. Runtime Viewport Header Boundary Cleanup 已完成第一版：`RuntimeViewport.h` 不再 include 完整 camera、screen material 或 frame render targets headers，只 forward declare resize/viewport facade 参数类型；实际 camera aspect、post-process texture sync 和 GLFW framebuffer size 依赖集中到实现文件使用点。
+263. 下一步建议继续 application composition root 的窗口/GUI/viewport 依赖显式化，或转向 Engine public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

@@ -2,6 +2,8 @@
 
 #include "GL_ERROR_FIND.h"
 #include "camera/perspectivecamera.h"
+#include "materials/screenMaterial.h"
+#include "renderer/FrameRenderTargets.h"
 
 using namespace GL_RUNTIME;
 
