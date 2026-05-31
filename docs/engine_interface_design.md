@@ -488,7 +488,8 @@ public:
 278. Legacy Experiment Runner Private State PIMPL Cleanup 已完成第一版：`LegacyExperimentRunner.h` 不再暴露 solar system / orbiting point light 私有状态布局、历史实验 enable flags 或 `Object` 依赖，完整历史实验状态由 `.cpp` 中的 `Impl` 拥有。
 279. Runtime Frame Clock Private State PIMPL Cleanup 已完成第一版：`RuntimeFrameClock.h` 不再传播 `<chrono>` 或 `RuntimeFrameClockTypes.h`，完整 steady-clock time point 与 tick state 由 `.cpp` 中的 `Impl` 拥有。
 280. Application Header Boundary Cleanup 已完成第一版：`Application.h` 不再传播 `texture.h`、`Logger.h` 或未使用的 `extern Logger logger`，窗口/application facade 只保留 callback、window 和 lifecycle API。
-281. 下一步建议继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+281. Assimp Instance Loader GLM Header Boundary Cleanup 已完成第一版：`assimpInstanceLoader.h` 不再传播完整 `glm.hpp`，只保留 `glm/fwd.hpp` 与 `const glm::mat4&` 参数契约；完整矩阵定义和 instanced matrix 写入依赖局部化到 implementation。
+282. 下一步建议继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

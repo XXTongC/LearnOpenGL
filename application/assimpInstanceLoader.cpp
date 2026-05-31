@@ -9,6 +9,7 @@
 #include "../framework/texture.h"
 #include "../mesh/instancedMesh.h"
 #include "../renderer/renderer.h"
+#include "../third_party/glm/glm.hpp"
 #include "third_party/assimp/Importer.hpp"
 #include "third_party/assimp/postprocess.h"
 #include "third_party/assimp/scene.h"
@@ -49,7 +50,7 @@ namespace
 	);
 }
 
-void AssimpInstanceLoader::setInstanceMaterial(std::shared_ptr<GLframework::Object> obj, std::shared_ptr < GLframework::Material > material)
+void AssimpInstanceLoader::setInstanceMaterial(std::shared_ptr<GLframework::Object> obj, std::shared_ptr<GLframework::Material> material)
 {
 	if (obj->getType() == ObjectType::InstancedMesh)
 	{
@@ -63,7 +64,7 @@ void AssimpInstanceLoader::setInstanceMaterial(std::shared_ptr<GLframework::Obje
 	}
 }
 
-void AssimpInstanceLoader::setInstanceMatrix(std::shared_ptr<GLframework::Object> obj, unsigned index, glm::mat4 matrix)
+void AssimpInstanceLoader::setInstanceMatrix(std::shared_ptr<GLframework::Object> obj, unsigned index, const glm::mat4& matrix)
 {
 	if(obj->getType()==ObjectType::InstancedMesh)
 	{

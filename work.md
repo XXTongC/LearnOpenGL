@@ -8998,3 +8998,25 @@ Subagent 审查：
 
 - 这是 application header boundary cleanup，不改变窗口创建、callback 绑定、cursor/window snapshot、frame loop、Engine tick、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root / runtime context state 的依赖边界收敛，优先审计 remaining runtime state/config headers 的 implementation detail exposure；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Assimp Instance Loader GLM Header Boundary Cleanup
+
+本轮继续 application/legacy import public header include surface 收敛，不扩张 PBR 功能。审计确认：`assimpInstanceLoader.h` 只为了 `glm::mat4` 参数直接 include 完整 `glm.hpp`，但矩阵实际计算和写入只发生在 `assimpInstanceLoader.cpp`；这会让所有 legacy instanced import 调用点间接获得完整 GLM implementation surface。
+
+新增与修改：
+
+- `assimpInstanceLoader.h` 改为 include `third_party/glm/fwd.hpp`，不再传播完整 `glm.hpp`。
+- `AssimpInstanceLoader::setInstanceMatrix(...)` 的 matrix 参数由 by-value 改为 `const glm::mat4&`，保持只读传入语义并避免 public header 需要完整矩阵定义。
+- `assimpInstanceLoader.cpp` 显式 include `third_party/glm/glm.hpp`，把矩阵完整定义、递归写入和 Assimp transform 转换依赖集中到 implementation。
+- 顺手统一 `setInstanceMaterial(...)` 声明/定义中的 `std::shared_ptr<GLframework::Material>` spacing，不改变函数签名含义。
+
+已完成验证：
+
+- 静态检查确认 `assimpInstanceLoader.h` 只保留 `glm/fwd.hpp`，完整 `glm.hpp` 只保留在 `assimpInstanceLoader.cpp`，`setInstanceMatrix(...)` 声明/定义一致。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `assimpInstanceLoader.cpp` 与 `LegacyExperimentRunner.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Assimp instance loader GLM header boundary cleanup，不改变 instanced model loading、grass legacy experiment matrix assignment、material assignment、Engine World verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root / runtime context state 依赖边界收敛，优先审计 remaining runtime state/config headers 的 implementation detail exposure；当前仍不建议继续扩张 PBR 功能。
