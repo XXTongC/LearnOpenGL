@@ -1,9 +1,42 @@
 #include "assimpLoader.h"
 
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "../framework/object.h"
+#include "../mesh/mesh.h"
+#include "../renderer/renderer.h"
+#include "third_party/assimp/Importer.hpp"
+#include "third_party/assimp/postprocess.h"
+#include "third_party/assimp/scene.h"
 #include "tools/tools.h"
 
 using namespace GLframework;
 using namespace GL_APPLICATION;
+
+namespace
+{
+	glm::mat4 getMat4f(aiMatrix4x4 value);
+
+	std::shared_ptr<Mesh> processMesh(
+		std::shared_ptr<Renderer> renderer,
+		aiMesh* aimesh,
+		const aiScene* scene,
+		const std::string& rootPath,
+		const AssimpMaterialImportOptions& materialOptions
+	);
+
+	void processNode(
+		std::shared_ptr<Renderer> renderer,
+		aiNode* ainode,
+		std::shared_ptr<Object> parent,
+		const aiScene* scene,
+		const std::string& rootPath,
+		const AssimpMaterialImportOptions& materialOptions
+	);
+}
 
 std::shared_ptr<Object> GL_APPLICATION::AssimpLoader::load(
 	const std::string& path,
@@ -51,7 +84,9 @@ std::shared_ptr<Object> GL_APPLICATION::AssimpLoader::load(
 	return rootNode;
 }
 
-void AssimpLoader::processNode(
+namespace
+{
+void processNode(
 	std::shared_ptr<Renderer> renderer,
 	aiNode* ainode,
 	std::shared_ptr<Object> parent,
@@ -91,7 +126,7 @@ void AssimpLoader::processNode(
 	}
 }
 
-std::shared_ptr<Mesh> AssimpLoader::processMesh(
+std::shared_ptr<Mesh> processMesh(
 	std::shared_ptr<Renderer> renderer,
 	aiMesh* aimesh,
 	const aiScene* scene,
@@ -143,7 +178,7 @@ std::shared_ptr<Mesh> AssimpLoader::processMesh(
 }
 
 //transform Assimp::Mat4 to glm::Mat4
-glm::mat4 AssimpLoader::getMat4f(aiMatrix4x4 value)
+glm::mat4 getMat4f(aiMatrix4x4 value)
 {
 	glm::mat4 res(
 		value.a1, value.a2, value.a3, value.a4,
@@ -152,4 +187,5 @@ glm::mat4 AssimpLoader::getMat4f(aiMatrix4x4 value)
 		value.d1, value.d2, value.d3, value.d4
 	);
 	return res;
+}
 }

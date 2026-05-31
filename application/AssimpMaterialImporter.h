@@ -3,8 +3,13 @@
 #include <memory>
 #include <string>
 
-#include "materials/material.h"
-#include "third_party/assimp/scene.h"
+struct aiMesh;
+struct aiScene;
+
+namespace GLframework
+{
+	class Material;
+}
 
 namespace GL_APPLICATION
 {

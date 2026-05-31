@@ -8866,3 +8866,26 @@ Subagent 审查：
 
 - 这是 PBR material profile header extraction，不改变 material profile schema、material preset 文件格式、preview profile 字段、texture set 场景、showcase 场景、Engine World verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 Engine/scene setup public headers 的低风险 include audit，或回到 application composition root 显式依赖收敛；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Assimp Loader Public Header Boundary Cleanup
+
+本轮继续 application/legacy import public header include audit，不扩张 PBR 功能。审计确认：`assimpLoader.h` 与 `assimpInstanceLoader.h` 公开传播 `core.h`、`object.h`、Assimp importer/scene/postprocess、mesh、renderer、texture、shader 等实现细节；`AssimpMaterialImporter.h` 也为了指针参数直接 include 完整 `materials/material.h` 与 Assimp scene header。
+
+新增与修改：
+
+- `AssimpMaterialImporter.h` 改为 forward declare `aiMesh`、`aiScene` 与 `GLframework::Material`，完整 material/Assimp scene 依赖下沉到 `AssimpMaterialImporter.cpp`。
+- `assimpLoader.h` 只保留 public load contract、`Object` / `Renderer` 前置声明和 material import options，不再暴露 Assimp node/mesh helper、renderer/mesh/texture/shader/core 实现头。
+- `assimpLoader.cpp` 显式 include object/mesh/renderer/Assimp implementation 头，并把原 class private static `processNode(...)`、`processMesh(...)`、`getMat4f(...)` 下沉为匿名命名空间 helper。
+- `assimpInstanceLoader.h` 只保留 public instanced import/edit contract、`Object` / `Renderer` / `Material` 前置声明和 `glm::mat4` 参数所需轻量头，不再暴露 Assimp、InstancedMesh、Texture 或 renderer 实现头。
+- `assimpInstanceLoader.cpp` 显式 include object/texture/instanced mesh/renderer/Assimp implementation 头，并把原 class private static `processNode(...)`、`processInstanceMesh(...)`、`processTexture(...)`、`getMat4f(...)` 下沉为匿名命名空间 helper。
+
+已完成验证：
+
+- 静态检查确认 `AssimpMaterialImporter.h` 不再 include full material/Assimp scene 头，`assimpLoader.h` / `assimpInstanceLoader.h` 不再传播 Assimp importer/scene/postprocess、mesh、renderer、texture 或 shader 实现头；完整 import helper 依赖集中到 `.cpp`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `AssimpMaterialImporter.cpp`、`assimpLoader.cpp`、`assimpInstanceLoader.cpp`、runtime imported asset verification 和 legacy experiment lifecycle。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Assimp loader public header boundary cleanup，不改变 Assimp load behavior、legacy import path、instanced grass import path、PBR imported asset verification、scene package、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root / runtime context state 的依赖边界收敛，或继续 Engine/scene setup public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。

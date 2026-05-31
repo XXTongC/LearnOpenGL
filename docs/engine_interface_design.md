@@ -482,7 +482,8 @@ public:
 272. PBR Light Rig Profile Header Boundary Cleanup 已完成第一版：`PBRLightRigProfile.h` 不再 include 完整 light 行为头，只保留 `glm` 值类型和 light 参数前置声明；实际 ambient/directional/spot/point light 创建、字段读写和 point shadow count 更新依赖局部化到 `PBRLightRigProfile.cpp`。
 273. PBR Experiment Profile Header Boundary Cleanup 已完成第一版：`PBRExperimentProfile.h` 不再 include 完整 environment/postprocess/preview/light/camera profile 头，只保留 storage facade 和引用参数前置声明；实际 profile 复制、PropertyBuilder 构造和 config 读写依赖局部化到 `PBRExperimentProfile.cpp`。
 274. PBR Material Profile Header Extraction 已完成第一版：新增 `PBRMaterialProfile.h` 承载 material profile/storage 窄接口；`PBRPreviewProfile.h` 不再为了 by-value material preset 传播完整 `PBRMaterial.h` runtime material 行为头。
-275. 下一步建议继续 Engine/scene setup public header 低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+275. Assimp Loader Public Header Boundary Cleanup 已完成第一版：`AssimpMaterialImporter.h`、`assimpLoader.h` 与 `assimpInstanceLoader.h` 不再传播 full material/Assimp/mesh/renderer/texture/shader implementation headers；import helper 细节局部化到 `.cpp`。
+276. 下一步建议继续 application composition root / runtime context state 依赖边界收敛，或继续 Engine/scene setup public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

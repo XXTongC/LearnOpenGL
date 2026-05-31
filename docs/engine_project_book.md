@@ -330,6 +330,7 @@ flowchart TD
 - PBR Light Rig Profile Header Boundary Cleanup 已完成第一版：`PBRLightRigProfile.h` 不再 include 完整 ambient/directional/point/spot light 行为头，只 forward declare light 参数类型并显式 include `glm` 值类型；实际 light 创建、字段读写和 point shadow count 更新依赖集中到 implementation。
 - PBR Experiment Profile Header Boundary Cleanup 已完成第一版：`PBRExperimentProfile.h` 不再 include 完整 environment/postprocess/preview/light/camera profile 头，只 forward declare 引用参数类型；实际 profile 复制、PropertyBuilder 构造、material profile reference apply 和 config 读写依赖集中到 implementation。
 - PBR Material Profile Header Extraction 已完成第一版：新增 `PBRMaterialProfile.h` 承载 material profile/storage 窄接口，`PBRPreviewProfile.h` 不再为了 by-value material preset 传播完整 `PBRMaterial.h` runtime material 行为头。
+- Assimp Loader Public Header Boundary Cleanup 已完成第一版：`AssimpMaterialImporter.h`、`assimpLoader.h` 与 `assimpInstanceLoader.h` 不再传播 full material/Assimp/mesh/renderer/texture/shader implementation headers；import helper 细节集中到 implementation。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已完成第一版：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已完成第一版：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已完成第一版：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -388,6 +389,6 @@ flowchart TD
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 PBR Material Profile Header Extraction 后，下一步优先继续 Engine/scene setup public header 的低风险 include audit，或回到 application composition root 显式依赖收敛；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Assimp Loader Public Header Boundary Cleanup 后，下一步优先继续 application composition root / runtime context state 依赖边界收敛，或继续 Engine/scene setup public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：PBR Material Profile Header Extraction 已接入后，preview profile public header 不再为了 material preset 传播完整 runtime `PBRMaterial.h`；下一步继续 Engine/scene setup public header 低风险 include audit，但不扩张 PBR pass。
+当前最新修正：Assimp Loader Public Header Boundary Cleanup 已接入后，legacy/import loader public headers 不再传播 full Assimp/mesh/renderer/texture/shader implementation surface；下一步继续 application composition root / runtime context state 依赖边界收敛，但不扩张 PBR pass。

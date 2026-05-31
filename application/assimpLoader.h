@@ -1,51 +1,33 @@
 #pragma once
-#include "core.h"
-#include "object.h"
-#include "third_party/assimp/Importer.hpp"
-#include "third_party/assimp/scene.h"
-#include "third_party/assimp/postprocess.h"
-#include "mesh/mesh.h"
-#include "renderer.h"
-#include "texture.h"
-#include "shader.h"
+
+#include <memory>
+#include <string>
+
 #include "AssimpMaterialImporter.h"
+
+namespace GLframework
+{
+	class Object;
+	class Renderer;
+}
+
 namespace GL_APPLICATION
 {
-	using namespace GLframework;
 	class AssimpLoader
 	{
 	public:
-		static std::shared_ptr<Object> load(
+		static std::shared_ptr<GLframework::Object> load(
 			const std::string& path, 
-			std::shared_ptr<Renderer> renderer
+			std::shared_ptr<GLframework::Renderer> renderer
 		);
-		static std::shared_ptr<Object> load(
+		static std::shared_ptr<GLframework::Object> load(
 			const std::string& path,
-			std::shared_ptr<Renderer> renderer,
+			std::shared_ptr<GLframework::Renderer> renderer,
 			const AssimpMaterialImportOptions& materialOptions
 		);
-		static std::shared_ptr<Object> loadPBR(
+		static std::shared_ptr<GLframework::Object> loadPBR(
 			const std::string& path,
-			std::shared_ptr<Renderer> renderer
+			std::shared_ptr<GLframework::Renderer> renderer
 		);
-
-	private:
-		static void processNode(
-			std::shared_ptr<Renderer> renderer,
-			aiNode* ainode,std::shared_ptr<Object> parent,
-			const aiScene* scene,
-			const std::string& rootPath,
-			const AssimpMaterialImportOptions& materialOptions
-		);
-
-		static glm::mat4 getMat4f(aiMatrix4x4 value);
-
-		static std::shared_ptr<Mesh> processMesh(
-			std::shared_ptr<Renderer> renderer,aiMesh* aimesh,
-			const aiScene* scene, 
-			const std::string& rootPath,
-			const AssimpMaterialImportOptions& materialOptions
-		);
-		
 	};
 }

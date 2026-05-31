@@ -1,9 +1,12 @@
 #include "AssimpMaterialImporter.h"
 
 #include <algorithm>
+#include <cstdint>
+#include <initializer_list>
 
 #include "materials/pbrMaterial/PBRMaterial.h"
 #include "materials/phongMaterial.h"
+#include "third_party/assimp/scene.h"
 
 using namespace GL_APPLICATION;
 using namespace GLframework;

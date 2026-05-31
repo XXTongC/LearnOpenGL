@@ -1,9 +1,53 @@
 ﻿#include "assimpInstanceLoader.h"
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "../framework/object.h"
+#include "../framework/texture.h"
+#include "../mesh/instancedMesh.h"
+#include "../renderer/renderer.h"
+#include "third_party/assimp/Importer.hpp"
+#include "third_party/assimp/postprocess.h"
+#include "third_party/assimp/scene.h"
+
 #include "tools/tools.h"
 #include "materials/grassInstanceMaterial/grassInstanceMaterial.h"
 
 using namespace GLframework;
 using namespace GL_APPLICATION;
+
+namespace
+{
+	glm::mat4 getMat4f(aiMatrix4x4 value);
+
+	std::shared_ptr<Texture> processTexture(
+		const aiMaterial* aiMat,
+		const aiTextureType& type,
+		const aiScene* scene,
+		const std::string& rootPath,
+		const unsigned int& instanceCount
+	);
+
+	std::shared_ptr<InstancedMesh> processInstanceMesh(
+		std::shared_ptr<Renderer> renderer,
+		aiMesh* aimesh,
+		const aiScene* scene,
+		const std::string& rootPath,
+		const unsigned int& instanceCount
+	);
+
+	void processNode(
+		std::shared_ptr<Renderer> renderer,
+		aiNode* ainode,
+		std::shared_ptr<Object> parent,
+		const aiScene* scene,
+		const std::string& rootPath,
+		const unsigned int& instanceCount
+	);
+}
 
 void AssimpInstanceLoader::setInstanceMaterial(std::shared_ptr<GLframework::Object> obj, std::shared_ptr < GLframework::Material > material)
 {
@@ -77,7 +121,9 @@ std::shared_ptr<Object> GL_APPLICATION::AssimpInstanceLoader::load(
 	return rootNode;
 }
 
-void AssimpInstanceLoader::processNode(
+namespace
+{
+void processNode(
 	std::shared_ptr<Renderer> renderer,
 	aiNode* ainode, 
 	std::shared_ptr<Object> parent, 
@@ -116,7 +162,7 @@ void AssimpInstanceLoader::processNode(
 	}
 }
 
-std::shared_ptr<InstancedMesh> AssimpInstanceLoader::processInstanceMesh(
+std::shared_ptr<InstancedMesh> processInstanceMesh(
 	std::shared_ptr<Renderer> renderer,
 	aiMesh* aimesh,
 	const aiScene* scene, 
@@ -209,7 +255,7 @@ std::shared_ptr<InstancedMesh> AssimpInstanceLoader::processInstanceMesh(
 	return std::make_shared<InstancedMesh>(geometry, material,instanceCount);
 }
 
-std::shared_ptr<Texture> AssimpInstanceLoader::processTexture(
+std::shared_ptr<Texture> processTexture(
 	const aiMaterial* aiMat,
 	const aiTextureType& type,
 	const aiScene* scene, 
@@ -247,7 +293,7 @@ std::shared_ptr<Texture> AssimpInstanceLoader::processTexture(
 }
 
 //transform Assimp::Mat4 to glm::Mat4
-glm::mat4 AssimpInstanceLoader::getMat4f(aiMatrix4x4 value)
+glm::mat4 getMat4f(aiMatrix4x4 value)
 {
 	glm::mat4 res(
 		value.a1, value.a2, value.a3, value.a4,
@@ -256,4 +302,5 @@ glm::mat4 AssimpInstanceLoader::getMat4f(aiMatrix4x4 value)
 		value.d1, value.d2, value.d3, value.d4
 	);
 	return res;
+}
 }
