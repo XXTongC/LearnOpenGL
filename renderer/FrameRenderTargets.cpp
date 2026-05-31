@@ -1,5 +1,7 @@
 #include "FrameRenderTargets.h"
 
+#include "framebuffer/framebuffer.h"
+
 using namespace GLframework;
 
 void FrameRenderTargets::initialize(unsigned int width, unsigned int height, unsigned int samples)

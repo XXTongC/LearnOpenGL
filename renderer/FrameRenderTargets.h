@@ -2,10 +2,11 @@
 
 #include <memory>
 
-#include "framebuffer/framebuffer.h"
-
 namespace GLframework
 {
+	class Framebuffer;
+	class Texture;
+
 	class FrameRenderTargets
 	{
 	public:

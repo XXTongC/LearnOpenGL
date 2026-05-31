@@ -249,6 +249,7 @@ passed
 - Runtime Frame Pipeline Context Header Boundary Cleanup 已接入：`RuntimeFramePipeline.h` 与 `RuntimeFramePasses.h` 不再 include 完整 `AppRuntimeContext.h`，frame pipeline/pass public headers 只保留 runtime context/config forward declarations；实际读取 context/config 字段的 implementation 显式 include 完整头。
 - Runtime Frame Pass Registry Key String View Boundary Cleanup 已接入：`RuntimeFramePassRegistry.h` 的 pass key lookup 改为 `std::string_view`，registry public header 不再为了只读 key 查询 include `<string>`；trim/token 字符串处理保留在 implementation。
 - Engine Lifecycle Snapshot Header Boundary Cleanup 已接入：`Engine.h` 不再 include 完整 `EngineLifecycleSnapshot.h`，只 forward declare `EngineLifecycleSnapshot`；实际构造或读取快照字段的 `Engine.cpp`、Engine diagnostics panel 和 runtime verification report 显式 include 完整快照头。
+- Frame Render Targets Framebuffer Header Boundary Cleanup 已接入：`FrameRenderTargets.h` 不再 include 完整 `framebuffer/framebuffer.h`，只 forward declare `Framebuffer` / `Texture`；实际 FBO 创建、FBO id 查询和 attachment 访问集中到 `FrameRenderTargets.cpp`。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -309,6 +310,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Engine Lifecycle Snapshot Header Boundary Cleanup 已接入后，`Engine.h` 只保留 lifecycle snapshot 返回类型的 forward declaration，完整快照 DTO 依赖下沉到 `Engine.cpp` 与实际读取字段的 diagnostics/reporting translation units；下一步继续 Engine public header 低风险 include audit 或 runtime/renderer header surface audit；当前不建议继续扩张 PBR pass。
+当前最新修正：Frame Render Targets Framebuffer Header Boundary Cleanup 已接入后，`FrameRenderTargets.h` 只保留 framebuffer/texture 的 forward declarations，完整 FBO/texture 实现依赖下沉到 `FrameRenderTargets.cpp`；下一步继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Engine lifecycle snapshot header boundary cleanup 后，下一步优先继续 Engine public header 低风险 include audit 或 runtime/renderer header surface audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 FrameRenderTargets framebuffer header boundary cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
