@@ -1,5 +1,9 @@
 #include "PBRSurfaceResourceBinder.h"
 
+#include "framework/shader.h"
+#include "framework/texture.h"
+#include "materials/pbrMaterial/PBRMaterial.h"
+
 using namespace GLframework;
 
 namespace

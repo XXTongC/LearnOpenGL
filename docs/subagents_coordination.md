@@ -187,14 +187,14 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: PBR Shadow Resource Binder Header Boundary Cleanup
+### Current Round: PBR Surface Resource Binder Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `renderer/PBRShadowResourceBinder.h`
-- `renderer/PBRShadowResourceBinder.cpp`
+- `renderer/PBRSurfaceResourceBinder.h`
+- `renderer/PBRSurfaceResourceBinder.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -205,7 +205,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Shader and material binding context forward declarations plus explicit implementation includes remain parent-reviewed.
+- Shader and PBR material forward declarations plus explicit implementation includes remain parent-reviewed.
 
 Rules for this round:
 
@@ -1662,7 +1662,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-06-01 PBR Shadow Resource Binder Header Boundary Cleanup.
+Round: 2026-06-01 PBR Surface Resource Binder Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1670,20 +1670,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: remove complete shader and material binding context headers from `PBRShadowResourceBinder.h`; keep CSM shadow, point shadow atlas, camera, shader, and context dependencies in `PBRShadowResourceBinder.cpp`.
+- Current local implementation target for this slice: remove complete shader and PBR material headers from `PBRSurfaceResourceBinder.h`; keep surface uniform, texture slot, shader, material, and texture dependencies in `PBRSurfaceResourceBinder.cpp`.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the PBR Shadow Resource Binder Header Boundary Cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the PBR Surface Resource Binder Header Boundary Cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `renderer/PBRShadowResourceBinder.h`, `renderer/PBRShadowResourceBinder.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `renderer/PBRSurfaceResourceBinder.h`, `renderer/PBRSurfaceResourceBinder.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's PBR Shadow Resource Binder header cleanup was parent-owned and had no delegated write scope.
 - Previous round's PBR Object Uniform Binder header cleanup was parent-owned and had no delegated write scope.
 - Previous round's PBR Material Binder header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Material Binder header cleanup was parent-owned and had no delegated write scope.

@@ -8168,3 +8168,25 @@ Subagent 审查：
 
 - 这是 PBRShadowResourceBinder public include boundary cleanup，不改变 CSM / PBR shadow atlas / point shadow atlas resource binding、shader uniform layout、forward/deferred PBR 路径、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 PBR Surface Resource Binder Header Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit。审计确认：`PBRSurfaceResourceBinder.h` 只声明 PBR surface uniform/texture binding 入口，却为了一个 `bind(...)` 函数签名直接 include 完整 `framework/shader.h` 和 `PBRMaterial.h`。真正读取 material surface uniform slots、texture slots、alpha mask / channel fields 并写 shader uniform / texture binding 的逻辑全部在 `PBRSurfaceResourceBinder.cpp` 中，header 可以只保留参数类型前置声明。
+
+新增与修改：
+
+- `PBRSurfaceResourceBinder.h` 移除完整 shader 和 PBR material includes。
+- `PBRSurfaceResourceBinder.h` 新增 `Shader` 与 `PBRMaterial` forward declarations，保留现有 `bind(...)` public API。
+- `PBRSurfaceResourceBinder.cpp` 显式 include `framework/shader.h`、`framework/texture.h` 和 `materials/pbrMaterial/PBRMaterial.h`，因为 implementation 实际读取 material slot / texture API 并写 shader uniform。
+
+已完成验证：
+
+- 静态检查确认 `PBRSurfaceResourceBinder.h` 不再 include 完整 shader/PBR material headers，`PBRSurfaceResourceBinder.cpp` 显式 include 所需完整依赖。
+- 静态检查确认调用点集中在 `PBRMaterialBinder.cpp` 与 `PBRGBufferPass.cpp`，PBRSurfaceResourceBinder public API 未改名也未改变参数。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `PBRSurfaceResourceBinder.cpp`、`PBRMaterialBinder.cpp` 与 `PBRGBufferPass.cpp`；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBRSurfaceResourceBinder public include boundary cleanup，不改变 surface uniform / texture binding、alpha mask/channel uniform、shader uniform layout、forward/deferred PBR 路径、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
