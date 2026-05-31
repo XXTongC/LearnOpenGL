@@ -24,20 +24,64 @@
 
 namespace GL_EXPERIMENTS
 {
+	struct LegacyExperimentRunner::Impl
+	{
+		struct SolarSystemState
+		{
+			bool enabled{ false };
+			float speed{ 0.01f };
+			std::shared_ptr<GLframework::Object> roundForEarth{ nullptr };
+			std::shared_ptr<GLframework::Object> roundForVenus{ nullptr };
+			std::shared_ptr<GLframework::Object> roundForUranus{ nullptr };
+			std::shared_ptr<GLframework::Object> roundForSaturn{ nullptr };
+			std::shared_ptr<GLframework::Object> roundForNeptune{ nullptr };
+			std::shared_ptr<GLframework::Object> roundForJupiter{ nullptr };
+			std::shared_ptr<GLframework::Object> roundForMars{ nullptr };
+			std::shared_ptr<GLframework::Object> roundForMercury{ nullptr };
+			std::shared_ptr<GLframework::Object> roundForMoon{ nullptr };
+		};
+
+		struct OrbitingPointLightState
+		{
+			bool enabled{ false };
+			std::size_t lightIndex{ 0 };
+			float radius{ 3.0f };
+			float height{ 3.0f };
+		};
+
+		SolarSystemState solarSystem{};
+		OrbitingPointLightState orbitingPointLight{};
+		bool grassFieldEnabled{ false };
+		bool environmentSphereEnabled{ false };
+		bool csmPlaneEnabled{ false };
+		bool backpackEnabled{ false };
+		bool shadowPreviewEnabled{ false };
+	};
+
+	LegacyExperimentRunner::LegacyExperimentRunner()
+		: mImpl(std::make_unique<Impl>())
+	{
+	}
+
+	LegacyExperimentRunner::~LegacyExperimentRunner() = default;
+	LegacyExperimentRunner::LegacyExperimentRunner(LegacyExperimentRunner&&) noexcept = default;
+	LegacyExperimentRunner& LegacyExperimentRunner::operator=(LegacyExperimentRunner&&) noexcept = default;
+
 	void LegacyExperimentRunner::enableSolarSystem(RuntimeContext& context)
 	{
-		if (mSolarSystem.enabled) return;
+		auto& solarSystem = mImpl->solarSystem;
+		if (solarSystem.enabled) return;
 
-		mSolarSystem.enabled = true;
-		mSolarSystem.roundForEarth = std::make_shared<GLframework::Object>();
-		mSolarSystem.roundForVenus = std::make_shared<GLframework::Object>();
-		mSolarSystem.roundForUranus = std::make_shared<GLframework::Object>();
-		mSolarSystem.roundForSaturn = std::make_shared<GLframework::Object>();
-		mSolarSystem.roundForNeptune = std::make_shared<GLframework::Object>();
-		mSolarSystem.roundForJupiter = std::make_shared<GLframework::Object>();
-		mSolarSystem.roundForMars = std::make_shared<GLframework::Object>();
-		mSolarSystem.roundForMercury = std::make_shared<GLframework::Object>();
-		mSolarSystem.roundForMoon = std::make_shared<GLframework::Object>();
+		solarSystem.enabled = true;
+		solarSystem.roundForEarth = std::make_shared<GLframework::Object>();
+		solarSystem.roundForVenus = std::make_shared<GLframework::Object>();
+		solarSystem.roundForUranus = std::make_shared<GLframework::Object>();
+		solarSystem.roundForSaturn = std::make_shared<GLframework::Object>();
+		solarSystem.roundForNeptune = std::make_shared<GLframework::Object>();
+		solarSystem.roundForJupiter = std::make_shared<GLframework::Object>();
+		solarSystem.roundForMars = std::make_shared<GLframework::Object>();
+		solarSystem.roundForMercury = std::make_shared<GLframework::Object>();
+		solarSystem.roundForMoon = std::make_shared<GLframework::Object>();
 
 		const float distanceEarth = 10.0f;
 		const float sizeOfEarth = 1.0f;
@@ -70,36 +114,36 @@ namespace GL_EXPERIMENTS
 		auto earthNightSphere = createPlanet("Texture/solar system/2k_earth_nightmap.jpg", 1.0f, { distanceEarth + 0.001f, 0.0f, 0.0f });
 		auto mercurySphere = createPlanet("Texture/solar system/2k_mercury.jpg", 0.38f, { 0.38f * distanceEarth, 0.0f, 0.0f });
 
-		mSolarSystem.roundForVenus->addChild(venusSphere);
-		mSolarSystem.roundForUranus->addChild(uranusSphere);
-		mSolarSystem.roundForSaturn->addChild(saturnSphere);
-		mSolarSystem.roundForNeptune->addChild(neptuneSphere);
-		mSolarSystem.roundForJupiter->addChild(jupiterSphere);
-		mSolarSystem.roundForMars->addChild(marsSphere);
-		mSolarSystem.roundForMercury->addChild(mercurySphere);
+		solarSystem.roundForVenus->addChild(venusSphere);
+		solarSystem.roundForUranus->addChild(uranusSphere);
+		solarSystem.roundForSaturn->addChild(saturnSphere);
+		solarSystem.roundForNeptune->addChild(neptuneSphere);
+		solarSystem.roundForJupiter->addChild(jupiterSphere);
+		solarSystem.roundForMars->addChild(marsSphere);
+		solarSystem.roundForMercury->addChild(mercurySphere);
 
-		mSolarSystem.roundForEarth->addChild(earthSphere);
-		mSolarSystem.roundForEarth->addChild(earthNightSphere);
-		mSolarSystem.roundForEarth->addChild(mSolarSystem.roundForMoon);
-		mSolarSystem.roundForMoon->setPosition({ distanceEarth, 0.0f, 0.0f });
-		mSolarSystem.roundForMoon->addChild(moonSphere);
+		solarSystem.roundForEarth->addChild(earthSphere);
+		solarSystem.roundForEarth->addChild(earthNightSphere);
+		solarSystem.roundForEarth->addChild(solarSystem.roundForMoon);
+		solarSystem.roundForMoon->setPosition({ distanceEarth, 0.0f, 0.0f });
+		solarSystem.roundForMoon->addChild(moonSphere);
 
-		context.sceneOffScreen->addChild(mSolarSystem.roundForVenus);
-		context.sceneOffScreen->addChild(mSolarSystem.roundForUranus);
-		context.sceneOffScreen->addChild(mSolarSystem.roundForSaturn);
-		context.sceneOffScreen->addChild(mSolarSystem.roundForNeptune);
-		context.sceneOffScreen->addChild(mSolarSystem.roundForJupiter);
-		context.sceneOffScreen->addChild(mSolarSystem.roundForMars);
-		context.sceneOffScreen->addChild(mSolarSystem.roundForEarth);
-		context.sceneOffScreen->addChild(mSolarSystem.roundForMercury);
+		context.sceneOffScreen->addChild(solarSystem.roundForVenus);
+		context.sceneOffScreen->addChild(solarSystem.roundForUranus);
+		context.sceneOffScreen->addChild(solarSystem.roundForSaturn);
+		context.sceneOffScreen->addChild(solarSystem.roundForNeptune);
+		context.sceneOffScreen->addChild(solarSystem.roundForJupiter);
+		context.sceneOffScreen->addChild(solarSystem.roundForMars);
+		context.sceneOffScreen->addChild(solarSystem.roundForEarth);
+		context.sceneOffScreen->addChild(solarSystem.roundForMercury);
 		context.sceneOffScreen->addChild(sunSphere);
 	}
 
 	void LegacyExperimentRunner::enableGrassField(RuntimeContext& context, int rowCount, int columnCount)
 	{
-		if (mGrassFieldEnabled) return;
+		if (mImpl->grassFieldEnabled) return;
 
-		mGrassFieldEnabled = true;
+		mImpl->grassFieldEnabled = true;
 		context.grassMaterial = std::make_shared<GLframework::GrassInstanceMaterial>();
 		context.grassMaterial->mDiffuse = std::make_shared<GLframework::Texture>("fbx/textures/GRASS.PNG", 0);
 		context.grassMaterial->mOpacityMask = std::make_shared<GLframework::Texture>("fbx/textures/grassMask.png", 2);
@@ -131,13 +175,13 @@ namespace GL_EXPERIMENTS
 
 	void LegacyExperimentRunner::enableEnvironmentSphere(RuntimeContext& context)
 	{
-		if (mEnvironmentSphereEnabled) return;
+		if (mImpl->environmentSphereEnabled) return;
 		if (!context.skyBoxMesh) return;
 
 		auto skyBoxMaterial = std::dynamic_pointer_cast<GLframework::CubeSphereMaterial>(context.skyBoxMesh->getMaterial());
 		if (!skyBoxMaterial || !skyBoxMaterial->mDiffuse) return;
 
-		mEnvironmentSphereEnabled = true;
+		mImpl->environmentSphereEnabled = true;
 
 		auto earthMat = std::make_shared<GLframework::PhongEnvSphereMaterial>();
 		earthMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/solar system/2k_earth_daymap.jpg", 0);
@@ -166,9 +210,9 @@ namespace GL_EXPERIMENTS
 
 	void LegacyExperimentRunner::enableCsmPlane(RuntimeContext& context)
 	{
-		if (mCsmPlaneEnabled) return;
+		if (mImpl->csmPlaneEnabled) return;
 
-		mCsmPlaneEnabled = true;
+		mImpl->csmPlaneEnabled = true;
 		context.csmShadowMaterial = std::make_shared<GLframework::PhongCSMShadowMaterial>();
 		context.csmShadowMaterial->mDiffuse = std::make_shared<GLframework::Texture>("Texture/box.png", 0, GL_SRGB_ALPHA);
 
@@ -196,9 +240,9 @@ namespace GL_EXPERIMENTS
 
 	void LegacyExperimentRunner::enableBackpackModel(RuntimeContext& context)
 	{
-		if (mBackpackEnabled) return;
+		if (mImpl->backpackEnabled) return;
 
-		mBackpackEnabled = true;
+		mImpl->backpackEnabled = true;
 		auto backpack = GL_APPLICATION::AssimpLoader::load("fbx/bag/backpack.obj", context.renderer);
 		backpack->setScale(glm::vec3(1.0f));
 		GLframework::Tools::setModelBlend(backpack, true, 0.5f);
@@ -207,10 +251,10 @@ namespace GL_EXPERIMENTS
 
 	void LegacyExperimentRunner::enableShadowPreview(RuntimeContext& context)
 	{
-		if (mShadowPreviewEnabled) return;
+		if (mImpl->shadowPreviewEnabled) return;
 		if (!context.dirLight || !context.dirLight->getShadow()) return;
 
-		mShadowPreviewEnabled = true;
+		mImpl->shadowPreviewEnabled = true;
 
 		auto previewMaterial = std::make_shared<GLframework::PhongMaterial>();
 		context.dirLight->getShadow()->mRenderTarget->getDepthAttachment()->setUnit(2);
@@ -228,10 +272,10 @@ namespace GL_EXPERIMENTS
 
 	void LegacyExperimentRunner::enableOrbitingPointLight(std::size_t lightIndex, float radius, float height)
 	{
-		mOrbitingPointLight.enabled = true;
-		mOrbitingPointLight.lightIndex = lightIndex;
-		mOrbitingPointLight.radius = radius;
-		mOrbitingPointLight.height = height;
+		mImpl->orbitingPointLight.enabled = true;
+		mImpl->orbitingPointLight.lightIndex = lightIndex;
+		mImpl->orbitingPointLight.radius = radius;
+		mImpl->orbitingPointLight.height = height;
 	}
 
 	void LegacyExperimentRunner::update(RuntimeContext& context)
@@ -242,45 +286,47 @@ namespace GL_EXPERIMENTS
 
 	void LegacyExperimentRunner::updateSolarSystem()
 	{
-		if (!mSolarSystem.enabled) return;
+		auto& solarSystem = mImpl->solarSystem;
+		if (!solarSystem.enabled) return;
 
-		mSolarSystem.roundForVenus->rotateY(1.6022f * mSolarSystem.speed);
-		for (auto& child : mSolarSystem.roundForVenus->getChildren()) child->rotateY(mSolarSystem.speed * 10.0f);
+		solarSystem.roundForVenus->rotateY(1.6022f * solarSystem.speed);
+		for (auto& child : solarSystem.roundForVenus->getChildren()) child->rotateY(solarSystem.speed * 10.0f);
 
-		mSolarSystem.roundForUranus->rotateY(0.0117f * mSolarSystem.speed);
-		for (auto& child : mSolarSystem.roundForUranus->getChildren()) child->rotateY(mSolarSystem.speed * 10.0f);
+		solarSystem.roundForUranus->rotateY(0.0117f * solarSystem.speed);
+		for (auto& child : solarSystem.roundForUranus->getChildren()) child->rotateY(solarSystem.speed * 10.0f);
 
-		mSolarSystem.roundForEarth->rotateY(0.9863f * mSolarSystem.speed);
-		for (auto& child : mSolarSystem.roundForEarth->getChildren())
+		solarSystem.roundForEarth->rotateY(0.9863f * solarSystem.speed);
+		for (auto& child : solarSystem.roundForEarth->getChildren())
 		{
-			if (child->getType() == GLframework::ObjectType::Mesh) child->rotateY(mSolarSystem.speed * 10.0f);
+			if (child->getType() == GLframework::ObjectType::Mesh) child->rotateY(solarSystem.speed * 10.0f);
 		}
-		mSolarSystem.roundForMoon->rotateY(5.0f * mSolarSystem.speed);
+		solarSystem.roundForMoon->rotateY(5.0f * solarSystem.speed);
 
-		mSolarSystem.roundForJupiter->rotateY(0.08316f * mSolarSystem.speed);
-		for (auto& child : mSolarSystem.roundForJupiter->getChildren()) child->rotateY(mSolarSystem.speed * 10.0f);
+		solarSystem.roundForJupiter->rotateY(0.08316f * solarSystem.speed);
+		for (auto& child : solarSystem.roundForJupiter->getChildren()) child->rotateY(solarSystem.speed * 10.0f);
 
-		mSolarSystem.roundForMars->rotateY(0.5240f * mSolarSystem.speed);
-		for (auto& child : mSolarSystem.roundForMars->getChildren()) child->rotateY(mSolarSystem.speed * 10.0f);
+		solarSystem.roundForMars->rotateY(0.5240f * solarSystem.speed);
+		for (auto& child : solarSystem.roundForMars->getChildren()) child->rotateY(solarSystem.speed * 10.0f);
 
-		mSolarSystem.roundForSaturn->rotateY(0.0335f * mSolarSystem.speed);
-		for (auto& child : mSolarSystem.roundForSaturn->getChildren()) child->rotateY(mSolarSystem.speed * 10.0f);
+		solarSystem.roundForSaturn->rotateY(0.0335f * solarSystem.speed);
+		for (auto& child : solarSystem.roundForSaturn->getChildren()) child->rotateY(solarSystem.speed * 10.0f);
 
-		mSolarSystem.roundForMercury->rotateY(4.0927f * mSolarSystem.speed);
-		for (auto& child : mSolarSystem.roundForMercury->getChildren()) child->rotateY(mSolarSystem.speed * 10.0f);
+		solarSystem.roundForMercury->rotateY(4.0927f * solarSystem.speed);
+		for (auto& child : solarSystem.roundForMercury->getChildren()) child->rotateY(solarSystem.speed * 10.0f);
 
-		mSolarSystem.roundForNeptune->rotateY(0.0059f * mSolarSystem.speed);
-		for (auto& child : mSolarSystem.roundForNeptune->getChildren()) child->rotateY(mSolarSystem.speed * 10.0f);
+		solarSystem.roundForNeptune->rotateY(0.0059f * solarSystem.speed);
+		for (auto& child : solarSystem.roundForNeptune->getChildren()) child->rotateY(solarSystem.speed * 10.0f);
 	}
 
 	void LegacyExperimentRunner::updateOrbitingPointLight(RuntimeContext& context)
 	{
-		if (!mOrbitingPointLight.enabled) return;
-		if (mOrbitingPointLight.lightIndex >= context.pointLights.size()) return;
+		const auto& orbitingPointLight = mImpl->orbitingPointLight;
+		if (!orbitingPointLight.enabled) return;
+		if (orbitingPointLight.lightIndex >= context.pointLights.size()) return;
 
 		const double time = glfwGetTime();
-		const float x = static_cast<float>(mOrbitingPointLight.radius * glm::sin(time));
-		const float z = static_cast<float>(mOrbitingPointLight.radius * glm::cos(time));
-		context.pointLights[mOrbitingPointLight.lightIndex]->setPosition({ x, mOrbitingPointLight.height, z });
+		const float x = static_cast<float>(orbitingPointLight.radius * glm::sin(time));
+		const float z = static_cast<float>(orbitingPointLight.radius * glm::cos(time));
+		context.pointLights[orbitingPointLight.lightIndex]->setPosition({ x, orbitingPointLight.height, z });
 	}
 }

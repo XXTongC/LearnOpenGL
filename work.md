@@ -8932,3 +8932,25 @@ Subagent 审查：
 
 - 这是 legacy experiment runner implementation split，不改变历史实验开关 API、默认关闭策略、scene setup 调用点、orbiting light update、Assimp legacy import path、Engine World verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root / runtime context state 的依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Legacy Experiment Runner Private State PIMPL Cleanup
+
+本轮延续 legacy experiment 隔离方向，不扩张 PBR 功能。上一轮已经把历史实验实现迁入 `.cpp`，但 `LegacyExperimentRunner.h` 仍暴露 solar system / orbiting point light 私有状态布局，以及 `GLframework::Object` 前置声明；这些状态只是 runner 内部缓存，不应成为 public header ABI 和 include surface 的一部分。
+
+新增与修改：
+
+- `LegacyExperimentRunner.h` 新增显式构造、析构、移动构造和移动赋值声明，禁用拷贝。
+- `LegacyExperimentRunner.h` 改为只保留 `struct Impl; std::unique_ptr<Impl> mImpl;`，不再暴露 `SolarSystemState`、`OrbitingPointLightState`、历史实验 enable flag 或 `GLframework::Object` 私有布局。
+- `LegacyExperimentRunner.cpp` 定义 `LegacyExperimentRunner::Impl`，集中拥有 solar system object handles、orbiting point light 配置和 grass/environment/CSM/backpack/shadow preview enable state。
+- `enableSolarSystem(...)`、各实验 enable 函数和 update 函数改为通过 `mImpl` 访问内部状态，保持原行为和默认关闭策略不变。
+
+已完成验证：
+
+- 静态检查确认旧成员 `mSolarSystem`、`mOrbitingPointLight`、各 enable flag 和 header 中的 `GLframework::Object` 依赖不再暴露，私有状态定义只保留在 `LegacyExperimentRunner.cpp`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeApplicationState.cpp`、`RuntimeLegacyExperimentLifecycle.cpp` 和 `LegacyExperimentRunner.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 legacy experiment runner private state PIMPL cleanup，不改变历史实验开关 API、太阳系更新、orbiting point light update、legacy import path、Engine World verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。

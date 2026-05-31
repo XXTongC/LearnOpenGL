@@ -9,7 +9,6 @@ namespace GLframework
 	class DirectionalLight;
 	class GrassInstanceMaterial;
 	class Mesh;
-	class Object;
 	class PhongCSMShadowMaterial;
 	class PointLight;
 	class Renderer;
@@ -33,6 +32,14 @@ namespace GL_EXPERIMENTS
 	class LegacyExperimentRunner
 	{
 	public:
+		LegacyExperimentRunner();
+		~LegacyExperimentRunner();
+
+		LegacyExperimentRunner(const LegacyExperimentRunner&) = delete;
+		LegacyExperimentRunner& operator=(const LegacyExperimentRunner&) = delete;
+		LegacyExperimentRunner(LegacyExperimentRunner&&) noexcept;
+		LegacyExperimentRunner& operator=(LegacyExperimentRunner&&) noexcept;
+
 		void enableSolarSystem(RuntimeContext& context);
 		void enableGrassField(RuntimeContext& context, int rowCount, int columnCount);
 		void enableEnvironmentSphere(RuntimeContext& context);
@@ -43,38 +50,10 @@ namespace GL_EXPERIMENTS
 		void update(RuntimeContext& context);
 
 	private:
-		struct SolarSystemState
-		{
-			bool enabled{ false };
-			float speed{ 0.01f };
-			std::shared_ptr<GLframework::Object> roundForEarth{ nullptr };
-			std::shared_ptr<GLframework::Object> roundForVenus{ nullptr };
-			std::shared_ptr<GLframework::Object> roundForUranus{ nullptr };
-			std::shared_ptr<GLframework::Object> roundForSaturn{ nullptr };
-			std::shared_ptr<GLframework::Object> roundForNeptune{ nullptr };
-			std::shared_ptr<GLframework::Object> roundForJupiter{ nullptr };
-			std::shared_ptr<GLframework::Object> roundForMars{ nullptr };
-			std::shared_ptr<GLframework::Object> roundForMercury{ nullptr };
-			std::shared_ptr<GLframework::Object> roundForMoon{ nullptr };
-		};
-
-		struct OrbitingPointLightState
-		{
-			bool enabled{ false };
-			std::size_t lightIndex{ 0 };
-			float radius{ 3.0f };
-			float height{ 3.0f };
-		};
-
 		void updateSolarSystem();
 		void updateOrbitingPointLight(RuntimeContext& context);
 
-		SolarSystemState mSolarSystem{};
-		OrbitingPointLightState mOrbitingPointLight{};
-		bool mGrassFieldEnabled{ false };
-		bool mEnvironmentSphereEnabled{ false };
-		bool mCsmPlaneEnabled{ false };
-		bool mBackpackEnabled{ false };
-		bool mShadowPreviewEnabled{ false };
+		struct Impl;
+		std::unique_ptr<Impl> mImpl;
 	};
 }

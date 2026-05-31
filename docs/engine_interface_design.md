@@ -485,7 +485,8 @@ public:
 275. Assimp Loader Public Header Boundary Cleanup 已完成第一版：`AssimpMaterialImporter.h`、`assimpLoader.h` 与 `assimpInstanceLoader.h` 不再传播 full material/Assimp/mesh/renderer/texture/shader implementation headers；import helper 细节局部化到 `.cpp`。
 276. Material Types Header Extraction 已完成第一版：新增 `MaterialTypes.h` 承载 `MaterialType` / `PreStencilType`；`ShaderLibrary.h` 不再为了 shader map key 传播完整 `material.h`。
 277. Legacy Experiment Runner Implementation Split 已完成第一版：`LegacyExperimentRunner` 不再是 header-only，历史实验构建/更新逻辑迁入 `.cpp`，public header 只保留 `RuntimeContext`、实验 API 声明和类型前置声明。
-278. 下一步建议继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+278. Legacy Experiment Runner Private State PIMPL Cleanup 已完成第一版：`LegacyExperimentRunner.h` 不再暴露 solar system / orbiting point light 私有状态布局、历史实验 enable flags 或 `Object` 依赖，完整历史实验状态由 `.cpp` 中的 `Impl` 拥有。
+279. 下一步建议继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 
