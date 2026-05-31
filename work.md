@@ -8212,3 +8212,26 @@ Subagent 审查：
 
 - 这是 PBRIBLResourceBinder public include boundary cleanup，不改变 `useIBL` 判断、IBL strength uniforms、irradiance/prefilter/BRDF LUT texture binding、shader uniform layout、forward/deferred PBR 路径、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Shadow Resource Binder Header Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit。审计确认：`ShadowResourceBinder.h` 只声明 legacy/PBR 共用的 CSM shadow、point shadow 和 directional fallback shadow resource binding 入口，却直接 include 完整 `camera/camera.h`、`framework/shader.h`、`directionalLight.h` 与 `pointLight.h`。真正读取 camera near/far、directional/point light 字段、shadow render target、point shadow camera 和 shader uniform 的逻辑全部在 `ShadowResourceBinder.cpp` 中，header 可以只保留参数类型前置声明。
+
+新增与修改：
+
+- `ShadowResourceBinder.h` 移除完整 camera、shader、directional light 和 point light includes。
+- `ShadowResourceBinder.h` 新增全局 `Camera` forward declaration，并在 `GLframework` namespace 内新增 `Shader`、`DirectionalLight` 和 `PointLight` forward declarations；现有 `bindCSMShadowResources(...)`、`bindPointShadowResources(...)` 与 `bindDirectionalFallbackShadow(...)` public API 不变。
+- `ShadowResourceBinder.cpp` 显式 include `camera/camera.h`、`framework/shader.h`、`light/directionalLight.h` 和 `light/pointLight.h`，因为 implementation 实际读取 camera/light/shader API。
+
+已完成验证：
+
+- 静态检查确认 `ShadowResourceBinder.h` 不再 include 完整 camera/shader/light headers，`ShadowResourceBinder.cpp` 显式 include 所需完整依赖。
+- 初次 focused build 暴露 `Camera` 属于全局 namespace 而不是 `GLframework` namespace；已修正为全局 `class Camera;`，避免 `MaterialBinder.cpp` / `PBRShadowResourceBinder.cpp` 的 `Camera*` 二义性。
+- 静态检查确认调用点集中在 `MaterialBinder.cpp` 与 `PBRShadowResourceBinder.cpp`，ShadowResourceBinder public API 未改名也未改变参数。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,forward-no-atlas,deferred,deferred-no-atlas,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `MaterialBinder.cpp`、`PBRShadowResourceBinder.cpp` 与 `ShadowResourceBinder.cpp`；七条 focused verification mode 全部通过，并覆盖 no-atlas fallback 路径。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 ShadowResourceBinder public include boundary cleanup，不改变 CSM shadow resource binding、point shadow resource binding、directional fallback shadow uniform、legacy material shadow path、PBR no-atlas fallback path、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

@@ -262,6 +262,7 @@ passed
 - PBR Shadow Resource Binder Header Boundary Cleanup 已接入：`PBRShadowResourceBinder.h` 不再 include 完整 `framework/shader.h` 或 `MaterialBindingContext.h`，只 forward declare 参数类型；实际 CSM shadow、PBR shadow atlas、point shadow atlas、camera 和 shader uniform 依赖集中到 `PBRShadowResourceBinder.cpp`。
 - PBR Surface Resource Binder Header Boundary Cleanup 已接入：`PBRSurfaceResourceBinder.h` 不再 include 完整 `framework/shader.h` 或 `PBRMaterial.h`，只 forward declare 参数类型；实际 surface uniform、texture slot、texture binding 和 shader/material 依赖集中到 `PBRSurfaceResourceBinder.cpp`。
 - PBR IBL Resource Binder Header Boundary Cleanup 已接入：`PBRIBLResourceBinder.h` 不再 include 完整 `framework/shader.h` 或 `PBRMaterial.h`，只 forward declare shader、PBR material 和 environment targets 参数类型；实际 IBL readiness 判断、IBL float slot、environment target 和 texture binding 依赖集中到 `PBRIBLResourceBinder.cpp`。
+- Shadow Resource Binder Header Boundary Cleanup 已接入：`ShadowResourceBinder.h` 不再 include 完整 `camera/camera.h`、`framework/shader.h`、`directionalLight.h` 或 `pointLight.h`，只 forward declare 全局 `Camera` 以及 shader/light 参数类型；实际 CSM、point shadow、fallback directional shadow、shader uniform 和 light/camera 字段读取依赖集中到 `ShadowResourceBinder.cpp`。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -322,6 +323,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：PBR IBL Resource Binder Header Boundary Cleanup 已接入后，`PBRIBLResourceBinder.h` 只保留 shader、PBR material 和 environment targets 参数类型前置声明，完整 IBL readiness、IBL float slot 与 texture binding 依赖下沉到 `PBRIBLResourceBinder.cpp`；下一步继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+当前最新修正：Shadow Resource Binder Header Boundary Cleanup 已接入后，`ShadowResourceBinder.h` 只保留全局 `Camera`、shader、directional light 和 point light 参数类型前置声明，完整 CSM/point/fallback shadow resource binding 依赖下沉到 `ShadowResourceBinder.cpp`；下一步继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 PBR IBL resource binder header boundary cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Shadow resource binder header boundary cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。

@@ -2,6 +2,10 @@
 
 #include <string>
 
+#include "camera/camera.h"
+#include "framework/shader.h"
+#include "light/directionalLight.h"
+#include "light/pointLight.h"
 #include "light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
 
