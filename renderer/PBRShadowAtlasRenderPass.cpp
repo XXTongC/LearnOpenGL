@@ -2,10 +2,16 @@
 
 #include <algorithm>
 
+#include "camera/camera.h"
 #include "camera/perspectivecamera.h"
+#include "framework/shader.h"
+#include "light/directionalLight.h"
+#include "light/pointLight.h"
 #include "light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
+#include "mesh/mesh.h"
 #include "renderer/PBRAlphaShadowBinder.h"
+#include "renderer/ShaderLibrary.h"
 #include "renderer/ShadowMeshDraw.h"
 #include "tools/tools.h"
 

@@ -8347,3 +8347,26 @@ Subagent 审查：
 
 - 这是 legacy `SceneRenderPass` public include boundary cleanup，不改变 legacy material fallback、render state application、shader lookup、MaterialBinder binding、MeshDraw indexed draw、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 PBR Shadow Atlas Render Pass Header Boundary Cleanup
+
+本轮继续 renderer header surface audit。审计确认：`PBRShadowAtlasRenderPass.h` 为了 shadow atlas render pass 的函数签名直接 include 完整 `camera/camera.h`、directional/point light、mesh 和 shader library headers；但 public header 实际只需要 atlas stats/render-target 类型、`Camera*`、`std::shared_ptr<Mesh>`、light shared pointers 和 `ShaderLibrary&` 参数声明。真正读取 camera near/far、light shadow、mesh model matrix、alpha-mask shadow bind、shader uniforms、framebuffer layer 和 point cubemap face 的逻辑全部在 `PBRShadowAtlasRenderPass.cpp`。
+
+新增与修改：
+
+- `PBRShadowAtlasRenderPass.h` 移除完整 `camera/camera.h`、`light/directionalLight.h`、`light/pointLight.h`、`mesh/mesh.h` 与 `renderer/ShaderLibrary.h` includes。
+- `PBRShadowAtlasRenderPass.h` 保留 `renderer/PBRShadowAtlasRenderTargets.h`，因为 public API 返回 `PBRShadowAtlasStats` 并传递 `PBRShadowAtlasRenderTargets&`。
+- `PBRShadowAtlasRenderPass.h` 新增全局 `Camera` forward declaration，以及 `DirectionalLight`、`PointLight`、`Mesh` 与 `ShaderLibrary` forward declarations。
+- `PBRShadowAtlasRenderPass.cpp` 显式 include camera、directional/point light、mesh、shader 和 shader library 完整依赖，保持 CSM/point atlas 渲染实现依赖局部化。
+
+已完成验证：
+
+- 静态检查确认 `PBRShadowAtlasRenderPass.h` 不再 include 完整 camera/light/mesh/shader dependency headers，完整依赖均下沉到 `PBRShadowAtlasRenderPass.cpp`。
+- 静态检查确认调用点集中在 `renderer.h` pass 成员、`RendererFrameContext.h` 前置声明、`RendererFramePassRegistry.cpp` pass include 以及 `PBRShadowAtlasRenderPass.cpp` implementation definitions。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,forward-no-atlas,deferred,deferred-no-atlas,deferred-alpha-mask,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `PBRShadowAtlasRenderPass.cpp`；八条 focused verification mode 全部通过，并覆盖 atlas/no-atlas、deferred atlas binding、alpha-mask shadow draw、runtime frame pipeline、no-op backend 和 Engine World scene package 证据。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 `PBRShadowAtlasRenderPass` public include boundary cleanup，不改变 shadow atlas target prepare、CSM cascade generation、point shadow cubemap face rendering、alpha-masked shadow branch、shadow draw statistics、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

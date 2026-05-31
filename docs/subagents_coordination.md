@@ -187,14 +187,14 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Scene Render Pass Header Boundary Cleanup
+### Current Round: PBR Shadow Atlas Render Pass Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `renderer/SceneRenderPass.h`
-- `renderer/SceneRenderPass.cpp`
+- `renderer/PBRShadowAtlasRenderPass.h`
+- `renderer/PBRShadowAtlasRenderPass.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -205,7 +205,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Legacy scene pass parameter forward declarations plus implementation-only material/mesh/context/shader includes remain parent-reviewed.
+- PBR shadow atlas render pass parameter forward declarations plus implementation-only camera/light/mesh/shader includes remain parent-reviewed.
 
 Rules for this round:
 
@@ -1662,7 +1662,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-06-01 Scene Render Pass Header Boundary Cleanup.
+Round: 2026-06-01 PBR Shadow Atlas Render Pass Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1670,20 +1670,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: remove complete material, mesh, material binding context, shader, and shader library headers from the legacy `SceneRenderPass` public header; keep actual material lookup, shader binding, render state, and mesh draw dependencies in the implementation file.
+- Current local implementation target for this slice: remove complete camera, light, mesh, shader, and shader library headers from the `PBRShadowAtlasRenderPass` public header while keeping `PBRShadowAtlasRenderTargets.h` for stats/target types; keep actual CSM/point shadow atlas rendering and alpha-mask shadow dependencies in the implementation file.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the Scene Render Pass Header Boundary Cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the PBR Shadow Atlas Render Pass Header Boundary Cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `renderer/SceneRenderPass.h`, `renderer/SceneRenderPass.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `renderer/PBRShadowAtlasRenderPass.h`, `renderer/PBRShadowAtlasRenderPass.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Scene Render Pass header cleanup was parent-owned and had no delegated write scope.
 - Previous round's PBR Draw Pass header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Draw Helper Debug Quad header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Shadow Render Pass header cleanup was parent-owned and had no delegated write scope.

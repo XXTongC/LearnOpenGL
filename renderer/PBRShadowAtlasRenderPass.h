@@ -3,15 +3,17 @@
 #include <memory>
 #include <vector>
 
-#include "camera/camera.h"
-#include "light/directionalLight.h"
-#include "light/pointLight.h"
-#include "mesh/mesh.h"
 #include "renderer/PBRShadowAtlasRenderTargets.h"
-#include "renderer/ShaderLibrary.h"
+
+class Camera;
 
 namespace GLframework
 {
+	class DirectionalLight;
+	class Mesh;
+	class PointLight;
+	class ShaderLibrary;
+
 	class PBRShadowAtlasRenderPass
 	{
 	public:
