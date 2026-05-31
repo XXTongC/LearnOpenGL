@@ -4,7 +4,6 @@
 #include <string>
 
 #include "engine/PersistentIdPolicy.h"
-#include "engine/Transform.h"
 
 namespace GLframework
 {
@@ -16,6 +15,7 @@ namespace GLengine
 {
 	class AssetRegistry;
 	class Level;
+	struct Transform;
 	class World;
 
 	struct LegacySceneImportStats

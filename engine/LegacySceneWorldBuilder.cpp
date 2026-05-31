@@ -10,6 +10,7 @@
 #include "engine/Level.h"
 #include "engine/PersistentIdPolicy.h"
 #include "engine/SceneComponent.h"
+#include "engine/Transform.h"
 #include "engine/World.h"
 #include "framework/object.h"
 #include "framework/scene.h"

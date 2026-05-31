@@ -2,8 +2,6 @@
 
 #include <memory>
 
-#include "engine/Transform.h"
-
 namespace GLframework
 {
 	class Object;
@@ -14,6 +12,7 @@ namespace GLengine
 {
 	class Level;
 	class World;
+	struct Transform;
 
 	struct WorldLegacySceneExportStats
 	{

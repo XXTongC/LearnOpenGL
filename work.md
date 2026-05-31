@@ -7791,3 +7791,25 @@ Subagent 审查：
 
 - 这是 Engine Level actor public header boundary cleanup，不改变 World/Level/Actor ownership semantics、spawnActor 行为、scene package/import verification、Engine World verification、renderer backend contract 或 PBR pass。
 - 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到通用 renderer backend contract/header surface audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Engine Legacy Scene Transform Header Boundary Cleanup
+
+本轮继续 Engine public header 的低风险 include audit。审计确认：`LegacySceneWorldBuilder.h` 和 `WorldLegacySceneExporter.h` 为了声明 transform 参数/返回类型直接 include 完整 `Transform.h`，但完整 transform 字段访问只发生在 import/export implementation 内。更窄边界是：public headers 只 forward declare `Transform`，完整 `Transform.h` 依赖下沉到 `.cpp`。
+
+新增与修改：
+
+- `LegacySceneWorldBuilder.h` 移除 `Transform.h` include，新增 `struct Transform;` forward declaration，保留 `makeTransform(...)` facade。
+- `WorldLegacySceneExporter.h` 移除 `Transform.h` include，新增 `struct Transform;` forward declaration，保留 `applyTransform(...)` facade。
+- `LegacySceneWorldBuilder.cpp` 与 `WorldLegacySceneExporter.cpp` 显式 include `Transform.h`，因为 implementation 读取/写入 transform location/rotation/scale 字段。
+
+已完成验证：
+
+- 静态检查确认 legacy scene public headers 不再 include `Transform.h`，implementation 显式 include 完整 `Transform.h`。
+- 静态检查确认当前 `WorldDrivenSceneSetup.cpp` 和 `RuntimeEngineWorldVerification.cpp` 等实际构造 `Transform` 的调用点仍显式 include `Transform.h`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,import,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `LegacySceneWorldBuilder.cpp`、`WorldLegacySceneExporter.cpp`、scene setup pipeline 和 Engine World verification 相关实现；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine legacy scene transform public header boundary cleanup，不改变 legacy scene import/export semantics、Transform 数据结构、Engine World minimal scene、scene package/import verification、renderer backend contract 或 PBR pass。
+- 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到通用 renderer backend contract/header surface audit；当前仍不建议继续扩张 PBR 功能。
