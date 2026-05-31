@@ -2,10 +2,13 @@
 
 #include <array>
 
+#include "camera/camera.h"
+#include "framework/shader.h"
 #include "light/directionalLight.h"
 #include "light/pointLight.h"
 #include "light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
 #include "light/shadow/pointLightShadow/pointLightShadow.h"
+#include "renderer/MaterialBindingContext.h"
 #include "renderer/PBRShadowAtlasRenderTargets.h"
 #include "renderer/ShadowResourceBinder.h"
 

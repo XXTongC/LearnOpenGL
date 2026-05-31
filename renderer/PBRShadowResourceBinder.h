@@ -2,11 +2,11 @@
 
 #include <memory>
 
-#include "framework/shader.h"
-#include "renderer/MaterialBindingContext.h"
-
 namespace GLframework
 {
+	struct MaterialBindingContext;
+	class Shader;
+
 	enum class PBRShadowResourceSource
 	{
 		None,
