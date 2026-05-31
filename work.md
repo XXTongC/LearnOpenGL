@@ -8911,3 +8911,24 @@ Subagent 审查：
 
 - 这是 material type header extraction，不改变 material enum values、shader lookup behavior、Material state behavior、renderer frame pipeline、Engine World verification、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root / runtime context state 的依赖边界收敛，或继续 renderer/material public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Legacy Experiment Runner Implementation Split
+
+本轮回到 application composition root / legacy experiment 隔离方向，不扩张 PBR 功能。审计确认：`LegacyExperimentRunner.h` 仍是 header-only，直接传播 renderer、scene、object、geometry、texture、Phong/grass/CSM materials、mesh、Assimp loader、tools 和 light 等旧实验实现依赖；而包含方实际只需要 `RuntimeContext` 和少量实验开关 API。
+
+新增与修改：
+
+- 新增 `tools/legacyExperiments/LegacyExperimentRunner.cpp`，集中承载 solar system、grass field、environment sphere、CSM plane、backpack、shadow preview 和 orbiting point light 的历史实验构建/更新逻辑。
+- `LegacyExperimentRunner.h` 改为只保留 STL、`GLframework` 类型前置声明、`RuntimeContext` 和 `LegacyExperimentRunner` API 声明；旧实验实现头全部下沉到 `.cpp`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 implementation 文件，并补充注册 legacy experiment runner header，保持 VS 物理/逻辑组织一致。
+
+已完成验证：
+
+- 静态检查确认 `LegacyExperimentRunner.h` 不再传播 renderer/material/mesh/Assimp/light/core 等旧实现头，完整旧实验依赖集中在 `LegacyExperimentRunner.cpp` 和真实 legacy lifecycle 使用点。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeApplicationState.cpp`、`RuntimeLegacyExperimentLifecycle.cpp` 和 `LegacyExperimentRunner.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 legacy experiment runner implementation split，不改变历史实验开关 API、默认关闭策略、scene setup 调用点、orbiting light update、Assimp legacy import path、Engine World verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root / runtime context state 的依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。

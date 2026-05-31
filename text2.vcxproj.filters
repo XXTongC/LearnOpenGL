@@ -909,6 +909,9 @@
     <ClCompile Include="tools\Logger\LogManager.cpp">
       <Filter>cppfile\GLframework\tools\Logger</Filter>
     </ClCompile>
+    <ClCompile Include="tools\legacyExperiments\LegacyExperimentRunner.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\sceneSetup\PBRExperimentProfile.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -2743,6 +2746,9 @@
     </ClInclude>
     <ClInclude Include="tools\Logger\LogManager.h">
       <Filter>include\GLframework\tools\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\legacyExperiments\LegacyExperimentRunner.h">
+      <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\config\ProfileConfigParser.h">
       <Filter>include\GLframework\tools</Filter>

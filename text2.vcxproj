@@ -344,6 +344,7 @@
     <ClCompile Include="tools\editor\EditorWorldActions.cpp" />
     <ClCompile Include="tools\Logger\Logger.cpp" />
     <ClCompile Include="tools\Logger\LogManager.cpp" />
+    <ClCompile Include="tools\legacyExperiments\LegacyExperimentRunner.cpp" />
     <ClCompile Include="tools\sceneSetup\PBRCameraRigProfile.cpp" />
     <ClCompile Include="tools\sceneSetup\PBRExperimentProfile.cpp" />
     <ClCompile Include="tools\sceneSetup\PBRLightRigProfile.cpp" />
@@ -963,6 +964,7 @@
     <ClInclude Include="tools\inspector\PropertySchema.h" />
     <ClInclude Include="tools\Logger\Logger.h" />
     <ClInclude Include="tools\Logger\LogManager.h" />
+    <ClInclude Include="tools\legacyExperiments\LegacyExperimentRunner.h" />
     <ClInclude Include="tools\sceneSetup\PBRCameraRigProfile.h" />
     <ClInclude Include="tools\sceneSetup\PBRExperimentProfile.h" />
     <ClInclude Include="tools\sceneSetup\PBRLightRigProfile.h" />

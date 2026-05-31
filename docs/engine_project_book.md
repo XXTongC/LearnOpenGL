@@ -332,6 +332,7 @@ flowchart TD
 - PBR Material Profile Header Extraction 已完成第一版：新增 `PBRMaterialProfile.h` 承载 material profile/storage 窄接口，`PBRPreviewProfile.h` 不再为了 by-value material preset 传播完整 `PBRMaterial.h` runtime material 行为头。
 - Assimp Loader Public Header Boundary Cleanup 已完成第一版：`AssimpMaterialImporter.h`、`assimpLoader.h` 与 `assimpInstanceLoader.h` 不再传播 full material/Assimp/mesh/renderer/texture/shader implementation headers；import helper 细节集中到 implementation。
 - Material Types Header Extraction 已完成第一版：新增 `MaterialTypes.h` 承载 `MaterialType` / `PreStencilType`，`ShaderLibrary.h` 不再为了 shader map key 传播完整 `material.h`。
+- Legacy Experiment Runner Implementation Split 已完成第一版：`LegacyExperimentRunner` 不再是 header-only，历史实验构建/更新逻辑迁入 `LegacyExperimentRunner.cpp`，public header 只保留 runtime context/API 声明和类型前置声明。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已完成第一版：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已完成第一版：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已完成第一版：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -390,6 +391,6 @@ flowchart TD
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Material Types Header Extraction 后，下一步优先继续 application composition root / runtime context state 依赖边界收敛，或继续 renderer/material public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Legacy Experiment Runner Implementation Split 后，下一步优先继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Material Types Header Extraction 已接入后，`ShaderLibrary.h` 不再为了 `MaterialType` 传播完整 `material.h`；下一步继续 application composition root / runtime context state 依赖边界收敛，但不扩张 PBR pass。
+当前最新修正：Legacy Experiment Runner Implementation Split 已接入后，`LegacyExperimentRunner.h` 不再为了历史实验实现传播旧 renderer/material/mesh/Assimp/light 依赖；下一步继续 application composition root / runtime context state 依赖边界收敛，但不扩张 PBR pass。
