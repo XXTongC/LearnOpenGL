@@ -8325,3 +8325,25 @@ Subagent 审查：
 
 - 这是 PBR depth/G-buffer/forward scene pass public include boundary cleanup，不改变 depth prepass alpha-mask skip、G-buffer target setup、PBR object/surface/material binding、PBR draw statistics、shader uniform layout、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Scene Render Pass Header Boundary Cleanup
+
+本轮继续 renderer header surface audit，但刻意选择非 PBR 功能扩展路径：`SceneRenderPass.h` 是 legacy scene draw pass 的 public header，原先为了函数签名和 private helper 参数直接 include 完整 material、mesh、material binding context 与 shader library headers。审计确认真正读取 `Mesh::getMaterial()`、`Material::getMaterialType()`、shader begin/end、render state 和 `MaterialBinder` / `MeshDraw` 的逻辑全部在 `SceneRenderPass.cpp`，header 可以只保留参数类型前置声明。
+
+新增与修改：
+
+- `SceneRenderPass.h` 移除完整 `materials/material.h`、`mesh/mesh.h`、`renderer/MaterialBindingContext.h` 与 `renderer/ShaderLibrary.h` includes。
+- `SceneRenderPass.h` 新增 `Material`、`Mesh`、`ShaderLibrary` 与 `MaterialBindingContext` forward declarations，public API 和 private helper 签名保持不变。
+- `SceneRenderPass.cpp` 显式 include `framework/shader.h`、`materials/material.h`、`mesh/mesh.h`、`renderer/MaterialBindingContext.h` 与 `renderer/ShaderLibrary.h`，让实际 legacy material 选择、render state、shader binding 和 mesh draw 依赖留在 implementation。
+
+已完成验证：
+
+- 静态检查确认 `SceneRenderPass.h` 不再 include 完整 material/mesh/context/shader/shader-library headers，完整依赖均下沉到 `SceneRenderPass.cpp`。
+- 静态检查确认调用点集中在 `renderer.h` pass 成员、`RendererFrameContext.h` 前置声明、`RendererFramePassRegistry.cpp` pass include 以及 `SceneRenderPass.cpp` implementation definitions。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,gbuffer,gbuffer-debug,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `SceneRenderPass.cpp`；六条 focused verification mode 全部通过，并覆盖 `legacyDrawCalls=7`、runtime frame pipeline、no-op backend 与 Engine World scene package 证据。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 legacy `SceneRenderPass` public include boundary cleanup，不改变 legacy material fallback、render state application、shader lookup、MaterialBinder binding、MeshDraw indexed draw、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

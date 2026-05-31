@@ -2,9 +2,14 @@
 
 #include <iostream>
 
+#include "framework/shader.h"
+#include "materials/material.h"
+#include "mesh/mesh.h"
 #include "renderer/MaterialBinder.h"
+#include "renderer/MaterialBindingContext.h"
 #include "renderer/MeshDraw.h"
 #include "renderer/RenderState.h"
+#include "renderer/ShaderLibrary.h"
 
 using namespace GLframework;
 

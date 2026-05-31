@@ -3,13 +3,13 @@
 #include <memory>
 #include <vector>
 
-#include "materials/material.h"
-#include "mesh/mesh.h"
-#include "renderer/MaterialBindingContext.h"
-#include "renderer/ShaderLibrary.h"
-
 namespace GLframework
 {
+	class Material;
+	struct MaterialBindingContext;
+	class Mesh;
+	class ShaderLibrary;
+
 	class SceneRenderPass
 	{
 	public:
