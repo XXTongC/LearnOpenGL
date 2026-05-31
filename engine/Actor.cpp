@@ -1,5 +1,6 @@
 #include "engine/Actor.h"
 
+#include "engine/ActorComponent.h"
 #include "engine/SceneComponent.h"
 
 #include <utility>
@@ -10,6 +11,8 @@ Actor::Actor(std::string name)
 	: EngineObject(std::move(name))
 {
 }
+
+Actor::~Actor() = default;
 
 World* Actor::getWorld() const
 {

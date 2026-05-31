@@ -6,11 +6,11 @@
 #include <utility>
 #include <vector>
 
-#include "engine\ActorComponent.h"
 #include "engine\EngineObject.h"
 
 namespace GLengine
 {
+	class ActorComponent;
 	class Level;
 	class SceneComponent;
 	class World;
@@ -19,7 +19,7 @@ namespace GLengine
 	{
 	public:
 		explicit Actor(std::string name = {});
-		~Actor() override = default;
+		~Actor() override;
 
 		World* getWorld() const;
 		Level* getLevel() const;

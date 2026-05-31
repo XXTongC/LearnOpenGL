@@ -323,6 +323,7 @@ flowchart TD
 - Runtime Graphics Lifecycle Types Header Extraction 已完成第一版：新增 `RuntimeGraphicsLifecycleTypes.h` 承载 graphics lifecycle config；`RuntimeGraphicsLifecycle.h` 收敛为 graphics facade，不再传播 config DTO 字段。
 - Runtime Frame Lifecycle State Owner Boundary Cleanup 已完成第一版：`RuntimeFrameLifecycleState.h` 不再传播 `RuntimeFrameClock.h`、`<chrono>` 或 frame state 字段 layout；完整 state 由 implementation 通过 PImpl 拥有。
 - Runtime Application Config Backend Key Default Boundary Cleanup 已完成第一版：`RuntimeApplicationConfig.h` 不再传播 `RuntimeRendererBackendKeys.h`；默认 renderer backend key 由 config implementation 设置。
+- Engine Actor Component Header Boundary Cleanup 已完成第一版：`Actor.h` 不再传播完整 `ActorComponent.h`，Actor 析构和 component lifecycle API 调用集中到 `Actor.cpp`。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已完成第一版：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已完成第一版：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已完成第一版：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -381,6 +382,6 @@ flowchart TD
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Application Config Backend Key Default Boundary Cleanup 后，下一步优先继续 application composition root 或 Engine public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Engine Actor Component Header Boundary Cleanup 后，下一步优先继续 Engine public header 的低风险 include audit，或回到 application composition root 显式依赖收敛；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Application Config Backend Key Default Boundary Cleanup 已接入后，`RuntimeApplicationConfig.h` 不再传播 renderer backend key helper，默认 backend key 策略集中到 config implementation；下一步继续 application composition root 显式依赖收敛，但不扩张 PBR pass。
+当前最新修正：Engine Actor Component Header Boundary Cleanup 已接入后，`Actor.h` 不再传播完整 `ActorComponent.h`，Actor 析构和 component lifecycle 调用集中到 `Actor.cpp`；下一步继续 Engine public header 低风险 include audit，但不扩张 PBR pass。

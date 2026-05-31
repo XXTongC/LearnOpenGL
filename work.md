@@ -8710,3 +8710,26 @@ Subagent 审查：
 
 - 这是 runtime application config backend key default boundary cleanup，不改变 default runtime renderer backend、no-op backend verification override、shell config argument parsing、runtime frame pipeline、Engine World verification、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Engine Actor Component Header Boundary Cleanup
+
+本轮转向 Engine public header 低风险 include audit，不扩张 PBR 功能。审计确认：`Actor.h` 已经把 root component 的 `SceneComponent` 完整类型依赖移到 implementation，但仍为了 `std::vector<std::unique_ptr<ActorComponent>>` 和 inline 默认析构直接 include `ActorComponent.h`。这会让只需要 Actor facade 的调用点也间接获得完整 component API。
+
+新增与修改：
+
+- `Actor.h` 移除 `ActorComponent.h` include，只 forward declare `ActorComponent`。
+- `Actor` 析构从 header inline default 改为 out-of-line default，避免 public header 在析构 `std::unique_ptr<ActorComponent>` 时要求完整 component 类型。
+- `Actor.cpp` 显式 include `ActorComponent.h`，集中持有 component lifecycle 依赖：`isActive()`、`canTick()`、`beginPlay()`、`tick()`、`endPlay()`、`setOwner()`、`onRegister()`。
+- `Actor.cpp` 继续显式 include `SceneComponent.h`，保留 `registerComponent(...)` 中 `dynamic_cast<SceneComponent*>` 的完整类型需求。
+- `createComponent<T>(...)` 的派生关系检查保持在模板实例化点；具体 component 调用点仍由具体 component header 提供完整 `ActorComponent` 基类定义。
+
+已完成验证：
+
+- 静态检查确认 `Actor.h` 不再 include `ActorComponent.h`，完整 component API 依赖只保留在 `Actor.cpp` 和实际 inspector/snapshot/export 调用点。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `Actor.cpp`、Actor adapters、legacy world builder/exporter、Level、ScenePackage、editor panels/actions、scene transform snapshot 和 world-driven scene setup。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine Actor component header boundary cleanup，不改变 Actor ownership、component registration、root component inference、begin/tick/end play、Engine World editor create、scene package、legacy mirror、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 Engine public headers 的低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；当前仍不建议继续扩张 PBR 功能。

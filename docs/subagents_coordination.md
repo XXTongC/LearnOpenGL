@@ -57,6 +57,7 @@ Current phase:
 - Verification now checks Engine subsystem cleanup: after `Engine::shutdown()`, AssetSubsystem registry/ticks must reset and RendererSubsystem must release renderer/executor/backend state while preserving attach/detach lifecycle evidence.
 - `World.h` now forward-declares `Level` and owns the persistent level through an out-of-line destructor, so code that only needs the World facade no longer receives the full Level/Actor template surface.
 - `Actor.h` now forward-declares `SceneComponent` for root-component pointer APIs, so code that only needs the Actor facade no longer receives the full SceneComponent/Transform surface.
+- `Actor.h` now also forward-declares `ActorComponent` and keeps Actor destruction out-of-line, so code that only needs the Actor facade no longer receives the full ActorComponent lifecycle API surface.
 - `RuntimeEngineLifecycle` now owns application-side Engine lifecycle composition: creating Engine-owned subsystems, attaching renderer backends, detaching runtime context pointers, and shutting down the Engine.
 - `RuntimeEngineLifecycleState.h` now owns `RuntimeEngineLifecycleState`, and `RuntimeEngineLifecycleCleanupRefs.h` now owns `RuntimeEngineLifecycleCleanupRefs`, so frame/state paths and shutdown cleanup/report paths do not share one broad lifecycle types header.
 - `RuntimeEngineLifecycle.h` now forward-declares lifecycle state/cleanup refs; full state/cleanup refs dependencies are localized to implementation, state owners, frame field access, and cleanup refs field access sites.
@@ -187,16 +188,14 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Runtime Application Config Backend Key Default Boundary Cleanup
+### Current Round: Engine Actor Component Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `application/RuntimeApplicationConfig.h`
-- `application/RuntimeApplicationConfig.cpp`
-- `text2.vcxproj`
-- `text2.vcxproj.filters`
+- `engine/Actor.h`
+- `engine/Actor.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -207,7 +206,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Runtime application config backend key default cleanup and project registration remain parent-reviewed.
+- Engine Actor component header cleanup remains parent-reviewed.
 
 Rules for this round:
 
@@ -1664,7 +1663,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-06-01 Runtime Application Config Backend Key Default Boundary Cleanup.
+Round: 2026-06-01 Engine Actor Component Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1672,20 +1671,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: move the default renderer backend key selection out of `RuntimeApplicationConfig.h` into `RuntimeApplicationConfig.cpp`, so the config data header no longer propagates `RuntimeRendererBackendKeys.h`.
+- Current local implementation target for this slice: remove the full `ActorComponent.h` include from `Actor.h`, move Actor destruction out-of-line, and localize component lifecycle API calls to `Actor.cpp`.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the runtime application config backend key default cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the Engine Actor component header cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `application/RuntimeApplicationConfig.h`, `application/RuntimeApplicationConfig.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, docs, and logs.
+- Parent-owned write scope for this round: `engine/Actor.h`, `engine/Actor.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Runtime Application Config Backend Key Default Boundary Cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Frame Lifecycle State owner cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Graphics Lifecycle Types header extraction was parent-owned and had no delegated write scope.
 - Previous round's Runtime GUI Host Types header extraction was parent-owned and had no delegated write scope.
