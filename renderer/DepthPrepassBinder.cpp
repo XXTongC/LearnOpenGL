@@ -1,6 +1,9 @@
 #include "DepthPrepassBinder.h"
 
 #include "camera/camera.h"
+#include "framework/shader.h"
+#include "mesh/mesh.h"
+#include "renderer/MaterialBindingContext.h"
 
 using namespace GLframework;
 

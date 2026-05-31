@@ -2,12 +2,12 @@
 
 #include <memory>
 
-#include "framework/shader.h"
-#include "mesh/mesh.h"
-#include "renderer/MaterialBindingContext.h"
-
 namespace GLframework
 {
+	struct MaterialBindingContext;
+	class Mesh;
+	class Shader;
+
 	class DepthPrepassBinder
 	{
 	public:
