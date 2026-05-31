@@ -1,24 +1,10 @@
 #pragma once
 
-#include <string>
+#include "engine/RendererBackendFrameTypes.h"
 
 namespace GLengine
 {
 	struct EngineContext;
-
-	struct RendererFrameIntent
-	{
-		unsigned int framebufferWidth{ 0 };
-		unsigned int framebufferHeight{ 0 };
-	};
-
-	struct RendererFrameResult
-	{
-		std::string framePlanKey{ "none" };
-		int plannedPassCount{ 0 };
-		int executedPassCount{ 0 };
-		int skippedPassCount{ 0 };
-	};
 
 	class RendererBackend
 	{

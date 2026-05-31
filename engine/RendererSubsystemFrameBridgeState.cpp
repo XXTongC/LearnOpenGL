@@ -1,6 +1,8 @@
 #include "engine/RendererSubsystemFrameBridgeState.h"
 
 #include "engine/EngineContext.h"
+#include "engine/RendererBackendFrameTypes.h"
+#include "engine/RendererSubsystemBackendSlot.h"
 
 using namespace GLengine;
 

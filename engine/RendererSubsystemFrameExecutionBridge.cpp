@@ -1,5 +1,7 @@
 #include "engine/RendererSubsystemFrameExecutionBridge.h"
 
+#include "engine/RendererBackend.h"
+
 using namespace GLengine;
 
 RendererSubsystemFrameExecutionResult RendererSubsystemFrameExecutionBridge::executeFrame(

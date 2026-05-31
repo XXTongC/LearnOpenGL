@@ -1,11 +1,13 @@
 #pragma once
 
-#include "engine/RendererSubsystemBackendSlot.h"
 #include "engine/RendererSubsystemFrameBridgeStats.h"
 
 namespace GLengine
 {
 	struct EngineContext;
+	struct RendererFrameIntent;
+	struct RendererFrameResult;
+	struct RendererSubsystemBackendSlotSnapshot;
 
 	class RendererSubsystemFrameBridgeState
 	{

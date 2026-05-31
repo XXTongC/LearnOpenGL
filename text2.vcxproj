@@ -369,6 +369,7 @@
     <ClInclude Include="engine\Level.h" />
     <ClInclude Include="engine\PersistentIdPolicy.h" />
     <ClInclude Include="engine\RendererBackend.h" />
+    <ClInclude Include="engine\RendererBackendFrameTypes.h" />
     <ClInclude Include="engine\RendererBackendRegistry.h" />
     <ClInclude Include="engine\RendererBackendRegistryTypes.h" />
     <ClInclude Include="engine\RendererSubsystemBackendSlot.h" />

@@ -7676,3 +7676,29 @@ Subagent 审查：
 
 - 这是 Engine AssetSubsystem registry public header boundary cleanup，不改变 asset registry ownership semantics、lifecycle cleanup、import/package verification、Engine subsystem cleanup、renderer backend contract 或 PBR pass。
 - 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到 callback/bootstrapper include surface audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Renderer Backend Frame Types Header Extraction
+
+本轮转向通用 renderer backend contract/header surface audit。审计确认：`RendererFrameIntent` 与 `RendererFrameResult` 仍定义在完整 `RendererBackend.h` 中，导致 frame execution bridge 等只需要 frame DTO 的 public headers 必须 include 完整 backend interface；同时 `RendererSubsystemFrameBridgeState.h` 为了 `RendererSubsystemBackendSlotSnapshot` reference 传递了完整 backend slot header。更窄边界是：frame DTO 进入轻量 types 头，bridge public headers 只依赖轻量 DTO 或 forward declaration，完整 backend/slot 依赖下沉到 implementation。
+
+新增与修改：
+
+- 新增 `RendererBackendFrameTypes.h`，承载 `RendererFrameIntent` 与 `RendererFrameResult`。
+- `RendererBackend.h` 改为 include `RendererBackendFrameTypes.h`，继续只负责 `RendererBackend` interface。
+- `RendererSubsystemFrameExecutionBridge.h` 不再 include 完整 `RendererBackend.h`，只 include frame types 并 forward declare `RendererBackend`。
+- `RendererSubsystemFrameExecutionBridge.cpp` 显式 include `RendererBackend.h`，因为执行阶段需要调用 virtual `renderFrame(...)`。
+- `RendererSubsystemFrameBridgeState.h` 不再 include `RendererSubsystemBackendSlot.h`，改为 forward declare `RendererSubsystemBackendSlotSnapshot` 和 frame DTO；完整 slot/frame DTO 依赖下沉到 `.cpp`。
+- `RuntimeFrameRunner.cpp` 显式 include `RendererBackendFrameTypes.h`，因为它实际构造 `RendererFrameIntent`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 header。
+
+已完成验证：
+
+- 静态检查确认 `RendererBackendFrameTypes.h` 已注册，`RendererSubsystemFrameExecutionBridge.h` 与 `RendererSubsystemFrameBridgeState.h` 不再 include 完整 `RendererBackend.h`。
+- 静态检查确认 `RendererSubsystemFrameBridgeState.h` 不再 include `RendererSubsystemBackendSlot.h`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,import,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `RuntimeFrameRunner.cpp`、`RuntimeNoOpRendererBackend.cpp`、`RuntimeRendererFrameBridgeAdapter.cpp`、`RendererSubsystem.cpp`、`RendererSubsystemBackendSlot.cpp`、`RendererSubsystemFrameBridgeState.cpp` 和 `RendererSubsystemFrameExecutionBridge.cpp`；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 renderer backend frame DTO header extraction，不改变 renderer backend virtual contract、runtime frame bridge execution、backend registry/no-op backend behavior、Engine World verification 或 PBR pass。
+- 后续建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
