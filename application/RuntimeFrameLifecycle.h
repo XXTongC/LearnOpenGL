@@ -20,7 +20,7 @@ namespace GL_RUNTIME
 {
 	struct RuntimeFrameCallbacks;
 	struct RuntimeFrameLifecycleConfig;
-	struct RuntimeFrameLifecycleState;
+	class RuntimeFrameLifecycleState;
 
 	class RuntimeFrameLifecycle
 	{

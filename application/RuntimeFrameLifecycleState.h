@@ -1,13 +1,32 @@
 #pragma once
 
-#include "RuntimeFrameClock.h"
+#include <memory>
 
 namespace GL_RUNTIME
 {
-	struct RuntimeFrameLifecycleState
+	class RuntimeFrameClock;
+
+	class RuntimeFrameLifecycleState
 	{
-		RuntimeFrameClock frameClock{};
-		int renderedFrameCount{ 0 };
-		bool verificationCaptureWritten{ false };
+	public:
+		RuntimeFrameLifecycleState();
+		~RuntimeFrameLifecycleState();
+
+		RuntimeFrameLifecycleState(const RuntimeFrameLifecycleState&) = delete;
+		RuntimeFrameLifecycleState& operator=(const RuntimeFrameLifecycleState&) = delete;
+
+		RuntimeFrameClock& frameClock();
+		const RuntimeFrameClock& frameClock() const;
+
+		int renderedFrameCount() const;
+		void resetRenderedFrameCount();
+		void incrementRenderedFrameCount();
+
+		bool& verificationCaptureWritten();
+		void resetVerificationCaptureWritten();
+
+	private:
+		struct Impl;
+		std::unique_ptr<Impl> mImpl{};
 	};
 }

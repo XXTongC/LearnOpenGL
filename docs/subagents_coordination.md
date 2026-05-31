@@ -39,7 +39,7 @@ Current phase:
 - `RuntimeRendererBackendKeys.h` owns lightweight runtime/default/no-op backend key helpers, so config, verification args, and factory implementation do not need to include the catalog/registry API just to compare or store backend keys.
 - `RuntimeWindowLifecycleTypes.h` owns window lifecycle DTOs (`RuntimeWindowConfig`, `RuntimeWindowSnapshot`, and `RuntimeWindowCallbackContext`), so application config and snapshot-only startup code do not need the full window lifecycle behavior header or `AppRuntimeContext.h`.
 - `RuntimeFrameClockTypes.h` owns `RuntimeFrameClockConfig`, so application config does not need the full frame clock behavior header or `<chrono>` just to store frame timing options.
-- `RuntimeFrameLifecycleConfig.h` owns frame lifecycle config separately from `RuntimeFrameLifecycleState.h`; config-only policy/bridge paths no longer need the state-owned full frame clock behavior header or `<chrono>`.
+- `RuntimeFrameLifecycleConfig.h` owns frame lifecycle config separately from `RuntimeFrameLifecycleState.h`, and `RuntimeFrameLifecycleState.h` now hides `RuntimeFrameClock` behind an implementation owner; config/state users no longer receive the clock behavior header or `<chrono>` through these lifecycle DTO boundaries.
 - `RuntimeEditorLifecycleConfig.h` and `RuntimeEditorLifecycleState.h` split editor lifecycle data from behavior, so application state and config policy do not need the full editor lifecycle behavior header just to store editor state or config.
 - `RuntimeApplicationState.cpp` now owns construction/destruction of the application Engine; `RuntimeApplicationState.h` forward-declares `GLengine::Engine` and exposes an `engine()` accessor instead of including the full `Engine.h` header.
 - `RuntimeApplicationState.cpp` now also owns construction/destruction of the legacy experiment runner; `RuntimeApplicationState.h` forward-declares `GL_EXPERIMENTS::LegacyExperimentRunner` and exposes a `legacyExperiments()` accessor instead of including the full legacy experiment implementation header.
@@ -187,17 +187,17 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Runtime Graphics Lifecycle Types Header Extraction
+### Current Round: Runtime Frame Lifecycle State Owner Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `application/RuntimeGraphicsLifecycle.h`
-- `application/RuntimeGraphicsLifecycleTypes.h`
-- `application/RuntimeGraphicsLifecycle.cpp`
-- `application/RuntimeApplicationConfigPolicy.cpp`
-- `application/RuntimeApplicationGraphicsStartupLifecycle.cpp`
+- `application/RuntimeFrameLifecycleState.h`
+- `application/RuntimeFrameLifecycleState.cpp`
+- `application/RuntimeFrameLifecycle.cpp`
+- `application/RuntimeApplicationState.h`
+- `application/RuntimeFrameLifecycle.h`
 - `text2.vcxproj`
 - `text2.vcxproj.filters`
 - `docs/subagents_coordination.md`
@@ -210,7 +210,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Runtime graphics lifecycle types header extraction and project registration remain parent-reviewed.
+- Runtime frame lifecycle state owner cleanup and project registration remain parent-reviewed.
 
 Rules for this round:
 
@@ -1667,7 +1667,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-06-01 Runtime Graphics Lifecycle Types Header Extraction.
+Round: 2026-06-01 Runtime Frame Lifecycle State Owner Boundary Cleanup.
 
 Parent local work:
 
@@ -1675,20 +1675,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: extract graphics lifecycle config DTO into `RuntimeGraphicsLifecycleTypes.h`, keep `RuntimeGraphicsLifecycle.h` as a narrow facade, and localize complete graphics config construction/field access to config policy, graphics startup, and lifecycle implementation files.
+- Current local implementation target for this slice: hide `RuntimeFrameClock`, rendered-frame count, and verification capture flag layout behind `RuntimeFrameLifecycleState` PImpl while keeping frame lifecycle behavior in `RuntimeFrameLifecycle.cpp`.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the runtime graphics lifecycle types extraction is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the runtime frame lifecycle state owner cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `application/RuntimeGraphicsLifecycle.h`, `application/RuntimeGraphicsLifecycleTypes.h`, `application/RuntimeGraphicsLifecycle.cpp`, `application/RuntimeApplicationConfigPolicy.cpp`, `application/RuntimeApplicationGraphicsStartupLifecycle.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, docs, and logs.
+- Parent-owned write scope for this round: `application/RuntimeFrameLifecycleState.h`, `application/RuntimeFrameLifecycleState.cpp`, `application/RuntimeFrameLifecycle.cpp`, `application/RuntimeApplicationState.h`, `application/RuntimeFrameLifecycle.h`, `text2.vcxproj`, `text2.vcxproj.filters`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Runtime Graphics Lifecycle Types header extraction was parent-owned and had no delegated write scope.
 - Previous round's Runtime GUI Host Types header extraction was parent-owned and had no delegated write scope.
 - Previous round's Runtime Window Lifecycle header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Runtime Viewport header cleanup was parent-owned and had no delegated write scope.

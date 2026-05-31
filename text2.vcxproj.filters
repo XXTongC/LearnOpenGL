@@ -492,6 +492,9 @@
     <ClCompile Include="application\RuntimeFrameClock.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeFrameLifecycleState.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeFrameLifecycle.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>

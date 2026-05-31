@@ -8665,3 +8665,26 @@ Subagent 审查：
 
 - 这是 runtime graphics lifecycle types header extraction，不改变 window setup prompt、viewport initialization、clear color、OpenGL capabilities report、runtime frame pipeline、Engine World verification、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Frame Lifecycle State Owner Boundary Cleanup
+
+本轮继续 application/frame composition root 显式依赖收敛，不扩张 PBR 功能。审计确认：`RuntimeFrameLifecycleState.h` 虽然已经与 frame lifecycle config 拆分，但仍直接 include `RuntimeFrameClock.h`，并把 `frameClock`、`renderedFrameCount`、`verificationCaptureWritten` 作为 public 字段暴露。这会让 application state owner 和 frame lifecycle callers 看到 frame clock 行为头与 `<chrono>` 依赖。
+
+新增与修改：
+
+- `RuntimeFrameLifecycleState.h` 改为 class owner，通过 private `std::unique_ptr<Impl>` 隐藏完整 frame clock、rendered frame count 和 verification capture flag layout。
+- 新增 `RuntimeFrameLifecycleState.cpp`，集中 include `RuntimeFrameClock.h` 并完整拥有 frame lifecycle state implementation。
+- `RuntimeFrameLifecycle.cpp` 显式 include `RuntimeFrameClock.h`，通过 state 访问器 reset/tick frame clock、读取/递增 rendered frame count，并继续把 capture flag 引用传给 verification frame capture lifecycle。
+- `RuntimeApplicationState.h` 与 `RuntimeFrameLifecycle.h` 将 `RuntimeFrameLifecycleState` 前置声明统一为 `class`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 implementation 文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeFrameLifecycleState.h` 不再 include `RuntimeFrameClock.h` 或 `<chrono>`，完整 frame clock 与 state fields 只在 `RuntimeFrameLifecycleState.cpp` / `RuntimeFrameLifecycle.cpp` 使用。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeApplicationState.cpp`、frame startup/continue/run bridge、`RuntimeFrameLifecycle.cpp` 与 `RuntimeFrameLifecycleState.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime frame lifecycle state owner boundary cleanup，不改变 frame clock fixed-delta policy、rendered frame counting、verification max-frame stop、verification capture flag、runtime frame pipeline、Engine World verification、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。

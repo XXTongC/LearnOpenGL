@@ -196,6 +196,7 @@
     <ClCompile Include="application\RuntimeApplicationFrameLifecycle.cpp" />
     <ClCompile Include="application\RuntimeFrameClock.cpp" />
     <ClCompile Include="application\RuntimeFrameLifecycle.cpp" />
+    <ClCompile Include="application\RuntimeFrameLifecycleState.cpp" />
     <ClCompile Include="application\RuntimeFramePipeline.cpp" />
     <ClCompile Include="application\RuntimeFramePipelineProfile.cpp" />
     <ClCompile Include="application\RuntimeFramePassRegistry.cpp" />

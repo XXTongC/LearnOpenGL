@@ -473,7 +473,8 @@ public:
 263. Runtime Window Lifecycle Header Boundary Cleanup 已完成第一版：`RuntimeWindowLifecycle.h` 不再 include `RuntimeWindowLifecycleTypes.h`，只 forward declare window lifecycle DTO；实际 window callback context、snapshot 构造和 frame run/window startup DTO 字段读取依赖集中到 implementation 使用点。
 264. Runtime GUI Host Types Header Extraction 已完成第一版：新增 `RuntimeGuiHostTypes.h` 承载 GUI init/frame context；`RuntimeGuiHost.h` 收敛为 host facade，不再传播 `<functional>` 或 DTO 字段，实际 GUI context 构造/读取依赖集中到 editor lifecycle 和 GUI host implementation。
 265. Runtime Graphics Lifecycle Types Header Extraction 已完成第一版：新增 `RuntimeGraphicsLifecycleTypes.h` 承载 graphics lifecycle config；`RuntimeGraphicsLifecycle.h` 收敛为 graphics facade，只 forward declare config，实际 config 构造/字段读取依赖集中到 config policy、graphics startup 和 lifecycle implementation。
-266. 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+266. Runtime Frame Lifecycle State Owner Boundary Cleanup 已完成第一版：`RuntimeFrameLifecycleState.h` 不再 include `RuntimeFrameClock.h` 或暴露 frame clock/count/capture fields；完整 state layout 由 `RuntimeFrameLifecycleState.cpp` 通过 PImpl 拥有，frame lifecycle implementation 通过访问器 reset/tick/count/capture。
+267. 下一步建议继续 application composition root 中 shell/config/runner headers 的显式依赖收敛，或转向 Engine public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

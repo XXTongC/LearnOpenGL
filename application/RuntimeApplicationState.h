@@ -21,7 +21,7 @@ namespace GL_RUNTIME
 {
 	class RuntimeEditorLifecycleState;
 	struct RuntimeEngineLifecycleState;
-	struct RuntimeFrameLifecycleState;
+	class RuntimeFrameLifecycleState;
 
 	struct RuntimeApplicationState
 	{

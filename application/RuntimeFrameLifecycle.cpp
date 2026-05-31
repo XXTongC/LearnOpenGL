@@ -2,6 +2,7 @@
 
 #include "Application.h"
 #include "RuntimeFrameCallbacks.h"
+#include "RuntimeFrameClock.h"
 #include "RuntimeFrameLifecycleConfig.h"
 #include "RuntimeFrameLifecycleState.h"
 #include "RuntimeFrameRunner.h"
@@ -28,9 +29,9 @@ namespace GL_RUNTIME
 
 	void RuntimeFrameLifecycle::reset(RuntimeFrameLifecycleState& state)
 	{
-		state.frameClock.reset();
-		state.renderedFrameCount = 0;
-		state.verificationCaptureWritten = false;
+		state.frameClock().reset();
+		state.resetRenderedFrameCount();
+		state.resetVerificationCaptureWritten();
 	}
 
 	bool RuntimeFrameLifecycle::shouldContinue(
@@ -38,7 +39,7 @@ namespace GL_RUNTIME
 		const RuntimeFrameLifecycleState& state
 	)
 	{
-		if (RuntimeVerificationStopPolicy::shouldStopAfterFrames(config.verification, state.renderedFrameCount))
+		if (RuntimeVerificationStopPolicy::shouldStopAfterFrames(config.verification, state.renderedFrameCount()))
 		{
 			return false;
 		}
@@ -97,11 +98,11 @@ namespace GL_RUNTIME
 				rendererSubsystem,
 				framebufferWidth,
 				framebufferHeight,
-				state.frameClock.tick(makeFrameClockConfig(config))
+				state.frameClock().tick(makeFrameClockConfig(config))
 			},
 			frameCallbacks
 		);
-		++state.renderedFrameCount;
+		state.incrementRenderedFrameCount();
 
 		RuntimeVerificationFrameCaptureLifecycle::captureFrameIfNeeded(
 			context,
@@ -110,8 +111,8 @@ namespace GL_RUNTIME
 			config.verification,
 			framebufferWidth,
 			framebufferHeight,
-			state.renderedFrameCount,
-			state.verificationCaptureWritten
+			state.renderedFrameCount(),
+			state.verificationCaptureWritten()
 		);
 	}
 }
