@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "engine/EngineContext.h"
+#include "engine/RendererBackend.h"
 #include "engine/RendererBackendRegistryTypes.h"
 #include "engine/RendererSubsystemBackendSlot.h"
 #include "engine/RendererSubsystemFrameBridgeState.h"

@@ -7702,3 +7702,26 @@ Subagent 审查：
 
 - 这是 renderer backend frame DTO header extraction，不改变 renderer backend virtual contract、runtime frame bridge execution、backend registry/no-op backend behavior、Engine World verification 或 PBR pass。
 - 后续建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 RendererSubsystem Backend Slot Header Boundary Cleanup
+
+本轮继续通用 renderer backend contract/header surface audit。审计确认：`RendererSubsystemBackendSlot.h` 为了 `std::unique_ptr<RendererBackend>` 持有 backend owner public include 完整 `RendererBackend.h`，导致只需要 backend slot facade/snapshot 的调用点也获得完整 backend virtual interface。更窄边界是：slot header forward declare `RendererBackend`，析构下沉到 `.cpp`，完整 backend 依赖只留在实际调用 `getBackendKey()` / `isBackendReady()` / ownership handoff 的 implementation。
+
+新增与修改：
+
+- `RendererSubsystemBackendSlot.h` 移除 `RendererBackend.h` include，新增 `class RendererBackend;` forward declaration。
+- `RendererSubsystemBackendSlot` 新增 out-of-line destructor，保证 `std::unique_ptr<RendererBackend>` incomplete type 析构安全。
+- `RendererSubsystemBackendSlot.cpp` 显式 include `RendererBackend.h`，因为 implementation 读取 backend key、ready state 并销毁 backend owner。
+- `RendererSubsystem.cpp` 显式 include `RendererBackend.h`，因为该 implementation 按值接收 `std::unique_ptr<RendererBackend>` 并触发参数析构。
+
+已完成验证：
+
+- 静态检查确认 `RendererSubsystemBackendSlot.h` 不再 include `RendererBackend.h`，只保留 forward declaration、owning pointer 和 slot facade API。
+- 初次 focused verification 暴露合理 include fallout：`RendererSubsystem.cpp` 按值接收 `std::unique_ptr<RendererBackend>`，需要完整 `RendererBackend`；已补显式 include 后重跑通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,import,renderer-backend-registry-noop -DiscardCaptures`：修正 implementation include 后构建通过；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 RendererSubsystem backend slot header boundary cleanup，不改变 renderer backend virtual contract、backend ownership semantics、runtime frame bridge execution、backend registry/no-op backend behavior、Engine World verification 或 PBR pass。
+- 后续建议继续通用 renderer backend contract/header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

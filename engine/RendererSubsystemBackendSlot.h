@@ -3,11 +3,12 @@
 #include <memory>
 #include <string>
 
-#include "engine/RendererBackend.h"
 #include "engine/RendererBackendRegistryTypes.h"
 
 namespace GLengine
 {
+	class RendererBackend;
+
 	struct RendererSubsystemBackendSlotChange
 	{
 		bool detached{ false };
@@ -25,6 +26,8 @@ namespace GLengine
 	class RendererSubsystemBackendSlot
 	{
 	public:
+		~RendererSubsystemBackendSlot();
+
 		RendererSubsystemBackendSlotChange setBackend(
 			std::unique_ptr<RendererBackend> backend,
 			RendererBackendAttachmentDesc attachmentDesc = {}

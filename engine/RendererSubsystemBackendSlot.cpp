@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include "engine/RendererBackend.h"
+
 using namespace GLengine;
 
 namespace
@@ -17,6 +19,8 @@ namespace
 		return backendKey && backendKey[0] != '\0' ? backendKey : "none";
 	}
 }
+
+RendererSubsystemBackendSlot::~RendererSubsystemBackendSlot() = default;
 
 RendererSubsystemBackendSlotChange RendererSubsystemBackendSlot::setBackend(
 	std::unique_ptr<RendererBackend> backend,
