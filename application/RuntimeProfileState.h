@@ -4,10 +4,14 @@
 #include <string>
 
 #include "RuntimeFramePipelineProfile.h"
-#include "../renderer/EnvironmentProfile.h"
 #include "../renderer/PostProcessSettings.h"
 #include "../tools/sceneSetup/PBRLightRigProfile.h"
 #include "../tools/sceneSetup/PBRPreviewProfile.h"
+
+namespace GLframework
+{
+	struct EnvironmentProfile;
+}
 
 namespace GL_SCENE
 {
@@ -31,17 +35,19 @@ namespace GL_RUNTIME
 		std::string rendererFramePassProfilePath{};
 		GLframework::PostProcessSettings postProcessSettings{};
 		std::string postProcessSettingsPath{};
-		GLframework::EnvironmentProfile environmentProfile{};
 		std::string environmentProfilePath{};
 		GL_SCENE::PBRPreviewProfile pbrPreviewProfile{};
 		GL_SCENE::PBRLightRigProfile pbrLightRigProfile{};
 		std::string pbrPreviewProfilePath{};
 		std::string pbrExperimentProfilePath{};
 
+		GLframework::EnvironmentProfile& environmentProfile();
+		const GLframework::EnvironmentProfile& environmentProfile() const;
 		GL_SCENE::PBRCameraRigProfile& pbrCameraRigProfile();
 		const GL_SCENE::PBRCameraRigProfile& pbrCameraRigProfile() const;
 
 	private:
+		std::unique_ptr<GLframework::EnvironmentProfile> mEnvironmentProfile{};
 		std::unique_ptr<GL_SCENE::PBRCameraRigProfile> mPBRCameraRigProfile{};
 	};
 }

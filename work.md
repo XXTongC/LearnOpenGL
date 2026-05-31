@@ -9116,3 +9116,27 @@ Subagent 审查：
 
 - 这是 Runtime profile state camera rig owner boundary cleanup，不改变 camera rig 默认值、PBR experiment profile loading、verification camera preset、debug controller camera profile 指针传递、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 runtime profile/state 边界收敛，优先评估访问面较小且不会扩张 PBR 功能的 profile/state owner 化；light rig / preview profile 访问面较大，拆分时应谨慎。
+
+### 2026-06-01 Runtime Profile State Environment Profile Owner Boundary Cleanup
+
+本轮继续 application runtime profile/state public header include surface 收敛，不扩张 PBR 功能。审计确认：`RuntimeProfileState.h` 仍为了按值持有 `EnvironmentProfile` 直接 include `EnvironmentProfile.h`；但 environment profile 的真实读写集中在 startup profile verification、profile loader、scene setup context 和 editor/debug controller context 构造，访问面可控。
+
+新增与修改：
+
+- `RuntimeProfileState.h` 移除 `EnvironmentProfile.h` include，改为 forward declare `GLframework::EnvironmentProfile`。
+- `RuntimeProfileState` 改为通过 private `std::unique_ptr<GLframework::EnvironmentProfile>` 持有 environment profile，继续禁用拷贝并保留移动语义。
+- `RuntimeProfileState` 新增 `environmentProfile()` / `environmentProfile() const` 访问器。
+- `RuntimeProfileState.cpp` 显式 include `EnvironmentProfile.h`，集中创建、销毁和访问 environment profile owner。
+- `RuntimePBRStartupProfileVerification.cpp` 在真实写入 procedural environment startup defaults 的 implementation 中显式 include `EnvironmentProfile.h`，并通过访问器取得局部引用。
+- `RuntimeProfileLoader.cpp`、`RuntimeSceneSetupContextFactory.cpp` 与 `RuntimeEditorPanelCoordinator.cpp` 改为通过访问器向 profile storage、PBR experiment profile loader、scene setup 和 debug controller context 传递 environment profile 引用或指针。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeProfileState.h` 不再传播 `EnvironmentProfile.h`，旧字段式 `context.profiles.environmentProfile` 访问已迁移为访问器调用。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeProfileState.cpp`、`RuntimeProfileLoader.cpp`、`RuntimePBRStartupProfileVerification.cpp`、`RuntimeSceneSetupContextFactory.cpp`、`RuntimeEditorPanelCoordinator.cpp` 和相关 runtime 使用点。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime profile state environment profile owner boundary cleanup，不改变 environment profile 默认路径、procedural environment startup defaults、PBR experiment profile loading、environment precompute、IBL debug、scene setup、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 runtime profile/state 边界收敛，但 `pbrLightRigProfile` 与 `pbrPreviewProfile` 访问面较大，应优先评估是否先拆小的 profile DTO 或访问器层，而不是一次性大范围改动。

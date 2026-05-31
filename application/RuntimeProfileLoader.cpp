@@ -15,7 +15,7 @@ namespace
 	{
 		if (GLframework::EnvironmentProfileStorage::loadFromFile(
 			context.profiles.environmentProfilePath,
-			context.profiles.environmentProfile
+			context.profiles.environmentProfile()
 		))
 		{
 			LogInfo("Environment profile loaded from " + context.profiles.environmentProfilePath);
@@ -90,7 +90,7 @@ namespace
 	{
 		if (GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 			context.profiles.pbrExperimentProfilePath,
-			context.profiles.environmentProfile,
+			context.profiles.environmentProfile(),
 			context.profiles.postProcessSettings,
 			context.profiles.pbrPreviewProfile,
 			context.profiles.pbrLightRigProfile,
