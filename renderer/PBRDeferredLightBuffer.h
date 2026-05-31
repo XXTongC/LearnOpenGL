@@ -1,10 +1,9 @@
 #pragma once
 
-#include "core.h"
-#include "renderer/MaterialBindingContext.h"
-
 namespace GLframework
 {
+	struct MaterialBindingContext;
+
 	struct PBRDeferredLightBufferStats
 	{
 		bool bound{ false };

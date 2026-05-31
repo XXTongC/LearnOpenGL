@@ -5,7 +5,9 @@
 #include <vector>
 
 #include "camera/camera.h"
+#include "core.h"
 #include "light/pointLight.h"
+#include "renderer/MaterialBindingContext.h"
 #include "renderer/PBRDeferredLightBuffer.h"
 
 using namespace GLframework;

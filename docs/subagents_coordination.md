@@ -187,14 +187,20 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: PBR Shadow Atlas Render Pass Header Boundary Cleanup
+### Current Round: PBR Deferred Lighting Grid Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `renderer/PBRShadowAtlasRenderPass.h`
-- `renderer/PBRShadowAtlasRenderPass.cpp`
+- `renderer/PBRDeferredLightingPass.h`
+- `renderer/PBRDeferredLightingPass.cpp`
+- `renderer/PBRDeferredLightBuffer.h`
+- `renderer/PBRDeferredLightBuffer.cpp`
+- `renderer/PBRDeferredTiledLightGrid.h`
+- `renderer/PBRDeferredTiledLightGrid.cpp`
+- `renderer/PBRDeferredClusteredLightGrid.h`
+- `renderer/PBRDeferredClusteredLightGrid.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -205,7 +211,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- PBR shadow atlas render pass parameter forward declarations plus implementation-only camera/light/mesh/shader includes remain parent-reviewed.
+- PBR deferred lighting/light-grid parameter forward declarations plus implementation-only material context, mesh, and GL core includes remain parent-reviewed.
 
 Rules for this round:
 
@@ -1662,7 +1668,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-06-01 PBR Shadow Atlas Render Pass Header Boundary Cleanup.
+Round: 2026-06-01 PBR Deferred Lighting Grid Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1670,20 +1676,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: remove complete camera, light, mesh, shader, and shader library headers from the `PBRShadowAtlasRenderPass` public header while keeping `PBRShadowAtlasRenderTargets.h` for stats/target types; keep actual CSM/point shadow atlas rendering and alpha-mask shadow dependencies in the implementation file.
+- Current local implementation target for this slice: remove complete material binding context, mesh, and GL core headers from PBR deferred lighting/light buffer/tiled grid/clustered grid public headers where they are only needed by implementation; keep light-grid stats/config/value-member dependencies intact.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the PBR Shadow Atlas Render Pass Header Boundary Cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the PBR Deferred Lighting Grid Header Boundary Cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `renderer/PBRShadowAtlasRenderPass.h`, `renderer/PBRShadowAtlasRenderPass.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `renderer/PBRDeferredLightingPass.h`, `renderer/PBRDeferredLightingPass.cpp`, `renderer/PBRDeferredLightBuffer.h`, `renderer/PBRDeferredLightBuffer.cpp`, `renderer/PBRDeferredTiledLightGrid.h`, `renderer/PBRDeferredTiledLightGrid.cpp`, `renderer/PBRDeferredClusteredLightGrid.h`, `renderer/PBRDeferredClusteredLightGrid.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's PBR Shadow Atlas Render Pass header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Scene Render Pass header cleanup was parent-owned and had no delegated write scope.
 - Previous round's PBR Draw Pass header cleanup was parent-owned and had no delegated write scope.
 - Previous round's Draw Helper Debug Quad header cleanup was parent-owned and had no delegated write scope.

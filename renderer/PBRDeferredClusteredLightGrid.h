@@ -3,12 +3,12 @@
 #include <memory>
 #include <vector>
 
-#include "core.h"
-#include "renderer/MaterialBindingContext.h"
 #include "renderer/PBRDeferredLightCullingConfig.h"
+#include "third_party/glm/glm.hpp"
 
 namespace GLframework
 {
+	struct MaterialBindingContext;
 	class Shader;
 
 	class PBRDeferredClusteredLightGrid

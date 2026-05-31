@@ -2,14 +2,14 @@
 
 #include <memory>
 
-#include "MaterialBindingContext.h"
-#include "mesh/mesh.h"
 #include "renderer/PBRDeferredClusteredLightGrid.h"
 #include "renderer/PBRDeferredLightBuffer.h"
 #include "renderer/PBRDeferredTiledLightGrid.h"
 
 namespace GLframework
 {
+	struct MaterialBindingContext;
+	class Mesh;
 	class PBRGBufferRenderTargets;
 	struct RendererFramePassProfile;
 	class Shader;

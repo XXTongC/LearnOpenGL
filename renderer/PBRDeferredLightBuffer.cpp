@@ -3,9 +3,11 @@
 #include <algorithm>
 #include <array>
 
+#include "core.h"
 #include "light/ambientLight.h"
 #include "light/directionalLight.h"
 #include "light/pointLight.h"
+#include "renderer/MaterialBindingContext.h"
 
 using namespace GLframework;
 

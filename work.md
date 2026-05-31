@@ -8370,3 +8370,26 @@ Subagent 审查：
 
 - 这是 `PBRShadowAtlasRenderPass` public include boundary cleanup，不改变 shadow atlas target prepare、CSM cascade generation、point shadow cubemap face rendering、alpha-masked shadow branch、shadow draw statistics、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 PBR Deferred Lighting Grid Header Boundary Cleanup
+
+本轮继续 renderer header surface audit。审计确认：`PBRDeferredLightingPass.h` 直接 include 完整 `MaterialBindingContext.h` 与 `mesh/mesh.h`，但 context 只作为引用参数，lighting quad mesh 只通过 `std::shared_ptr<Mesh>` 保存；`PBRDeferredLightBuffer.h`、`PBRDeferredTiledLightGrid.h` 与 `PBRDeferredClusteredLightGrid.h` 也为了 `MaterialBindingContext` 引用参数和 implementation GL/GLM 需求传播完整 context/core 头。真正读取 camera、point lights、ambient/directional lights、创建 SSBO、生成 CPU tiled/clustered light grid、dispatch clustered compute 和构造 lighting quad mesh 的逻辑全部在对应 `.cpp`。
+
+新增与修改：
+
+- `PBRDeferredLightBuffer.h` 移除完整 `core.h` 与 `renderer/MaterialBindingContext.h` includes，新增 `MaterialBindingContext` forward declaration；`PBRDeferredLightBuffer.cpp` 显式 include `core.h` 与完整 context 头。
+- `PBRDeferredTiledLightGrid.h` 与 `PBRDeferredClusteredLightGrid.h` 移除完整 `core.h` 与 `renderer/MaterialBindingContext.h` includes，新增 `MaterialBindingContext` forward declaration，并显式 include `third_party/glm/glm.hpp` 作为 `glm::ivec4` 成员的轻量类型头。
+- `PBRDeferredLightingPass.h` 移除完整 `MaterialBindingContext.h` 与 `mesh/mesh.h` includes，新增 `MaterialBindingContext` 与 `Mesh` forward declarations，继续按值保留 deferred light buffer / tiled grid / clustered grid 成员所需的完整成员类型头。
+- `PBRDeferredLightingPass.cpp`、`PBRDeferredTiledLightGrid.cpp` 与 `PBRDeferredClusteredLightGrid.cpp` 显式 include `core.h` / full context / mesh / shader dependencies，保证实际 GL buffer、shader uniform、mesh quad 和 context 字段访问留在 implementation。
+
+已完成验证：
+
+- 静态检查确认 deferred lighting/light-grid headers 不再 include 完整 `MaterialBindingContext.h`、`mesh/mesh.h` 或 `core.h`，完整依赖均下沉到对应 `.cpp`。
+- 静态检查确认调用点覆盖 deferred lighting pass、tiled/clustered debug passes、renderer facade 与 frame pass registry；public API 未改名也未改变参数。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes deferred,deferred-untiled-lights,deferred-tiled-lights,deferred-tiled-heatmap,deferred-clustered-layout,deferred-clustered-grid,deferred-clustered-heatmap,renderer-backend-registry-noop,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `PBRDeferredLightBuffer.cpp`、`PBRDeferredTiledLightGrid.cpp`、`PBRDeferredClusteredLightGrid.cpp`、`PBRDeferredLightingPass.cpp` 以及对应 tiled/clustered debug pass；九条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 deferred lighting / light grid public include boundary cleanup，不改变 deferred lighting draw、SSBO light packing、CPU tiled light grid、GPU clustered light grid、tiled/clustered heatmap debug、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

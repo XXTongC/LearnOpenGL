@@ -269,6 +269,7 @@ passed
 - PBR Draw Pass Header Boundary Cleanup 已接入：`PBRDepthPrepass.h`、`PBRGBufferPass.h` 与 `PBRSceneRenderPass.h` 不再 include 完整 mesh、material binding context 或 shader library headers，只 forward declare 参数类型；实际 PBR material 判断、shader uniform、G-buffer target 和 mesh draw 依赖集中到各自 `.cpp`。
 - Scene Render Pass Header Boundary Cleanup 已接入：`SceneRenderPass.h` 不再 include 完整 material、mesh、material binding context、shader 或 shader library headers，只 forward declare 参数类型；实际 legacy material 选择、render state、shader binding 和 mesh draw 依赖集中到 `SceneRenderPass.cpp`。
 - PBR Shadow Atlas Render Pass Header Boundary Cleanup 已接入：`PBRShadowAtlasRenderPass.h` 不再 include 完整 camera、directional/point light、mesh 或 shader library headers，只保留 atlas stats/target 类型头和参数前置声明；实际 CSM cascade、point shadow cubemap face、alpha-mask shadow shader、mesh draw 和 shader uniform 依赖集中到 `PBRShadowAtlasRenderPass.cpp`。
+- PBR Deferred Lighting Grid Header Boundary Cleanup 已接入：`PBRDeferredLightingPass.h`、`PBRDeferredLightBuffer.h`、`PBRDeferredTiledLightGrid.h` 与 `PBRDeferredClusteredLightGrid.h` 不再 include 完整 material binding context、mesh 或 GL core headers，只保留必要的 light culling config/stats/value-member 类型与 `glm::ivec4` 轻量头；实际 context 字段读取、light packing、CPU tiled/clustered grid 构建、GPU clustered dispatch、lighting quad mesh 和 GL buffer 操作依赖集中到对应 `.cpp`。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -329,6 +330,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：PBR Shadow Atlas Render Pass Header Boundary Cleanup 已接入后，`PBRShadowAtlasRenderPass.h` 只保留 atlas stats/target 类型头与 camera/light/mesh/shader library 参数前置声明，完整 camera/light/mesh/shader 依赖下沉到 `PBRShadowAtlasRenderPass.cpp`；下一步继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+当前最新修正：PBR Deferred Lighting Grid Header Boundary Cleanup 已接入后，deferred lighting/light-grid headers 只保留必要 stats/config/value-member 类型和参数前置声明，完整 material context、mesh 与 GL core 依赖下沉到对应 `.cpp`；下一步继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 PBR shadow atlas render pass header boundary cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 PBR deferred lighting grid header boundary cleanup 后，下一步优先继续 runtime/renderer header surface audit 或 Engine public header 低风险 include audit；当前不建议继续扩张 PBR pass。
