@@ -26,6 +26,11 @@ namespace GL_EDITOR
 			case PropertyKind::Float:
 			{
 				float value = property.getFloat();
+				if (property.readOnly)
+				{
+					ImGui::Text("%s: %.3f", property.label.c_str(), value);
+					break;
+				}
 				if (ImGui::SliderFloat(property.label.c_str(), &value, property.minValue, property.maxValue, property.format.c_str()))
 				{
 					property.setFloat(value);
@@ -37,6 +42,11 @@ namespace GL_EDITOR
 			case PropertyKind::Bool:
 			{
 				bool value = property.getBool();
+				if (property.readOnly)
+				{
+					ImGui::Text("%s: %s", property.label.c_str(), value ? "yes" : "no");
+					break;
+				}
 				if (ImGui::Checkbox(property.label.c_str(), &value))
 				{
 					property.setBool(value);
@@ -48,6 +58,11 @@ namespace GL_EDITOR
 			case PropertyKind::Int:
 			{
 				int value = property.getInt();
+				if (property.readOnly)
+				{
+					ImGui::Text("%s: %d", property.label.c_str(), value);
+					break;
+				}
 				if (ImGui::SliderInt(property.label.c_str(), &value, static_cast<int>(property.minValue), static_cast<int>(property.maxValue)))
 				{
 					property.setInt(value);
@@ -59,6 +74,17 @@ namespace GL_EDITOR
 			case PropertyKind::Vec3:
 			{
 				glm::vec3 value = property.getVec3();
+				if (property.readOnly)
+				{
+					ImGui::Text(
+						"%s: %.3f, %.3f, %.3f",
+						property.label.c_str(),
+						value.x,
+						value.y,
+						value.z
+					);
+					break;
+				}
 				float buffer[3] = { value.x, value.y, value.z };
 				if (ImGui::InputFloat3(property.label.c_str(), buffer))
 				{
@@ -71,6 +97,17 @@ namespace GL_EDITOR
 			case PropertyKind::Color3:
 			{
 				glm::vec3 value = property.getVec3();
+				if (property.readOnly)
+				{
+					ImGui::Text(
+						"%s: %.3f, %.3f, %.3f",
+						property.label.c_str(),
+						value.x,
+						value.y,
+						value.z
+					);
+					break;
+				}
 				float buffer[3] = { value.x, value.y, value.z };
 				if (ImGui::ColorEdit3(property.label.c_str(), buffer))
 				{
@@ -82,6 +119,12 @@ namespace GL_EDITOR
 
 			case PropertyKind::String:
 			{
+				if (property.readOnly)
+				{
+					const std::string value = property.getText();
+					ImGui::TextWrapped("%s: %s", property.label.c_str(), value.c_str());
+					break;
+				}
 				const size_t capacity = property.stringCapacity > 1 ? property.stringCapacity : 2;
 				std::vector<char> buffer(capacity, '\0');
 				const std::string value = property.getText();

@@ -2,6 +2,7 @@
 #include "../../../camera/perspectivecamera.h"
 using namespace GLframework;
 std::shared_ptr<Texture> PointLightShadow::mSharedDepthTexture = nullptr;
+int PointLightShadow::MAX_POINT_LIGHTS = 2;
 
 PointLightShadow::PointLightShadow(int maxLights,int shadowMapIndex)
 {
@@ -25,7 +26,7 @@ PointLightShadow::~PointLightShadow()
 }
 PointLightShadow::PointLightShadow()
 {
-    mCamera = std::make_shared<PerspectiveCamera>(90.0f, 1.0, 0.1f, 1000.0f);
+    mCamera = std::make_shared<PerspectiveCamera>(90.0f, 1.0f, 0.1f, 1000.0f);
     mRenderTarget = Framebuffer::createPointLightShadowFBO(1024, 1024, getMAX_POINT_LIGHT() * 6);
 }
 

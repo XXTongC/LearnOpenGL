@@ -1,5 +1,7 @@
 #include "RuntimeBootstrapper.h"
 
+#include "RuntimeBootstrapperCallbacks.h"
+
 int GL_RUNTIME::RuntimeBootstrapper::run(const RuntimeBootstrapperCallbacks& callbacks)
 {
 	if (!callbacks.initialize || !callbacks.shouldContinue || !callbacks.runFrame)

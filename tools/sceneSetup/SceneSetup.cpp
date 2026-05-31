@@ -248,3 +248,22 @@ void GL_SCENE::prepareDefaultScene(SetupContext& context)
 	prepareEnvironmentPrecompute(context);
 	prepareLights(context);
 }
+
+void GL_SCENE::prepareSceneInfrastructure(SetupContext& context)
+{
+	prepareRenderResources(context);
+	prepareSkyBox(context);
+	prepareScreenPass(context);
+	prepareEnvironmentPrecompute(context);
+	prepareLights(context);
+}
+
+void GL_SCENE::prepareLegacyDefaultSceneContent(SetupContext& context)
+{
+	prepareRoomScene(context);
+}
+
+void GL_SCENE::prepareConfiguredPBRPreview(SetupContext& context)
+{
+	preparePBRPreview(context);
+}

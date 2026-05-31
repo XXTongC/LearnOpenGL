@@ -2296,3 +2296,5268 @@ clustered compute assignment 已经能在 GPU 上生成 clustered light grid，�
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes showcase-spheres`：构建通过；输出 `pbrShowcaseSpheres=6`、`pbrGBufferDrawCalls=26`、`pbrDeferredLightingDrawCalls=1`、`pointShadowLights=8`、`pbrDeferredTiledLightGridBound=yes`、`pbrDeferredTiledLightGridIndices=7167/28800`。
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：通过；默认 PBR 回归从 28 个 mode 增加到 29 个 mode，新增 `showcase-spheres`。
 - 已生成本地截图 `out/pbr_showcase_spheres_verification.ppm`，并临时转换为 `out/pbr_showcase_spheres_verification.png` 做视觉检查。
+
+### 2026-05-25 Engine Transformation Project Book Draft
+
+在确认 PBR 已经不应继续作为项目中心扩张后，本轮将“后续引擎化改造”从路线判断推进为可审核的项目书和接口草案：
+
+- 新增 `docs/engine_transformation_project_plan.md`，作为后续引擎化改造项目方案。文档明确当前基线、项目目标、非目标、总体架构、Phase 0 到 Phase 6 的阶段计划、验收门槛、风险控制和需要用户审核的问题。
+- 新增 `docs/engine_interface_design.md`，作为后续接口设计草案。文档定义 Engine Core、Scene / Entity、Asset、Property Schema、Renderer、Editor、Input、Diagnostics / Verification 等接口边界，并明确哪些只是过渡 adapter、哪些是长期 engine-facing API。
+- 新增 `docs/aigc_engine_workflow_requirements.md`，作为本项目后续 AIGC 协作范式要求。文档明确文档先行、当前状态优先、小步验证、`worked.md` 记录、任务分级、标准工作循环、Git 约束、verification 要求和审核清单。
+- 新增 `docs/engine_project_book.md`，作为本轮文档包总入口，集中说明项目结论摘要、审核文档清单、必须审核的十个决策、Phase 1 第一轮工作和当前本地状态提醒。
+- 新增 `docs/engine_project_approval_checklist.md`，把用户审核入口集中为决策表，明确哪些方向必须确认、哪些内容可后续微调，以及进入 Phase 1 前需要处理的本地状态。
+- 新增 `docs/engine_phase1_execution_plan.md`，把审核通过后的第一轮 Engine Core 实现拆成可执行步骤：只新增 `engine/IEngineModule.h`、`engine/EngineContext.h`、`engine/Engine.h/.cpp` 并注册工程，不接管 renderer、不迁移 scene、不改变启动行为。
+
+本轮只做文档设计，不修改运行时代码。下一步应先由用户审核项目书文档包，再决定是否进入 Phase 1 的 Engine Core 最小接口实现。
+
+### 2026-05-25 UE5 Inspired Framework Direction And Phase 1 Skeleton
+
+根据最新目标，前一轮“等待审核的 Entity / Renderer boundary 项目书”被修正为“UE5 启发式引擎框架，自主推进”：
+
+- `docs/engine_project_book.md` 改为 UE5 启发式项目书，明确主线为 `Engine -> World -> Level -> Actor -> Component -> Subsystem`。
+- `docs/engine_interface_design.md` 改为 UE5 启发式接口设计，原 `EntityId / RenderWorldSnapshot` 主线降级为未来内部实现细节。
+- `docs/engine_transformation_project_plan.md` 改为 UE5 启发式阶段方案，Phase 1 直接落 framework skeleton。
+- `docs/aigc_engine_workflow_requirements.md` 改为自主推进规则，不再以人工审核阻塞当前阶段。
+- `docs/engine_project_approval_checklist.md` 改为自主执行检查清单。
+- `docs/engine_phase1_execution_plan.md` 改为 UE5 启发式 Phase 1 执行计划，并在验证通过后记录为 `Implemented and verified`。
+
+本轮新增第一批非侵入式 engine framework 代码：
+
+- `engine/Transform.h`
+- `engine/EngineObject.h/.cpp`
+- `engine/EngineContext.h`
+- `engine/EngineSubsystem.h`
+- `engine/ActorComponent.h/.cpp`
+- `engine/SceneComponent.h/.cpp`
+- `engine/Actor.h/.cpp`
+- `engine/Level.h/.cpp`
+- `engine/World.h/.cpp`
+- `engine/Engine.h/.cpp`
+- `engine/RendererSubsystem.h/.cpp`
+- `engine/ActorAdapters.h/.cpp`
+
+工程接入：
+
+- 更新 `text2.vcxproj`，注册新增 `engine` 源文件和头文件。
+- 更新 `text2.vcxproj.filters`，新增 `cppfile\GLengine` 与 `include\GLengine` 过滤器。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes showcase-spheres -DiscardCaptures`：构建通过；`--verify-pbr-showcase-spheres` 通过；输出 `pbrShowcaseSpheres=6`、`pbrDeferredLightingDrawCalls=1`、`pbrDeferredTiledLightGridBound=yes`。
+- 新增 `RendererSubsystem` 后重新执行同一命令：构建通过；`RendererSubsystem.cpp` 参与编译；`--verify-pbr-showcase-spheres` 继续通过。
+- 新增 `ActorAdapters` 后重新执行同一命令：构建通过；`ActorAdapters.cpp` 参与编译；`--verify-pbr-showcase-spheres` 继续通过。
+
+下一步建议：
+
+- 新增 World-driven scene setup，让一个最小场景片段由 `World / Level / Actor` 生成，同时保留旧 scene path。
+
+### 2026-05-25 Legacy Scene To World Bridge
+
+本轮继续 UE5 启发式引擎化方向，完成旧 `Scene / Object` 树到新 `World / Level / Actor` 框架的第一版非侵入式桥接：
+
+- `ActorAdapters` 新增 `LegacyObjectComponent` 和 `LegacyObjectActor`，用于承载旧 `GLframework::Object` 指针。
+- 新增 `engine/LegacySceneWorldBuilder.h/.cpp`，提供 `importScene(...)`、`importObjectTree(...)` 和 `makeTransform(...)`。
+- `LegacySceneWorldBuilder` 会把旧 `Scene / Object / Mesh / InstancedMesh / Light` 递归导入到 `Level`：
+  - `Mesh / InstancedMesh` 生成 `MeshActor`。
+  - `Light` 生成 `LightActor`。
+  - 普通 `Object / Scene` 生成 `LegacyObjectActor`。
+  - 旧对象的 position / rotation / scale 写入新 `SceneComponent::relativeTransform`。
+  - 旧对象父子关系映射为 `SceneComponent::attachTo(...)`。
+- 更新 `text2.vcxproj` 和 `text2.vcxproj.filters`，将新增 bridge 文件纳入 `cppfile\GLengine` / `include\GLengine`。
+
+这一步仍然不修改 `main.cpp`，不接管旧 `SceneSetup`，不改变 renderer 执行路径。它的意义是先让旧场景数据能被新框架表示，后续再逐步把 editor hierarchy、scene setup 和 runtime composition root 切到 `World / Level / Actor`。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes showcase-spheres -DiscardCaptures`：通过；`LegacySceneWorldBuilder.cpp` 已参与 `Debug|x64` 构建；PBR showcase 仍输出 `pbrShowcaseSpheres=6`、`pbrDeferredLightingDrawCalls=1`、`pbrDeferredTiledLightGridBound=yes`。
+- 独立 smoke：使用临时 C++ 程序构造旧 `Scene -> Object -> Object`，调用 `LegacySceneWorldBuilder::importScene(...)`，验证生成 3 个 Actor、2 条组件 attach、transform 导入正确，退出码为 0。
+
+下一步建议：
+
+- 把一个受控的 scene setup probe 改为先生成 `World / Level / Actor`，再由 adapter 回填旧 renderer 所需的 `Scene`，验证新框架可以开始驱动场景装配。
+
+### 2026-05-25 World Driven Scene Export Probe
+
+本轮完成了上一节提出的受控 scene setup probe：新框架先生成场景片段，再回填旧 renderer 所需的 `GLframework::Scene`。
+
+新增与修改：
+
+- 新增 `engine/WorldLegacySceneExporter.h/.cpp`，用于从 `World / Level / Actor` 导出旧 `Scene` 可渲染对象。
+- `WorldLegacySceneExporter` 遍历 `MeshComponent`、`LightComponent`、`LegacyObjectComponent`，把组件持有的旧对象加入目标 `Scene`。
+- 导出时会把 `SceneComponent::relativeTransform` 写回旧 `Object` 的 position / rotation / scale。
+- 新 `SceneComponent` 父子关系会被映射成旧 `Object::addChild(...)`，因此旧 renderer 仍可通过旧对象树递归渲染。
+- 新增 `--verify-engine-world-scene-probe`，验证模式内部创建一个 `GLengine::World`，在 `Level` 中生成 root `LegacyObjectActor` 和 child `MeshActor`，再通过 `WorldLegacySceneExporter` 回填到 `sceneOffScreen`。
+- `tools/verify_pbr.ps1` 新增 `engine-world-scene-probe` mode，并将其纳入默认 PBR verification 列表。
+- `RuntimePBRVerification` 新增 `engineWorldProbeMeshes` 场景统计和 `Engine world scene probe stats` bridge 统计输出。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-probe -DiscardCaptures`：构建通过；`WorldLegacySceneExporter.cpp`、`RuntimePBRVerification.cpp`、`RuntimePBRVerificationArgs.cpp` 参与编译；`engineWorldProbeMeshes=1`；`pbrGBufferDrawCalls=26`；`pbrDeferredLightingDrawCalls=1`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 PBR 回归通过；当前默认 mode 数量从 29 增加到 30，新增 `engine-world-scene-probe`。
+
+结论：
+
+- 当前已经证明新 `World / Level / Actor` 不只是能“包住旧对象”，还可以作为受控 scene setup 的来源，并通过 adapter 回填给旧 renderer。
+- 默认启动行为仍未改变；`main.cpp` 未接管新 engine；renderer 主流程未被改写。
+
+下一步建议：
+
+- 把这个 verification-only probe 提取成 `tools/sceneSetup` 下的可复用 World-driven scene setup helper，让 runtime 后续可以按配置选择旧 scene setup 或新 World setup。
+
+### 2026-05-25 World Driven Scene Setup Helper
+
+本轮将上一节的 verification-only probe 抽成 `tools/sceneSetup` 下的可复用 helper，继续推进从“验证专用桥接”到“可被 runtime 组合根复用的场景生成入口”。
+
+新增与修改：
+
+- 新增 `tools/sceneSetup/WorldDrivenSceneSetup.h/.cpp`。
+- `WorldDrivenSceneSetup` 目前提供：
+  - `addEngineWorldSceneProbe(renderer, scene)`：创建一个临时 `GLengine::World`，在 persistent `Level` 中生成 root `LegacyObjectActor` 与 child `MeshActor`，再通过 `WorldLegacySceneExporter` 导出到旧 `GLframework::Scene`。
+  - `formatEngineWorldSceneProbeStats(...)`：统一输出 bridge stats，保持 `tools/verify_pbr.ps1` 可继续解析。
+- `RuntimePBRVerification.cpp` 不再直接 include `ActorAdapters / Level / World / WorldLegacySceneExporter`，而是调用 `GL_SCENE::addEngineWorldSceneProbe(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 helper 源文件和头文件。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-probe -DiscardCaptures`：构建通过；`WorldDrivenSceneSetup.cpp` 与 `RuntimePBRVerification.cpp` 参与编译；`engineWorldProbeMeshes=1`；`pbrGBufferDrawCalls=26`；`pbrDeferredLightingDrawCalls=1`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 30 个 PBR verification mode 全部通过。
+- `git diff --check`：无 whitespace error，仅有既有 LF/CRLF warning。
+
+结论：
+
+- 当前新框架已经具备双向 adapter：旧 `Scene` 可导入新 `World`，新 `World` 也可导出旧 `Scene`。
+- World-driven scene setup 不再只存在于 `RuntimePBRVerification` 匿名函数里，已经成为 `tools/sceneSetup` 下可复用模块。
+- 默认启动行为仍未改变；`main.cpp` 未接管新 engine；旧 `prepareDefaultScene(...)` 仍是主路径。
+
+下一步建议：
+
+- 在 `tools/sceneSetup` 增加一个可配置的 scene setup 入口，让 runtime composition root 可以选择旧 `prepareDefaultScene(...)` 或新 World-driven setup helper，并先只在验证模式下启用。
+
+### 2026-05-25 Scene Setup Pipeline Entry
+
+本轮继续上一节的下一步，新增非侵入式 scene setup pipeline 入口。目标不是替换旧场景，而是先把 runtime composition root 从“直接调用旧 `prepareDefaultScene(...)`”改为“通过一个可配置 pipeline 调用旧路径”，为后续切换 World-driven setup 留出明确入口。
+
+新增与修改：
+
+- 新增 `tools/sceneSetup/SceneSetupPipeline.h/.cpp`。
+- `SceneSetupPipelineConfig` 当前包含：
+  - `useLegacyDefaultScene`：默认 `true`，保持现有旧场景准备路径。
+  - `addWorldDrivenProbe`：默认 `false`，可在后续验证模式中把 World-driven probe 追加到目标 scene。
+- `SceneSetupPipelineResult` 当前记录旧路径是否执行、World probe 是否请求，以及 `WorldDrivenSceneProbeStats`。
+- `RuntimeScenePreparer::prepare(...)` 不再直接调用 `GL_SCENE::prepareDefaultScene(...)`，而是调用 `GL_SCENE::prepareScene(sceneSetupContext, config.sceneSetupPipeline)`。
+- `RuntimeScenePrepareConfig` 新增 `sceneSetupPipeline` 字段，默认配置等价于旧行为。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 pipeline 源文件和头文件。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes showcase-spheres,engine-world-scene-probe -DiscardCaptures`：构建通过；`SceneSetupPipeline.cpp` 参与编译；`showcase-spheres` 和 `engine-world-scene-probe` 均通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 30 个 PBR verification mode 全部通过。
+
+结论：
+
+- Runtime composition root 已经有第一层 scene setup pipeline seam。
+- 默认行为仍保持旧 `prepareDefaultScene(...)`，没有改 `main.cpp`，没有接管 renderer，也没有删除旧 scene path。
+- 后续可以在验证配置中启用 `addWorldDrivenProbe` 或逐步新增真正的 World-driven scene preset，而不需要再次改动 `RuntimeScenePreparer` 的调用结构。
+
+下一步建议：
+
+- 把 `SceneSetupPipelineConfig` 接入 runtime verification args/profile，让某个验证模式通过 pipeline 配置追加 World-driven probe，而不是在 `RuntimePBRVerification::addVerificationSceneProbes(...)` 后置追加。
+
+### 2026-05-25 Scene Setup Pipeline Verification Integration
+
+本轮完成上一节的下一步：`engine-world-scene-probe` 不再由 `RuntimePBRVerification::addVerificationSceneProbes(...)` 后置追加，而是通过 `SceneSetupPipelineConfig` 在 scene prepare 阶段注入。
+
+新增与修改：
+
+- `RuntimeApplicationShell::makeScenePrepareConfig()` 会把 `pbrVerification.enableEngineWorldSceneProbe` 映射为 `sceneSetupPipeline.addWorldDrivenProbe`。
+- `RuntimeScenePreparer::prepare(...)` 在 `GL_SCENE::prepareScene(...)` 返回后，统一输出 `Engine world scene probe stats`。
+- `RuntimePBRVerification::addVerificationSceneProbes(...)` 移除了 World-driven probe 的后置添加逻辑，只保留 PBR 透明、emissive、material IBL、alpha mask、import、texture set、showcase spheres 等 PBR 专用 probe。
+- `RuntimePBRVerification` 仍保留 `enableEngineWorldSceneProbe` 的 profile 说明和 `engineWorldProbeMeshes` 场景统计，用于验证 pipeline 注入后的结果。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-probe -DiscardCaptures`：构建通过；`RuntimeApplicationShell.cpp`、`RuntimePBRVerification.cpp`、`RuntimeScenePreparer.cpp` 参与编译；`engineWorldProbeMeshes=1`；`pbrGBufferDrawCalls=26`；`pbrDeferredLightingDrawCalls=1`。
+- `out/pbr_verify_engine-world-scene-probe.log` 中 `Engine world scene probe stats` 只输出 1 次，确认没有 pipeline 与 verification 后置重复添加。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 30 个 PBR verification mode 全部通过。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- World-driven scene setup 已正式进入 runtime scene prepare 阶段，而不是 verification 后置阶段。
+- `RuntimeScenePreparer` 已成为 legacy scene path 与 World-driven setup 的实际组合点。
+- 当前默认运行仍保持旧 scene path，只有 `--verify-engine-world-scene-probe` 会通过 pipeline 追加 World-driven probe。
+
+下一步建议：
+
+- 在 `SceneSetupPipeline` 中新增一个真正的 World-driven minimal scene preset，不再只是追加单个 probe；该 preset 仍可导出到旧 `Scene`，用于验证后续 runtime 可以逐步从 legacy default scene 切到 World-first scene composition。
+
+### 2026-05-25 World Driven Minimal Scene Preset
+
+本轮完成上一节的下一步：`SceneSetupPipeline` 现在不只支持在旧默认场景上追加一个 probe，也支持准备一个真正由 `World / Level / Actor / Component` 生成的最小 PBR 场景。
+
+新增与修改：
+
+- `SceneSetup.h/.cpp` 新增三个可组合入口：
+  - `prepareSceneInfrastructure(...)`：创建 renderer、screen scene、world scene、frame targets、bloom、skybox、screen pass、IBL precompute 和 lights。
+  - `prepareLegacyDefaultSceneContent(...)`：只添加旧房间内容。
+  - `prepareConfiguredPBRPreview(...)`：只添加 profile 驱动的 PBR preview。
+- `prepareDefaultScene(...)` 仍保留旧调用顺序，默认启动行为不变。
+- `WorldDrivenSceneSetup.h/.cpp` 新增 `addEngineWorldMinimalScene(...)` 与 `formatEngineWorldMinimalSceneStats(...)`。
+- World-driven minimal scene 当前创建 1 个 root `LegacyObjectActor` 和 4 个 child `MeshActor`，包括 matte、metallic、gloss 和 emissive 四个 PBR sphere。
+- `SceneSetupPipelineConfig` 新增 `useWorldDrivenMinimalScene`；当 legacy default scene 关闭时，pipeline 会先准备基础设施，再导出 World-driven minimal scene。
+- `RuntimePBRVerificationArgs.cpp` 新增 `--verify-engine-world-minimal-scene`。
+- `RuntimeApplicationShell::makeScenePrepareConfig()` 会在该模式下设置 `useWorldDrivenMinimalScene=true` 并关闭 `useLegacyDefaultScene`。
+- `RuntimePBRVerification.cpp` 新增 `enableEngineWorldMinimalScene`、`engineWorldMinimalMeshes` 场景统计、minimal scene 专用 camera / light rig，并让该模式不再准备默认 5x5 PBR preview grid。
+- `tools/verify_pbr.ps1` 新增 `engine-world-minimal-scene` mode，并断言：
+  - `engineWorldMinimalMeshes >= 4`
+  - `pbrPreviewMeshes == 0`
+  - bridge stats 至少 5 个 Actor / 5 个 SceneComponent / 5 个导出对象 / 4 个导出 mesh / 1 个 root / 4 条 attachment
+  - `pbrGBufferDrawCalls >= 4`
+  - deferred lighting pass 正常绘制
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-probe,engine-world-minimal-scene -DiscardCaptures`：构建通过；`SceneSetup.cpp`、`SceneSetupPipeline.cpp`、`WorldDrivenSceneSetup.cpp`、`RuntimeApplicationShell.cpp`、`RuntimePBRVerification.cpp`、`RuntimePBRVerificationArgs.cpp`、`RuntimeScenePreparer.cpp` 参与编译；两个重点 mode 均通过。
+- `out/pbr_verify_engine-world-minimal-scene.log` 中 `Engine world minimal scene stats` 输出为 `actors=5`、`sceneComponents=5`、`exportedObjects=5`、`exportedMeshes=4`、`sceneRootObjects=1`、`objectAttachments=4`。
+- minimal scene 的 `PBR verification scene stats` 输出 `objects=6`、`meshes=4`、`pbrMeshes=4`、`pbrPreviewMeshes=0`、`engineWorldMinimalMeshes=4`、`iblReady=yes`。
+- minimal scene 的 renderer stats 输出 `pbrDepthPrepassDrawCalls=4`、`pbrGBufferDrawCalls=4`、`pbrDeferredLightingDrawCalls=1`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- `SceneSetupPipeline` 已经具备从 legacy default scene 切到 World-first scene composition 的第一个可验证开关。
+- 当前仍未修改 `main.cpp`，默认运行仍保持旧 scene path。
+- 这个 minimal scene 仍通过 exporter 回填旧 `GLframework::Scene`，说明 renderer 尚未被新 `World` 直接驱动。
+
+下一步建议：
+
+- 让 `AppRuntimeContext` 或新的 runtime composition root 持有一个持久 `GLengine::World`，把 World-driven scene 从“局部临时构造后导出”升级为“runtime 状态的一部分”，为后续 Editor hierarchy 切到 `World / Level / Actor` 做准备。
+
+### 2026-05-25 Runtime Persistent World Ownership
+
+本轮完成上一节的下一步：World-driven scene 不再只存在于 `WorldDrivenSceneSetup` 的局部变量中，runtime context 现在可以持有准备阶段生成的 `GLengine::World`。
+
+新增与修改：
+
+- `AppRuntimeContext` 新增 `std::shared_ptr<GLengine::World> engineWorld`。
+- `SetupContext` 新增 `engineWorld` 引用，`RuntimeScenePreparer::makeSceneSetupContext(...)` 会把 `context.engineWorld` 传入 scene setup pipeline。
+- `SceneSetupPipeline.cpp` 在 `useWorldDrivenMinimalScene` 或 `addWorldDrivenProbe` 启用时创建/重置 `context.engineWorld`，再把该 World 传给 World-driven scene setup helper。
+- `WorldDrivenSceneSetup.h/.cpp` 为 `addEngineWorldSceneProbe(...)` 和 `addEngineWorldMinimalScene(...)` 新增接收 `GLengine::World&` 的重载；旧的无 World 参数函数保留为兼容包装。
+- `RuntimePBRVerification.cpp` 的 scene stats 新增 `runtimeWorldActors`，用于证明 Actor 保留在 runtime context 的 `engineWorld` 中，而不仅仅被导出到旧 `Scene`。
+- `tools/verify_pbr.ps1` 对 `engine-world-scene-probe` 和 `engine-world-minimal-scene` 新增 `runtimeWorldActors` 断言。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-probe,engine-world-minimal-scene -DiscardCaptures`：构建通过；`AppRuntimeContext.h` 变更触发 runtime 相关编译；两个重点 mode 均通过。
+- `engine-world-scene-probe` scene stats 输出 `runtimeWorldActors=2`，同时保持 `engineWorldProbeMeshes=1`、`pbrGBufferDrawCalls=26`、`pbrDeferredLightingDrawCalls=1`。
+- `engine-world-minimal-scene` scene stats 输出 `runtimeWorldActors=5`、`engineWorldMinimalMeshes=4`、`pbrPreviewMeshes=0`，renderer stats 输出 `pbrGBufferDrawCalls=4`、`pbrDeferredLightingDrawCalls=1`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- World-driven scene 已经从“临时构造后立即导出”升级为“runtime context 持有 World，再导出给旧 renderer”。
+- 当前旧默认 verification mode 中 `runtimeWorldActors=0`，说明默认旧 scene path 仍未被强行迁移。
+- renderer 仍通过旧 `Scene` 消费对象；`engineWorld` 当前是 runtime/editor 后续迁移的状态源，不是 renderer 的直接输入源。
+
+下一步建议：
+
+- 将 `engineWorld` 暴露给 Editor hierarchy，先以只读 World / Level / Actor 树显示和选择为目标，再把 inspector 从旧 `Object` 逐步扩展到 Actor / Component。
+
+### 2026-05-25 Editor Engine World Hierarchy Read Only
+
+本轮完成上一节的下一步：runtime 持有的 `engineWorld` 已经暴露给 Editor hierarchy，当前以只读 World / Level / Actor 树显示和 Actor 选择为目标。
+
+新增与修改：
+
+- `EditorPanelContext` 新增 `engineWorld`，`RuntimeEditorPanelCoordinator::makeEditorPanelContext(...)` 会把 `AppRuntimeContext::engineWorld` 传给 Editor panels。
+- `SelectionContext` 新增 `SelectionKind::Actor` 与 `selectedActor`，并新增 `getSelectedActor(...)` / `selectActor(...)`。
+- `drawHierarchyPanel(...)` 新增 `Engine World` 分组，用于显示 runtime `World -> Persistent Level -> Actor -> Component` 树。
+- Actor hierarchy 节点支持选中高亮；Component 节点当前点击后选择其 owning Actor，避免在没有 Component inspector 编辑模型前引入不完整的可编辑状态。
+- `drawSelectionInspectorPanel(...)` 已接入 Actor inspector，当前只读展示 Actor name / type / object id / world / level / components，以及 root `SceneComponent` 的 relative transform 和 attachment 数量。
+- 当前实现不改变旧 `Scenes / Lights / Cameras` hierarchy，也不改变旧 `Object / Light / Camera / Shadow` inspector 编辑路径。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-minimal-scene -DiscardCaptures`：构建通过；`RuntimeEditorPanelCoordinator.cpp` 与 `EditorPanels.cpp` 参与编译；`runtimeWorldActors=5`、`engineWorldMinimalMeshes=4`、`pbrPreviewMeshes=0`、`pbrGBufferDrawCalls=4`、`pbrDeferredLightingDrawCalls=1`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- Editor 已经可以在 runtime 侧并行观察旧 `Scene / Object` tree 和新 `World / Level / Actor` tree。
+- 当前 Actor inspector 是只读的，避免在 Component schema、undo/redo 和 property binding 未定型前过早引入可编辑状态。
+- 默认旧 scene path 中 `engineWorld` 仍可能为空；World-driven verification modes 会填充 `engineWorld`，这是当前可验证入口。
+
+下一步建议：
+
+- 让默认旧 scene path 也生成一个 read-only `engineWorld` mirror，或优先推进 Actor / Component property inspector 的可编辑 schema。前者更利于 Editor 统一观察，后者更利于后续真正编辑 World-driven 场景。
+
+### 2026-05-25 Legacy Scene Engine World Mirror
+
+本轮继续完成上一节建议中的第一项：默认旧 scene path 现在也会生成只读 `engineWorld` mirror，普通 legacy scene 不再只能在旧 Object hierarchy 中观察。
+
+新增与修改：
+
+- `SceneSetupPipelineConfig` 新增 `mirrorLegacySceneToEngineWorld`，默认开启。
+- `SceneSetupPipelineResult` 新增 `legacyWorldMirrorPrepared` 与 `legacyWorldMirrorStats`。
+- `SceneSetupPipeline.cpp` 在纯 legacy default scene 路径下调用 `LegacySceneWorldBuilder::importScene(...)`，把已准备好的 `sceneOffScreen` 导入 `AppRuntimeContext::engineWorld`。
+- mirror 逻辑明确排除 `useWorldDrivenMinimalScene` 和 `addWorldDrivenProbe`，避免 World-driven 模式把旧 scene mirror 再次导出回 renderer，造成重复对象。
+- `RuntimeScenePreparer` 新增 `Engine world legacy mirror stats` 日志输出。
+- `tools/verify_pbr.ps1` 在 `forward` mode 中新增 `ExpectLegacyWorldMirror` 断言，并在 summary 中输出 legacy mirror / engine probe / engine minimal stats。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene -DiscardCaptures`：构建通过；`SceneSetupPipeline.cpp` 与 `RuntimeScenePreparer.cpp` 参与编译。
+- `forward` scene stats 输出 `runtimeWorldActors=33`；legacy mirror stats 输出 `visitedObjects=33`、`actors=33`、`meshActors=32`、`legacyObjectActors=1`、`componentAttachments=32`。
+- `engine-world-scene-probe` 仍输出 `runtimeWorldActors=2` 和原本 probe bridge stats，确认没有把 legacy mirror 混入该 World-driven mode。
+- `engine-world-minimal-scene` 仍输出 `runtimeWorldActors=5`、`engineWorldMinimalMeshes=4`、`pbrPreviewMeshes=0`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- 普通 legacy default scene 现在也有 runtime `engineWorld`，Editor 的 `Engine World` hierarchy 在默认路径中不再为空。
+- 这个 mirror 是 read-only bridge，不改变 renderer 输入；renderer 仍消费旧 `GLframework::Scene`。
+- PBR verification 后置添加的 probe 当前不会进入 legacy mirror，因为 mirror 发生在 scene prepare 阶段。这符合 runtime 默认观察目标，但后续如果要编辑 verification probe，需要把 probe 也迁入 scene setup pipeline。
+
+下一步建议：
+
+- 进入 Actor / Component property schema：先定义只读/可写字段描述、编辑提交路径和未来 undo/redo 边界，再让 Actor inspector 从手写只读 UI 迁移为 schema-driven UI。
+
+### 2026-05-25 Actor Component Property Schema Inspector
+
+本轮完成上一节的下一步中的第一段：Actor inspector 已从手写只读 ImGui 行迁移到已有 `PropertyBuilder / drawProperties(...)` schema 体系。
+
+新增与修改：
+
+- `PropertyDescriptor` 新增 `readOnly` 标记。
+- `PropertyBuilder` 新增 `addReadOnlyFloat(...)`、`addReadOnlyBool(...)`、`addReadOnlyInt(...)`、`addReadOnlyVec3(...)` 和 `addReadOnlyString(...)`。
+- `drawProperties(...)` 对只读 float / bool / int / vec3 / color3 / string 使用文本展示，对可写字段继续走原有 ImGui 控件。
+- `EditorPanels.cpp` 新增 Actor schema builder：Actor name / type / object id / world / level / component count 现在由 schema 描述。
+- `EditorPanels.cpp` 新增 Component schema builder：Component name / type / owner / active / tick、`SceneComponent` relative transform、parent / children，以及 Mesh / Light / Camera / Legacy Object adapter 绑定信息现在由 schema 描述。
+- Actor inspector 当前仍保持只读，不对 `SceneComponent::setRelativeTransform(...)` 做写回。原因是当前 legacy mirror 是 read-only bridge，直接编辑 Actor transform 不会自动同步 renderer 中的旧 Object，会造成 UI 上“改了但画面没变”的假编辑。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；`EditorPanels.cpp`、`DebugControllerPanel.cpp` 和 profile/property schema 相关编译单元参与编译；`forward` 输出 `runtimeWorldActors=33`；`engine-world-minimal-scene` 输出 `runtimeWorldActors=5`、`engineWorldMinimalMeshes=4`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- Actor / Component inspector 已经开始从“为每种对象手写 UI”转向“字段描述驱动 UI”。
+- 当前 schema 已能统一表达只读字段和未来可写字段，复用了之前 PBR profile / material inspector 已经在使用的 property infrastructure。
+- 编辑功能仍未开启，这是刻意边界：需要先确定编辑提交后如何同步 Actor、adapter 持有的旧 Object、renderer scene，以及未来 undo/redo。
+
+下一步建议：
+
+- 增加 Actor / Component edit commit bridge：先只允许编辑 World-driven scene 中 `SceneComponent` relative transform，并在提交时同步 adapter 中的旧 `Object` transform；legacy mirror 继续只读。
+
+### 2026-05-25 Actor Component Edit Commit Bridge
+
+本轮完成上一节的下一步：Actor / Component inspector 不再只是只读 schema 展示，World-driven scene 中可以编辑具备旧 `Object` adapter 的 `SceneComponent` relative transform，并在提交时同步 renderer 仍在使用的旧对象 transform。
+
+新增与修改：
+
+- `AppRuntimeContext` 新增 `engineWorldEditable`，用于区分当前 runtime `engineWorld` 是 World-driven 可编辑源，还是 legacy scene 的只读 mirror。
+- `SetupContext` 传递 `engineWorldEditable`，`SceneSetupPipeline` 在每轮 scene prepare 开始时默认设为 `false`。
+- legacy mirror 路径继续把 `engineWorldEditable=false`，避免默认旧 scene path 变成“UI 上可改但 renderer 状态源不明确”的假编辑。
+- `useWorldDrivenMinimalScene` 与 `addWorldDrivenProbe` 路径会把 `engineWorldEditable=true`，因为这些 Actor 是 scene setup 的实际 World 源，并且通过 adapter 导出到旧 renderer。
+- `EditorPanelContext` 传递 `engineWorldEditable`，Actor / Component schema 可以根据当前 World 来源决定字段是否可写。
+- `EditorPanels.cpp` 新增 legacy adapter object 查找和 transform 同步 helper：`MeshComponent`、`LightComponent`、`LegacyObjectComponent` 可同步到旧 `Object`；`CameraComponent` 当前没有旧 `Object`，因此仍保持只读。
+- `SceneComponent` 的 `Relative Location`、`Relative Rotation`、`Relative Scale` 在满足 `engineWorldEditable && hasLegacyObjectAdapter` 时使用可写 `PropertyBuilder::addVec3(...)`，setter 会同时更新 `SceneComponent::setRelativeTransform(...)` 和 adapter 旧 `Object` 的 position / angle / scale。
+- schema 中新增 `Editable World` 与 `Transform Editable` 只读状态字段，方便在 inspector 中判断当前是否真的允许提交编辑。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；`RuntimeEditorPanelCoordinator.cpp`、`RuntimeScenePreparer.cpp`、`EditorPanels.cpp`、`SceneSetupPipeline.cpp` 参与编译。
+- `forward` 输出 `runtimeWorldActors=33`，legacy mirror stats 输出 `visitedObjects=33`、`actors=33`、`meshActors=32`、`componentAttachments=32`，该路径保持 read-only mirror。
+- `engine-world-minimal-scene` 输出 `runtimeWorldActors=5`、`engineWorldMinimalMeshes=4`、`pbrPreviewMeshes=0`，renderer stats 输出 `pbrGBufferDrawCalls=4`、`pbrDeferredLightingDrawCalls=1`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- Actor / Component inspector 已经具备第一条可写提交路径，但编辑范围被刻意限制在 World-driven scene 和有旧对象 adapter 的 SceneComponent。
+- 默认 legacy scene mirror 继续只读，避免和旧 renderer object ownership 边界冲突。
+- 当前验证覆盖构建和自动 PBR 回归，尚未做人工 UI 拖动/输入 smoke；如果后续要把它作为编辑器功能验收，需要增加交互式或脚本化 UI 验证。
+
+下一步建议：
+
+- 增加 Component 直接选择：让 hierarchy 中的 Component 节点不再退回选择 owning Actor，而是进入 `SelectionKind::Component`，并给 Component inspector 一个独立入口。之后再补 undo/redo 或 edit transaction 边界，避免可写字段继续扩散成无记录的即时修改。
+
+### 2026-05-25 Component Direct Selection Inspector
+
+本轮完成上一节的下一步：Engine World hierarchy 中的 Component 节点现在可以直接被选中，并进入专用 Component inspector，不再退回选择 owning Actor。
+
+新增与修改：
+
+- `SelectionKind` 新增 `Component`。
+- `SelectionContext` 新增 `selectedComponent`，用于保存当前选中的 `GLengine::ActorComponent*`。
+- `EditorPanels.h/.cpp` 新增 `getSelectedComponent(...)` 和 `selectComponent(...)`。
+- `selectObject(...)`、`selectShadow(...)`、`selectCamera(...)`、`selectActor(...)` 会清空 `selectedComponent`，保证同一时间只有一种 selection target 生效。
+- `renderActorHierarchyNode(...)` 中的 Component leaf 会根据 `SelectionKind::Component` 做 selected 高亮。
+- 点击 Component leaf 后调用 `selectComponent(...)`，inspector 优先渲染 `renderComponentInspector(...)`。
+- `renderComponentInspector(...)` 复用上一轮的 `buildComponentPropertySchema(...)`，因此 Component 独立选择后仍保留 `Editable World` / `Transform Editable` 判定和 World-driven transform 写回路径。
+- Actor inspector 仍保留组件折叠展示，方便查看整个 Actor；Component 专用 inspector 则用于后续编辑器重定向和事务边界。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-minimal-scene -DiscardCaptures`：构建通过；`EditorPanels.cpp` 参与编译；`engine-world-minimal-scene` 通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- Editor selection 已从 Object / Light / Camera / Shadow / Actor 扩展到 Component。
+- hierarchy 和 inspector 的责任边界更清晰：Actor 负责整体概览，Component 负责组件属性与后续可写编辑入口。
+- 当前仍未引入 undo/redo，Component transform 写回仍是即时提交。
+
+下一步建议：
+
+- 增加最小 edit transaction 边界：把 `SceneComponent` transform setter 从直接写回升级为可记录的编辑操作，至少记录 target、field、before、after，为后续 undo/redo、dirty 标记和保存场景做准备。
+
+### 2026-05-25 Minimal Edit Transaction Boundary
+
+本轮完成上一节的下一步：`SceneComponent` transform 编辑不再只是无记录的即时写回，现在会进入一个最小 edit transaction log，记录 target、field、before、after。
+
+新增与修改：
+
+- `EditorPanels.h` 新增 `EditTransactionRecord` 与 `EditTransactionLog`。
+- `EditTransactionRecord` 当前记录 `sequence`、`targetLabel`、`targetType`、`targetObjectId`、`targetAddress`、`field`、`beforeValue`、`afterValue`。
+- `EditTransactionLog` 当前提供 `recordVec3(...)`、`getRecords()`、`getLatestRecord()` 和 `isDirty()`；本轮只做记录和 dirty 标记，不实现 undo/redo。
+- `RuntimeApplicationShell` 新增持久 `mEditorEditTransactions`，生命周期跟随 runtime shell。
+- `RuntimeEditorPanelCoordinator` 会把 `mEditorEditTransactions` 传入 `EditorPanelContext`。
+- `EditorPanelContext` 新增 `editTransactions` 指针，供 inspector property setter 写入 transaction。
+- `setSceneComponentLocation(...)`、`setSceneComponentRotation(...)`、`setSceneComponentScale(...)` 会先读取 before，再更新 `SceneComponent` 和 adapter 旧 `Object`，最后记录对应字段的 before / after。
+- Actor / Component inspector 底部新增 `Edit Transactions` 摘要，显示 dirty、record count、最近一次编辑的 target.field 以及 before / after。
+- 记录逻辑会跳过 before / after 完全相同的输入，避免无变化写入 transaction。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-minimal-scene -DiscardCaptures`：构建通过；`RuntimeApplicationShell.cpp`、`RuntimeEditorPanelCoordinator.cpp`、`EditorPanels.cpp` 参与编译；`engine-world-minimal-scene` 通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- 当前编辑链路已经具备最小可审计边界：每次 transform 写回都能留下 target / field / before / after。
+- 这仍不是完整 undo/redo 系统；下一步可以基于这些 records 增加 undo 应用路径，或先补 dirty marker / save scene boundary。
+- 当前仍未做人工 UI 输入 smoke，自动验证覆盖构建和渲染回归。
+
+下一步建议：
+
+- 增加最小 undo apply：先只支持撤销最近一条 `SceneComponent` Vec3 transform transaction，并复用现有 transform sync helper 写回 `SceneComponent` 与旧 `Object`；暂不做 redo stack 和跨对象批量事务。
+
+### 2026-05-25 Minimal SceneComponent Undo Apply
+
+本轮继续完成上一节的下一步：edit transaction log 现在支持撤销最近一条 `SceneComponent` Vec3 transform transaction。
+
+新增与修改：
+
+- `EditTransactionRecord` 新增 `sceneComponent` 指针，用于最小 undo apply 直接定位目标组件。
+- `EditTransactionLog` 新增 `popLatestRecord()`，撤销成功后弹出最近记录，并根据剩余记录更新 dirty 状态。
+- `recordSceneComponentVec3Edit(...)` 记录 transaction 时会保存对应 `SceneComponent*`。
+- `EditorPanels.cpp` 新增 `undoLatestSceneComponentVec3Edit(...)`，按 `field` 将 before 值写回 `Relative Location`、`Relative Rotation` 或 `Relative Scale`。
+- undo 写回复用现有 `setSceneComponentLocation(...)` / `setSceneComponentRotation(...)` / `setSceneComponentScale(...)`，并传入 `nullptr` transaction log，避免 undo 自身再次生成新 transaction。
+- `Edit Transactions` inspector 摘要在存在可撤销记录时显示 `Undo Latest Transform` 按钮。
+- 当前只支持撤销最近一条 SceneComponent Vec3 transform；不支持 redo stack、不支持事务合并、不处理目标组件被销毁后的复杂生命周期。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-minimal-scene -DiscardCaptures`：构建通过；`RuntimeApplicationShell.cpp`、`RuntimeEditorPanelCoordinator.cpp`、`EditorPanels.cpp` 参与编译；`engine-world-minimal-scene` 通过。
+
+结论：
+
+- Actor / Component transform 编辑链路现在从“可写”推进到“可记录并可撤销最近一步”。
+- 这仍是最小 undo，不是完整编辑器事务系统；但它已经建立了后续 redo、dirty/save、事务合并的必要接口边界。
+
+下一步建议：
+
+- 增加 redo stack 或 dirty/save boundary 二选一。更符合当前引擎化目标的是先做 dirty/save boundary：把 `EditTransactionLog::isDirty()` 变成可观察状态，并在 inspector 提供 `Mark Saved / Clear Transactions`，为后续场景保存做准备。
+
+### 2026-05-25 Dirty Save Transaction Boundary
+
+本轮完成上一节的下一步：edit transaction log 现在具备明确的 dirty/save 观察与清理边界，inspector 可以手动标记已保存或清空 transaction history。
+
+新增与修改：
+
+- `EditTransactionLog` 新增 `markDirty()`、`markSaved()` 和 `clear()`。
+- `Undo Latest Transform` 执行成功后会重新 `markDirty()`，因为 undo 本身也是一次 scene state 变更。
+- `Edit Transactions` inspector 摘要新增 `Mark Saved` 按钮，用于只清除 dirty 标记并保留 transaction history。
+- `Edit Transactions` inspector 摘要新增 `Clear Transactions` 按钮，用于清空历史记录并将 dirty 置为 `false`。
+- `Mark Saved` 当前只是编辑器状态边界，不执行磁盘写入；这一步的目标是为后续 scene persistence / save scene 边界提供可观察状态。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-minimal-scene -DiscardCaptures`：构建通过；`RuntimeApplicationShell.cpp`、`RuntimeEditorPanelCoordinator.cpp`、`RuntimePBRVerificationArgs.cpp`、`main.cpp`、`EditorPanels.cpp` 参与编译；`engine-world-minimal-scene` 通过，输出 `runtimeWorldActors=5`、`engineWorldMinimalMeshes=4`、`pbrGBufferDrawCalls=4`、`pbrDeferredLightingDrawCalls=1`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过；`forward` legacy mirror 仍输出 `runtimeWorldActors=33`，`engine-world-scene-probe` 仍输出 `runtimeWorldActors=2`，`engine-world-minimal-scene` 仍输出 `runtimeWorldActors=5`。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- Actor / Component transform 编辑链路现在具备最小“编辑、记录、撤销、dirty、mark saved、clear history”闭环。
+- 这仍不是完整编辑器事务系统：没有 redo stack、事务合并、跨对象 transaction batch，也没有真正的场景文件保存。
+- 当前更适合继续推进 scene persistence boundary，而不是继续在 undo/redo 上扩展复杂度。
+
+下一步建议：
+
+- 增加 scene persistence boundary：先保存 World-driven scene 中可编辑 `SceneComponent` transform snapshot，格式可以是小型 JSON/INI，不直接尝试完整 asset serialization。
+
+### 2026-05-25 Scene Transform Snapshot Persistence Boundary
+
+本轮完成上一节的下一步：World-driven scene 现在具备第一条最小 persistence boundary，可以把 runtime `World` 中的 `SceneComponent` transform 写成 snapshot 文件。
+
+新增与修改：
+
+- 新增 `tools/editor/SceneTransformSnapshot.h/.cpp`。
+- `saveSceneTransformSnapshot(...)` 会遍历 `World -> Persistent Level -> Actor -> SceneComponent`，写出 actor/component 名称、类型、object id、parent object id，以及 relative location / rotation / scale。
+- 默认 snapshot 路径为 `out/engine_world_transform_snapshot.ini`，verification 使用 `out/engine_world_transform_snapshot.verification.ini`。
+- `Edit Transactions` inspector 在可编辑 World-driven scene 下新增 `Save Transform Snapshot` 按钮；保存成功后会调用 `markSaved()`，保留 transaction history 但清除 dirty 标记。
+- legacy scene mirror 仍然只读，inspector 会提示 read-only World mirror 不支持 transform snapshot 保存。
+- `RuntimePBRVerification::reportPreparedScene(...)` 在 `engineWorldEditable` 为 `true` 时自动写出 transform snapshot，并输出 `Engine world transform snapshot stats`。
+- `verify_pbr.ps1` 对 `engine-world-scene-probe` 和 `engine-world-minimal-scene` 增加 snapshot 断言：要求 `saved=yes`、actor 数量大于 0、SceneComponent 数量大于 0，且 snapshot 文件真实存在。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新文件。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-minimal-scene -DiscardCaptures`：构建通过；`RuntimePBRVerification.cpp`、`EditorPanels.cpp`、`SceneTransformSnapshot.cpp` 参与编译；`engine-world-minimal-scene` 通过，snapshot 输出 `saved=yes, actors=5, sceneComponents=5`。
+- 已检查 `out/engine_world_transform_snapshot.verification.ini`，文件包含 `schema=engine.world.sceneComponentTransform.v1`、World/Level 信息、`actorCount=5`、`sceneComponentCount=5` 和每个 SceneComponent 的 relative transform。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过；`engine-world-scene-probe` snapshot 输出 `actors=2, sceneComponents=2`，`engine-world-minimal-scene` snapshot 输出 `actors=5, sceneComponents=5`。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- 当前项目已经从“编辑器内存状态可 dirty/save 标记”推进到“可把 World-driven transform 状态落盘为 snapshot”。
+- 这仍不是完整场景保存系统：没有 load/apply snapshot，没有 asset GUID，没有 prefab/level package，也没有处理 actor/component 删除和新增。
+- 这一步建立的是后续 save/load scene 的最小文件格式和验证边界。
+
+下一步建议：
+
+- 增加 snapshot load/apply boundary：先读取 snapshot 并按 object id 或 actor/component path 回放 `SceneComponent` transform，再同步 adapter 旧对象；同时保留 legacy mirror 只读。
+
+### 2026-05-25 Scene Transform Snapshot Load Apply Boundary
+
+本轮完成上一节的下一步：World-driven scene 的 transform snapshot 现在不仅能保存，也能读取并回放到 runtime `World`。
+
+新增与修改：
+
+- `SceneTransformSnapshot.h/.cpp` 新增 `SceneTransformSnapshotApplyResult` 与 `applySceneTransformSnapshot(...)`。
+- Snapshot apply 会读取 `engine.world.sceneComponentTransform.v1` schema，解析 `actorCount`、`sceneComponentCount` 和每个 `SceneComponent` 的 relative location / rotation / scale。
+- 匹配策略为 object id 优先，actor index / SceneComponent index fallback；这允许同一 runtime session 走稳定 object id，同时为后续稳定 path id 留出迁移空间。
+- Apply 成功后会调用 `SceneComponent::setRelativeTransform(...)`，并同步 `MeshComponent`、`LightComponent`、`LegacyObjectComponent` 持有的旧 `Object` transform；`CameraComponent` 仍没有旧 `Object` adapter。
+- `Edit Transactions` inspector 在可编辑 World-driven scene 下新增 `Apply Transform Snapshot` 按钮；apply 成功后调用 `markSaved()`，表示当前内存状态已回到 snapshot 文件状态。
+- `RuntimePBRVerification::reportPreparedScene(...)` 保存 snapshot 后会临时扰动第一个 `SceneComponent`，随后调用 `applySceneTransformSnapshot(...)` 回放 snapshot。
+- `verify_pbr.ps1` 对 World-driven modes 增加 apply 断言：要求 `applied=yes`、`appliedSceneComponents>0`、`changedSceneComponents>0`、`verificationPerturbed=yes`，证明 apply 实际恢复了被扰动的 transform。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-minimal-scene -DiscardCaptures`：构建通过；`RuntimePBRVerification.cpp`、`EditorPanels.cpp`、`SceneTransformSnapshot.cpp` 参与编译；`engine-world-minimal-scene` 通过，snapshot apply 输出 `applied=yes, matchedSceneComponents=5, appliedSceneComponents=5, changedSceneComponents=1, verificationPerturbed=yes`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过；`engine-world-scene-probe` 和 `engine-world-minimal-scene` 均通过 snapshot save/apply 断言。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- 当前已经具备最小 scene transform persistence 闭环：edit -> dirty -> save snapshot -> apply snapshot -> sync legacy adapter。
+- 这仍不是完整 scene serialization。当前 snapshot 仍依赖 transient object id 和 actor/component index fallback，没有稳定 GUID/path、没有 actor/component 新增删除回放、没有自动启动加载策略。
+
+下一步建议：
+
+- 增加 stable scene path id：为 Actor / SceneComponent snapshot 写入稳定层级路径或显式 persistent id，降低 object id 变化和 actor 顺序变化对 load/apply 的影响。
+
+### 2026-05-25 Stable Scene Path Id For Transform Snapshot
+
+本轮完成上一节的下一步：transform snapshot 现在写入并优先使用 stable scene path id，减少对 transient object id 和 actor/component 顺序的依赖。
+
+新增与修改：
+
+- `SceneTransformSnapshot.cpp` 新增 stable path 生成逻辑。
+- Actor stable path 由 `Level` 名称、Actor 类型、Actor 名称和同名同类型 occurrence 组成。
+- SceneComponent stable path 由所属 Actor stable path、Component 类型、Component 名称和同名同类型 occurrence 组成。
+- Snapshot 文件新增 `actor.N.stablePath` 和 `actor.N.sceneComponent.M.stablePath`。
+- `applySceneTransformSnapshot(...)` 的匹配优先级改为 `stablePath -> objectId -> actor/component index`。
+- `SceneTransformSnapshotApplyResult` 新增 `matchedByStablePathCount`、`matchedByObjectIdCount` 和 `matchedByIndexCount`。
+- `RuntimePBRVerification` 的 snapshot apply stats 会输出 `matchedByStablePath`、`matchedByObjectId` 和 `matchedByIndex`。
+- `verify_pbr.ps1` 增加 `matchedByStablePath>0` 断言，确保 apply 实际走 stable path 匹配，而不是继续只依赖 object id。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-minimal-scene -DiscardCaptures`：构建通过；`engine-world-minimal-scene` 输出 `matchedByStablePath=5, matchedByObjectId=0, matchedByIndex=0`。
+- 已检查 `out/engine_world_transform_snapshot.verification.ini`，snapshot 文件包含 `actor.N.stablePath` 与 `actor.N.sceneComponent.M.stablePath`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过；`engine-world-scene-probe` 输出 `matchedByStablePath=2`，`engine-world-minimal-scene` 输出 `matchedByStablePath=5`。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- Snapshot load/apply 现在已经具备比 object id 更稳定的第一层匹配键。
+- 当前 stable path 仍是名字/类型/occurrence 派生的路径，不是长期资产 GUID；如果用户重命名 Actor/Component 或大量重排同名对象，仍可能触发 fallback。
+- 这一步解决的是“不要主要依赖 transient object id 和顺序”的短期问题，后续仍需要真正的 persistent id。
+
+下一步建议：
+
+- 增加 persistent id 字段：为 `EngineObject` 或 editor metadata 引入可序列化 id，并把 snapshot stable path 从派生路径升级为真正可持久化标识。
+
+### 2026-05-25 Persistent Id For Transform Snapshot
+
+本轮完成上一节的下一步：`EngineObject` 现在具备最小 persistent id 字段，World-driven scene preset 会写入确定性 id，transform snapshot apply 优先按 persistent id 匹配。
+
+新增与修改：
+
+- `EngineObject` 新增 `getPersistentId()` / `setPersistentId(...)`，保存一个可序列化字符串 id；`objectId` 仍保留为 runtime transient id。
+- `WorldDrivenSceneSetup.cpp` 为 `engine-world-scene-probe` 和 `engine-world-minimal-scene` 的 `World / Level / Actor / SceneComponent` 分配确定性 persistent id。
+- Snapshot 文件新增 `world.persistentId`、`level.persistentId`、`actor.N.persistentId` 和 `actor.N.sceneComponent.M.persistentId`。
+- `applySceneTransformSnapshot(...)` 的匹配优先级升级为 `persistentId -> stablePath -> objectId -> actor/component index`。
+- `SceneTransformSnapshotApplyResult` 新增 `matchedByPersistentIdCount`，verification stats 输出 `matchedByPersistentId`。
+- Actor / Component schema inspector 新增只读 `Persistent ID` 字段，便于在 editor 中确认当前对象的长期标识。
+- `verify_pbr.ps1` 对 World-driven snapshot 增加 `sceneComponent.0.persistentId` 文件断言，并要求 `matchedByPersistentId>0`。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-minimal-scene -DiscardCaptures`：构建通过；`engine-world-minimal-scene` 输出 `matchedByPersistentId=5, matchedByStablePath=0, matchedByObjectId=0, matchedByIndex=0`。
+- 已检查 `out\engine_world_transform_snapshot.verification.ini`，snapshot 文件包含 `world.persistentId`、`level.persistentId`、Actor persistent id 和 SceneComponent persistent id。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过；`engine-world-scene-probe` 输出 `matchedByPersistentId=2`，`engine-world-minimal-scene` 输出 `matchedByPersistentId=5`。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- Snapshot load/apply 现在已经有真正的可序列化 persistent id 匹配层，短期内不再依赖 transient object id，也不优先依赖名字/类型/occurrence 派生 stable path。
+- 当前 persistent id 覆盖范围仍是显式构造的 World-driven scene；legacy mirror/default scene 以及未来 import/prefab/level package 还没有统一 id 分配策略。
+- `stablePath` 和 `objectId` 继续保留为兼容 fallback，但正常 World-driven snapshot 已经优先走 persistent id。
+
+下一步建议：
+
+- 制定并落地 broader persistent id policy：为 legacy mirror、imported asset、手动创建 Actor/Component 和未来 scene package 定义 id 生成/保存规则，避免 persistent id 只在两个 verification preset 中有效。
+
+### 2026-05-25 Legacy Mirror Persistent Id Coverage
+
+本轮继续推进 broader persistent id policy 的第一块：普通 legacy scene mirror 现在也会为导入出来的 `World / Level / Actor / SceneComponent` 分配 deterministic persistent id。
+
+新增与修改：
+
+- `LegacySceneImportStats` 新增 `actorsWithPersistentIds` 和 `sceneComponentsWithPersistentIds`，用于验证 legacy mirror 的 id 覆盖情况。
+- `LegacySceneWorldBuilder::importScene(...)` 会在缺省情况下为 mirror world 写入 `world:legacy-scene-mirror`，为 persistent level 写入 `level:legacy-scene-mirror:persistent-level`。
+- `LegacySceneWorldBuilder` 递归导入旧 `Object` 树时，会根据旧对象在树中的 type/name/occurrence path 派生 deterministic actor persistent id。
+- 每个导入 actor 的 root `SceneComponent` 会获得对应 component persistent id，并继续保留原有 transform / attachment bridge。
+- `formatLegacyWorldMirrorStats(...)` 输出 `persistentActors` 和 `persistentSceneComponents`。
+- `verify_pbr.ps1` 的 `ExpectLegacyWorldMirror` 断言现在要求每个导入 actor 和 SceneComponent 都具备 persistent id。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward -DiscardCaptures`：构建通过；`LegacySceneWorldBuilder.cpp` 与 `SceneSetupPipeline.cpp` 参与编译；`forward` 输出 `persistentActors=33, persistentSceneComponents=33`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过；普通 legacy mirror 路径持续输出 persistent id 覆盖统计，`showcase-spheres` 也输出 `persistentActors=28, persistentSceneComponents=28`。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- persistent id 现在不再只覆盖两个 World-driven verification preset；普通旧场景 mirror 也进入了可观测的长期标识体系。
+- 当前 legacy mirror id 仍是从旧对象树 type/name/occurrence path 派生，不是 asset GUID；如果旧场景对象重命名或大规模重排，id 仍可能变化。
+- 这一层适合作为过渡 bridge 的 deterministic id，不应被误认为最终资产数据库 id。
+
+下一步建议：
+
+- 继续拆 persistent id policy：把 id 来源拆成 `PresetAssigned`、`LegacyMirrorDerived`、`ImportedAssetDerived`、`EditorCreatedGenerated` 等来源，后续 scene package 保存时必须保存实际 id，而不是每次重新派生。
+
+### 2026-05-25 Persistent Id Policy Module
+
+本轮把前两轮的 persistent id 生成规则集中到 `engine/PersistentIdPolicy`，让 id 来源不再散落在各个 scene setup / bridge 文件中。
+
+新增与修改：
+
+- 新增 `engine/PersistentIdPolicy.h/.cpp`。
+- 新增 `PersistentIdSource`，当前定义 `PresetAssigned`、`LegacyMirrorDerived`、`ImportedAssetDerived` 和 `EditorCreatedGenerated`。
+- 新增 `persistentIdSourceToken(...)`、`sanitizePersistentIdSegment(...)`、`makePersistentId(...)` 和 `makeIndexedPersistentIdPathSegment(...)`。
+- persistent id 统一升级为 `objectKind:source:scope:path` 形式；例如 World-driven preset snapshot 当前写入 `world:preset:engine-world-minimal-scene` 和 `component:preset:engine-world-minimal-scene:matte`。
+- `WorldDrivenSceneSetup.cpp` 改为通过 `PersistentIdPolicy` 生成 `preset` 来源 id，不再硬编码完整 persistent id 字符串。
+- `LegacySceneWorldBuilder.cpp` 改为通过 `PersistentIdPolicy` 生成 `legacy-mirror` 来源 id，不再在本地维护 sanitize/path 规则。
+- `formatLegacyWorldMirrorStats(...)` 新增 `persistentIdSource=legacy-mirror`，用于验证来源语义。
+- `verify_pbr.ps1` 增加 source 级断言：legacy mirror stats 必须报告 `persistentIdSource=legacy-mirror`；World-driven snapshot 必须写出 `world:preset:` 和 `component:preset:` 前缀。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册 `PersistentIdPolicy` 新文件。
+
+验证结果：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；`PersistentIdPolicy.cpp`、`LegacySceneWorldBuilder.cpp`、`SceneSetupPipeline.cpp`、`WorldDrivenSceneSetup.cpp` 参与编译；`forward` 输出 `persistentIdSource=legacy-mirror`；`engine-world-minimal-scene` snapshot apply 仍输出 `matchedByPersistentId=5`。
+- 已检查 `out\engine_world_transform_snapshot.verification.ini`，World-driven snapshot 写入 `world:preset:engine-world-minimal-scene`、`level:preset:engine-world-minimal-scene:persistent-level` 和 `component:preset:...` id。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过；legacy mirror stats 均包含 `persistentIdSource=legacy-mirror`，World-driven snapshot apply 仍优先走 persistent id。
+- `git diff --check`：无 whitespace error，仅有 LF/CRLF warning。
+
+结论：
+
+- persistent id 现在有集中策略模块，当前已覆盖 preset-assigned 和 legacy-mirror-derived 两类来源。
+- 旧 snapshot 中的旧格式 persistent id 如果和新格式不一致，仍可通过 `stablePath` fallback 应用；新 snapshot 会写入带 source token 的 id。
+- `ImportedAssetDerived` 和 `EditorCreatedGenerated` 目前只是策略枚举，尚未接入具体导入器或编辑器创建流程。
+
+下一步建议：
+
+- 继续接 `ImportedAssetDerived`：从 Assimp import / PBR import probe 中提取 asset path + node/material/mesh path，给导入生成的 Actor/Component 或未来 asset wrapper 分配可追踪 persistent id。
+
+### 2026-05-25 Imported Asset Persistent Id Coverage
+
+本轮继续推进 broader persistent id policy 的第二块：PBR import probe 现在不只把 Assimp 导入资产追加到旧 `Scene` 中渲染，也会把同一导入对象树导入 runtime `engineWorld`，并使用 `ImportedAssetDerived` 来源生成 persistent id。
+
+新增与修改：
+
+- `LegacySceneWorldBuilder` 新增 `LegacySceneImportOptions`，允许调用方指定 `persistentIdSource` 与 `persistentIdScope`。
+- `LegacySceneWorldBuilder::importScene(...)` 与 `importObjectTree(...)` 增加 options overload；默认 legacy mirror 行为保持 `LegacyMirrorDerived / legacy-scene-mirror`。
+- `RuntimePBRVerification` 的 `--verify-pbr-import` 在 `AssimpLoader::loadPBR("fbx/test/test.fbx", ...)` 成功后，会把 `"PBR Imported Asset Probe"` 对象树导入 `context.engineWorld->getPersistentLevel()`。
+- 导入资产 probe 使用 `PersistentIdSource::ImportedAssetDerived` 和 `fbx-test-test-fbx` scope，输出 `PBR imported asset engine world import stats`。
+- `verify_pbr.ps1` 的 `import` mode 新增 `ExpectImportedAssetProbe`，断言旧 render scene 中有 imported PBR mesh、runtime `engineWorld` 有 Actor、导入资产 stats 报告 `persistentIdSource=imported-asset`，并要求每个导入 Actor / SceneComponent 都具备 persistent id。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes import -DiscardCaptures`：构建通过；`RuntimePBRVerification.cpp` 与 `LegacySceneWorldBuilder.cpp` 参与编译；`import` 输出 `pbrImportedMeshes=1`、`runtimeWorldActors=37`、`persistentActors=4`、`persistentSceneComponents=4`、`persistentIdSource=imported-asset`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 31 个 PBR verification mode 全部通过；`import` 汇总输出 `importedAssetWorldImport`，其中 `actors=4`、`meshActors=1`、`persistentActors=4`、`persistentSceneComponents=4`、`persistentIdSource=imported-asset`。
+
+结论：
+
+- `ImportedAssetDerived` 已从枚举占位进入真实验证路径，当前覆盖 Assimp PBR import probe 到 runtime `engineWorld` 的 bridge。
+- 当前 scope 仍使用验证资产路径派生的固定字符串，尚未形成完整 asset database GUID；这足够作为 bridge 验证，不应被误认为最终资产系统。
+
+下一步建议：
+
+- 继续接 `EditorCreatedGenerated`：为编辑器中新建 Actor/Component 的入口分配 persistent id，并把生成规则纳入 transaction / snapshot 验证。
+
+### 2026-05-25 Editor Created Persistent Id Coverage
+
+本轮继续推进 broader persistent id policy 的第三块：编辑器现在有最小“创建空 Actor”入口，并通过同一条逻辑在 verification 中验证 `EditorCreatedGenerated` persistent id。
+
+新增与修改：
+
+- 新增 `tools/editor/EditorWorldActions.h/.cpp`，集中提供 `createEditorEmptyActor(...)`、`countEditorCreatedActors(...)` 和 `countEditorCreatedSceneComponents(...)`。
+- `createEditorEmptyActor(...)` 会在可编辑 `World` 的 persistent level 中创建普通 `Actor` 和 root `SceneComponent`，并分配 `actor:editor-created:runtime-editor:actor-N` 与 `component:editor-created:runtime-editor:actor-N:root`。
+- `EditorPanels` 的 `Edit Transactions` 区域新增 `Create Empty Actor` 按钮；创建成功后写入 lifecycle transaction，标记 dirty，但暂不实现 create undo。
+- `RuntimePBRVerification` 新增 `enableEngineWorldEditorCreate` probe，非交互调用同一 `EditorWorldActions` 创建逻辑，并输出 `Engine world editor create stats`。
+- `verify_pbr.ps1` 新增 `engine-world-editor-create` mode，基于 World-driven minimal scene 运行，断言 runtime World 中新增 Actor、`editor-created` Actor / SceneComponent persistent id、snapshot 文件中写入 editor-created id，并保持 snapshot apply 走 persistent id。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册 `EditorWorldActions` 新文件。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-editor-create -DiscardCaptures`：构建通过；`EditorWorldActions.cpp` 参与编译；scene stats 输出 `runtimeWorldActors=6`；editor create stats 输出 `created=yes`、`editorCreatedActors=1`、`editorCreatedSceneComponents=1`、`actorPersistentId=actor:editor-created:runtime-editor:actor-0`、`componentPersistentId=component:editor-created:runtime-editor:actor-0:root`；snapshot 输出 `actors=6`、`sceneComponents=6`、`matchedByPersistentId=6`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 32 个 verification mode 已通过；新增 `engine-world-editor-create` mode 在全量默认验证中继续输出 `runtimeWorldActors=6`、`editorCreatedActors=1`、`editorCreatedSceneComponents=1`、`matchedByPersistentId=6`。
+
+结论：
+
+- persistent id 当前已覆盖 `preset`、`legacy-mirror`、`imported-asset` 和 `editor-created` 四类来源的最小验证路径。
+- editor-created Actor 当前是无 renderer adapter 的空 Actor，因此不会改变旧 renderer 场景内容；这是符合目标的第一步，因为本轮验证的是编辑器对象生命周期与长期标识，不是渲染资产创建。
+- create transaction 目前只记录 lifecycle 与 dirty 状态，不支持撤销创建；后续需要把 create/delete 纳入 undo/redo 栈。
+
+下一步建议：
+
+- 开始 scene package / save boundary：把 `World / Level / Actor / Component` 的 persistent id、transform 和最小层级结构保存为独立 scene package，再从 package 恢复到 runtime `World`。
+
+### 2026-05-25 Scene Package Save/Load Boundary
+
+本轮按上一节建议进入 scene package / save boundary。目标不是继续扩展 PBR，而是给 engine `World` 建立第一条对象结构级保存/加载边界。
+
+新增与修改：
+
+- 新增 `engine/ScenePackage.h/.cpp`，提供 `saveScenePackage(...)`、`loadScenePackage(...)` 和 `defaultScenePackagePath()`。
+- scene package 格式为 `engine.world.scenePackage.v1`，当前保存 `World`、persistent level、Actor、SceneComponent 的 name、persistent id、root component、parent component、relative transform。
+- `loadScenePackage(...)` 会创建新的 `World`，按 package 恢复普通 `Actor` + `SceneComponent` 层级，并回填 persistent id、root component、parent attach 和 transform。
+- `RuntimePBRVerification` 新增 scene package roundtrip probe，保存 `out/engine_world_scene_package.verification.ini` 后立即加载，并输出 `Engine world scene package stats`。
+- 新增 CLI mode `--verify-engine-world-scene-package`，基于 World-driven minimal scene 验证 package save/load。
+- `tools/verify_pbr.ps1` 新增 `engine-world-scene-package` 默认 mode，断言 package saved/loaded、Actor / SceneComponent 数量 roundtrip、persistent id 保留、root component 恢复、文件 schema 和 preset id 写入。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册 `ScenePackage` 新文件。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-package -DiscardCaptures`：构建通过；`ScenePackage.cpp` 参与编译；scene package 输出 `saved=yes`、`loaded=yes`、`actors=5`、`sceneComponents=5`、`loadedActors=5`、`loadedSceneComponents=5`、`loadedActorsWithPersistentIds=5`、`loadedSceneComponentsWithPersistentIds=5`、`restoredRootComponents=5`、`restoredSceneComponentParents=4`。
+- 已检查 `out\engine_world_scene_package.verification.ini`，文件包含 `schema=engine.world.scenePackage.v1`、`world:preset:engine-world-minimal-scene`、5 个 Actor persistent id、5 个 SceneComponent persistent id、root component 和 parent persistent id。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 33 个 verification mode 已通过；新增 `engine-world-scene-package` mode 在全量默认验证中继续输出 `saved=yes`、`loaded=yes`、`loadedActors=5`、`loadedSceneComponents=5`、`loadedActorsWithPersistentIds=5`、`loadedSceneComponentsWithPersistentIds=5`、`restoredRootComponents=5`、`restoredSceneComponentParents=4`。
+
+结论：
+
+- 当前已经从 transform-only snapshot 推进到对象结构级 scene package roundtrip。
+- 这仍是最小 package，不是完整资产序列化：加载时会恢复普通 `Actor` / `SceneComponent`，不会恢复 `MeshActor`、材质、geometry、light、camera 或旧 renderer adapter。
+- 这一步足够作为后续 editor save/load、asset reference、prefab/level package 的基础边界。
+
+下一步建议：
+
+- 给 scene package 增加 asset reference / component type registry：先不直接序列化 mesh 和 material 实体，只保存 renderer asset handle 或 adapter descriptor，让加载后的 World 能重新接回 renderer。
+
+### 2026-05-25 Scene Package Component Type / Adapter Metadata
+
+本轮推进上一节的下一步：scene package 现在不只保存对象结构，还会保存 Actor / SceneComponent 类型信息和 renderer adapter 描述。
+
+新增与修改：
+
+- `ScenePackage` 保存时不再把所有 Actor 写成 `Actor`，会写出 `MeshActor`、`LegacyObjectActor` 等 actor type metadata。
+- `ScenePackage` 保存时不再把所有组件写成 `SceneComponent`，会写出 `MeshComponent`、`LegacyObjectComponent`、`LightComponent`、`CameraComponent` 等 component type metadata。
+- 新增 adapter descriptor 字段：`adapter.kind`、`adapter.assetReference`、`adapter.objectName`、`adapter.objectType`、`adapter.materialType`。
+- 对当前 World-driven minimal scene，mesh adapter 会写出 `runtime-generated:mesh:*` reference，并记录 `adapter.materialType=PBRMaterial`；root legacy object 会写出 `runtime-generated:legacy-object:*` reference。
+- `loadScenePackage(...)` 现在会按 component type 创建对应的 typed component 类；当前 renderer 资源仍未解析，因此 typed component 的 adapter pointer 为空，但 package 已保留 resolver 所需的 asset reference。
+- `ScenePackageSaveResult` / `ScenePackageLoadResult` 新增 `typedSceneComponentCount`、`adapterDescriptorCount`、`loadedTypedSceneComponents`、`loadedAdapterReferences`、`unresolvedAdapterReferences` 等统计。
+- `verify_pbr.ps1` 扩展 `engine-world-scene-package` 断言：要求 package 写入 actor/component type metadata、mesh adapter descriptor、mesh asset reference 和 PBR material metadata，并要求 load 阶段恢复 typed components、读取 adapter references。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-package -DiscardCaptures`：构建通过；`ScenePackage.cpp` 参与编译；scene package stats 输出 `typedSceneComponents=5`、`adapterDescriptors=5`、`loadedTypedSceneComponents=5`、`loadedAdapterReferences=5`、`unresolvedAdapterReferences=5`。
+- 已检查 `out\engine_world_scene_package.verification.ini`，文件包含 `actor.N.type=MeshActor`、`actor.0.type=LegacyObjectActor`、`sceneComponent.N.type=MeshComponent`、`sceneComponent.0.type=LegacyObjectComponent`、`adapter.kind=mesh`、`adapter.assetReference=runtime-generated:mesh:*`、`adapter.materialType=PBRMaterial`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 33 个 verification mode 全部通过；新增 adapter metadata 断言在全量默认验证中通过。
+
+结论：
+
+- Scene package 已从“只恢复普通 Actor / SceneComponent”推进到“保存并恢复 typed SceneComponent 类，同时保留 renderer adapter reference”。
+- 当前 `unresolvedAdapterReferences=5` 是预期结果：还没有 asset resolver / renderer reconstruction，因此加载后的 typed component 暂时没有真实 mesh/material/object 指针。
+- 下一步应增加 asset resolver：根据 `adapter.assetReference` 和 `adapter.materialType` 重建或绑定 renderer object，使从 package 加载出的 World 可以重新导出到旧 renderer。
+
+### 2026-05-27 Scene Package Asset Resolver / Renderer Reconstruction
+
+本轮完成上一节的 resolver 缺口：scene package 现在不只是保存 typed component 和 adapter reference，也能在加载阶段通过外部 resolver 回填真实 renderer object，并证明 package-loaded World 可以重新导出到旧 renderer scene。
+
+新增与修改：
+
+- `ScenePackage.h` 新增 `ScenePackageAdapterDescriptor`、`ScenePackageAssetResolver` 和 `ScenePackageLoadOptions`。
+- `ScenePackageAssetResolver` 当前提供 `resolveMesh(...)`、`resolveLight(...)`、`resolveLegacyObject(...)` 三个扩展点；默认实现返回空对象，保持无 resolver 加载行为可用。
+- `loadScenePackage(path, options)` 会读取 adapter descriptor，并在有 resolver 时为 `MeshComponent`、`LightComponent`、`LegacyObjectComponent` 回填对应 renderer adapter。
+- `ScenePackageLoadResult` 新增 `resolvedAdapterReferences`，现在会区分 `loadedAdapterReferences`、`resolvedAdapterReferences` 和 `unresolvedAdapterReferences`。
+- `RuntimePBRVerification` 新增 runtime scene package resolver：针对当前 World-driven minimal scene 的 `runtime-generated:mesh:*` reference 重建 PBR sphere mesh，针对 `runtime-generated:legacy-object:*` reference 重建 legacy root object。
+- `RuntimePBRVerification` 在 scene package roundtrip 后创建临时 `GLframework::Scene`，把 package-loaded World 通过 `WorldLegacySceneExporter` 重新导出，并输出 loaded World export stats。
+- `verify_pbr.ps1` 扩展 `engine-world-scene-package` 断言：要求 `resolvedAdapterReferences>=5`、`unresolvedAdapterReferences=0`，并在后续 light fixture 接入后断言 loaded World 可导出 `6` 个对象、`4` 个 mesh、`1` 个 light、`1` 个 legacy object 和 `5` 条 attachment。
+- `docs/engine_phase1_execution_plan.md`、`docs/engine_project_book.md`、`docs/engine_interface_design.md`、`docs/engine_transformation_project_plan.md` 已更新当前进度与下一步方向。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-package -DiscardCaptures`：构建通过；scene package stats 输出 `resolvedAdapterReferences=6`、`unresolvedAdapterReferences=0`、`exportedLoadedWorldObjects=6`、`exportedLoadedWorldMeshes=4`、`exportedLoadedWorldLights=1`、`exportedLoadedWorldLegacyObjects=1`、`exportedLoadedWorldAttachments=5`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 33 个 verification mode 全部通过；`engine-world-scene-package` mode 在全量验证中继续输出同样的 resolver 和 loaded World export 统计。
+
+结论：
+
+- scene package 已从“能保存/恢复对象结构”推进到“能恢复 typed component 并接回 renderer adapter”。
+- 当前 resolver 是 verification bridge，不是最终资产系统：它根据 `runtime-generated:*` reference 重新生成 mesh/object，足够证明架构边界，但不能替代长期 AssetRegistry。
+- 下一步应该进入稳定资产句柄 / AssetRegistry：给 mesh、material、texture、imported asset 建立稳定 handle，使 scene package 依赖 handle 解析真实资源，而不是依赖 runtime-generated 临时引用。
+
+### 2026-05-27 AssetRegistry Stable Handle Slice
+
+本轮根据 subagents 审查结果，推进 AssetRegistry 的最小实现切片。目标仍然不是做完整资产系统，而是把 scene package 的 renderer adapter reference 从“临时 runtime reference”推进到“稳定 asset handle + 兼容 fallback”。
+
+新增与修改：
+
+- 新增 `engine/AssetRegistry.h/.cpp`，定义 `AssetKind`、`AssetHandle`、`AssetDescriptor`、`AssetRegistry` 和稳定 handle 工具函数。
+- 当前 handle 格式为 `asset:<kind>:<source>:<path>`，例如 `asset:mesh:runtime-generated:engine-world-minimal-matte-sphere`。
+- `ScenePackageAdapterDescriptor` 新增 `assetHandle` 字段。
+- `saveScenePackage(...)` 现在同时写出：
+  - `adapter.assetHandle=asset:mesh:runtime-generated:*`、`asset:legacy-object:runtime-generated:*` 或 `asset:light:runtime-generated:*`
+  - `adapter.assetReference=runtime-generated:*` 作为兼容 fallback
+- `loadScenePackage(...)` 会读取 asset handle，并新增 `assetHandles`、`loadedAssetHandles`、`resolvedAssetHandles`、`unresolvedAssetHandles` 统计。
+- runtime scene package resolver 现在优先识别 `adapter.assetHandle`，同时兼容旧 `adapter.assetReference`。
+- runtime scene package resolver 已覆盖 mesh、legacy-object 和 light 三类 adapter；light 通过 package-only `LightActor` fixture 验证，不影响原 PBR 渲染场景输出。
+- `loadScenePackage(...)` 现在会按保存的 actor type 恢复 `MeshActor`、`LightActor`、`LegacyObjectActor` 等动态类型，并且 typed component 统计只在实际构造出的 component 类型匹配时计数。
+- `verify_pbr.ps1` 扩展 `engine-world-scene-package` 断言：要求 package 文件写出 mesh / legacy-object / light asset handle，保留 mesh / light fallback reference，并要求 stable handle 全部 resolved。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册 `AssetRegistry` 新文件。
+- 根据 resolver audit 修正 camera 边界：`CameraComponent` 暂时只保存 component type 和 adapter kind，不写可解析 asset handle/reference，避免在没有 camera resolver/ownership 策略前制造必然 unresolved 的资源引用。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-package -DiscardCaptures`：构建通过；`AssetRegistry.cpp`、`ScenePackage.cpp` 参与编译；scene package stats 输出 `typedActors=6`、`loadedTypedActors=6`、`assetHandles=6`、`loadedAssetHandles=6`、`resolvedAssetHandles=6`、`unresolvedAssetHandles=0`，并保持 `resolvedAdapterReferences=6`、`unresolvedAdapterReferences=0`。
+- 已检查 `out\engine_world_scene_package.verification.ini`：文件同时包含 `adapter.assetHandle=asset:mesh:runtime-generated:*` / `asset:legacy-object:runtime-generated:*` / `asset:light:runtime-generated:*` 和 `adapter.assetReference=runtime-generated:*` fallback。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 33 个 verification mode 全部通过；`engine-world-scene-package` mode 在全量验证中继续输出 stable handle resolved 统计。
+
+结论：
+
+- AssetRegistry 当前完成的是“稳定引用身份”边界，不是 live object owner，也不复用原 renderer 对象，避免污染原 scene parent/transform。
+- scene package 现在已经具备从 `assetHandle` 到 resolver 的第一条链路，并已覆盖 mesh、light、legacy object；后续可以逐步把 imported mesh、material、texture 接入同一 handle 格式。
+- 下一步建议优先把 imported mesh/material/texture 纳入 stable handle；package 层如继续强化，应补 duplicate persistent id、self-parent/cycle attach、跨 actor parent reference 等 graph validation。
+
+### 2026-05-27 Scene Package Negative Probes
+
+本轮继续完成 resolver audit 中剩余的 package 健壮性缺口。目标不是扩大渲染特性，而是让 scene package loader 对未知类型和损坏输入有可观察、可验证的行为。
+
+新增与修改：
+
+- `ScenePackageLoadResult` 新增 `unknownActorTypes`、`unknownSceneComponentTypes`、`invalidSceneComponentTransforms` 诊断计数。
+- `loadScenePackage(...)` 现在会在遇到未知 actor type 时 fallback 到普通 `Actor`，同时记录 `unknownActorTypes`；遇到未知 component type 时 fallback 到普通 `SceneComponent`，同时记录 `unknownSceneComponentTypes`。
+- `loadScenePackage(...)` 现在会检测存在但无法完整解析的 transform 字段，并记录 `invalidSceneComponentTransforms`，避免坏数值被静默忽略。
+- `RuntimePBRVerification` 新增 scene package negative probes：写入 missing schema、invalid line、missing count 三个损坏 package，并要求 loader 拒绝；同时写入 unknown type package，要求 loader fallback 成功并输出 unknown/invalid 计数。
+- `verify_pbr.ps1` 新增 `Engine world scene package negative stats` 断言：要求损坏 package 被拒绝，unknown type package 可加载，且 `unknownActorTypes>=1`、`unknownSceneComponentTypes>=1`、`invalidSceneComponentTransforms>=1`。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-package -DiscardCaptures`：构建通过；正常 package 输出 `unknownActorTypes=0`、`unknownSceneComponentTypes=0`、`invalidSceneComponentTransforms=0`；negative probe 输出 `missingSchemaRejected=yes`、`invalidLineRejected=yes`、`missingCountRejected=yes`、`unknownTypesLoaded=yes`、`unknownActorTypes=1`、`unknownSceneComponentTypes=1`、`invalidSceneComponentTransforms=1`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 33 个 verification mode 全部通过；`engine-world-scene-package` summary 包含正常 package 0 unknown/invalid 计数和 negative probe reject/fallback 计数。
+
+结论：
+
+- scene package loader 现在对“未来类型兼容”和“损坏文件拒绝”都有验证边界。
+- 下一步可以进入 imported mesh/material/texture stable handle，或继续补更严格的 package graph validation，例如 duplicate persistent id、self-parent/cycle attach、跨 actor parent reference 等。
+
+### 2026-05-27 Imported Asset Stable Handles
+
+本轮继续 AssetRegistry 方向，把 Assimp PBR import probe 的 mesh / material / texture 纳入 `asset:<kind>:<source>:<path>` 统一 handle 格式。目标仍然是建立资产身份边界，不让 registry 接管 renderer object 生命周期。
+
+新增与修改：
+
+- `LegacySceneImportOptions` 新增 `assetRegistry`、`assetHandleSource`、`assetHandleScope`，允许旧 `Scene / Object` 导入 runtime `World` 时同步注册资产句柄。
+- `LegacySceneImportStats` 新增 `assetHandles`、`meshAssetHandles`、`materialAssetHandles`、`textureAssetHandles`，用于 verification 证明导入资产确实进入 stable handle 体系。
+- `LegacySceneWorldBuilder` 在遇到 imported `Mesh` 时会注册：
+  - `asset:mesh:imported-asset:*`
+  - `asset:material:imported-asset:*`
+  - `asset:texture:imported-asset:*`
+- `RuntimePBRVerification` 的 `--verify-pbr-import` 现在创建临时 `AssetRegistry`，以 `assetHandleSource=imported-asset`、`assetHandleScope=fbx-test-test-fbx` 导入 `fbx/test/test.fbx`。
+- `verify_pbr.ps1` 的 `import` mode 现在断言 imported asset stats 中 mesh/material/texture handle 数量都大于 0。
+
+实现说明：
+
+- 当前没有修改 `framework/texture.*`，因为该文件不是 UTF-8，不能用当前 patch 工具安全编辑。
+- 因此第一版 texture handle 使用 imported asset scope + mesh path + PBR texture slot label + texture dimensions/unit 生成；后续整理 Texture 模块时，再把真实 source path 作为 Texture 元数据补入 handle path。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes import -DiscardCaptures`：构建通过；`importedAssetWorldImport` 输出 `assetHandles=3`、`meshAssetHandles=1`、`materialAssetHandles=1`、`textureAssetHandles=1`、`assetHandleSource=imported-asset`、`persistentIdSource=imported-asset`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 33 个 verification mode 全部通过；`import` summary 保持 `assetHandles=3`、`meshAssetHandles=1`、`materialAssetHandles=1`、`textureAssetHandles=1`。
+
+结论：
+
+- imported asset 已从“只有 persistent id”推进到“mesh/material/texture 都有 stable asset handle”。
+- 下一步建议把这条 handle 注册结果持久化到 scene package 或 editor asset browser 可见层；如果先继续 package 健壮性，则补 duplicate persistent id、self-parent/cycle attach、跨 actor parent reference。
+
+### 2026-05-27 Imported Asset Scene Package Manifest
+
+本轮继续上一节的下一步，把 imported asset handle 从“运行时临时 registry stats”推进到“scene package 文件可持久化、可重新读取”的 asset manifest。
+
+新增与修改：
+
+- `ScenePackageSaveResult` 新增 `assetManifestCount`、`meshAssetManifestCount`、`materialAssetManifestCount`、`textureAssetManifestCount`。
+- `ScenePackageLoadResult` 新增 `loadedAssetManifestCount`、`loadedMeshAssetManifestCount`、`loadedMaterialAssetManifestCount`、`loadedTextureAssetManifestCount`。
+- `saveScenePackage(...)` 现在会扫描 persistent id 来源为 `component:imported-asset:*` 的 `MeshComponent`，并写出：
+  - `assetManifest.N.handle=asset:mesh:imported-asset:*`
+  - `assetManifest.N.handle=asset:material:imported-asset:*`
+  - `assetManifest.N.handle=asset:texture:imported-asset:*`
+- `loadScenePackage(...)` 会读取 asset manifest 并统计 mesh/material/texture manifest 数量。
+- `RuntimePBRVerification` 的 `--verify-pbr-import` 现在会在导入 `fbx/test/test.fbx` 后保存 `out/pbr_import_asset_scene_package.verification.ini`，再加载该 package 并输出 `PBR imported asset scene package stats`。
+- `verify_pbr.ps1` 的 `import` mode 新增断言：package 必须保存/加载成功，asset manifest 必须包含 imported mesh/material/texture handles，且 load 阶段能读回三类 manifest。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes import -DiscardCaptures`：构建通过；`importedAssetScenePackage` 输出 `saved=yes`、`loaded=yes`、`assetManifest=3`、`meshAssets=1`、`materialAssets=1`、`textureAssets=1`、`loadedAssetManifest=3`、`loadedMeshAssets=1`、`loadedMaterialAssets=1`、`loadedTextureAssets=1`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 33 个 verification mode 全部通过；`import` summary 包含 `importedAssetScenePackage`，并保持 mesh/material/texture manifest 保存和读回断言通过。
+
+结论：
+
+- imported mesh/material/texture stable handle 已进入 scene package 持久化边界。
+- 下一步建议转到 editor asset browser / inspector 可见层，或者继续强化 package graph validation。
+
+### 2026-05-27 Editor Asset Browser / Inspector Visibility
+
+本轮把 imported asset handle 从 package / verification 数据推进到 editor 可见层。目标仍然是只暴露资产身份，不让 ImGui 面板接管 renderer object ownership。
+
+新增与修改：
+
+- `AssetRegistry` 新增 `listAssets()`，返回按 handle 排序的 `AssetDescriptor` 快照，避免 editor 直接遍历 `unordered_map` 内部存储。
+- `AppRuntimeContext` 新增 `assetRegistry`，importer、verification 和 editor 共享同一个 runtime registry 数据源。
+- `RuntimeEditorPanelCoordinator` 会把 `context.assetRegistry` 作为只读指针传入 `EditorPanelContext`。
+- Editor 新增 `asset browser` 面板，显示总 asset 数、mesh/material/texture 数和 imported handle 数，并列出 imported / all asset handles。
+- `SelectionKind` 新增 `Asset`，asset browser 点击后只保存 `selectedAssetHandle` 字符串，不保存 renderer pointer 或 registry descriptor pointer。
+- `inspector` 支持 asset selection，通过 `AssetRegistry::find(AssetHandle)` 显示 name、kind、handle、source、path、material type。
+- `RuntimePBRVerification` 的 import probe 改为写入 `context.assetRegistry`，并输出 `Runtime asset registry stats`。
+- `verify_pbr.ps1` 的 `import` mode 断言 runtime registry 中可见 imported mesh/material/texture handles。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes import -DiscardCaptures`：构建通过；`runtimeAssetRegistry` 输出 `assets=3`、`meshAssets=1`、`materialAssets=1`、`textureAssets=1`、`importedAssetHandles=3`。
+
+subagent 审计结论：
+
+- Editor Asset Visibility Agent 的主要建议已采纳：context-owned registry、只读枚举 API、editor context 指针、按 handle 字符串选中、verification registry stats。
+- Scene Package Graph Validation Agent 建议下一步优先补 package graph validation：duplicate actor/component persistent id、unresolved parent persistent id、invalid parent index、self-parent、cycle attach，以及合法 cross-actor parent restore 计数。
+
+结论：
+
+- imported asset handle 已完成“注册 -> package manifest -> editor browser -> inspector”的第一条可见链路。
+- AssetRegistry 仍只是资产身份 registry，不是 live renderer object owner。
+- 下一步建议转入 scene package graph validation，而不是继续扩展 PBR 效果。
+
+### 2026-05-27 Scene Package Graph Validation
+
+本轮根据 Scene Package Graph Validation Agent 的审计，补上 package loader 的结构图验证。目标是让 package 在进入 runtime World 前先拒绝坏对象图，而不是把错误 attachment 静默吞掉。
+
+新增与修改：
+
+- `ScenePackageLoadResult` 新增 graph diagnostics：duplicate actor/component persistent id、invalid root index、unresolved parent、invalid parent index、self-parent、cyclic parent、restored cross-actor parent。
+- `loadScenePackage(...)` 现在先构造 Actor / SceneComponent，再验证 parent graph，最后统一执行 `attachTo(...)`。
+- duplicate actor/component persistent id 会导致 load 失败，避免 component persistent id map 被后写入项覆盖。
+- `parentPersistentId` 明确存在但解析失败时会直接记录 unresolved parent，不再 fallback 到 `parentSceneComponent`。
+- `parentSceneComponent` index 只有在没有 `parentPersistentId` 时作为 same-actor fallback 使用。
+- self-parent 和 cycle parent 会在 attach 前被检测并拒绝。
+- 合法 cross-actor parent reference 继续支持，并通过 `restoredCrossActorParentReferences` 计数。
+- scene package negative probes 新增 duplicate actor id、duplicate component id、unresolved parent、invalid parent index、self-parent、cycle 和 valid cross-actor parent package。
+- `verify_pbr.ps1` 扩展 `engine-world-scene-package` 断言：有效 package 的 graph error 计数必须为 0，坏图必须被拒绝，合法 cross-actor parent 必须恢复。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-package -DiscardCaptures`：构建通过；有效 package 输出 `duplicateActorPersistentIds=0`、`duplicateSceneComponentPersistentIds=0`、`unresolvedParentReferences=0`、`invalidParentSceneComponentIndices=0`、`selfParentReferences=0`、`cyclicParentReferences=0`，并输出 `restoredCrossActorParentReferences=5`。
+- negative stats 输出 `duplicateActorIdRejected=yes`、`duplicateSceneComponentIdRejected=yes`、`unresolvedParentRejected=yes`、`invalidParentIndexRejected=yes`、`selfParentRejected=yes`、`cycleRejected=yes`、`validCrossActorParentLoaded=yes`。
+
+结论：
+
+- scene package loader 从“解析并尽量恢复”推进到“先验证对象图，再恢复 attachment”的边界。
+- 这一步比继续扩展 PBR 更接近游戏引擎目标，因为它强化的是场景资产和 runtime World 的可靠性。
+- 下一步建议把 AssetRegistry 从 runtime context 字段推进到 EngineSubsystem/AssetSubsystem，或继续把 package asset manifest 读回后注册进 runtime registry。
+
+### 2026-05-27 Scene Package Asset Manifest Registry Reload
+
+本轮继续资产链路，把 package 文件中的 `assetManifest.N.*` 从“可读统计”推进到“load 时可注册进 runtime AssetRegistry”。这让从 package 恢复出来的资产身份也能重新进入 editor asset browser / inspector 可见层。
+
+新增与修改：
+
+- `ScenePackageLoadOptions` 新增 `AssetRegistry* assetRegistry`，调用方可以选择在 load package 时同步注册 asset manifest。
+- `ScenePackageLoadResult` 新增 `registeredAssetManifestCount`、`registeredMeshAssetManifestCount`、`registeredMaterialAssetManifestCount`、`registeredTextureAssetManifestCount`。
+- `loadScenePackage(...)` 读取 `assetManifest.N.handle/kind/source/name/path/materialType` 后，会构造 `AssetDescriptor` 并注册到传入的 runtime `AssetRegistry`。
+- `RuntimePBRVerification` 的 import probe 保存 imported asset scene package 后，会清空 runtime registry，再通过 package load options 从 manifest 注册回 registry。
+- `verify_pbr.ps1` 的 `import` mode 现在断言 imported asset package load 能注册回 mesh/material/texture manifest assets。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes import -DiscardCaptures`：构建通过；`importedAssetScenePackage` 输出 `registeredAssetManifest=3`、`registeredMeshAssets=1`、`registeredMaterialAssets=1`、`registeredTextureAssets=1`，`runtimeAssetRegistry` 继续输出 `assets=3`、`meshAssets=1`、`materialAssets=1`、`textureAssets=1`、`importedAssetHandles=3`。
+
+结论：
+
+- imported asset handle 现在具备完整的 “import 注册 -> package manifest 保存 -> package load 注册回 runtime registry -> editor 可见” 链路。
+- 下一步建议把 `AssetRegistry` 从 `AppRuntimeContext` 字段提升为 engine subsystem / asset subsystem 边界，避免长期把资产系统放在 application context。
+
+### 2026-05-27 AssetRegistry Subsystem Boundary
+
+本轮把 `AssetRegistry` 从 application context 的直接字段推进到 engine subsystem 边界。当前目标不是做完整异步资产系统，而是先把 registry owner 放到 engine 层，后续再接入真正的 Engine lifecycle。
+
+新增与修改：
+
+- 新增 `AssetSubsystem`，继承 `EngineSubsystem`，内部持有 `AssetRegistry`。
+- `AssetSubsystem` 当前提供 `getRegistry()`、`clear()`、`isInitialized()`，并实现 `initialize/tick/shutdown` 生命周期接口。
+- `AppRuntimeContext` 不再直接持有 `AssetRegistry`，改为持有 `AssetSubsystem`。
+- Editor panel context 通过 `context.assetSubsystem.getRegistry()` 获取只读 registry。
+- PBR import probe 和 scene package manifest reload 通过 `assetSubsystem.getRegistry()` 注册和验证 imported asset handles。
+- `text2.vcxproj` / `.filters` 已注册 `AssetSubsystem` 新文件。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes import -DiscardCaptures`：构建通过；`AssetSubsystem.cpp` 参与编译；`runtimeAssetRegistry` 继续输出 `assets=3`、`meshAssets=1`、`materialAssets=1`、`textureAssets=1`、`importedAssetHandles=3`。
+
+结论：
+
+- AssetRegistry 已不再作为裸 registry 字段暴露在 application context 中，而是通过 engine-side `AssetSubsystem` 访问。
+- 这一节先完成 subsystem 类型边界；下一节继续把 owner 从 runtime context 移到 `Engine`。
+
+### 2026-05-27 Engine-Owned AssetSubsystem Handoff
+
+本轮继续上一节，把 `AssetSubsystem` 从“application context 直接持有的 engine-side 类型”推进到“由 `Engine` 创建和管理生命周期，runtime context 只保存非拥有引用”的边界。这样 asset registry 不再是 application context 的长期 owner，后续其他系统可以按同一方式接入 Engine lifecycle。
+
+新增与修改：
+
+- `AppRuntimeContext` 中的 `AssetSubsystem` 实例改为 `AssetSubsystem*` 非拥有指针。
+- `RuntimeApplicationShell` 持有 `GLengine::Engine`，初始化阶段通过 `Engine::addSubsystem<AssetSubsystem>()` 创建 asset subsystem。
+- `RuntimeApplicationShell` 根据当前 runtime 配置生成 `EngineDesc`，并调用 `mEngine.initialize(...)` / `mEngine.shutdown()`。
+- runtime context 在 shell 初始化时获得 Engine-owned `AssetSubsystem` 指针，cleanup 时显式置空。
+- Editor asset browser / inspector 通过可空 subsystem 指针取得 registry；当 subsystem 不可用时不会解引用空指针。
+- PBR import verification 通过 Engine-owned `AssetSubsystem` 的 registry 注册 imported mesh/material/texture handles，并继续验证 package manifest reload。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes import -DiscardCaptures`：构建通过；`runtimeAssetRegistry` 输出 `assets=3`、`meshAssets=1`、`materialAssets=1`、`textureAssets=1`、`importedAssetHandles=3`；`importedAssetScenePackage` 继续输出 `registeredAssetManifest=3`、`registeredMeshAssets=1`、`registeredMaterialAssets=1`、`registeredTextureAssets=1`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 33 个 verification mode 全部通过。
+
+结论：
+
+- AssetRegistry 的 owner 已从 application context 移到 Engine subsystem。
+- 当前 `Engine` 已进入 runtime shell lifecycle，但 frame tick 还没有成为统一调度入口。
+- 下一步建议优先选择一个新的核心 owner 迁移对象：要么把 runtime `World` 从 `AppRuntimeContext` 迁到 Engine-owned `WorldSubsystem` / `SceneSubsystem`，要么让现有 `RendererSubsystem` 更正式地进入 Engine tick/frame pipeline。
+
+### 2026-05-27 Engine-Owned World Handoff First Slice
+
+本轮继续上一节的下一步，把 runtime `World` 的 ownership 从 `AppRuntimeContext` 移到 `Engine`。当前没有新增单独的 `WorldSubsystem`，原因是 `Engine` 已经有 `createWorld(...)` / `getActiveWorld()` 和 `mActiveWorld` owner；如果此时再新增一个 subsystem 持有另一个 active World，会形成重复 owner。更合理的第一步是先让 application context 只保存非拥有指针，后续再决定是否把 `Engine::mActiveWorld` 抽成正式 `WorldSubsystem`。
+
+新增与修改：
+
+- `AppRuntimeContext::engineWorld` 从 `std::shared_ptr<GLengine::World>` 改为非拥有 `GLengine::World*`。
+- `RuntimeScenePreparer::prepare(...)` 现在接收 shell 持有的 `GLengine::Engine&`，并把 `Engine*` 传入 scene setup context。
+- `SceneSetupPipeline` 的 legacy mirror、World-driven probe 和 minimal scene 都通过 `Engine::createWorld(...)` 创建 runtime World，然后把 active World 指针写回 context。
+- `EditorPanelContext`、hierarchy、transaction summary、snapshot save/apply 和 editor create actor 入口都改为使用非拥有 `World*`。
+- `RuntimeApplicationShell::cleanup()` 会在 `Engine::shutdown()` 前清空 runtime `engineWorld` 指针和 editable 标记，避免 editor/runtime context 留下悬空 owner 语义。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；默认 legacy mirror 仍输出 `runtimeWorldActors=33`；World-driven minimal scene 仍输出 `runtimeWorldActors=5`、`engineWorldMinimalMeshes=4`，snapshot save/apply 继续通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 33 个 verification mode 全部通过；`engine-world-scene-package` 继续保存/加载 package、验证 graph negative probes 和 snapshot apply。
+- 已执行 `rg` 检查，代码路径中不再有 `std::shared_ptr<GLengine::World>`、`std::make_shared<GLengine::World>` 或 `engineWorld.get()` 残留；仅历史文档中保留旧阶段记录。
+
+结论：
+
+- runtime `World` 已不再由 application context 共享持有，而是由 `Engine` active world 持有。
+- `AppRuntimeContext` 现在对 `AssetSubsystem` 和 `World` 都只保存非拥有引用，composition root 的 owner 责任开始收敛到 `RuntimeApplicationShell` / `Engine`。
+- 下一步可以继续推进两个方向：把 `Engine::mActiveWorld` 抽成正式 `WorldSubsystem`，或让 `RuntimeApplicationShell::runFrame()` 开始调用 `Engine::tick(...)` 并逐步把 frame lifecycle 迁入 Engine。
+
+### 2026-05-27 Engine Tick Frame Loop First Slice
+
+本轮继续上一节的第二个方向，把 `Engine::tick(...)` 接入 runtime frame loop。目标不是立刻把 renderer pipeline 全部迁到 Engine，而是先让 Engine lifecycle 每帧真实运行，并让 verification 能证明 active World 已经进入 begin/tick/end 路径。
+
+新增与修改：
+
+- `RuntimeFrameConfig` 新增 `GLengine::Engine* engine` 与 `deltaSeconds`。
+- `RuntimeFrameRunner::run(...)` 在旧 renderer frame pipeline 前调用 `engine->tick(deltaSeconds)`。
+- `RuntimeApplicationShell::makeFrameConfig()` 把 shell 持有的 `mEngine` 传给 frame runner，并先使用固定 `1.0f / 60.0f` delta，避免 verification 受平台计时抖动影响。
+- `Engine::initialize(...)` 在 Engine 已有 active World 时调用 `beginPlay()`；`Engine::createWorld(...)` 在 Engine 已初始化时也会让新 active World 立即 begin play。
+- `RuntimePBRVerification::reportRenderedFrame(...)` 现在接收 `Engine&`，并输出 `Runtime engine tick stats`：initialized、activeWorld、activeWorldPlaying、timeSeconds、deltaSeconds。
+- `verify_pbr.ps1` 对每个 verification mode 解析并断言 `Runtime engine tick stats`，要求 Engine 已初始化、active World 存在且 playing、`timeSeconds > 0`、`deltaSeconds > 0`。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；默认 legacy mirror 和 World-driven minimal scene 均输出 `runtimeEngineTick: initialized=yes, activeWorld=yes, activeWorldPlaying=yes, timeSeconds=0.033333, deltaSeconds=0.016667`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 33 个 verification mode 全部通过；每个 mode 都输出并断言 `Runtime engine tick stats`。
+
+结论：
+
+- Engine 不再只是初始化期 owner；它已经进入每帧 runtime 调度。
+- 当前 renderer frame pipeline 仍由 `RuntimeFramePipeline` 执行，Engine tick 先作为独立 lifecycle phase 接入。
+- 下一步可以把固定 delta 替换为 runtime frame clock，也可以继续把 `RendererSubsystem` 接入 Engine tick/frame pipeline。
+
+### 2026-05-27 Runtime Frame Clock First Slice
+
+本轮继续上一节，把 `Engine::tick(...)` 使用的 delta 从 shell 中写死的 `1.0f / 60.0f` 推进到独立 frame clock。目标是让普通 editor/game 运行具备真实 frame delta，同时保持 verification 的固定 delta，避免测试结果被平台计时抖动影响。
+
+新增与修改：
+
+- 新增 `RuntimeFrameClock`，使用 `std::chrono::steady_clock` 计算普通运行的 frame delta。
+- `RuntimeFrameClockConfig` 提供 `useFixedDelta`、`fixedDeltaSeconds`、`maxDeltaSeconds`。
+- `RuntimeApplicationShellConfig` 新增 `frameClock` 配置，shell 内部持有 `RuntimeFrameClock mFrameClock`。
+- shell 初始化完成后调用 `mFrameClock.reset()`。
+- `RuntimeApplicationShell::makeFrameConfig()` 通过 `mFrameClock.tick(makeFrameClockConfig())` 获取 delta，再交给 `RuntimeFrameRunner`。
+- `RuntimeApplicationShell::makeFrameClockConfig()` 在 verification 模式下强制 `useFixedDelta=true` 和 `fixedDeltaSeconds=1.0f / 60.0f`；普通运行则使用真实 `steady_clock` delta，并通过 `maxDeltaSeconds` 避免长帧导致 simulation jump。
+- `text2.vcxproj` / `.filters` 已注册新增 `RuntimeFrameClock` 文件。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；`RuntimeFrameClock.cpp` 参与编译；verification 路径继续输出 `runtimeEngineTick: initialized=yes, activeWorld=yes, activeWorldPlaying=yes, timeSeconds=0.033333, deltaSeconds=0.016667`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 33 个 verification mode 全部通过，所有 mode 的 Engine tick stats 继续保持固定 verification delta。
+
+结论：
+
+- Engine tick 已从“固定常量 delta”升级为“runtime frame clock 驱动”。
+- verification 仍使用固定 delta，保证已有 33 个验证模式保持稳定。
+- 下一步可以继续把 `RendererSubsystem` 接入 Engine tick/frame pipeline，或把 frame clock stats 暴露到 editor/debug panel。
+
+### 2026-05-27 RendererSubsystem Frame Bridge First Slice
+
+本轮继续上一节的主线，把现有 `RendererSubsystem` 从“已注册但不参与 frame”的状态推进到 Engine-owned runtime frame bridge。当前仍不迁移完整 `RuntimeFramePipeline`，避免一次性改变渲染执行路径；本轮只建立 Engine subsystem 生命周期、runtime renderer 非拥有绑定，以及 render 前后 bridge 统计。
+
+新增与修改：
+
+- `RuntimeApplicationShell` 在 `Engine::initialize(...)` 前通过 `Engine::addSubsystem<RendererSubsystem>()` 创建 renderer subsystem，并在 scene prepare 完成后把 `mRuntime.renderer.get()` 作为非拥有指针绑定给 subsystem。
+- `RuntimeFrameConfig` 新增 `RendererSubsystem*`，frame runner 在旧 renderer pipeline 前调用 `beginFrameBridge(...)`，在 `RuntimeFramePipeline::render(...)` 后调用 `endFrameBridge(...)`。
+- `RendererSubsystem` 新增 `RendererSubsystemFrameBridgeStats`，记录 initialized、hasRenderer、frameBridgeActive、begin/completed frame count、observed renderer pass count、Engine time/delta。
+- `RuntimePBRVerification::reportRenderedFrame(...)` 输出 `Runtime renderer subsystem stats`，并验证 subsystem 绑定的是当前 runtime renderer。
+- `verify_pbr.ps1` 对所有 verification mode 新增全局断言：renderer subsystem stats 必须存在，initialized/hasRenderer/runtimeRendererAttached/frameBridgeActive 必须为 yes，begin/completed frames 必须大于 0 且相等，observed renderer passes、engine time 和 delta 必须大于 0。
+- `docs/subagents_coordination.md` 已切换到本轮 RendererSubsystem frame bridge 协作边界，并明确两个子 agent 只读审查，不写代码。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；`RendererSubsystem.cpp`、`RuntimeFrameRunner.cpp`、`RuntimeApplicationShell.cpp` 和 verification 代码均参与编译。
+- `forward` 输出 `runtimeRendererSubsystem: initialized=yes, hasRenderer=yes, runtimeRendererAttached=yes, frameBridgeActive=yes, beginFrames=2, completedFrames=2, observedRendererPasses=8`。
+- `engine-world-minimal-scene` 输出 `runtimeRendererSubsystem: initialized=yes, hasRenderer=yes, runtimeRendererAttached=yes, frameBridgeActive=yes, beginFrames=2, completedFrames=2, observedRendererPasses=6`。
+
+结论：
+
+- RendererSubsystem 已进入 Engine-owned runtime frame lifecycle，但当前仍是 bridge，不接管实际 renderer pass execution。
+- 旧 `RuntimeFramePipeline` 继续负责渲染执行；Engine/RendererSubsystem 现在能够观察并验证该帧渲染确实完成。
+- 下一步可以把 `RuntimeFramePipeline::render(...)` 的入口进一步移动到 RendererSubsystem API 后面，或者先把 RendererSubsystem stats 暴露到 editor/debug panel。
+
+### 2026-05-27 RendererSubsystem Render Entry Wrapper
+
+本轮继续上一节的下一步，把 `RuntimeFrameRunner` 中手写的 `beginFrameBridge -> RuntimeFramePipeline::render -> endFrameBridge` 收敛为一个 `RendererSubsystem` API。当前仍不把 application 层的 `RuntimeFramePipeline` 放进 engine 目录，原因是那会让 engine 反向依赖 application；本轮采用 callback 形式，让 engine subsystem 负责 frame bridge lifecycle，application 层只提供旧 pipeline 的 render callback。
+
+新增与修改：
+
+- `RendererSubsystemFrameBridgeStats` 新增 `renderFrameBridgeCallCount`，用于区分“只是 begin/end 被调用”和“渲染入口确实通过 subsystem API 包裹”。
+- `RendererSubsystem` 新增 `renderFrameBridge(const EngineContext&, const std::function<void()>&)`，内部负责 bridge call count、begin、调用 render callback、end；如果 callback 抛出异常，会先记录 end 再继续抛出。
+- `RuntimeFrameRunner::run(...)` 不再直接展开 begin/render/end 三步；当 Engine 和 RendererSubsystem 都存在时，通过 `rendererSubsystem->renderFrameBridge(...)` 包裹旧 `RuntimeFramePipeline::render(...)`，否则保留直接 render fallback。
+- `RuntimePBRVerification` 输出新增 `renderFrameBridgeCalls`。
+- `verify_pbr.ps1` 新增全局断言：`renderFrameBridgeCalls > 0`，并且 `renderFrameBridgeCalls == beginFrames`，证明旧 pipeline 入口已经通过 RendererSubsystem API。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；两个 mode 均输出 `renderFrameBridgeCalls=2`、`beginFrames=2`、`completedFrames=2`，且 observed renderer passes 大于 0。
+
+结论：
+
+- Runtime renderer frame entry 已从 runner 的手写三段式逻辑推进到 `RendererSubsystem` API 包裹。
+- Engine 目录仍不依赖 application runtime 类型，当前依赖方向保持可控。
+- 下一步可以把 `RuntimeFramePipeline` 的配置与 pass plan 逐步下沉到 renderer subsystem 管理，或先把 renderer subsystem stats 暴露给 editor/debug panel。
+
+### 2026-05-27 RendererSubsystem Editor Stats Visibility
+
+本轮继续上一节的第二个低风险方向，把 Engine-owned `RendererSubsystem` 的 frame bridge stats 暴露到 runtime context 和 editor/debug panel。目标不是新增渲染功能，而是让 Engine subsystem 的生命周期状态可以在运行时 UI 中直接观察，为后续迁移 pass plan / config 提供可见反馈。
+
+新增与修改：
+
+- `AppRuntimeContext` 新增非拥有 `GLengine::RendererSubsystem* rendererSubsystem`。
+- `RuntimeApplicationShell` 创建 `RendererSubsystem` 后把指针写入 runtime context，cleanup 时清空，保持与 `AssetSubsystem` / `World` 一致的非拥有引用模式。
+- `DebugControllerContext` 新增 `const RendererSubsystem* rendererSubsystem`，`RuntimeEditorPanelCoordinator` 从 runtime context 传入该指针。
+- `DebugControllerPanel` 新增 `Renderer Subsystem Frame Bridge` 折叠区，展示 initialized、hasRenderer、frameBridgeActive、renderFrameBridgeCalls、begin/completed frames、observed renderer passes、Engine time/delta。
+- `RuntimePBRVerification` 的 `Runtime renderer subsystem stats` 新增 `runtimeContextRendererSubsystemAttached` 字段。
+- `verify_pbr.ps1` 新增全局断言：runtime context 暴露的 RendererSubsystem 必须和 shell 传入 verification 的 Engine-owned subsystem 相同。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；`RuntimeApplicationShell.cpp`、`RuntimeEditorPanelCoordinator.cpp`、`DebugControllerPanel.cpp`、`RuntimePBRVerification.cpp` 均参与编译。
+- 两个 mode 均输出 `runtimeContextRendererSubsystemAttached=yes`，并继续保持 `renderFrameBridgeCalls=2`、`beginFrames=2`、`completedFrames=2`、`observedRendererPasses > 0`。
+
+结论：
+
+- RendererSubsystem 不再只对 verification 可见，也进入了 editor/debug UI 的可观察边界。
+- runtime context 对核心 Engine-owned 对象继续采用非拥有指针，不引入新的 owner。
+- 下一步可以继续把 runtime frame pipeline 的 pass plan / config 管理向 RendererSubsystem 收敛，或者把 debug panel 的 stats 进一步整理成 Engine diagnostics 面板。
+
+### 2026-05-27 RendererSubsystem Frame Entry Config
+
+本轮继续上一节的下一步，把 frame entry 的基础配置纳入 `RendererSubsystem` bridge API。目标是让 RendererSubsystem 不只知道“render callback 被调用”，也知道本帧 renderer entry 使用的 framebuffer 配置，为后续把 runtime frame pipeline 的 pass plan / config 管理继续收敛到 subsystem 边界做准备。
+
+新增与修改：
+
+- 新增 `RendererSubsystemFrameConfig`，当前包含 `framebufferWidth` / `framebufferHeight`。
+- `RendererSubsystem::renderFrameBridge(...)` 现在接收 `RendererSubsystemFrameConfig`，并在 begin/end bridge 时记录 frame config。
+- `RendererSubsystemFrameBridgeStats` 新增 `frameConfigValid`、`framebufferWidth`、`framebufferHeight`。
+- `RuntimeFrameRunner` 构造 `RendererSubsystemFrameConfig` 后交给 `RendererSubsystem::renderFrameBridge(...)`，旧 `RuntimeFramePipeline::render(...)` callback 使用同一份 config 生成 `RuntimeFramePipelineConfig`。
+- `RuntimePBRVerification` 的 `Runtime renderer subsystem stats` 新增 `frameConfigValid=yes` 和 `framebuffer=WxH`。
+- `verify_pbr.ps1` 新增全局断言：RendererSubsystem frame config 必须有效，framebuffer width / height 必须大于 0。
+- `DebugControllerPanel` 的 `Renderer Subsystem Frame Bridge` 区块新增 Frame Config Valid 与 Framebuffer 显示。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；两个 mode 均输出并断言 `frameConfigValid=yes`、`framebuffer=1280x720`，同时保持 `renderFrameBridgeCalls=2`、`beginFrames=2`、`completedFrames=2` 和 observed renderer passes 大于 0。
+
+结论：
+
+- frame entry 的第一批配置已经进入 RendererSubsystem API，而不是只停留在 application runner 内部。
+- Engine 目录仍不依赖 `RuntimeFramePipelineConfig`，当前通过 engine-side frame config + application callback 维持依赖方向。
+- 下一步可以继续把 pass plan/profile 的只读摘要或 key 传入 RendererSubsystem stats，或者把 runtime frame pipeline config 构建进一步集中到专门的 bridge adapter。
+
+### 2026-05-27 RendererSubsystem Runtime Pipeline Pass Stats
+
+本轮继续上一节的下一步，把 runtime frame pipeline 的 pass plan 执行统计接入 RendererSubsystem stats。目标是让 Engine-owned renderer subsystem 不只观察 renderer 内部 pass count，也能观察 application runtime pipeline 这一层的 planned / executed / skipped pass 数量。
+
+新增与修改：
+
+- `RuntimeFramePipeline::render(...)` 从 `void` 改为返回 `RuntimeFramePipelineStats`。
+- `RuntimeFramePipelineStats` 当前记录 planned pass count、executed pass count、skipped pass count。
+- `RuntimeFramePipeline::render(...)` 会统计 `RuntimeFramePassRegistry::buildPassPlan(...)` 生成的计划数量，执行 enabled pass 时递增 executed，遇到 null pass 或 disabled pass 时递增 skipped。
+- `RendererSubsystemFrameRenderResult` 新增为 engine-side 桥接结果类型，避免 engine 直接依赖 application 的 `RuntimeFramePipelineStats`。
+- `RendererSubsystem::renderFrameBridge(...)` 的 callback 现在返回 `RendererSubsystemFrameRenderResult`，subsystem 记录 runtimePipeline planned / executed / skipped pass 数。
+- `RuntimeFrameRunner` 把 `RuntimeFramePipeline::render(...)` 的 stats 转成 `RendererSubsystemFrameRenderResult`。
+- `RuntimePBRVerification` 的 `Runtime renderer subsystem stats` 新增 `runtimePipelinePasses=planned/executed/skipped`。
+- `verify_pbr.ps1` 新增全局断言：planned runtime pipeline passes 必须大于 0，executed 必须大于 0，skipped 必须存在，并且 planned == executed + skipped。
+- `DebugControllerPanel` 的 Renderer Subsystem 区块新增 Runtime Pipeline Passes 显示。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；两个 mode 均输出并断言 `runtimePipelinePasses=4/4/0`，同时保持 RendererSubsystem frame bridge、frame config 和 renderer pass 断言。
+
+结论：
+
+- RendererSubsystem 已能观察 runtime pipeline pass plan 的执行摘要。
+- 当前仍没有把 `RuntimeFramePassRegistry` 或 `RuntimeFramePipeline` 移入 engine，因此依赖方向仍然可控。
+- 下一步可以继续把 pass plan/profile key 或 profile path 纳入 RendererSubsystem stats，或者抽一个 application-side `RendererFrameBridgeAdapter` 来进一步减少 `RuntimeFrameRunner` 中的 glue code。
+
+### 2026-05-27 Runtime Renderer Frame Bridge Adapter
+
+本轮接受 sidecar audit 的建议，先做 application-side bridge adapter，而不是先把 profile path / key 直接放进 Engine 侧 stats。目标是把 `RuntimeFramePipeline` 到 `RendererSubsystemFrameRenderResult` 的翻译逻辑从 `RuntimeFrameRunner` 中移走，保持 Runner 只负责 frame 顺序。
+
+新增与修改：
+
+- 新增 `RuntimeRendererFrameBridgeAdapter`，位于 application 层。
+- `RuntimeRendererFrameBridgeAdapter::renderRuntimeFrame(...)` 调用旧 `RuntimeFramePipeline::render(...)`，并把 application-side `RuntimeFramePipelineStats` 转换为 engine-side `RendererSubsystemFrameRenderResult`。
+- `RuntimeFrameRunner` 不再直接 include `RuntimeFramePipeline.h`，也不再手写 stats 字段映射；Engine/RendererSubsystem 路径和 fallback 路径都通过 adapter 调用 runtime render。
+- VS 工程和 filters 已加入 `RuntimeRendererFrameBridgeAdapter.cpp/.h`。
+
+结论：
+
+- `RendererSubsystem` 接口暂时不扩大，Engine 目录仍不依赖 application runtime 类型。
+- 后续如果需要暴露 `runtimePipelineProfileKey`，应从这个 adapter 继续向 `RendererSubsystemFrameRenderResult` 传递稳定 token，不建议暴露本地 profile path。
+
+### 2026-05-27 RendererSubsystem Runtime Pipeline Profile Key
+
+本轮继续上一节，把 runtime frame pipeline 的 profile/render intent 以稳定 token 形式传入 Engine-owned `RendererSubsystem`。目标是证明 application-side adapter 不只传递 pass count，也能传递“本帧 runtime pipeline 配置来源”的摘要，同时避免把本地配置文件路径做成 Engine 契约。
+
+新增与修改：
+
+- `RendererSubsystemFrameRenderResult` 新增 `runtimePipelineProfileKey`，默认值为 `none`。
+- `RendererSubsystemFrameBridgeStats` 新增同名字段，并在 `applyRenderResult(...)` 中接收 render callback 返回的 key。
+- `RuntimeRendererFrameBridgeAdapter` 根据当前 `RuntimeFramePipelineProfile` 生成稳定 token，格式为 `runtime-frame-pipeline:order=<sanitized-order>:enabled=<toggles>`。
+- `RuntimePBRVerification` 的 `Runtime renderer subsystem stats` 新增 `runtimePipelineProfileKey=...`。
+- `verify_pbr.ps1` 新增全局断言：`runtimePipelineProfileKey` 必须存在，且不能是空值或 `none`。
+- `DebugControllerPanel` 的 Renderer Subsystem 区块新增 Runtime Pipeline Profile Key 显示。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；两个 mode 均输出并断言 `runtimePipelineProfileKey=runtime-frame-pipeline:order=SceneColor+SceneResolve+Bloom+ScreenComposite:enabled=1111`，同时保持 `runtimePipelinePasses=4/4/0`。
+
+结论：
+
+- RendererSubsystem 已能观察 runtime pipeline 的 pass 执行摘要和稳定 profile key。
+- Engine 仍不读取本地 profile path，也不依赖 application 的 `RuntimeFramePipelineProfile` 类型。
+- 下一步可以继续把 RendererSubsystem bridge result 扩展成更正式的 render intent/result DTO，或者开始整理 renderer diagnostics 面板。
+
+### 2026-05-27 RendererSubsystem Frame Intent / Result DTO
+
+本轮继续上一节的下一步，把 `RendererSubsystem` bridge 的输入/输出类型从临时命名整理为正式 DTO。目标不是改变渲染行为，而是让 Engine 侧接口语义更清楚：进入一帧的是 intent，render callback 返回的是 result。
+
+新增与修改：
+
+- `RendererSubsystemFrameConfig` 重命名为 `RendererSubsystemFrameIntent`，当前仍包含 framebuffer width / height。
+- `RendererSubsystemFrameRenderResult` 重命名为 `RendererSubsystemFrameResult`，当前包含 runtime pipeline profile key 和 planned / executed / skipped pass 统计。
+- `RendererSubsystem::renderFrameBridge(...)`、`beginFrameBridge(...)`、`endFrameBridge(...)` 现在接收 `RendererSubsystemFrameIntent`。
+- 内部 helper 从 `applyFrameConfig(...)` / `applyRenderResult(...)` 改为 `applyFrameIntent(...)` / `applyFrameResult(...)`。
+- `RuntimeFrameRunner` 和 `RuntimeRendererFrameBridgeAdapter` 同步使用 intent/result DTO 命名。
+
+结论：
+
+- Engine 侧 renderer bridge 的入参和出参语义更接近正式 render intent/result 边界。
+- verification 输出字段保持不变，避免 UI 和脚本契约无意义变动。
+- 下一步可以在这个 DTO 边界上继续扩展 renderer diagnostics，或拆出独立 Engine diagnostics 面板。
+
+### 2026-05-27 Engine Diagnostics Panel First Slice
+
+本轮继续上一节的下一步，把 RendererSubsystem diagnostics 从 `DebugControllerPanel` 中拆出到独立 Engine diagnostics 面板文件。目标是降低 debug controller 的职责膨胀，让 Engine-owned subsystem 的可观察 UI 有自己的入口。
+
+新增与修改：
+
+- 新增 `EngineDiagnosticsPanel.h/.cpp`。
+- 新增 `EngineDiagnosticsContext`，初始只包含 `const RendererSubsystem* rendererSubsystem`。
+- 原 `drawRendererSubsystemStats(...)` 逻辑迁入 `EngineDiagnosticsPanel.cpp`，UI 文案和显示字段保持不变。
+- `DebugControllerPanel.cpp` 只构造 `EngineDiagnosticsContext` 并调用 `drawEngineDiagnosticsPanel(...)`，不再直接读取 `RendererSubsystem::getFrameBridgeStats()`。
+- VS 工程和 filters 已注册新增 diagnostics panel 文件。
+
+结论：
+
+- RendererSubsystem debug UI 已从通用 DebugController 中拆出第一层边界。
+- 后续 Engine diagnostics 可以继续接入 AssetSubsystem / World / Engine tick 等统计，而不继续扩大 DebugControllerPanel。
+
+### 2026-05-27 Engine Diagnostics Unified Context
+
+本轮继续上一节，把 Engine diagnostics panel 从单一 RendererSubsystem 观察入口扩展为 Engine / World / AssetSubsystem / RendererSubsystem 的统一基础诊断入口。目标是让后续 runtime 状态观察不继续塞回 DebugControllerPanel。
+
+新增与修改：
+
+- `AppRuntimeContext` 新增非拥有 `GLengine::Engine* engine`，与 `engineWorld` / `assetSubsystem` / `rendererSubsystem` 保持同一类 runtime context 引用边界。
+- `RuntimeApplicationShell` 初始化时写入 `mRuntime.engine = &mEngine`，cleanup 时清空。
+- `DebugControllerContext` 与 `EngineDiagnosticsContext` 新增 engine、engineWorld、assetSubsystem 指针。
+- `RuntimeEditorPanelCoordinator` 把 runtime context 中的 Engine / World / AssetSubsystem 传给 debug controller，再由 debug controller 转交 Engine diagnostics panel。
+- `EngineDiagnosticsPanel` 新增 `Engine Runtime`、`Engine World` 和 `Asset Subsystem` 折叠区，显示 Engine initialized / run mode / viewport / time / delta、World playing / level actor count、AssetRegistry 总量和主要 kind 计数。
+- `RuntimePBRVerification` 的 `Runtime engine tick stats` 新增 `runtimeContextEngineAttached=yes`。
+- `verify_pbr.ps1` 新增断言：每个 verification mode 的 `AppRuntimeContext` 必须暴露 runtime Engine。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；两个 mode 均输出并断言 `runtimeContextEngineAttached=yes`，同时保持 renderer subsystem verification stats。
+
+结论：
+
+- Engine diagnostics panel 已从 RendererSubsystem 单点扩展为 Engine runtime 状态的统一观察入口。
+- verification 现在能证明 AppRuntimeContext 中的 Engine 指针来自 shell 持有的真实 Engine，而不是只靠 UI 编译间接证明。
+
+### 2026-05-27 Goal Restart / Subagents Coordination
+
+本轮按 active goal 继续推进，不重新定义目标，也不把当前状态标记为完成。当前项目已经进入 Engine-owned runtime pipeline 的边界收敛阶段，下一步不应继续扩张 PBR 特性，而应优先选择能降低耦合、能被 verification 稳定证明的 engine slice。
+
+本轮协作边界：
+
+- 父 agent 继续负责实际实现、验证、文档同步和 `worked.md` 记录。
+- 子 agent 只做只读审查，不编辑文件，不处理 `imgui.ini`，不执行 destructive git。
+- `Engine Diagnostics Health Counter Agent` 审查下一步 subsystem health counter 与稳定 verification 断言。
+- `Renderer Frame Contract Boundary Agent` 审查 `RendererSubsystemFrameIntent` / `RendererSubsystemFrameResult` 下一步最小 contract 改进。
+
+当前倾向：
+
+- 如果 diagnostics 审查确认稳定，优先做 subsystem health counters，因为这能加强 Engine runtime 的可观察性，同时不扩大 renderer/PBR 范围。
+- 如果 renderer contract 审查指出已有 DTO 仍缺少必要的 engine-side intent/result 字段，则只补通用 frame contract 字段，避免把 legacy pipeline 的 pass 细节继续上移到 Engine。
+
+### 2026-05-27 Renderer Frame Contract Neutralization
+
+本轮采纳 `Renderer Frame Contract Boundary Agent` 的只读审查结论：Engine 侧 DTO / stats 不应继续使用 `runtimePipeline*` 字段名。pass count 和 plan key 本身是合理的 frame contract，但 `RuntimeFramePipeline` 是 application legacy 管线，不应该成为 Engine 命名空间的抽象。
+
+新增与修改：
+
+- `RendererSubsystemFrameResult` 与 `RendererSubsystemFrameBridgeStats` 把 `runtimePipelineProfileKey` 改为 `framePlanKey`。
+- planned / executed / skipped 统计改为 `plannedPassCount`、`executedPassCount`、`skippedPassCount`。
+- `RuntimePBRVerification` 的 `Runtime renderer subsystem stats` 输出改为 `framePlanKey=...` 与 `framePasses=planned/executed/skipped`。
+- `verify_pbr.ps1` 同步改为断言 `framePlanKey` 非空且不为 `none`，并继续断言 `planned == executed + skipped`。
+- `EngineDiagnosticsPanel` UI 改为显示 `Frame Plan Key` 和 `Frame Passes`，不再在 Engine diagnostics 中暴露 `Runtime Pipeline` 命名。
+
+结论：
+
+- 旧 `RuntimeFramePipeline` 的具体来源仍保留在 application-side `RuntimeRendererFrameBridgeAdapter` 内部。
+- Engine 侧只表达通用 frame intent/result，不表达 legacy runtime pipeline 类型。
+- 下一步可按另一个子 agent 建议推进 Engine-driven subsystem health counters。
+
+### 2026-05-27 Engine-Driven Subsystem Health Counters
+
+本轮采纳 `Engine Diagnostics Health Counter Agent` 的只读审查结论：在继续拆 renderer ownership 之前，先补一个不依赖 PBR 场景细节的 Engine health contract。目标是证明 Engine tick loop 正在统一驱动 active World 和 Engine-owned subsystems，而不是只靠 renderer bridge stats 间接证明。
+
+新增与修改：
+
+- `Engine` 新增 tick counter，并在 `Engine::tick(...)` 中自增。
+- `World` 新增 tick counter，并在 `World::tick(...)` 中自增，`beginPlay()` 时重置。
+- `AssetSubsystem` 新增 tick counter，`tick(...)` 中自增，initialize/shutdown 时重置。
+- `RendererSubsystem` 新增 tick counter，`tick(...)` 中自增，initialize/shutdown 时重置。
+- `EngineDiagnosticsPanel` 新增 `Subsystem Health` 折叠区，显示 Engine / World / AssetSubsystem / RendererSubsystem tick count、context world 是否匹配 active world、World actor count。
+- `RuntimePBRVerification` 新增 `Runtime subsystem health stats` 输出：`engineTicks`、`worldTicks`、`assetSubsystemTicks`、`rendererSubsystemTicks`、`contextWorldMatchesActive`、`worldActors`。
+- `verify_pbr.ps1` 新增全局断言：四个 tick counter 必须大于 0 且相等；`contextWorldMatchesActive=yes`；health `worldActors` 不能低于 scene stats 的 `runtimeWorldActors`，允许后续 package/editor probes 在 scene stats 输出后追加 Actor。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；两个 mode 均输出并断言 `engineTicks=2, worldTicks=2, assetSubsystemTicks=2, rendererSubsystemTicks=2`，且 `worldActors` 分别为 33 和 5。
+
+结论：
+
+- Engine tick loop 现在有可验证的统一驱动证据。
+- 这个 contract 不绑定 PBR pass、灯光数量或具体渲染场景，适合作为后续 engine runtime ownership 的基础健康检查。
+
+### 2026-05-27 Renderer Frame Executor Interface
+
+本轮继续上一节的下一步，把 `RendererSubsystem::renderFrameBridge(...)` 的渲染入口从 `std::function` callback 收敛为 Engine-side executor interface。目标是让 Engine 侧 renderer bridge 不再只是“调用一个任意 lambda”，而是依赖明确的 `RendererFrameExecutor` 抽象；application 层 adapter 负责实现这个接口并调用旧 `RuntimeFramePipeline`。
+
+新增与修改：
+
+- `RendererSubsystem.h` 新增 `RendererFrameExecutor` interface，定义 `renderFrame(const EngineContext&, const RendererSubsystemFrameIntent&) -> RendererSubsystemFrameResult`。
+- `RendererSubsystem::renderFrameBridge(...)` 第三个参数改为 `RendererFrameExecutor&`，内部通过 executor 执行 frame render，并继续负责 begin/end bridge lifecycle 和异常时 end 记录。
+- `RendererSubsystemFrameBridgeStats` 新增 `frameExecutorAttached` 与 `frameExecutorCallCount`，用于证明这一帧确实通过 executor interface 进入 renderer。
+- `RuntimeRendererFrameBridgeAdapter` 现在继承 `RendererFrameExecutor`，持有 non-owning `AppRuntimeContext&`，把 engine-side frame intent 转换为旧 `RuntimeFramePipeline::render(...)` 调用。
+- `RuntimeFrameRunner` 不再传 lambda 给 RendererSubsystem，而是在 stack 上创建 `RuntimeRendererFrameBridgeAdapter frameExecutor(context)` 并交给 `renderFrameBridge(...)`。
+- `EngineDiagnosticsPanel` 显示 Frame Executor Attached / Frame Executor Calls。
+- `RuntimePBRVerification` 与 `verify_pbr.ps1` 新增 `frameExecutorAttached=yes` 和 `frameExecutorCalls=N` 输出 / 断言，并要求 `frameExecutorCalls == renderFrameBridgeCalls`。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；两个 mode 均输出并断言 `frameExecutorAttached=yes`、`renderFrameBridgeCalls=2`、`frameExecutorCalls=2`。
+
+结论：
+
+- Engine 侧 renderer frame bridge 已有第一个 backend/executor 抽象，不再直接接收 application lambda。
+- 旧 `RuntimeFramePipeline` 仍留在 application adapter 内部，Engine 只依赖 `RendererFrameExecutor`、frame intent 和 frame result。
+
+### 2026-05-27 Renderer Executor Attachment Boundary
+
+本轮继续上一节，把 executor 从“每帧传入 `renderFrameBridge(...)`”上移为 `RendererSubsystem` 的非拥有 attachment。目标是让 RendererSubsystem 拥有稳定的 backend/executor 连接状态，`RuntimeFrameRunner` 每帧只提交 frame intent，不再负责构造或传递 executor。
+
+新增与修改：
+
+- `RendererSubsystem` 新增 `setFrameExecutor(...)`、`getFrameExecutor()`、`hasFrameExecutor()`，并持有非拥有 `RendererFrameExecutor*`。
+- `RendererSubsystem::renderFrameBridge(...)` 现在只接收 `EngineContext` 与 `RendererSubsystemFrameIntent`，内部调用已附着的 executor。
+- `RuntimeApplicationShell` 新增成员 `RuntimeRendererFrameBridgeAdapter mRendererFrameExecutor{ mRuntime }`，初始化 renderer subsystem 后调用 `setFrameExecutor(&mRendererFrameExecutor)`，cleanup 时清空。
+- `RuntimeFrameRunner` 不再每帧创建 `RuntimeRendererFrameBridgeAdapter`，只在 Engine / RendererSubsystem / executor 都可用时调用 `renderFrameBridge(...)`；否则保留旧 direct render fallback。
+- 现有 `frameExecutorAttached` / `frameExecutorCalls` verification contract 保持不变，但现在证明的是 subsystem attachment，而不是单次函数参数。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；两个 mode 均输出并断言 `frameExecutorAttached=yes`、`renderFrameBridgeCalls=2`、`frameExecutorCalls=2`。
+
+结论：
+
+- RendererSubsystem 现在具备稳定 executor attachment 边界，更接近可替换 renderer backend contract。
+- Application runtime pipeline 仍被限制在 `RuntimeRendererFrameBridgeAdapter` 内部，Engine 不直接依赖 application runtime 类型。
+
+### 2026-05-27 Renderer Backend Metadata Contract
+
+本轮继续 executor attachment boundary，但不扩张 PBR 功能。目标是让 Engine-owned `RendererSubsystem` 不只知道“有 executor”，还知道当前 renderer backend 的身份和是否真正 ready。
+
+新增与修改：
+
+- `RendererFrameExecutor` 新增 `getBackendKey()` 与 `isBackendReady()`，形成第一版 renderer backend metadata contract。
+- `RendererSubsystemFrameBridgeStats` 新增 `rendererBackendReady` 与 `rendererBackendKey`，`setFrameExecutor(...)` 和 frame stats refresh 都会同步 backend metadata。
+- `RuntimeRendererFrameBridgeAdapter` 返回稳定 key `runtime-frame-pipeline-adapter`，并按当前启用的 runtime frame pass 检查 renderer、scene、camera、frame targets、bloom、screen quad 等硬依赖。
+- `RendererSubsystem::renderFrameBridge(...)` 只在 executor 已附着且 backend ready 时调用 executor；否则记录默认 frame result。
+- `EngineDiagnosticsPanel` 在 RendererSubsystem frame bridge 区块显示 `Renderer Backend Ready` 与 `Renderer Backend Key`。
+- `RuntimePBRVerification` 输出 `rendererBackendReady` / `rendererBackendKey`，`verify_pbr.ps1` 断言 backend ready 且 key 非 `none`，但不绑定具体 key 值，给后续替换 backend 留空间。
+- `RendererSubsystem::setRenderer(...)` 同步基础 renderer stats，减少初始化后首帧前 diagnostics 的短暂滞后。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；两个 mode 均输出并断言 `rendererBackendReady=yes` 与非空 `rendererBackendKey`。
+
+结论：
+
+- 这一步把 executor attachment 推进为 backend metadata contract 的第一刀，但旧 `RuntimeFramePipeline` 仍然留在 application adapter 内部。
+- 当前没有新增 shader、pass、材质或 PBR 场景功能；它只服务于后续可替换 renderer backend 的 Engine 边界。
+
+### 2026-05-27 Renderer Backend Lifecycle Stats
+
+本轮继续 renderer backend contract，从 metadata 扩展到可观察 lifecycle。目标不是替换 renderer backend，而是先让 Engine 侧能稳定证明 backend 的 attach、ready、detached 状态和每帧参与情况。
+
+新增与修改：
+
+- `RendererSubsystemFrameBridgeStats` 新增 `rendererBackendState`、`rendererBackendAttachCount`、`rendererBackendDetachCount`、`rendererBackendReadyFrameCount`、`rendererBackendNotReadyFrameCount`。
+- `RendererSubsystem::setFrameExecutor(...)` 现在只在 executor 指针变化时记录 attach / detach count，并刷新 backend key / state / ready。
+- `RendererSubsystem::shutdown(...)` 通过 `setFrameExecutor(nullptr)` 清理 backend attachment，避免 shutdown 绕过 lifecycle 计数。
+- `RendererSubsystem::renderFrameBridge(...)` 每次 frame bridge 都记录 backend ready 或 not-ready frame count；当前正常 runtime path 要求 ready frame count 等于 render bridge call count。
+- `EngineDiagnosticsPanel` 在 RendererSubsystem frame bridge 区块显示 backend state、attach/detach count、ready/not-ready frame count。
+- `RuntimePBRVerification` 输出 backend lifecycle 字段，`verify_pbr.ps1` 断言 state 为 `ready`、attach count 大于 0、not-ready frames 为 0，并校验 ready/not-ready frame 总数与 render bridge call count 一致。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；两个 mode 均输出 `rendererBackendState=ready`、`rendererBackendAttachCount=1`、`rendererBackendReadyFrames=2`、`rendererBackendNotReadyFrames=0`。
+
+结论：
+
+- RendererSubsystem 现在不只知道 backend 是否 ready，还能记录 backend attachment lifecycle 和每帧 readiness 参与情况。
+- 这一步仍不扩张 PBR；它为后续替换 backend 或引入 backend lifecycle owner 提供 verification contract。
+
+### 2026-05-27 Runtime Renderer Backend Factory
+
+本轮继续上一节，从“可观察 lifecycle”推进到“application 侧可替换 backend owner / factory”。目标是先把旧 runtime pipeline adapter 从 `RuntimeApplicationShell` 的固定成员对象中移出，改为由 factory 创建、由 shell 通过 `std::unique_ptr<RendererFrameExecutor>` 拥有。
+
+新增与修改：
+
+- 新增 `RuntimeRendererBackendFactory`，集中创建 `RuntimeRendererFrameBridgeAdapter`，返回 engine-side `std::unique_ptr<RendererFrameExecutor>`。
+- `RuntimeApplicationShell` 不再直接持有 `RuntimeRendererFrameBridgeAdapter mRendererFrameExecutor`，改为持有 `std::unique_ptr<RendererFrameExecutor> mRendererBackend`。
+- `RuntimeApplicationShell::initialize()` 通过 factory 创建 runtime frame pipeline backend，并附着到 `RendererSubsystem`。
+- `RuntimeApplicationShell::cleanup()` 先从 `RendererSubsystem` detach backend，再 reset shell-owned backend，最后清理 camera/runtime context。
+- 新增 `RendererBackendAttachmentDesc`，`RendererSubsystem::setFrameExecutor(...)` 接收 backend owner key 与 ownership metadata。
+- `RendererSubsystemFrameBridgeStats` 新增 `rendererBackendOwnerKey` 与 `rendererBackendOwnership`，diagnostics 和 verification 均可观察。
+- `verify_pbr.ps1` 断言 runtime path 中 backend owner key 非 `none`，并且 ownership 为 `application-owned`。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；两个 mode 均输出 `rendererBackendOwnerKey=runtime-application-shell` 与 `rendererBackendOwnership=application-owned`。
+
+结论：
+
+- 当前 runtime renderer backend 已经由 factory 创建、由 shell 显式拥有，再以 engine-side executor 接口附着给 RendererSubsystem。
+- 这一步仍然不新增 renderer pass 或 PBR 功能；它只是把 backend owner/factory 边界从硬编码成员对象中拆出来，为后续多 backend 选择或 Engine-owned backend owner 做准备。
+
+### 2026-05-27 Runtime Renderer Backend Registry
+
+本轮继续上一节，从单一 factory 创建函数推进到可选择 backend registry。当前仍然只注册一个 backend，但 shell 已经按 key 从 registry 创建 backend，后续添加新 backend 不需要再改 shell 的持有方式。
+
+新增与修改：
+
+- `RuntimeRendererBackendFactory` 新增 `RuntimeRendererBackendRegistration`、`defaultBackendKey()`、`registeredBackends()`、`isRegisteredBackendKey(...)` 和 `createBackend(context, backendKey)`。
+- `RuntimeApplicationShellConfig` 新增 `rendererBackendKey`，默认选择 `runtime-frame-pipeline-adapter`。
+- `RuntimeApplicationShell::initialize()` 改为通过 `createBackend(mRuntime, mConfig.rendererBackendKey)` 创建 backend；未知 key 会返回 `nullptr` 并让初始化失败。
+- `RendererBackendAttachmentDesc` 新增 `registryKey` 与 `registryBackendCount`，RendererSubsystem stats 对应新增 `rendererBackendRegistryKey` 与 `rendererBackendRegistryCount`。
+- `EngineDiagnosticsPanel` 显示 backend registry key 和 registry count。
+- `RuntimePBRVerification` 输出 registry 字段，`verify_pbr.ps1` 断言 registry key 非 `none`、registry count 大于 0，并要求 registry key 与实际 selected backend key 一致。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene -DiscardCaptures`：构建通过；两个 mode 均输出 `rendererBackendRegistryKey=runtime-frame-pipeline-adapter` 与 `rendererBackendRegistryCount=1`。
+
+结论：
+
+- Runtime renderer backend 的选择入口已经从硬编码 factory 调用推进为 key-based registry。
+- 这一步仍然保持 single backend，但架构上已经允许下一步添加 no-op/test backend、OpenGL backend wrapper 或后续 Engine-owned backend owner。
+
+### 2026-05-27 Renderer Backend Registry No-op Verification
+
+本轮继续上一节，把 registry 从“只有一个可选项”推进到“可以切换到第二个 backend 并被 verification 证明”。新增 backend 是 test/no-op renderer backend：它不调用旧 `RuntimeFramePipeline`，只清默认 framebuffer 并返回 engine-side neutral frame result。
+
+新增与修改：
+
+- 新增 `RuntimeNoOpRendererBackend`，实现 `RendererFrameExecutor`，稳定 key 为 `test-noop-renderer-backend`。
+- `RuntimeNoOpRendererBackend::renderFrame(...)` 只绑定默认 framebuffer、设置 viewport、清成固定非黑色，并返回 `framePlanKey=test-noop-renderer-backend:clear` 与 `framePasses=1/1/0`。
+- `RuntimeRendererBackendFactory` 注册第二个 backend，并新增 `testNoOpBackendKey()`；默认 backend 仍是 `runtime-frame-pipeline-adapter`。
+- `RuntimePBRVerificationArgs` 新增 `--verify-renderer-backend-registry-noop`，该 mode 设置 `RuntimeApplicationShellConfig::rendererBackendKey` 为 no-op backend key，capture 写入 `out/renderer_backend_registry_noop_verification.ppm`。
+- `verify_pbr.ps1` 新增 `renderer-backend-registry-noop` mode，并对该 mode 精确断言 backend key、registry key、registry count、frame plan key、frame pass count、legacy renderer pass count 与 capture 非黑比例。
+- 子 agent `Pauli` 的只读审查建议已采纳关键方向：backend/registry key 精确断言、registry count 至少 2、legacy renderer pass 为 0。实现上没有采纳黑屏/`0/0/0` pass 建议，而是采用非黑色 clear 和 `1/1/0` neutral pass，用来证明 no-op executor 确实执行过。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes renderer-backend-registry-noop -DiscardCaptures`：构建通过；mode 输出 `rendererBackendKey=test-noop-renderer-backend`、`rendererBackendRegistryCount=2`、`framePlanKey=test-noop-renderer-backend:clear`、`framePasses=1/1/0`、`observedRendererPasses=0`、`rendererPasses=0`、capture `nonblack=100%`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过；原 33 个 mode 继续选择 `runtime-frame-pipeline-adapter`，新增 no-op mode 选择 `test-noop-renderer-backend`。
+- `git diff --check`：没有 whitespace error；仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- Renderer backend registry 现在不再只是单 backend facade，已经有第二个可选择 backend，并且 verification 证明它不依赖旧 runtime renderer pipeline。
+- 这一步仍不扩张 PBR；它只把 renderer backend contract 从 metadata/registry 推进到可替换执行路径。
+
+### 2026-05-27 Renderer Backend Engine-owned Ownership
+
+本轮继续上一节，把 renderer backend 的实际生命周期从 `RuntimeApplicationShell` 继续向 Engine-owned `RendererSubsystem` 收敛。保留 application 层 factory 是因为具体 backend 仍依赖 application runtime context，但 factory 创建出的 `std::unique_ptr<RendererFrameExecutor>` 会立即移交给 `RendererSubsystem` 持有。
+
+新增与修改：
+
+- `RendererSubsystem` 的 executor attachment 从非拥有 `RendererFrameExecutor*` 改为拥有 `std::unique_ptr<RendererFrameExecutor>`。
+- `RendererSubsystem::setFrameExecutor(...)` 现在接收 `std::unique_ptr<RendererFrameExecutor>`，并继续记录 attach/detach、backend key、ready state、registry metadata。
+- 新增 `RendererSubsystem::clearFrameExecutor()`，`RendererSubsystem::shutdown(...)` 和 `RuntimeApplicationShell::cleanup()` 通过该 API 清理 owned backend。
+- `RuntimeApplicationShell` 不再持有 `mRendererBackend` 成员；initialize 阶段只创建局部 backend，并 `std::move` 移交给 Engine-owned `RendererSubsystem`。
+- `RuntimeRendererBackendFactory::makeRendererSubsystemAttachmentDesc(...)` 现在报告 owner key 为 `engine-renderer-subsystem`，ownership 为 `engine-owned`。
+- `verify_pbr.ps1` 全局断言 renderer backend owner key 必须是 `engine-renderer-subsystem`，ownership 必须是 `engine-owned`。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop -DiscardCaptures`：构建通过；legacy runtime backend 与 no-op backend 两条路径均输出 `rendererBackendOwnerKey=engine-renderer-subsystem` 与 `rendererBackendOwnership=engine-owned`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过；所有 mode 均输出并断言 `rendererBackendOwnerKey=engine-renderer-subsystem` 与 `rendererBackendOwnership=engine-owned`。
+- `git diff --check`：没有 whitespace error；仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- Renderer backend 现在由 Engine-owned `RendererSubsystem` 实际持有，`RuntimeApplicationShell` 只承担 backend creation / handoff 的 composition root 职责。
+- 这一步没有改变 PBR pass 或 shader，只收敛 renderer backend ownership，减少 application shell 对 renderer backend 生命周期的长期耦合。
+
+### 2026-05-27 Renderer Backend Cleanup Verification
+
+本轮继续上一节，补齐 Engine-owned renderer backend 的 cleanup verification。前一轮已经证明 backend 由 `RendererSubsystem` 持有并参与 frame，但 verification 只观察了 rendered-frame 时的 attached/ready 状态，没有证明 `RuntimeApplicationShell::cleanup()` 会在 Engine shutdown 前确定性 detach backend。
+
+新增与修改：
+
+- `RuntimePBRVerification` 新增 `reportRendererSubsystemCleanup(...)`，输出 verification-only `Runtime renderer subsystem cleanup stats`。
+- `RuntimeApplicationShell::cleanup()` 在 `mRendererSubsystem->clearFrameExecutor()` 后、清空 runtime context 前调用 cleanup report，确保报告能看到 context 仍指向同一个 Engine-owned `RendererSubsystem`。
+- `verify_pbr.ps1` 新增全局 cleanup 断言：每个 verification mode 必须输出 cleanup stats，且 cleanup 时 `frameExecutorAttached=no`、`rendererBackendReady=no`、`rendererBackendState=detached`、backend key / owner / registry 均已清空。
+- `verify_pbr.ps1` 还断言 cleanup attach/detach count 均大于 0 且相等，证明本轮不是只清空字符串，而是真正记录了 backend detach lifecycle。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop -DiscardCaptures`：构建通过；legacy runtime backend 与 no-op backend 两条路径均输出 cleanup stats，且 `rendererBackendDetachCount=1`、`rendererBackendState=detached`、`frameExecutorAttached=no`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过；所有 mode 均输出并断言 `Runtime renderer subsystem cleanup stats`，且 cleanup 阶段 backend detached、metadata cleared、attach/detach count 闭合。
+- `git diff --check`：没有 whitespace error；仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- Renderer backend lifecycle 现在覆盖 attach -> ready frame execution -> cleanup detach 三段。
+- 这一步继续保持不扩张 PBR；它只强化 Engine-owned backend lifecycle 的可验证性。
+
+### 2026-05-27 Engine World Cleanup Verification
+
+本轮从 renderer backend lifecycle 转向 Engine-owned World / runtime context cleanup contract。目标不是继续增加 renderer 或 PBR 功能，而是证明 `RuntimeApplicationShell::cleanup()` 后，Engine-owned active World 已经由 `Engine::shutdown()` 结束并 reset，runtime context 中的 Engine / World / subsystem 非拥有指针也已经清空。
+
+新增与修改：
+
+- `RuntimePBRVerification` 新增 `reportEngineWorldCleanup(...)`，输出 verification-only `Runtime engine world cleanup stats`。
+- `RuntimeApplicationShell::cleanup()` 保持现有 renderer cleanup report 的观察窗口不变：先 detach renderer backend 并报告 `Runtime renderer subsystem cleanup stats`，再清理 camera 和 runtime context raw pointers，然后执行 `mEngine.shutdown()`。
+- `RuntimeApplicationShell::cleanup()` 在 `mEngine.shutdown()` 之后报告 Engine World cleanup，确保 report 看到的是 post-shutdown 状态：`engineInitialized=no`、`activeWorld=no`、runtime context raw pointers 均为空。
+- `verify_pbr.ps1` 捕获 `Runtime engine world cleanup stats`，写入 summary，并对所有 verification mode 增加全局断言：Engine 已 shutdown、active World 已 reset、runtime context engine/world/asset subsystem/renderer subsystem 指针均已清空，且 engine tick/time/delta 保留为已运行状态。
+- 只读子 agent `Hubble` 审查后未修改文件；采纳其建议，把 World cleanup report 独立于 renderer cleanup report，并增加显式 `runtimeContext*Null=yes` 字段，避免只用“不等于当前对象”代替空指针断言。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条路径均输出 `Runtime engine world cleanup stats`，且 `engineInitialized=no`、`activeWorld=no`、`runtimeContextEngineNull=yes`、`runtimeContextWorldNull=yes`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过；所有 mode 均输出并断言 Engine World cleanup contract。
+- `git diff --check`：没有 whitespace error；仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- Engine-owned World lifecycle 现在覆盖 rendered-frame active/playing 状态和 cleanup 后 shutdown/reset 状态。
+- 这一步继续保持不扩张 PBR；它把 runtime ownership 从“frame 中可观察”推进到“cleanup 后可证明闭合”。
+
+### 2026-05-27 Engine Subsystem Cleanup Verification
+
+本轮继续上一节，把 post-cleanup contract 从 active World 扩展到 Engine-owned subsystems。目标是证明 `Engine::shutdown()` 不只是 reset World，也会让 `AssetSubsystem` 和 `RendererSubsystem` 进入确定性的 shutdown 状态，同时 runtime context 不再保留指向这些 subsystem 的非拥有指针。
+
+新增与修改：
+
+- `RuntimePBRVerification` 新增 `reportEngineSubsystemCleanup(...)`，输出 verification-only `Runtime engine subsystem cleanup stats`。
+- `RuntimeApplicationShell::cleanup()` 在清空 runtime context 和执行 `mEngine.shutdown()` 前保存 Engine-owned subsystem 的只读 raw pointer；shutdown 后再报告 subsystem 状态。这样不会让 runtime context 保留悬空引用，同时仍能检查 Engine 持有的 subsystem 对象。
+- `Runtime engine subsystem cleanup stats` 检查 `AssetSubsystem`：post-shutdown 仍可被 Engine 持有、`assetSubsystemInitialized=no`、`assetSubsystemTicks=0`、`assetRegistryAssets=0`。
+- `Runtime engine subsystem cleanup stats` 检查 `RendererSubsystem`：post-shutdown 仍可被 Engine 持有、`rendererSubsystemInitialized=no`、`rendererSubsystemTicks=0`、`rendererHasRenderer=no`、`rendererFrameExecutorAttached=no`、backend key / owner / registry metadata 已清空，且 attach/detach count 仍闭合。
+- `verify_pbr.ps1` 捕获 `Runtime engine subsystem cleanup stats`，写入 summary，并对所有 verification mode 增加全局断言。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条路径均输出 `Runtime engine subsystem cleanup stats`，且 AssetSubsystem / RendererSubsystem post-shutdown 状态符合预期。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过；所有 mode 均输出并断言 subsystem cleanup contract。
+- `git diff --check`：没有 whitespace error；仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- Engine runtime lifecycle 现在覆盖 frame 中 Engine / World / subsystem 同步 tick、renderer backend cleanup、World shutdown/reset、subsystem shutdown/reset。
+- 这一步继续保持不扩张 PBR；它强化的是 Engine-owned subsystem 生命周期闭合证据。
+
+### 2026-05-27 Runtime Engine Lifecycle Extraction
+
+本轮继续缩小 `RuntimeApplicationShell` 的 composition root，把 Engine / subsystem / renderer backend 生命周期编排抽到独立 `RuntimeEngineLifecycle`。目标不是改变渲染行为，而是让 shell 不再直接负责创建 AssetSubsystem、RendererSubsystem、附着 backend、清理 runtime context 和 shutdown Engine 的细节。
+
+新增与修改：
+
+- 新增 `RuntimeEngineLifecycle.h/.cpp`，定义 `RuntimeEngineLifecycleState` 和 `RuntimeEngineLifecycleCleanupRefs`。
+- `RuntimeEngineLifecycle::initializeEngine(...)` 负责把 `Engine` 写入 runtime context、创建 Engine-owned `AssetSubsystem` / `RendererSubsystem`、把非拥有 subsystem 指针写入 runtime context，并调用 `Engine::initialize(...)`。
+- `RuntimeEngineLifecycle::attachRendererBackend(...)` 负责把现有 runtime renderer 绑定到 Engine-owned `RendererSubsystem`，并通过 `RuntimeRendererBackendFactory` 创建/附着 selected backend。
+- `RuntimeEngineLifecycle::beginCleanup(...)` 负责保存 post-shutdown verification 所需的 Engine-owned subsystem 只读指针，并先 detach renderer backend，保留原有 `Runtime renderer subsystem cleanup stats` 的观察窗口。
+- `RuntimeEngineLifecycle::detachRuntimeContext(...)` 负责清空 runtime context 中 Engine / World / AssetSubsystem / RendererSubsystem 非拥有指针，并清空 lifecycle state。
+- `RuntimeEngineLifecycle::shutdownEngine(...)` 负责调用 `Engine::shutdown()`。
+- `RuntimeApplicationShell` 不再持有 `mAssetSubsystem` / `mRendererSubsystem` 两个裸成员，改为持有 `RuntimeEngineLifecycleState mEngineLifecycle`；frame config 与 verification report 都从该 state 读取 renderer subsystem。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 lifecycle 源文件和头文件。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeEngineLifecycle.cpp` 已参与编译，三条路径 runtime lifecycle 输出保持一致。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- `git diff --check`：没有 whitespace error；仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- `RuntimeApplicationShell` 的 Engine lifecycle 细节继续外移，shell 更接近 runtime composition coordinator，而不是直接管理每个 Engine-owned subsystem 的生命周期细节。
+- 这一步继续保持不扩张 PBR；它是 application composition root 降耦合。
+
+### 2026-05-27 Runtime Verification Lifecycle Extraction
+
+本轮继续缩小 `RuntimeApplicationShell` 的 composition root，把 verification mode 的启动、scene report、capture、cleanup report 和 frame-count stop 条件集中到 `RuntimeVerificationLifecycle`。目标是让 shell 不再直接编排 `RuntimePBRVerification::*` 的细节，只按 runtime lifecycle 阶段调用 verification wrapper。
+
+新增与修改：
+
+- 新增 `RuntimeVerificationLifecycle.h/.cpp`，作为 application 层 verification lifecycle adapter。
+- `RuntimeVerificationLifecycle::applyStartupProfile(...)` 负责 verification enabled 时调用 `RuntimePBRVerification::applyProfile(...)`。
+- `RuntimeVerificationLifecycle::reportPreparedScene(...)` 负责 verification scene probe、renderer pass profile 应用和 prepared scene stats 输出。
+- `RuntimeVerificationLifecycle::captureFrameIfNeeded(...)` 负责 capture frame gate、default framebuffer capture 和 rendered frame stats 输出。
+- `RuntimeVerificationLifecycle::reportRendererSubsystemCleanup(...)` 与 `reportEngineCleanup(...)` 负责保持现有 cleanup verification 输出窗口。
+- `RuntimeVerificationLifecycle::shouldStopAfterFrames(...)` 负责 verification max frame stop 条件。
+- `RuntimeApplicationShell` 不再直接调用 `RuntimePBRVerification::*`；shell 只调用 `RuntimeVerificationLifecycle`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 verification lifecycle 源文件和头文件。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeVerificationLifecycle.cpp` 已参与编译，三条路径 verification 输出保持一致。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- `git diff --check`：没有 whitespace error；仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- `RuntimeApplicationShell` 的 verification 细节继续外移，shell 更接近生命周期协调器。
+- 这一步继续保持不扩张 PBR；它只降低 application shell 对 verification/PBR test surface 的直接耦合。
+
+### 2026-05-27 Runtime Content Lifecycle Extraction
+
+本轮继续缩小 `RuntimeApplicationShell` 的 composition root，把 startup content composition 抽到 `RuntimeContentLifecycle`。目标不是改变任何渲染场景，而是把 camera/profile/verification startup/scene prepare/backend attach/prepared scene report 这条启动内容链路集中管理，避免 shell 继续直接知道每个启动细节。
+
+新增与修改：
+
+- 新增 `RuntimeContentLifecycle.h/.cpp`，定义 `RuntimeContentLifecycleConfig` 和 `RuntimeContentLifecycle::prepare(...)`。
+- `RuntimeContentLifecycle::prepare(...)` 现在统一执行 camera 初始化、runtime profile load、verification startup profile、scene prepare、renderer backend attach 和 prepared scene report。
+- `RuntimeApplicationShell::initialize()` 不再直接调用 `RuntimeProfileLoader::loadAll(...)`、`RuntimeScenePreparer::prepare(...)`、`RuntimeEngineLifecycle::attachRendererBackend(...)`、`RuntimeVerificationLifecycle::applyStartupProfile(...)` 或 `reportPreparedScene(...)`。
+- `RuntimeApplicationShell` 只保留 `makeContentLifecycleConfig()`，负责把现有 config 聚合成 content lifecycle config；这是后续继续下沉 verification-to-content policy 的剩余轻耦合点。
+- `RuntimeContentLifecycle::prepare(...)` 在 scene prepare 后新增 fail-fast gate：如果 `context.renderer` 仍为空，则记录 `LogError` 并停止 backend attach，避免异常启动状态被延迟到 frame 阶段才暴露。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 content lifecycle 源文件和头文件。
+- 本轮使用只读 sidecar subagent `Tesla` 审查 content lifecycle ordering；该 agent 未修改文件。采纳其 fail-fast 建议，保留其“后续可继续下沉 pbrVerification -> content config 映射”的建议作为下一步候选。
+
+已完成验证：
+
+- 静态耦合检查确认 `RuntimeApplicationShell` 只保留 `RuntimeContentLifecycle::prepare(...)` 与 `makeContentLifecycleConfig()`，直接 scene/profile/backend/verification startup 调用已集中到 `RuntimeContentLifecycle.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,engine-world-scene-probe,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationShell` 的 startup content 细节继续外移，shell 更接近高层 runtime coordinator。
+- 这一步继续保持不扩张 PBR；它只收敛启动内容生命周期和异常启动状态的 fail-fast 边界。
+
+### 2026-05-27 Runtime Content Config Policy Extraction
+
+本轮继续上一节，把 `RuntimeApplicationShell` 中最后一段明显的 startup content config policy 下沉。上一轮 shell 已不再直接执行 camera/profile/scene/backend/verification startup，但仍在 `makeContentLifecycleConfig()` 中知道 `pbrVerification` 如何映射到 `SceneSetupPipelineConfig`。本轮把这段映射迁到独立 application policy 模块。
+
+新增与修改：
+
+- 新增 `RuntimeContentConfigPolicy.h/.cpp`，集中把 `RuntimeApplicationShellConfig` 转换为 `RuntimeContentLifecycleConfig`。
+- `RuntimeContentConfigPolicy::makeContentLifecycleConfig(...)` 负责设置 camera framebuffer size、scene window/skybox/legacy grass config、renderer backend key、verification config，以及 `enableEngineWorldMinimalScene` / `enableEngineWorldSceneProbe` 到 scene setup pipeline 的映射。
+- `RuntimeApplicationShell` 删除成员函数 `makeContentLifecycleConfig()`，initialize 阶段只调用 `RuntimeContentConfigPolicy::makeContentLifecycleConfig(...)` 并把结果交给 `RuntimeContentLifecycle::prepare(...)`。
+- `RuntimeApplicationShell.*` 不再直接引用 `RuntimeContentLifecycleConfig`；shell 的 startup content policy 认知进一步减少。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 content config policy 源文件和头文件。
+
+已完成验证：
+
+- 静态耦合检查确认 `RuntimeApplicationShell.*` 不再直接引用 `RuntimeContentLifecycleConfig`，`enableEngineWorldMinimalScene` / `enableEngineWorldSceneProbe` 的映射只存在于 `RuntimeContentConfigPolicy.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeContentConfigPolicy.cpp` 已参与编译，四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationShell` 现在只负责调用 content lifecycle，不再保存 content lifecycle config assembly 的具体规则。
+- 这一步继续保持不扩张 PBR；它只把 verification scene policy 与 shell 启动流程解耦，便于后续把 remaining config/gui 责任继续拆成独立 coordinator。
+
+### 2026-05-27 Runtime Frame Lifecycle Extraction
+
+本轮继续缩小 `RuntimeApplicationShell` 的 frame orchestration 责任。上一轮已经把 startup content config policy 外移，本轮处理运行帧阶段仍留在 shell 里的职责：continue 条件、frame clock、frame runner 调用、rendered frame count、verification capture 状态。
+
+新增与修改：
+
+- 新增 `RuntimeFrameLifecycle.h/.cpp`，定义 `RuntimeFrameLifecycleConfig`、`RuntimeFrameLifecycleState` 和 frame lifecycle 入口。
+- `RuntimeFrameLifecycleState` 现在持有 frame clock、rendered frame count 和 verification capture written flag。
+- `RuntimeFrameLifecycle::shouldContinue(...)` 负责 verification max-frame stop 与 `GL_APP->update()`。
+- `RuntimeFrameLifecycle::runFrame(...)` 负责 frame clock tick、`RuntimeFrameRunner::run(...)`、GUI render callback gating、rendered frame count 递增和 verification capture。
+- `RuntimeApplicationShell` 不再持有 `mFrameClock`、`mRenderedFrameCount`、`mVerificationCaptureWritten`，改为持有 `RuntimeFrameLifecycleState mFrameLifecycle`。
+- `RuntimeApplicationShell` 删除 `makeFrameConfig()`、`makeFrameClockConfig()` 和 `captureVerificationFrameIfNeeded()`；shell 的 frame path 现在只调用 `RuntimeFrameLifecycle::shouldContinue(...)` / `runFrame(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 frame lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态耦合检查确认 `RuntimeApplicationShell.*` 不再包含 `makeFrameConfig()`、`makeFrameClockConfig()`、`captureVerificationFrameIfNeeded()`、`mFrameClock`、`mRenderedFrameCount` 或 `mVerificationCaptureWritten`；frame runner 与 verification capture 直接调用已集中到 `RuntimeFrameLifecycle.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeFrameLifecycle.cpp` 已参与编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationShell` 的 frame lifecycle 细节继续外移，shell 更接近高层 runtime coordinator。
+- 这一步继续保持不扩张 PBR；它只收敛 runtime frame lifecycle 和 verification capture 状态边界。
+
+### 2026-05-27 Runtime Editor Lifecycle Extraction
+
+本轮继续缩小 `RuntimeApplicationShell` 的 GUI/editor orchestration 责任。上一轮已经把 frame lifecycle 外移，本轮处理仍留在 shell 里的 GUI 初始化、editor panel frame callback、selection state 和 edit transaction state。
+
+新增与修改：
+
+- 新增 `RuntimeEditorLifecycle.h/.cpp`，定义 `RuntimeEditorLifecycleConfig`、`RuntimeEditorLifecycleState` 和 editor lifecycle 入口。
+- `RuntimeEditorLifecycleState` 现在集中持有 editor selection 与 edit transaction log。
+- `RuntimeEditorLifecycle::initialize(...)` 负责按 `enableGui` 初始化 `RuntimeGuiHost`。
+- `RuntimeEditorLifecycle::makeFrameCallbacks(...)` 负责按 `enableGui` 创建 GUI frame callback，并在 callback 内调用 `RuntimeEditorPanelCoordinator::drawPanels(...)`。
+- `RuntimeApplicationShell` 不再直接包含或调用 `RuntimeGuiHost` / `RuntimeEditorPanelCoordinator`。
+- `RuntimeApplicationShell` 不再直接持有 `mEditorSelection` / `mEditorEditTransactions`，改为持有 `RuntimeEditorLifecycleState mEditorLifecycle`。
+- `RuntimeApplicationShell` 删除 `renderFrameUi()` 与 `drawEditorPanels()`，每帧只把 editor lifecycle callbacks 交给 `RuntimeFrameLifecycle::runFrame(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 editor lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态耦合检查确认 `RuntimeApplicationShell.*` 不再直接引用 `RuntimeGuiHost` / `RuntimeEditorPanelCoordinator`，也不再包含 `SelectionContext` / `EditTransactionLog` 具体成员。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeEditorLifecycle.cpp` 已参与编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationShell` 的 editor lifecycle 细节继续外移，shell 现在更接近纯 runtime composition coordinator。
+- 这一步继续保持不扩张 PBR；它只收敛 editor UI 生命周期和 editor 状态 owner 边界。
+
+### 2026-05-27 Runtime Graphics Lifecycle Extraction
+
+本轮继续缩小 `RuntimeApplicationShell` 的 startup graphics/bootstrap glue。上一轮已经把 GUI/editor lifecycle 外移，本轮处理仍留在 shell 里的窗口尺寸提示、viewport 初始化、clear color 设置和 OpenGL capability 输出。
+
+新增与修改：
+
+- 新增 `RuntimeGraphicsLifecycle.h/.cpp`，定义 `RuntimeGraphicsLifecycleConfig` 和 graphics lifecycle 入口。
+- `RuntimeGraphicsLifecycle::reportWindowSetupPrompt()` 负责原有窗口尺寸提示输出。
+- `RuntimeGraphicsLifecycle::initializeAfterWindow(...)` 负责窗口创建后的 viewport 初始化、clear color 设置和 OpenGL capability 输出。
+- `RuntimeApplicationShell` 不再直接包含 `iostream`、`GL_ERROR_FIND.h`、`RuntimeViewport.h` 或 `core.h`。
+- `RuntimeApplicationShell` 删除 `printOpenGLCapabilities()`，改为通过 `makeGraphicsLifecycleConfig()` 生成配置并调用 `RuntimeGraphicsLifecycle::initializeAfterWindow(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 graphics lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态耦合检查确认 `RuntimeApplicationShell.*` 不再直接包含或调用 `RuntimeViewport`、`GL_CALL`、`glClearColor`、`glGetIntegerv`、`std::cout` 或 `printOpenGLCapabilities()`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeGraphicsLifecycle.cpp` 已参与编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationShell` 的 graphics context startup 细节继续外移，shell 中剩余职责更集中在高层 lifecycle 排序。
+- 这一步继续保持不扩张 PBR；它只收敛启动图形上下文和诊断输出边界。
+
+### 2026-05-27 Engine Lifecycle Snapshot
+
+本轮继续推进 Engine runtime ownership 的可观察边界。上一轮已经把 application shell 中的 graphics/bootstrap 细节外移，本轮不再继续拆 shell，而是补一个正式的 Engine lifecycle diagnostic snapshot，让 diagnostics UI 与 verification 都通过同一个 Engine-owned 快照读取生命周期状态。
+
+新增与修改：
+
+- 新增 `EngineLifecycleSnapshot`，集中描述 Engine 是否初始化、run mode、viewport、time/delta、Engine tick、subsystem count、active World playing 状态、active World tick 和 actor count。
+- `Engine::captureLifecycleSnapshot()` 现在从 Engine 内部生成该快照，不要求外部模块分散读取 `EngineContext`、active World 和 Level actor 列表。
+- `EngineDiagnosticsPanel` 的 Engine runtime、subsystem health 和 world sections 改为使用 `captureLifecycleSnapshot()` 中的 Engine/World lifecycle 字段。
+- `RuntimePBRVerification::reportRenderedFrame(...)` 新增 `Runtime engine lifecycle snapshot stats` 输出，并让原有 Engine tick / subsystem health 输出复用同一份快照。
+- `RuntimePBRVerification::reportEngineWorldCleanup(...)` 也改为从 `EngineLifecycleSnapshot` 读取 shutdown 后的 Engine/World 状态。
+- `tools/verify_pbr.ps1` 新增对 `Runtime engine lifecycle snapshot stats` 的抓取、summary 输出和断言，覆盖 run mode、viewport、active World、tick count、subsystem count、time/delta 与 scene actor 数量关系。
+
+已完成验证：
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部输出并断言 `runtimeEngineLifecycleSnapshot`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过，所有模式均覆盖新增 Engine lifecycle snapshot 断言。
+
+结论：
+
+- Engine 生命周期状态现在有了正式快照边界，Editor diagnostics 和自动 verification 不再各自拼装 Engine runtime 状态。
+- 这一步继续保持不扩张 PBR；它只强化 Engine runtime ownership 的可观察契约。
+
+### 2026-05-27 Runtime Application Config Policy Extraction
+
+本轮继续缩小 `RuntimeApplicationShell` 的剩余 config glue。上一轮完成 Engine lifecycle snapshot 后，shell 中仍保留了四个非 content 配置组装函数：Engine desc、frame lifecycle config、editor lifecycle config 和 graphics lifecycle config。本轮把它们迁入独立 policy。
+
+新增与修改：
+
+- 新增 `RuntimeApplicationConfigPolicy.h/.cpp`，集中把 `RuntimeApplicationShellConfig` 映射为 application-level lifecycle configs。
+- `RuntimeApplicationConfigPolicy::makeEngineDesc(...)` 负责根据 verification 状态选择 `EngineRunMode`，并设置 viewport size。
+- `RuntimeApplicationConfigPolicy::makeFrameLifecycleConfig(...)` 负责组装 GUI gate、frame clock config 和 verification config。
+- `RuntimeApplicationConfigPolicy::makeEditorLifecycleConfig(...)` 负责组装 GUI gate、GLFW window 指针和 editor orbit angle 可变指针。
+- `RuntimeApplicationConfigPolicy::makeGraphicsLifecycleConfig(...)` 负责组装 startup graphics viewport config。
+- `RuntimeApplicationShell` 删除 `makeEngineDesc()`、`makeFrameLifecycleConfig()`、`makeEditorLifecycleConfig()` 和 `makeGraphicsLifecycleConfig()` 私有成员。
+- `RuntimeApplicationShell.h` 不再暴露 config policy 或 graphics lifecycle include，相关依赖移动到 `RuntimeApplicationShell.cpp`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 application config policy 源文件和头文件。
+
+已完成验证：
+
+- 静态耦合检查确认 `RuntimeApplicationShell.*` 不再声明或定义四个私有 `make*Config` 成员，调用点已迁到 `RuntimeApplicationConfigPolicy::*`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationConfigPolicy.cpp` 已参与编译，三条 focused verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationShell` 的职责进一步收敛到 lifecycle 顺序编排，不再保存非 content config 映射规则。
+- 这一步继续保持不扩张 PBR；它只收敛 application 层配置映射边界。
+
+### 2026-05-27 Runtime Window Lifecycle Snapshot Boundary
+
+本轮继续处理上一阶段标记的剩余 window lifecycle glue。`RuntimeApplicationShell` 在配置策略抽取后仍直接读取 `GL_APP->getWidth()`、`GL_APP->getHeight()`、`GL_APP->getWindow()`，并直接调用 `GL_APP->destroy()`。本轮把这些窗口单例访问收敛到 `RuntimeWindowLifecycle`。
+
+新增与修改：
+
+- `RuntimeWindowLifecycle.h/.cpp` 新增 `RuntimeWindowSnapshot`，集中描述当前 framebuffer width、height 和 native `GLFWwindow*`。
+- `RuntimeWindowLifecycle::captureSnapshot()` 统一从 `Application` 单例读取当前窗口快照。
+- `RuntimeWindowLifecycle::destroy()` 统一执行 window/application destroy。
+- `RuntimeApplicationShell` 初始化 content/editor lifecycle 和每帧 frame/editor callbacks 时改为使用 `RuntimeWindowLifecycle::captureSnapshot()`。
+- `RuntimeApplicationShell::destroy()` 改为调用 `RuntimeWindowLifecycle::destroy()`。
+- `RuntimeApplicationShell.cpp` 不再直接包含 `Application.h`，也不再直接调用 `GL_APP->getWindow()`、`GL_APP->getWidth()`、`GL_APP->getHeight()` 或 `GL_APP->destroy()`。
+
+已完成验证：
+
+- 静态耦合检查确认 `RuntimeApplicationShell.*` 中不再出现 `Application.h`、`GL_APP->getWindow`、`GL_APP->getWidth`、`GL_APP->getHeight` 或 `GL_APP->destroy`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Window singleton access 现在集中在 `RuntimeWindowLifecycle`，Shell 继续靠 lifecycle 边界协调初始化、帧循环和销毁。
+- 这一步继续保持不扩张 PBR；它只收敛窗口运行时状态和 native window 指针访问边界。
+
+### 2026-05-27 Engine Subsystem Lifecycle Summary Snapshot
+
+本轮继续上一阶段的下一步，把 `Engine::captureLifecycleSnapshot()` 从只提供 `subsystemCount` 扩展为可枚举的 subsystem summary。目标是让 diagnostics UI 和 verification 不再各自从具体 `AssetSubsystem*` / `RendererSubsystem*` 拼 health counters，而是优先读取 Engine-owned snapshot 中的通用 subsystem 列表。
+
+新增与修改：
+
+- `EngineSubsystem` 新增只读诊断虚接口：`getDebugName()`、`isInitializedForDiagnostics()`、`getTickCountForDiagnostics()`。
+- `AssetSubsystem` 覆盖诊断接口，报告 `AssetSubsystem`、initialized 状态和 tick count。
+- `RendererSubsystem` 覆盖诊断接口，报告 `RendererSubsystem`、initialized 状态和 tick count。
+- `EngineLifecycleSnapshot` 新增 `EngineSubsystemLifecycleSummary` 列表、`initializedSubsystemCount` 和 `tickedSubsystemCount`。
+- `Engine::captureLifecycleSnapshot()` 遍历 Engine-owned subsystem，收集 index、name、initialized 和 tick count。
+- `EngineDiagnosticsPanel` 的 `Subsystem Health` tick 显示改为优先读取 snapshot summary；`Engine Runtime` 中新增 initialized / ticked subsystem count 和可展开 subsystem summary 列表。
+- `RuntimePBRVerification::reportRenderedFrame(...)` 新增 `Runtime engine subsystem summary stats` 输出，记录 subsystem count、initialized/ticked count、names、initialized flags 和 ticks。
+- `Runtime subsystem health stats` 中的 Asset / Renderer tick 现在来自 Engine snapshot summary，而不是直接从具体 subsystem 指针读取。
+- `Runtime engine subsystem cleanup stats` 增加 shutdown 后 snapshot summary 字段，证明 Engine 仍可枚举 owned subsystem，但 initialized/ticked 已清零。
+- `tools/verify_pbr.ps1` 新增 runtime subsystem summary 和 cleanup snapshot summary 断言。
+
+已完成验证：
+
+- 静态检查确认 `getDebugName`、`isInitializedForDiagnostics`、`getTickCountForDiagnostics`、`EngineSubsystemLifecycleSummary`、`subsystemSummaries`、`Runtime engine subsystem summary stats` 和 `snapshotSubsystem*` 均已接入 engine / verification / diagnostics。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过，并输出 `names=AssetSubsystem|RendererSubsystem`、`ticks=2|2`、cleanup `snapshotSubsystemTicks=0|0`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过，所有 mode 均覆盖 runtime subsystem summary 和 shutdown snapshot summary 断言。
+
+结论：
+
+- Engine lifecycle snapshot 现在不只是 Engine/World 快照，也能表达 Engine-owned subsystem 的通用健康摘要。
+- 这一步继续保持不扩张 PBR；它只加强 Engine runtime ownership 的可观察和验证边界。
+
+### 2026-05-27 Runtime Application Startup Lifecycle Extraction
+
+本轮继续收敛 `RuntimeApplicationShell` 的高层顺序编排。上一轮已经让 Engine snapshot 能表达 subsystem summary；本轮回到 Shell，把 initialize 阶段中的 Engine / Window / Graphics / Content / Editor / Frame reset 顺序迁入独立 startup lifecycle，避免 Shell 继续承载启动流程细节。
+
+新增与修改：
+
+- 新增 `RuntimeApplicationStartupLifecycle.h/.cpp`。
+- `RuntimeApplicationStartupLifecycle::initialize(...)` 统一编排 Engine 初始化、Window 初始化、Graphics 初始化、Content prepare、Editor 初始化和 Frame lifecycle reset。
+- `RuntimeApplicationShell::initialize()` 改为单行委托到 `RuntimeApplicationStartupLifecycle::initialize(...)`。
+- `RuntimeApplicationShell.cpp` 不再直接包含或调用 `RuntimeContentLifecycle`、`RuntimeContentConfigPolicy`、`RuntimeGraphicsLifecycle`、`RuntimeEngineLifecycle::initializeEngine(...)`、`RuntimeWindowLifecycle::initialize(...)`、`RuntimeEditorLifecycle::initialize(...)` 或 `RuntimeFrameLifecycle::reset(...)` 这些 startup 细节。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 startup lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 startup 细节调用集中在 `RuntimeApplicationStartupLifecycle.cpp`，Shell 中只保留 `RuntimeApplicationStartupLifecycle::initialize(...)` 入口。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationStartupLifecycle.cpp` 已参与编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Shell 的 initialize 阶段现在更接近 composition root 的入口，不再直接展开 startup flow。
+- 这一步继续保持不扩张 PBR；它只收敛 application runtime 的启动编排边界。
+
+### 2026-05-27 Runtime Application Shutdown Lifecycle Extraction
+
+本轮继续收敛 `RuntimeApplicationShell` 的高层顺序编排。上一轮已把 startup 顺序迁入 `RuntimeApplicationStartupLifecycle`；本轮把 cleanup / destroy 阶段中的 renderer cleanup report、camera cleanup、runtime context detach、Engine shutdown、Engine cleanup report 和 window destroy 迁入独立 shutdown lifecycle。
+
+新增与修改：
+
+- 新增 `RuntimeApplicationShutdownLifecycle.h/.cpp`。
+- `RuntimeApplicationShutdownLifecycle::cleanup(...)` 统一编排 cleanup 顺序：先 `RuntimeEngineLifecycle::beginCleanup(...)` detach renderer backend 并保留只读 cleanup refs，再报告 renderer subsystem cleanup，随后清理 camera、detach runtime context、shutdown Engine，并报告 Engine cleanup。
+- `RuntimeApplicationShutdownLifecycle::destroy()` 统一委托 `RuntimeWindowLifecycle::destroy()`。
+- `RuntimeApplicationShell::cleanup()` 改为委托 `RuntimeApplicationShutdownLifecycle::cleanup(...)`。
+- `RuntimeApplicationShell::destroy()` 改为委托 `RuntimeApplicationShutdownLifecycle::destroy()`。
+- `RuntimeApplicationShell.cpp` 不再直接包含或调用 `RuntimeCameraLifecycle`、`RuntimeVerificationLifecycle`、`RuntimeEngineLifecycle::beginCleanup(...)`、`RuntimeEngineLifecycle::detachRuntimeContext(...)`、`RuntimeEngineLifecycle::shutdownEngine(...)` 或 `RuntimeWindowLifecycle::destroy()` 这些 shutdown 细节。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 shutdown lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 cleanup/shutdown 细节调用集中在 `RuntimeApplicationShutdownLifecycle.cpp`，Shell 中只保留 shutdown 委托入口。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationShutdownLifecycle.cpp` 已参与编译，三条 focused verification mode 全部通过，并继续输出 renderer/world/subsystem cleanup stats。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过，所有 mode 均继续覆盖 runtime renderer/world/subsystem cleanup contract。
+
+结论：
+
+- Shell 的 cleanup/destroy 阶段现在与 initialize 阶段一致，都是只保留 application lifecycle 委托入口。
+- 这一步继续保持不扩张 PBR；它只收敛 application runtime 的关闭编排边界。
+
+### 2026-05-27 Runtime Application Frame Lifecycle Extraction
+
+本轮继续收敛 `RuntimeApplicationShell` 的剩余 frame-level glue。startup 和 shutdown 已经分别迁入独立 lifecycle；本轮把 `shouldContinue()` / `runFrame()` 中的 frame config 映射、window snapshot、editor callbacks 组装和 `RuntimeFrameLifecycle` 调用迁入独立 application frame lifecycle。
+
+新增与修改：
+
+- 新增 `RuntimeApplicationFrameLifecycle.h/.cpp`。
+- `RuntimeApplicationFrameLifecycle::shouldContinue(...)` 统一从 `RuntimeApplicationConfigPolicy` 构造 frame lifecycle config，并委托 `RuntimeFrameLifecycle::shouldContinue(...)`。
+- `RuntimeApplicationFrameLifecycle::runFrame(...)` 统一捕获 `RuntimeWindowLifecycle::captureSnapshot()`，构造 frame lifecycle config 和 editor frame callbacks，再调用 `RuntimeFrameLifecycle::runFrame(...)`。
+- `RuntimeApplicationShell::shouldContinue()` 改为委托 `RuntimeApplicationFrameLifecycle::shouldContinue(...)`。
+- `RuntimeApplicationShell::runFrame()` 改为委托 `RuntimeApplicationFrameLifecycle::runFrame(...)`。
+- `RuntimeApplicationShell.cpp` 不再直接包含或调用 `RuntimeApplicationConfigPolicy`、`RuntimeEditorLifecycle`、`RuntimeFrameLifecycle::shouldContinue(...)`、`RuntimeFrameLifecycle::runFrame(...)`、`RuntimeWindowLifecycle::captureSnapshot()` 或 frame/editor config mapping。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 frame lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 frame-level 细节调用集中在 `RuntimeApplicationFrameLifecycle.cpp`，Shell 中只保留 frame lifecycle 委托入口。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationFrameLifecycle.cpp` 已参与编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationShell` 现在对 initialize、shouldContinue/runFrame、cleanup/destroy 都只保留 application lifecycle 委托入口。
+- 这一步继续保持不扩张 PBR；它只收敛 application runtime 的 frame 编排边界。
+
+### 2026-05-27 Runtime Application State Context Extraction
+
+本轮继续收敛 `RuntimeApplicationShell`。上一轮已经让 Shell 的各生命周期函数只保留委托入口；本轮把 Shell 中分散持有的 Engine、runtime context、engine lifecycle state、editor lifecycle state、legacy experiments 和 frame lifecycle state 聚合成独立 `RuntimeApplicationState`，让 startup / frame / shutdown lifecycle 共享同一个 application runtime state 边界。
+
+新增与修改：
+
+- 新增 `RuntimeApplicationState.h`。
+- `RuntimeApplicationState` 统一持有 `GLengine::Engine`、`RuntimeEngineLifecycleState`、`AppRuntimeContext`、`RuntimeEditorLifecycleState`、`LegacyExperimentRunner` 和 `RuntimeFrameLifecycleState`。
+- `RuntimeApplicationShell` 删除分散的 `mEngine`、`mEngineLifecycle`、`mRuntime`、`mEditorLifecycle`、`mLegacyExperiments` 和 `mFrameLifecycle` 成员，改为只持有 `RuntimeApplicationState mState` 与 `RuntimeApplicationShellConfig mConfig`。
+- `RuntimeApplicationStartupLifecycle::initialize(...)` 改为接收 `RuntimeApplicationState&`，并通过 state 访问 Engine、runtime context、engine lifecycle、legacy experiments 和 frame lifecycle。
+- `RuntimeApplicationFrameLifecycle::shouldContinue(...)` / `runFrame(...)` 改为接收 `RuntimeApplicationState`，frame 编排不再从 Shell 接收多组分散状态参数。
+- `RuntimeApplicationShutdownLifecycle::cleanup(...)` 改为接收 `RuntimeApplicationState&`，shutdown 编排不再从 Shell 接收 Engine、runtime context 和 engine lifecycle 三个独立参数。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 state header。
+
+已完成验证：
+
+- 静态检查确认 Shell 中只保留 `mState` 和 `mConfig`，旧的分散 runtime state 成员已移除。
+- 静态检查确认 startup / frame / shutdown lifecycle header 中不再暴露 `AppRuntimeContext&`、`Engine&`、`RuntimeEngineLifecycleState&`、`RuntimeFrameLifecycleState&` 或 `LegacyExperimentRunner&` 这些分散参数。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；相关 application lifecycle 文件重新编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationShell` 现在只持有 config 和一个明确的 runtime state aggregate，职责更接近“创建 callback wrapper + 持有 composition state”。
+- 这一步继续保持不扩张 PBR；它只收敛 application runtime 的状态边界。
+
+### 2026-05-27 Runtime Renderer Backend Contract Verification Naming Neutralization
+
+本轮把 renderer backend verification 的对外表述从旧的 subsystem/PBR 语境中进一步中性化。实现上保留 `Runtime renderer subsystem stats` 与 cleanup stats，避免破坏已有观察入口；同时新增并断言 `Runtime renderer backend contract stats` 与 `Runtime renderer backend contract cleanup stats`，让 backend key、readiness、registry、frame pass、no-op backend 和 cleanup detach 状态都有通用 contract 视角。
+
+新增与修改：
+
+- `RuntimePBRVerification` 在 rendered frame report 中新增 `Runtime renderer backend contract stats`，字段覆盖 executor attachment、backend ready/key/state/owner/ownership、registry key/count、attach/detach count、ready/not-ready frames、framebuffer、frame plan key、planned/executed/skipped pass、bridge/executor call count 和 observed renderer pass count。
+- `RuntimePBRVerification` 在 cleanup report 中新增 `Runtime renderer backend contract cleanup stats`，字段覆盖 executor detach、backend detached state、metadata clear、registry clear、attach/detach closure 与 ready-frame evidence。
+- `tools/verify_pbr.ps1` 捕获并汇总新 contract 行，新增普通 backend 与 no-op backend 的稳定断言，同时保留旧 runtime renderer subsystem stats 断言。
+- `docs/subagents_coordination.md` 已把当前 round 更新为本轮 contract naming neutralization，并限定旁路 subagent 只能只读审计，不拥有代码写入范围。
+
+已完成验证：
+
+- 静态检查确认新 contract stats / cleanup stats 在 C++ 输出、PowerShell 捕获、断言和 summary 中均存在，旧 `Runtime renderer subsystem ...` 输出仍保留。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过，普通 backend 与 no-op backend 均输出新 contract 行。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Renderer backend verification 现在同时具备 legacy subsystem 视角与通用 backend contract 视角。
+- 这一步不扩张 PBR 功能，只把已有 backend contract 的可验证边界从 PBR 命名中剥离出来。
+
+### 2026-05-27 Renderer Backend Contract Header Extraction
+
+本轮继续收敛 renderer backend 抽象。上一轮已经把 verification 输出中性化；本轮把 backend contract 类型本身从 `RendererSubsystem.h` 中抽出，避免 application runtime backend / factory 为了实现 backend contract 而依赖完整 subsystem header。
+
+新增与修改：
+
+- 新增 `engine/RendererBackend.h`。
+- `RendererBackend.h` 定义 `RendererBackend`、`RendererFrameIntent`、`RendererFrameResult` 和 `RendererBackendAttachmentDesc`。
+- `RendererFrameExecutor`、`RendererSubsystemFrameIntent` 与 `RendererSubsystemFrameResult` 保留为兼容 alias，避免一次性破坏既有命名入口。
+- `RendererSubsystem.h/.cpp` 改为消费 `RendererBackend.h`，自身不再定义 backend contract 类型。
+- `RuntimeRendererFrameBridgeAdapter`、`RuntimeNoOpRendererBackend` 和 `RuntimeRendererBackendFactory` 改为包含 `RendererBackend.h`，并使用 `RendererBackend` / `RendererFrameIntent` / `RendererFrameResult`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 `engine/RendererBackend.h`。
+
+已完成验证：
+
+- 静态检查确认 application backend/factory 不再包含 `RendererSubsystem.h`，只依赖 `RendererBackend.h`。
+- 静态检查确认 `RendererSubsystemFrameIntent` / `RendererSubsystemFrameResult` 在代码中只剩兼容 alias。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Renderer backend contract 现在有独立 engine header，application backend 实现不再需要依赖完整 RendererSubsystem 定义。
+- 这一步继续保持不扩张 PBR；它只收敛 renderer backend 与 subsystem 的代码依赖方向。
+
+### 2026-05-27 Renderer Backend Registry Metadata Contract Extraction
+
+本轮继续收敛 renderer backend registry 的命名和归属。上一轮已经让 backend contract 类型进入 `RendererBackend.h`；本轮把 backend registry entry metadata 也提升到 engine contract 层，避免 `RuntimeRendererBackendRegistration` 这种 application-only 类型继续描述通用 backend registry。
+
+新增与修改：
+
+- `engine/RendererBackend.h` 新增 `RendererBackendRegistration`，字段保留 `key`、`displayName` 和 `defaultBackend`。
+- `RuntimeRendererBackendFactory::registeredBackends()` 改为返回 `std::vector<GLengine::RendererBackendRegistration>`。
+- 删除 application 层的 `RuntimeRendererBackendRegistration` 定义。
+- `RuntimeRendererBackendFactory::isRegisteredBackendKey(...)` 改为使用 engine-level registration entry。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeRendererBackendRegistration` 已无残留，registry metadata 类型只存在于 `engine/RendererBackend.h` 和 runtime factory 返回值中。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Renderer backend registry metadata 现在属于 engine-level backend contract；runtime factory 仍只负责具体 application backend 创建。
+- 这一步继续保持不扩张 PBR；它只减少 application 命名对 renderer backend registry contract 的占用。
+
+### 2026-05-27 Renderer Backend Registry Helper Extraction
+
+本轮继续推进 renderer backend registry 从 runtime factory 私有逻辑向 engine-level contract/service 迁移。具体 backend 列表与创建仍留在 `RuntimeRendererBackendFactory`，因为它依赖 application runtime context；但 registry 查询、默认 key 选择和 attachment desc 组装已经迁入 `RendererBackendRegistry`。
+
+新增与修改：
+
+- 新增 `engine/RendererBackendRegistry.h/.cpp`。
+- `RendererBackendRegistry` 持有 `RendererBackendRegistration` 列表，并提供 `getRegisteredBackends()`、`getBackendCount()`、`isRegisteredBackendKey(...)`、`getDefaultBackendKey(...)` 和 `makeAttachmentDesc(...)`。
+- `RuntimeRendererBackendFactory` 现在只声明 runtime 可用 backend 列表和创建具体 backend；默认 key、contains 判断和 attachment desc 由 engine-level helper 完成。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 registry helper 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 registry 查询/默认 key/attachment desc 逻辑集中在 `RendererBackendRegistry`，runtime factory 不再直接手写 `std::any_of` 或 registry count 组装。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RendererBackendRegistry.cpp` 已参与编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Renderer backend registry 的查询/默认值/attachment metadata 现在有 engine-level helper，runtime factory 只保留 runtime backend 列表和创建职责。
+- 这一步继续保持不扩张 PBR；它只把 backend registry service 边界从 application factory 私有实现中剥离出来。
+
+### 2026-05-27 Renderer Backend Registry Selection Policy Extraction
+
+本轮继续沿着上一轮 registry helper 边界推进，把 backend key 的选择结果从 runtime factory 私有判断中抽成 engine-level `RendererBackendSelection`。runtime factory 仍负责把已选中的 key 映射为具体 application backend 类型，但“请求 key / 默认 key / 是否注册 / 实际 selected key / registry count”这些选择语义现在由 `RendererBackendRegistry` 统一给出。
+
+新增与修改：
+
+- `engine/RendererBackendRegistry.h` 新增 `RendererBackendSelection`，字段包括 `requestedKey`、`selectedKey`、`defaultKey`、`registered`、`usedDefault` 和 `registryBackendCount`。
+- `RendererBackendRegistry::resolveBackendSelection(...)` 负责把外部请求 key 解析为 selection result：空请求可落到默认 backend，未知 key 不做隐式 fallback，并以 `registered=false` 表示无效选择。
+- `RuntimeRendererBackendFactory::createBackend(...)` 改为先获取 engine-level selection result，再只根据 `selection.selectedKey` 创建具体 runtime backend。
+- `RuntimeRendererBackendFactory::makeRendererSubsystemAttachmentDesc(...)` 改为使用 selection result 的 selected key 生成 attachment metadata。
+- `RuntimeRendererBackendFactory::isRegisteredBackendKey(...)` 保持精确注册检查，不把空 key 默认化为已注册 key。
+
+已完成验证：
+
+- 静态检查确认 `RendererBackendSelection` 与 `resolveBackendSelection(...)` 已接入 registry helper 和 runtime factory。
+- 静态检查确认具体 backend 创建分支只依赖 `selection.selectedKey`，请求 key 的注册/default 解析集中在 `RendererBackendRegistry`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RendererBackendRegistry.cpp` 与 `RuntimeRendererBackendFactory.cpp` 已重新编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Backend selection policy 已从 runtime factory 的字符串判断中抽到 engine-level registry helper；runtime factory 只保留“selected key -> concrete backend object”的 application composition 职责。
+- 这一步继续保持不扩张 PBR；它推进的是 renderer backend contract/service 边界。
+
+### 2026-05-27 Runtime Renderer Backend Catalog Extraction
+
+本轮把 runtime backend 的 key、registry metadata、selection 入口和 attachment metadata 从 `RuntimeRendererBackendFactory` 中拆到独立 `RuntimeRendererBackendCatalog`。这样 factory 的职责进一步收敛为“根据已经解析好的 `RendererBackendSelection` 创建具体 backend object”，不再同时承担 registry/catalog/query/attachment desc 职责。
+
+新增与修改：
+
+- 新增 `application/RuntimeRendererBackendCatalog.h/.cpp`。
+- `RuntimeRendererBackendCatalog` 负责 `runtimeFramePipelineBackendKey()`、`testNoOpBackendKey()`、`defaultBackendKey()`、`makeRegistry()`、`registeredBackends()`、`isRegisteredBackendKey(...)`、`resolveBackendSelection(...)` 和 `makeRendererSubsystemAttachmentDesc(...)`。
+- `RuntimeRendererBackendFactory` 删除 registry/query/default/attachment desc API，只保留 `createBackend(context, selection)` 和 `createRuntimeFramePipelineBackend(context)`。
+- `RuntimeEngineLifecycle::attachRendererBackend(...)` 现在先通过 catalog 解析 selection，再把 selection 交给 factory 创建 backend，并由 catalog 生成 renderer subsystem attachment desc。
+- `RuntimePBRVerificationArgs` 改为从 catalog 获取 no-op backend key。
+- `RuntimeApplicationShellConfig::rendererBackendKey` 默认值改为 `RuntimeRendererBackendCatalog::defaultBackendKey()`，避免默认 backend key 字符串在 config 和 catalog 中双源维护。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 catalog 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeRendererBackendFactory` 中不再暴露 `defaultBackendKey()`、`testNoOpBackendKey()`、`registeredBackends()`、`isRegisteredBackendKey(...)` 或 `makeRendererSubsystemAttachmentDesc(...)`。
+- 静态检查确认 runtime backend key 字符串只集中在 `RuntimeRendererBackendCatalog.cpp`，shell config、verification args 和 engine lifecycle 都通过 catalog 工作。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeRendererBackendCatalog.cpp`、`RuntimeRendererBackendFactory.cpp`、`RuntimeEngineLifecycle.cpp`、`RuntimePBRVerificationArgs.cpp` 和 `RuntimeApplicationShell.cpp` 已重新编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Runtime backend factory 现在更接近纯 backend object construction provider；registry/catalog/selection/attachment metadata 已集中到 runtime catalog + engine registry helper。
+- 这一步继续保持不扩张 PBR；它只推进 renderer backend composition boundary。
+
+### 2026-05-27 Runtime Application Config Header Extraction
+
+本轮继续收敛 application composition root 的头文件依赖。`RuntimeApplicationShellConfig` 原本定义在 `RuntimeApplicationShell.h` 中，导致 config policy、content policy、startup/frame/shutdown lifecycle 和 verification args 只为了读取配置类型就包含完整 Shell。本轮把 config struct 抽到独立 `RuntimeApplicationConfig.h`，让 Shell 只保留 state/config/callback glue 的拥有者边界。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationConfig.h`，集中定义 `RuntimeApplicationShellConfig`。
+- `RuntimeApplicationShell.h` 改为包含 `RuntimeApplicationConfig.h`，自身不再定义 config struct，也不再直接包含 frame clock、verification、renderer backend catalog 或 window lifecycle header。
+- `RuntimeApplicationConfigPolicy`、`RuntimeContentConfigPolicy`、`RuntimeApplicationStartupLifecycle`、`RuntimeApplicationFrameLifecycle`、`RuntimeApplicationShutdownLifecycle` 和 `RuntimePBRVerificationArgs` 改为依赖 `RuntimeApplicationConfig.h`，不再为了 `RuntimeApplicationShellConfig` 包含 `RuntimeApplicationShell.h`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 config header。
+
+已完成验证：
+
+- 静态检查确认除 `main.cpp` 和 `RuntimeApplicationShell.*` 外，application 模块不再包含 `RuntimeApplicationShell.h`。
+- 静态检查确认 config users 通过 `RuntimeApplicationConfig.h` 使用 `RuntimeApplicationShellConfig`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationConfigPolicy.cpp`、`RuntimeApplicationFrameLifecycle.cpp`、`RuntimeApplicationShell.cpp`、`RuntimeApplicationShutdownLifecycle.cpp`、`RuntimeApplicationStartupLifecycle.cpp`、`RuntimeContentConfigPolicy.cpp`、`RuntimePBRVerificationArgs.cpp` 和 `main.cpp` 已参与编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Shell config 现在是独立 application config contract；Shell header 不再作为 config type 的传递依赖中心。
+- 这一步继续保持不扩张 PBR；它只降低 application composition root 的头文件耦合。
+
+### 2026-05-27 Runtime Application Callback Binder Extraction
+
+本轮继续收敛 `RuntimeApplicationShell` 的最后一层 callback glue。上一轮后 Shell 已经只持有 `RuntimeApplicationState` 和 `RuntimeApplicationShellConfig`，但仍保留 `initialize()`、`shouldContinue()`、`runFrame()`、`cleanup()` 和 `destroy()` 五个私有 wrapper，只用于把 `RuntimeBootstrapperCallbacks` 转发到 startup/frame/shutdown lifecycle。本轮把这层绑定抽成独立 `RuntimeApplicationCallbackBinder`。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationCallbackBinder.h/.cpp`。
+- `RuntimeApplicationCallbackBinder::makeCallbacks(state, config)` 负责生成 `RuntimeBootstrapperCallbacks`，并把 initialize / shouldContinue / runFrame / cleanup / destroy 分别绑定到 application startup/frame/shutdown lifecycle。
+- `RuntimeApplicationShell` 删除五个私有 lifecycle wrapper；`makeCallbacks()` 现在只委托 `RuntimeApplicationCallbackBinder::makeCallbacks(mState, mConfig)`。
+- `RuntimeApplicationShell.cpp` 不再直接包含 startup/frame/shutdown lifecycle header，只包含 callback binder。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 binder 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationShell.*` 中不再直接引用 `RuntimeApplicationStartupLifecycle`、`RuntimeApplicationFrameLifecycle` 或 `RuntimeApplicationShutdownLifecycle`，也不再保留私有 wrapper。
+- 静态检查确认 lifecycle 绑定调用集中在 `RuntimeApplicationCallbackBinder.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationCallbackBinder.cpp`、`RuntimeApplicationShell.cpp` 和 `main.cpp` 已参与编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Shell 现在更接近纯 application owning shell：只拥有 state/config，并暴露 callback 创建入口。
+- Bootstrapper callback 到 lifecycle 的绑定被隔离到独立 binder；后续可继续检查是否需要把 owning shell 与 bootstrapper/run boundary 进一步分开。
+- 这一步继续保持不扩张 PBR；它只降低 application composition root 的 callback 耦合。
+
+### 2026-05-27 Runtime Application Runner Boundary Extraction
+
+本轮继续收敛 application run boundary。上一轮后 Shell 已只负责 state/config ownership 和 callback 创建，但 `main.cpp` 仍直接知道 “构造 Shell -> 取 callbacks -> RuntimeBootstrapper::run(...)” 的组合方式。本轮新增 `RuntimeApplicationRunner`，把 config 到 runtime run loop 的组装从入口文件移入 application 层。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationRunner.h/.cpp`。
+- `RuntimeApplicationRunner::run(RuntimeApplicationShellConfig config)` 负责构造 `RuntimeApplicationShell`，再把 `shell.makeCallbacks()` 交给 `RuntimeBootstrapper::run(...)`。
+- `main.cpp` 不再包含 `RuntimeApplicationShell.h` 或 `RuntimeBootstrapper.h`，只保留日志等级设置、旧 `PointLightShadow::MAX_POINT_LIGHTS` 全局兼容设置、verification args 解析和 `RuntimeApplicationRunner::run(...)` 调用。
+- `RuntimeApplicationShell.h` 对 `RuntimeBootstrapperCallbacks` 改为前置声明，不再传递包含 `RuntimeBootstrapper.h`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 runner 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `main.cpp` 中不再出现 `RuntimeApplicationShell`、`RuntimeBootstrapper`、`shell.makeCallbacks()` 或 `RuntimeBootstrapper::run(...)`。
+- 静态检查确认 “构造 Shell + 调 Bootstrapper” 只集中在 `RuntimeApplicationRunner.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationRunner.cpp`、`RuntimeApplicationShell.cpp` 和 `main.cpp` 已参与编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 程序入口现在更接近 thin entrypoint：设置少量全局兼容状态、解析 runtime config、交给 application runner。
+- Shell/Bootstrapper 的组装方式已进入 application run boundary，后续可继续检查 args parsing、logger setup 和 `PointLightShadow::MAX_POINT_LIGHTS` 这类旧全局兼容点是否也需要下沉。
+- 这一步继续保持不扩张 PBR；它只降低 main/application run loop 的耦合。
+
+### 2026-05-27 Runtime Application Entry Boundary Extraction
+
+本轮继续收敛入口残留。上一轮后 `main.cpp` 已不直接组合 Shell/Bootstrapper，但仍负责日志初始化、verification args 解析和 `PointLightShadow::MAX_POINT_LIGHTS` 静态成员定义。本轮新增 `RuntimeApplicationEntry`，把 runtime entry 启动策略移入 application 层，并把点光阴影静态默认值归位到 `pointLightShadow.cpp`。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationEntry.h/.cpp`。
+- `RuntimeApplicationEntry::run(argc, argv)` 负责设置 `LogManager` 默认等级、解析 `RuntimePBRVerificationArgs`，并调用 `RuntimeApplicationRunner::run(...)`。
+- `main.cpp` 现在只包含 `RuntimeApplicationEntry.h` 并调用 `RuntimeApplicationEntry::run(argc, argv)`。
+- `PointLightShadow::MAX_POINT_LIGHTS` 的静态成员定义从 `main.cpp` 移到 `light/shadow/pointLightShadow/pointLightShadow.cpp`。
+- `PointLightShadow` 默认构造中的 `PerspectiveCamera` aspect 参数从 `1.0` 改为 `1.0f`，消除本轮重新编译该文件时出现的 double-to-float warning。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 entry 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `main.cpp` 中不再出现 `RuntimeApplicationRunner`、`RuntimePBRVerificationArgs`、`LogManager`、`PointLightShadow`、`makeShellConfigFromArguments(...)` 或 `MAX_POINT_LIGHTS`。
+- 静态检查确认 `PointLightShadow::MAX_POINT_LIGHTS` 只有一个定义，且位于 `pointLightShadow.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationEntry.cpp`、`pointLightShadow.cpp` 和 `main.cpp` 已参与编译，三条 focused verification mode 全部通过；除既有 LNK4075 提示外无 C4244 warning。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `main.cpp` 现在是真正的 thin entrypoint，只委托 runtime application entry。
+- runtime 启动策略、参数解析和日志默认设置进入 application entry boundary。
+- 旧点光阴影静态成员定义不再挂在程序入口文件上，减少全局兼容代码对入口的污染。
+- 这一步继续保持不扩张 PBR；它只降低 main/application launch boundary 的耦合。
+
+### 2026-05-27 Runtime Verification Args Neutral Alias Extraction
+
+本轮按 `/subagents` 要求先更新多 agent 协作边界，并启动两个只读 sidecar audit agent。随后继续收敛 application entry 的命名依赖：上一轮 `RuntimeApplicationEntry` 已接管 logger setup / args parsing / runner 调用，但它仍直接包含 `RuntimePBRVerificationArgs.h`。本轮新增中性 `RuntimeVerificationArgs.h` 作为 entry-facing public header，旧 `RuntimePBRVerificationArgs.h` 降级为兼容 wrapper。
+
+新增与修改：
+
+- 更新 `docs/subagents_coordination.md`，把本轮写入 owner 固定为 parent agent，两个子 agent 只读审查 args boundary 与文档一致性。
+- 新增 `application/RuntimeVerificationArgs.h`，直接声明 `makeShellConfigFromArguments(argc, argv)`，并依赖 `RuntimeApplicationConfig.h`。
+- `RuntimeApplicationEntry.cpp` 改为包含 `RuntimeVerificationArgs.h`，不再直接包含 PBR-specific args header。
+- `RuntimePBRVerificationArgs.h` 改为包含 `RuntimeVerificationArgs.h` 的兼容 wrapper，保留旧 include path。
+- `RuntimePBRVerificationArgs.cpp` 仍承载现有 implementation 与 `PbrVerificationModeDescriptor` 表；本轮不声称完成 `.cpp` 迁移，避免 duplicate symbol 或大范围搬迁风险。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 neutral header。
+
+已完成验证：
+
+- 子 agent `Runtime Args Boundary Audit` 确认当前切片是 header neutralization，不是完整 `.cpp` extraction，并指出后续若迁移实现必须避免 duplicate symbol。
+- 子 agent `Documentation Consistency Audit` 确认主要文档需把 verification args neutralization 从“下一步”改为“已接入 first slice”，且不能过度声称完整迁移。
+- 静态检查确认 `main.cpp` 和 `RuntimeApplicationEntry.cpp` 中不再出现 `RuntimePBRVerificationArgs.h` 直接 include。
+- 静态检查确认 `RuntimeVerificationArgs.h` 直接声明公共 API，`RuntimePBRVerificationArgs.h` 只保留兼容 wrapper 角色。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationEntry.cpp` 与 `RuntimePBRVerificationArgs.cpp` 已重新编译，三条 focused verification mode 全部通过；仅保留既有 LNK4075 提示。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- application entry 的 public include surface 已从 PBR-specific args header 切到 neutral runtime verification args header。
+- 旧 `RuntimePBRVerificationArgs.*` 仍作为兼容 implementation 留存，下一步可选择完整迁移 `.cpp` 实现和 descriptor 命名，或继续先收敛 `RuntimeApplicationConfig::pbrVerification` 等更大的配置命名边界。
+- 这一步继续保持不扩张 PBR；它只降低 application entry 与 PBR verification 命名的耦合。
+
+### 2026-05-27 Runtime Verification Args Implementation Extraction
+
+本轮继续上一节，把 verification args 的 implementation translation unit 从 `RuntimePBRVerificationArgs.cpp` 迁移到 `RuntimeVerificationArgs.cpp`。上一轮只完成 public header / include surface neutralization，本轮完成 `.cpp` 实现归位，并把内部 descriptor/table/function 命名从 PBR-specific 收敛到 runtime verification 语义。
+
+新增与修改：
+
+- 新增 `application/RuntimeVerificationArgs.cpp`，承载 `makeShellConfigFromArguments(...)` 的实际实现。
+- `RuntimeVerificationArgs.cpp` 包含 `RuntimeVerificationArgs.h`，不再通过旧 PBR header 暴露实现。
+- `RuntimePBRVerificationArgs.cpp` 改为兼容 translation unit，只包含 `RuntimePBRVerificationArgs.h`，不再定义 `makeShellConfigFromArguments(...)`。
+- 内部 `PbrVerificationModeDescriptor` / `kPbrVerificationModes` / `applyPbrVerificationMode(...)` / `applyRequestedPbrVerificationModes(...)` 改名为 `RuntimeVerificationModeDescriptor` / `kRuntimeVerificationModes` / `applyRuntimeVerificationMode(...)` / `applyRequestedRuntimeVerificationModes(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 `RuntimeVerificationArgs.cpp`，并保留旧 `RuntimePBRVerificationArgs.cpp` 兼容 stub。
+
+已完成验证：
+
+- 静态检查确认 `makeShellConfigFromArguments(...)` 只在 `RuntimeVerificationArgs.cpp` 定义。
+- 静态检查确认旧 `PbrVerificationModeDescriptor` / `kPbrVerificationModes` 等内部实现命名已无残留。
+- 静态检查确认 `RuntimeVerificationArgs.cpp` 和 `RuntimePBRVerificationArgs.cpp` 均已在 VS 工程中注册，且旧 `.cpp` 不再包含实现体。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimePBRVerificationArgs.cpp` 与 `RuntimeVerificationArgs.cpp` 已重新编译，三条 focused verification mode 全部通过；没有 duplicate symbol，仅保留既有 LNK4075 提示。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- runtime verification args 的正式 implementation 已进入 neutral `RuntimeVerificationArgs.cpp`。
+- 旧 `RuntimePBRVerificationArgs.*` 现在只作为兼容 include / translation unit 保留。
+- 剩余 PBR-specific 命名主要在真实配置字段和具体 probe option 上，例如 `RuntimeApplicationConfig::pbrVerification` 与 `RuntimePBRVerificationConfig`；这些字段仍准确描述当前 PBR verification data，需要单独设计再迁移。
+- 这一步继续保持不扩张 PBR；它只完成 application entry args parsing boundary 的命名和 translation unit 收敛。
+
+### 2026-05-27 Runtime Verification Config Field Neutralization
+
+本轮继续上一节，把 application shell config 暴露给上层的 verification 字段从 PBR-specific 命名收敛为 runtime-level 命名。目标不是扩张 PBR verification，而是减少 application composition root 对 PBR 语义的直接暴露。
+
+新增与修改：
+
+- 新增 `application/RuntimeVerificationConfig.h`，定义 `RuntimeVerificationConfig` 作为当前 `RuntimePBRVerificationConfig` 的 neutral alias。
+- `RuntimeApplicationShellConfig::pbrVerification` 改名为 `RuntimeApplicationShellConfig::verification`。
+- `RuntimeApplicationConfigPolicy`、`RuntimeContentConfigPolicy`、`RuntimeApplicationShutdownLifecycle`、`RuntimeVerificationArgs`、`RuntimeContentLifecycle`、`RuntimeFrameLifecycle` 与 `RuntimeVerificationLifecycle` 已改为消费 `config.verification` / `RuntimeVerificationConfig`。
+- `RuntimeVerificationLifecycle` 的 public method 参数从 `RuntimePBRVerificationConfig` 收敛为 `RuntimeVerificationConfig`，但内部仍委托现有 `RuntimePBRVerification` 实现。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 neutral config header。
+
+已完成验证：
+
+- 静态检查确认当前 `application` 代码中不再存在 `shellConfig.pbrVerification` 或 `config.pbrVerification`。
+- 静态检查确认 `RuntimeApplicationConfig.h` 与 `RuntimeVerificationLifecycle.h` 只包含 neutral `RuntimeVerificationConfig.h`。
+- 静态检查确认剩余 `RuntimePBRVerificationConfig` 集中在具体 PBR verification 实现、neutral alias 和历史文档记录中。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- application-level config 字段已经不再把 verification 入口命名为 PBR。
+- 当前 `RuntimeVerificationConfig` 仍是兼容 alias，因为字段内容仍包含 PBR probe option；这避免了在同一轮拆数据模型时引入过大风险。
+- 下一步如果继续收敛，应该拆出通用 verification 字段（enabled/maxFrames/capture/engine-world/noop backend 等）与 PBR-specific probe 字段，而不是继续扩张 PBR pass。
+
+### 2026-05-30 Runtime Verification Config Data Model Split
+
+本轮继续上一节，把 `RuntimeVerificationConfig` 从 `RuntimePBRVerificationConfig` 的兼容 alias 推进为真实的 runtime-level verification data model。目标是让 application 层持有 generic verification request，同时把 PBR probe、Engine World probe 与 renderer timing probe 放到明确的子配置中。
+
+新增与修改：
+
+- `RuntimeVerificationConfig` 现在是独立 struct，直接拥有 `enabled`、`maxFrames`、`captureFrame`、`capturePath` 这些 generic verification 字段。
+- `RuntimeVerificationConfig` 新增 `pbr`、`engineWorld`、`renderer` 子配置，分别承载 PBR probe/pass option、Engine World verification option 和 renderer timing probe option。
+- `RuntimePBRVerificationConfig` 删除 generic lifecycle/capture 字段、Engine World 字段和 renderer timing 字段，只保留 PBR-specific probe/pass 配置。
+- `RuntimeVerificationArgs.cpp` 改为把参数解析结果写入 `config.verification.pbr`、`config.verification.engineWorld` 和 `config.verification.renderer`。
+- `RuntimeContentConfigPolicy` 改为通过 `shellConfig.verification.engineWorld` 决定 world-driven minimal scene 与 scene probe setup。
+- `RuntimePBRVerification` public API 现在接收完整 `RuntimeVerificationConfig`，内部只读取需要的 `pbr`、`engineWorld` 和 `renderer` 子配置。
+
+已完成验证：
+
+- 静态检查确认不存在 `RuntimeVerificationConfig = RuntimePBRVerificationConfig` alias。
+- 静态检查确认 application 代码中不再存在 `verification.enablePbr*`、`verification.enableEngineWorld*`、`verification.enableRendererGpuTimingProbe` 这类 top-level probe 字段访问。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；仅保留既有 LNK4075 提示。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过，覆盖 PBR probe、Engine World probe、scene package 和 no-op renderer backend。
+
+结论：
+
+- `RuntimeVerificationConfig` 现在不再是 PBR config 的别名，application 层已经拥有独立 runtime verification data model。
+- PBR-specific verification 仍由 `RuntimePBRVerification` 执行，但它现在从 runtime-level config 中提取 PBR/EngineWorld/Renderer 子配置。
+- 下一步建议继续把 `RuntimePBRVerification` 内部承担的 Engine World verification report 与 renderer backend verification report 逐步拆到更中性的 verification report 模块；不建议继续扩张 PBR pass。
+
+### 2026-05-30 Runtime Verification Report Extraction
+
+本轮继续上一节，把 `RuntimePBRVerification` 中已经不属于 PBR 的 runtime / Engine / renderer backend verification report 迁移到独立 `RuntimeVerificationReport`。目标是让 PBR 文件继续负责 PBR scene / renderer stats，而 runtime lifecycle、subsystem、backend contract 和 cleanup report 进入中性 verification report 模块。
+
+新增与修改：
+
+- 新增 `application/RuntimeVerificationReport.h/.cpp`。
+- `RuntimeVerificationReport::reportRenderedFrameRuntimeStats(...)` 负责输出 `Runtime engine lifecycle snapshot stats`、`Runtime engine subsystem summary stats`、`Runtime engine tick stats`、`Runtime subsystem health stats`、`Runtime renderer subsystem stats` 和 `Runtime renderer backend contract stats`。
+- `RuntimeVerificationReport::reportRendererSubsystemCleanup(...)` 负责输出 renderer subsystem cleanup 与 renderer backend contract cleanup stats。
+- `RuntimeVerificationReport::reportEngineWorldCleanup(...)` 与 `reportEngineSubsystemCleanup(...)` 负责输出 Engine World / subsystem cleanup stats。
+- `RuntimeVerificationLifecycle` 在 capture 后先调用 `RuntimeVerificationReport` 输出 generic runtime/backend stats，再调用 `RuntimePBRVerification::reportRenderedFrame(...)` 输出 PBR renderer stats。
+- `RuntimePBRVerification` 删除 generic runtime/backend cleanup report API，只保留 PBR profile、scene probe、prepared scene、PBR renderer stats 和 framebuffer capture。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 report 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeVerificationLifecycle` 调用 `RuntimeVerificationReport` 处理 generic runtime/backend/cleanup report。
+- 静态检查确认 `RuntimePBRVerification.cpp` 中只保留 `PBR verification renderer stats`，`Runtime engine lifecycle snapshot` 与 `Runtime renderer backend contract` 输出迁入 `RuntimeVerificationReport.cpp`。
+- 静态检查确认 `RuntimePBRVerification::reportRendererSubsystemCleanup`、`reportEngineWorldCleanup`、`reportEngineSubsystemCleanup` 不再存在。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeVerificationReport.cpp` 已参与编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- runtime / Engine / renderer backend verification report 已脱离 PBR 文件，进入中性 `RuntimeVerificationReport`。
+- `RuntimePBRVerification` 仍承担 Engine World prepared-scene snapshot / scene-package roundtrip 等逻辑；下一步可以继续把 prepared-scene 里的 Engine World snapshot、scene package 和 negative package probe 拆出，进一步缩小 PBR 文件职责。
+- 这一步仍不扩张 PBR pass，只减少 verification report 的命名和职责耦合。
+
+### 2026-05-30 Runtime Engine World Verification Extraction
+
+本轮根据 `/subagents` 指令先更新多 agent 协作边界，并启动只读 sidecar 审查 prepared-scene 拆分边界。实现上继续上一节，把 `RuntimePBRVerification` 中剩余的 generic Engine World prepared-scene verification 迁出到独立 `RuntimeEngineWorldVerification`，让 PBR 文件只保留 PBR profile、PBR probe、PBR scene stats、PBR imported asset stats、PBR renderer stats 和 framebuffer capture。
+
+新增与修改：
+
+- 新增 `application/RuntimeEngineWorldVerification.h/.cpp`。
+- `RuntimeEngineWorldVerification::addVerificationSceneProbes(...)` 接管 `Engine world editor create stats` 相关 probe 和输出。
+- `RuntimeEngineWorldVerification::reportPreparedScene(...)` 接管 transform snapshot save/apply、scene package round-trip、scene package negative probes、package light probe 和 package runtime asset resolver。
+- `RuntimePBRVerification::reportPreparedScene(...)` 在该 extraction 阶段只输出 `PBR verification scene stats`，并临时通过 `RuntimeEngineWorldVerification::countRuntimeWorldActors(...)` 获取 `runtimeWorldActors`；下一节已继续拆出该兼容字段。
+- `RuntimePBRVerification::addVerificationSceneProbes(...)` 现在只负责 PBR probe 创建，不再创建 editor-created actor。
+- `RuntimeVerificationLifecycle::reportPreparedScene(...)` 调用顺序改为：Engine World verification probe、PBR probe、PBR renderer pass profile、PBR scene stats、Engine World prepared-scene report。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 Engine World verification 源文件和头文件。
+
+已完成验证：
+
+- 子 agent `Prepared Scene Verification Extraction Agent` 完成只读审查，确认最小拆分边界是 `RuntimeEngineWorldVerification`，且不应移动 `PBR verification scene stats`。
+- 静态检查确认 `Engine world transform snapshot`、`Engine world scene package stats`、`Engine world scene package negative stats`、`Engine world editor create stats`、`ScenePackageNegativeProbeStats` 和 `RuntimeScenePackageAssetResolver` 只存在于 `RuntimeEngineWorldVerification.cpp`。
+- 静态检查确认 `PBR verification scene stats`、`PBR imported asset engine world import stats`、`PBR imported asset scene package stats`、`Runtime asset registry stats` 和 `PBR verification renderer stats` 仍留在 `RuntimePBRVerification.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-minimal-scene,engine-world-editor-create,engine-world-scene-package -DiscardCaptures`：构建通过；`RuntimeEngineWorldVerification.cpp`、`RuntimePBRVerification.cpp` 和 `RuntimeVerificationLifecycle.cpp` 已参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Engine World prepared-scene verification 已从 PBR 文件中迁出，PBR verification 文件的职责进一步收缩。
+- 该 extraction 完成时曾临时保留 `PBR verification scene stats` 中的 `engineWorld*` 与 `runtimeWorldActors` 兼容字段；下一节已把这些字段拆到 neutral Engine World prepared-scene stats 行。
+- 这一步继续保持不扩张 PBR pass，只降低 verification 命名和职责耦合。
+
+### 2026-05-30 Runtime Engine World Prepared Scene Stats Neutralization
+
+本轮继续上一节，把 Engine World prepared-scene counters 从 `PBR verification scene stats` 中拆出。目标是让 PBR scene stats 只描述 PBR/render-scene 事实，把 World actor 数和 Engine World 专用 mesh counter 交给 `RuntimeEngineWorldVerification` 的中性输出行。
+
+新增与修改：
+
+- `RuntimePBRVerification::reportPreparedScene(...)` 现在只输出 PBR/render-scene counters：objects、meshes、PBR mesh 分类、import/texture/showcase counters 与 `iblReady`。
+- `RuntimePBRVerification.cpp` 删除 `engineWorldProbeMeshes`、`engineWorldMinimalMeshes` 和 `runtimeWorldActors` 的 scene stats 字段、统计逻辑和输出。
+- `RuntimeEngineWorldVerification.cpp` 新增 `EngineWorldPreparedSceneStats`，遍历 prepared render scene 中的 Engine World probe/minimal mesh，并通过 `countRuntimeWorldActors(...)` 读取 runtime World actor 数。
+- `RuntimeEngineWorldVerification::reportPreparedScene(...)` 新增中性输出行：`Engine world prepared scene stats: engineWorldProbeMeshes=..., engineWorldMinimalMeshes=..., runtimeWorldActors=...`。
+- `tools/verify_pbr.ps1` 新增 `EngineWorldPreparedSceneStats` 捕获和 summary 输出，所有 `engineWorldProbeMeshes`、`engineWorldMinimalMeshes`、`runtimeWorldActors` 断言均改为读取 neutral Engine World stats line，而不是 `PBR verification scene stats`。
+- `docs/subagents_coordination.md` 新增本轮只读 `Prepared Scene Stats Neutralization Agent` 边界，并记录 sidecar 审查只读完成。
+
+已完成验证：
+
+- 只读子 agent `Prepared Scene Stats Neutralization Agent` 完成审查，确认代码侧 PBR stats 已清理，Engine World neutral stats line 已接管三个 counter；指出当前文档需要更新。
+- 静态检查确认 `RuntimePBRVerification.cpp` 中不再出现 `engineWorldProbeMeshes`、`engineWorldMinimalMeshes` 或 `runtimeWorldActors` 输出。
+- 静态检查确认 `RuntimeEngineWorldVerification.cpp` 输出 `Engine world prepared scene stats`，`tools/verify_pbr.ps1` 从 `$engineWorldPreparedSceneLine` 读取三个 Engine World counter。
+- 静态检查确认 `tools/verify_pbr.ps1` 中不存在 `Get-RegexValue -Text $sceneLine` 读取 `runtimeWorldActors`、`engineWorldProbeMeshes` 或 `engineWorldMinimalMeshes` 的残留。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-scene-probe,engine-world-minimal-scene,engine-world-editor-create,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeEngineWorldVerification.cpp` 与 `RuntimePBRVerification.cpp` 重新编译；七条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过，所有 mode 均输出新的 `engineWorldPreparedScene` summary 行。
+- `git diff --check`：没有 whitespace error，仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- PBR prepared-scene stats 已回到 PBR/render-scene 语义，不再承担 Engine World actor/counter 兼容字段。
+- Engine World prepared-scene counters 已进入 neutral `RuntimeEngineWorldVerification` 输出面，verification 脚本也已迁移到该新契约。
+- 下一步应继续收敛 application startup / content composition，或继续把剩余 PBR import compatibility report 做边界拆分；当前仍不建议扩张 PBR feature scope。
+
+### 2026-05-30 Runtime Imported Asset Verification Extraction
+
+本轮继续上一节的边界收敛，把 imported asset probe 中的 Engine World import、AssetRegistry stats 和 scene package manifest round-trip 从 `RuntimePBRVerification` 中迁出。目标不是改变 `--verify-pbr-import` 的行为，也不是扩张 PBR import 功能，而是让 asset / package verification 职责从 PBR scene/render stats 文件中分离。
+
+新增与修改：
+
+- 新增 `application/RuntimeImportedAssetVerification.h/.cpp`。
+- `RuntimeImportedAssetVerification::addVerificationSceneProbes(...)` 接管 `fbx/test/test.fbx` imported asset probe 的旧 renderer scene 注入、runtime World import、AssetRegistry handle 注册统计和 imported asset scene package manifest 保存/加载验证。
+- 现有输出字符串保持兼容：`PBR imported asset engine world import stats`、`Runtime asset registry stats` 和 `PBR imported asset scene package stats` 没有改名，避免破坏 `tools/verify_pbr.ps1` 断言。
+- `RuntimePBRVerification::addVerificationSceneProbes(...)` 删除 imported asset probe 实现，只保留 PBR material probe、texture set probe、showcase scene 等 PBR render-scene 相关 probe。
+- `RuntimePBRVerification.cpp` 移除 `AssimpLoader`、`AssetRegistry`、`AssetSubsystem`、`LegacySceneWorldBuilder`、`PersistentIdPolicy` 和 `ScenePackage` 相关直接依赖。
+- `RuntimeVerificationLifecycle::reportPreparedScene(...)` 现在按顺序调用 Engine World probe、PBR probe、Imported Asset verification probe、renderer pass profile、PBR scene stats 和 Engine World prepared-scene report。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 Imported Asset verification 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRVerification.cpp` 中不再包含 imported asset world import / registry / scene package stats formatter，也不再直接包含 `AssimpLoader`、`AssetRegistry`、`AssetSubsystem`、`LegacySceneWorldBuilder`、`PersistentIdPolicy` 或 `ScenePackage`。
+- 静态检查确认 `RuntimeImportedAssetVerification` 已在 lifecycle 和 VS 工程中注册，并拥有现有 imported asset verification 输出。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes import,forward,engine-world-scene-package -DiscardCaptures`：构建通过；`RuntimeImportedAssetVerification.cpp`、`RuntimePBRVerification.cpp` 和 `RuntimeVerificationLifecycle.cpp` 重新编译；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- `git diff --check`：没有 whitespace error，仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- imported asset 的 Engine World / AssetRegistry / ScenePackage verification 已从 PBR 文件中迁出。
+- `RuntimePBRVerification` 现在更接近 PBR render verification 本体：profile、PBR material probes、PBR scene stats、PBR renderer stats 和 framebuffer capture。
+- 下一步仍建议优先收敛 application startup/content composition；如果继续切 verification，应该围绕剩余 PBR renderer/capture 边界做小切片，而不是新增 PBR 功能。
+
+### 2026-05-30 Runtime Verification Capture Extraction
+
+本轮继续上一节，把默认 framebuffer capture 和 PPM 写盘从 `RuntimePBRVerification` 迁出。capture 是 generic verification lifecycle 职责，不应由 PBR renderer verification 类暴露 API。
+
+新增与修改：
+
+- 新增 `application/RuntimeVerificationCapture.h/.cpp`。
+- `RuntimeVerificationCapture::captureDefaultFramebuffer(...)` 接管默认 framebuffer 绑定、`glReadPixels`、PPM 行翻转写出、capture 目录创建和失败日志。
+- capture 日志从 `PBR verification capture ...` 调整为 `Runtime verification capture ...`，因为该行为对所有 verification mode 通用。
+- `RuntimeVerificationLifecycle::captureFrameIfNeeded(...)` 改为调用 `RuntimeVerificationCapture::captureDefaultFramebuffer(...)`。
+- `RuntimePBRVerification` 删除 `captureDefaultFramebuffer(...)` public API，并移除 `writePpmRows(...)`、`GL_CALL` / OpenGL framebuffer readback、`std::filesystem`、`std::ofstream`、`std::vector` 等 capture 相关实现依赖。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 capture 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRVerification.h/.cpp` 不再暴露或实现 capture API。
+- 静态检查确认 `RuntimeVerificationLifecycle.cpp` 调用 `RuntimeVerificationCapture::captureDefaultFramebuffer(...)`，`RuntimeVerificationCapture.cpp` 是唯一持有 `glReadPixels` / `writePpmRows` / capture PPM 写盘实现的 runtime verification 模块。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeVerificationCapture.cpp` 与相关 lifecycle / verification 文件重新编译，两条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过，说明默认 capture 文件仍可写出并被脚本读取。
+- `git diff --check`：没有 whitespace error，仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- framebuffer capture 已脱离 PBR verification 类，进入 neutral runtime verification capture module。
+- `RuntimeVerificationLifecycle` 不再为了 capture 依赖 `RuntimePBRVerification`。
+- `RuntimePBRVerification` 当前进一步收缩为 PBR profile、PBR scene probes、PBR scene stats 和 PBR renderer stats；后续若继续拆 verification，应优先考虑 PBR renderer stats 是否需要保留为单独模块，或者转向 application startup/content composition。
+
+### 2026-05-30 Runtime PBR Renderer Stats Verification Extraction
+
+本轮继续上一节，把 capture 帧输出的 PBR renderer stats 从 `RuntimePBRVerification` 迁出。该输出仍然是 PBR renderer verification 契约，不能改名，否则会破坏 `tools/verify_pbr.ps1`、golden baseline 和历史 profiling 文档；本轮只改变代码 ownership。
+
+新增与修改：
+
+- 新增 `application/RuntimePBRRendererStatsVerification.h/.cpp`。
+- `RuntimePBRRendererStatsVerification::reportRenderedFrame(...)` 接管 `PBR verification renderer stats` 输出，包括 forward draw calls、shadow atlas counters、G-buffer/deferred draw calls、tiled/clustered light grid stats 和 GPU timing counters。
+- `RuntimeVerificationLifecycle::captureFrameIfNeeded(...)` 在 generic runtime report 后直接调用 `RuntimePBRRendererStatsVerification::reportRenderedFrame(context)`。
+- `RuntimePBRVerification` 删除 `reportRenderedFrame(...)` public API 和实现，不再为了 rendered-frame stats 暴露 Engine / RendererSubsystem 参数。
+- `RuntimePBRVerification.cpp` 移除 `RendererSubsystem.h` 依赖；当前职责进一步收缩为 PBR profile、PBR scene probes 和 prepared scene stats。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 PBR renderer stats verification 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRRendererStatsVerification` 已在 lifecycle、VS 工程和 filters 中注册，并且 `PBR verification renderer stats` 只由新模块输出。
+- 静态检查确认 `RuntimePBRVerification.h/.cpp` 不再暴露或实现 `RuntimePBRVerification::reportRenderedFrame(...)`，也不再持有 renderer stats 输出字段。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred-tiled-lights-pressure,deferred-clustered-grid-timing,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimePBRRendererStatsVerification.cpp` 参与编译，四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过，说明 renderer stats 输出契约保持兼容。
+- `git diff --check`：没有 whitespace error，仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- capture 帧的 PBR renderer stats 已脱离 `RuntimePBRVerification`，进入专门的 PBR renderer stats verification module。
+- `RuntimeVerificationLifecycle` 现在按顺序调用 generic runtime report、PBR renderer stats report 和 capture flag 更新，边界更清晰。
+- `RuntimePBRVerification` 当前只剩 PBR startup profile、renderer pass profile、PBR scene probe construction 和 prepared scene stats；下一步更适合回到 application startup/content composition，或继续细拆 PBR profile/scene probe 边界，而不是继续扩张 PBR pass。
+
+### 2026-05-30 Runtime PBR Profile Verification Extraction
+
+本轮继续上一节，把 PBR verification startup profile 和 renderer pass profile 从 `RuntimePBRVerification` 迁出。该切片不改变 profile 输出字符串，也不改变 renderer pass order；目标是让 PBR scene probe/stats 与 runtime startup/profile 配置分开。
+
+新增与修改：
+
+- 新增 `application/RuntimePBRProfileVerification.h/.cpp`。
+- `RuntimePBRProfileVerification::applyProfile(...)` 接管 procedural IBL、post-process、runtime frame pipeline profile、PBR preview grid、light rig、camera rig 和 `PBR verification profile applied` 输出。
+- `RuntimePBRProfileVerification::applyRendererPassProfile(...)` 接管 PBR forward/deferred/G-buffer/debug/tiled/clustered/GPU timing pass profile 写入。
+- `RuntimeVerificationLifecycle::applyStartupProfile(...)` 改为调用 `RuntimePBRProfileVerification::applyProfile(...)`。
+- `RuntimeVerificationLifecycle::reportPreparedScene(...)` 在 scene probes 注入后改为调用 `RuntimePBRProfileVerification::applyRendererPassProfile(...)`。
+- `RuntimePBRVerification` 删除 `applyProfile(...)` 和 `applyRendererPassProfile(...)` public API，不再持有 light/camera/pass profile 写入逻辑。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 PBR profile verification 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRProfileVerification` 已在 lifecycle、VS 工程和 filters 中注册，并且 light rig、camera rig、profile line 和 renderer pass profile 写入集中在新模块。
+- 静态检查确认 `RuntimePBRVerification.h/.cpp` 不再暴露或实现 `RuntimePBRVerification::applyProfile(...)` / `RuntimePBRVerification::applyRendererPassProfile(...)`，也不再持有 `PBR verification profile applied`、`applyPressurePointLightRig`、light/camera profile 或 GPU timing pass-profile 写入。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred-tiled-lights-pressure,deferred-clustered-grid-timing,showcase-spheres,engine-world-minimal-scene -DiscardCaptures`：构建通过；`RuntimePBRProfileVerification.cpp` 参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过，说明 profile / pass profile 输出契约保持兼容。
+- `git diff --check`：没有 whitespace error，仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- PBR startup/profile 配置已脱离 `RuntimePBRVerification`，进入专门的 PBR profile verification module。
+- `RuntimePBRVerification` 当前进一步收缩为 PBR scene probe construction 和 prepared scene stats。
+- 下一步如继续切 verification，应优先考虑把 PBR scene probe construction 与 prepared-scene stats 再拆开；若回到主线，则继续收敛 application startup/content composition。
+
+### 2026-05-30 Runtime PBR Scene Probe Verification Extraction
+
+本轮继续上一节，把 PBR verification scene probe construction 从 `RuntimePBRVerification` 迁出。这个切片不改变任何 probe 输出契约，也不新增 PBR 功能；目标是让 scene probe 注入和 prepared-scene stats 分离。
+
+新增与修改：
+
+- 新增 `application/RuntimePBRSceneProbeVerification.h/.cpp`。
+- `RuntimePBRSceneProbeVerification::addVerificationSceneProbes(...)` 接管 transparent fallback、deferred emissive、material IBL、alpha mask、texture set 和 showcase spheres 的 scene probe construction。
+- `RuntimeVerificationLifecycle::reportPreparedScene(...)` 改为调用 `RuntimePBRSceneProbeVerification::addVerificationSceneProbes(...)`。
+- `RuntimePBRVerification` 删除 `addVerificationSceneProbes(...)` public API；当前只保留 PBR prepared scene stats 输出。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 PBR scene probe verification 源文件和头文件。
+- 本轮按用户 `/subagents` 指令启动只读 sidecar agent 审查多 agent 边界与文档落点；该 agent 未修改文件，建议已整合到 `docs/subagents_coordination.md`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRVerification.h/.cpp` 不再暴露或实现 `RuntimePBRVerification::addVerificationSceneProbes(...)`。
+- 静态检查确认 transparent/emissive/material IBL/alpha mask/texture set/showcase probe construction helper 集中在 `RuntimePBRSceneProbeVerification.cpp`；`RuntimePBRVerification.cpp` 中保留的 `PBR Showcase Sphere` 字符串只用于 stats 统计。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes deferred-transparent,deferred-emissive,deferred-material-ibl,deferred-alpha-mask,deferred-texture-set,showcase-spheres -DiscardCaptures`：构建通过；`RuntimePBRSceneProbeVerification.cpp` 参与编译，六条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过，说明 scene probe 注入与既有输出契约保持兼容。
+- `git diff --check`：没有 whitespace error，仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- PBR scene probe construction 已脱离 `RuntimePBRVerification`，进入专门的 PBR scene probe verification module。
+- `RuntimePBRVerification` 当前只保留 PBR prepared scene stats，职责边界比上一轮更窄。
+- 下一步如果继续切 verification，可把 prepared scene stats 进一步拆成 `RuntimePBRPreparedSceneStatsVerification`；如果回到主线，则继续收敛 application startup/content composition。
+
+### 2026-05-30 Runtime PBR Prepared Scene Stats Verification Extraction
+
+本轮继续上一节，把 `PBR verification scene stats` 的 prepared-scene 统计从 `RuntimePBRVerification` 迁出。该输出仍然是现有 verification 契约，不能改名；本轮只改变代码 ownership，并移除旧 `RuntimePBRVerification.cpp`。
+
+新增与修改：
+
+- 新增 `application/RuntimePBRPreparedSceneStatsVerification.h/.cpp`。
+- `RuntimePBRPreparedSceneStatsVerification::reportPreparedScene(...)` 接管 `PBR verification scene stats` 输出，包括 object/mesh/PBR mesh、transparent、emissive、custom IBL、alpha mask、imported、texture set、showcase spheres 和 `iblReady` counters。
+- `RuntimeVerificationLifecycle::reportPreparedScene(...)` 改为调用 `RuntimePBRPreparedSceneStatsVerification::reportPreparedScene(...)`。
+- 删除 `application/RuntimePBRVerification.cpp`，并从 `text2.vcxproj` / `text2.vcxproj.filters` 移除该 translation unit。
+- 在本切片完成时，`RuntimePBRVerification.h` 只保留 `RuntimePBRVerificationConfig`，作为下一步 config header rename 的临时承载头；旧 `RuntimePBRVerification` class 已移除。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 PBR prepared scene stats verification 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRPreparedSceneStatsVerification` 已在 lifecycle、VS 工程和 filters 中注册，并且 `PBR verification scene stats` 只由新模块输出。
+- 静态检查确认 `RuntimePBRVerification::...`、`class RuntimePBRVerification` 和 `RuntimePBRVerification.cpp` 工程注册均无残留。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,deferred-transparent,deferred-emissive,deferred-material-ibl,deferred-alpha-mask,deferred-texture-set,showcase-spheres,engine-world-minimal-scene -DiscardCaptures`：构建通过；`RuntimePBRPreparedSceneStatsVerification.cpp` 参与编译，九条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过，说明 PBR scene stats 输出契约保持兼容。
+- `git diff --check`：没有 whitespace error，仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- 旧 `RuntimePBRVerification` class 与 `.cpp` 已被移除；PBR verification 运行时职责已经分散到 profile、scene probe、prepared scene stats、renderer stats、imported asset、capture 和 generic report 等专门模块。
+- 本切片完成时仅遗留 `RuntimePBRVerification.h` 承载 `RuntimePBRVerificationConfig`；该临时遗留已在下一节迁移为 `RuntimePBRVerificationConfig.h`。
+- 如果回到主线，优先继续收敛 application startup/content composition 或 renderer backend contract，而不是扩张 PBR 功能。
+
+### 2026-05-30 Runtime PBR Verification Config Header Rename
+
+本轮继续上一节，把最后一个只因历史命名存在的 `RuntimePBRVerification.h` 重命名为明确的 config header。该切片不改变任何 verification 参数、输出字符串或 PBR 功能，只改变 config ownership 与工程注册命名。
+
+新增与修改：
+
+- 新增 `application/RuntimePBRVerificationConfig.h`。
+- `RuntimePBRVerificationConfig` 从旧 `RuntimePBRVerification.h` 迁入 `RuntimePBRVerificationConfig.h`。
+- `RuntimeVerificationConfig.h` 改为包含 `RuntimePBRVerificationConfig.h`，继续通过 `RuntimeVerificationConfig::pbr` 暴露 PBR-specific verification config。
+- 删除 `application/RuntimePBRVerification.h`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 改为注册 `application\RuntimePBRVerificationConfig.h`，不再注册旧 header。
+- 按用户 `/subagents` 指令更新 `docs/subagents_coordination.md`：父 agent 继续负责最终集成、测试和 `worked.md`，sidecar 默认只读，写入必须显式分配且互不重叠。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRVerificationConfig.h` 已在 `RuntimeVerificationConfig.h`、VS 工程和 filters 中注册。
+- 静态检查确认 live code / VS 工程文件中不再存在 `RuntimePBRVerification.h`、`RuntimePBRVerification.cpp`、`RuntimePBRVerification::...` 或 `class RuntimePBRVerification`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,deferred-clustered-grid,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- `git diff --check`：没有 whitespace error，仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- 旧 `RuntimePBRVerification` class、`.cpp` 和 `.h` 已从 live code 与 VS 工程注册中移除。
+- PBR verification config 现在有明确的 `RuntimePBRVerificationConfig.h` ownership，不再借用旧 verification class/header 命名。
+- 下一步如果继续切 verification，可考虑把 PBR verification config 按 pass/probe 分组；如果回到主线，优先继续收敛 application startup/content composition 或 renderer backend contract，而不是扩张 PBR 功能。
+
+### 2026-05-30 Runtime PBR Verification Config Pass/Probe/Deferred Split
+
+本轮继续上一节，把 `RuntimePBRVerificationConfig` 从 flat field list 拆成按职责分组的 config data model。该切片不改变任何命令行参数、verification 输出字符串或 renderer pass 行为；目标是降低 args/profile/probe/import verification 对单个 PBR config 大结构的耦合。
+
+新增与修改：
+
+- `RuntimePBRVerificationConfig.h` 新增 `RuntimePBRVerificationPassConfig`、`RuntimePBRVerificationProbeConfig` 和 `RuntimePBRVerificationDeferredConfig`。
+- `RuntimePBRVerificationConfig` 现在只聚合 `passes`、`probes`、`deferred` 三个子配置。
+- `RuntimeVerificationArgs.cpp` 把 mode descriptor options 写入对应子配置：渲染 pass 开关进入 `pbr.passes`，scene/light/import probes 进入 `pbr.probes`，deferred tiled light override 进入 `pbr.deferred`。
+- `RuntimePBRProfileVerification.cpp` 改为按 `passes` / `probes` / `deferred` 读取配置，保留原有 profile line 和 renderer pass profile 行为。
+- `RuntimePBRSceneProbeVerification.cpp` 只读取 `pbr.probes`。
+- `RuntimeImportedAssetVerification.cpp` 只读取 `pbr.probes.enablePbrImportedAssetProbe`。
+- 本轮继续按 `/subagents` 协作边界启动只读 sidecar agent 审查 flat field 残留；父 agent 仍负责最终集成、验证和文档。
+
+已完成验证：
+
+- 静态检查确认 `application/tools/engine/renderer/main.cpp` 中不再存在 `verification.pbr.enable...`、`config.enable...` 或 `pbr.enable...` 这类旧 flat field 访问。
+- 静态检查确认 `RuntimePBRVerificationPassConfig`、`RuntimePBRVerificationProbeConfig`、`RuntimePBRVerificationDeferredConfig` 和 `passes` / `probes` / `deferred` 调用点可检索。
+- 第一次 focused verification 命令因使用不存在的 mode `deferred-tiled-lights-custom` 被脚本拒绝，未进入构建；随后改用脚本支持的 `deferred-tiled-lights-32` 与 `deferred-tiled-lights-cutoff-005`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred-transparent,deferred-material-ibl,import,deferred-tiled-lights-32,deferred-tiled-lights-cutoff-005,deferred-clustered-grid-timing,showcase-spheres,renderer-backend-registry-noop -DiscardCaptures`：构建通过；focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- `git diff --check`：没有 whitespace error，仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- PBR verification config 已完成第一层职责分组；args、profile、scene probe 和 imported asset verification 不再直接依赖一个 flat PBR config 字段列表。
+- 这仍然是 verification 内部数据模型调整，不扩张 PBR 功能，也不改变现有脚本契约。
+- 后续如果继续切 verification，可优先处理 light-camera rig policy 或 probe policy；pass profile、profile reporting 与 preview ownership 已在后续章节继续拆出。如果回到主线，优先继续收敛 application startup/content composition 或 renderer backend contract。
+
+### 2026-05-30 Runtime PBR Pass Profile Verification Extraction
+
+本轮继续上一节，把 renderer pass profile 写入从 `RuntimePBRProfileVerification` 再拆成独立小模块。该切片不改变 pass order、verification 输出字符串或 PBR 功能；目标是让 startup profile / preview / light-camera rig 与 renderer pass profile policy 分离。
+
+新增与修改：
+
+- 新增 `application/RuntimePBRPassProfileVerification.h/.cpp`。
+- `RuntimePBRPassProfileVerification::applyRendererPassProfile(...)` 接管 forward/deferred/G-buffer/debug/tiled/clustered/GPU timing 相关 renderer frame pass profile 写入。
+- `RuntimePBRProfileVerification::applyProfile(...)` 仍负责 procedural IBL、post process、runtime frame pipeline profile、PBR preview grid、light rig、camera rig 和 `PBR verification profile applied` 输出。
+- `RuntimeVerificationLifecycle::reportPreparedScene(...)` 改为直接调用 `RuntimePBRPassProfileVerification::applyRendererPassProfile(...)`，prepared-scene probe 注入后不再绕回 startup profile module。
+- `RuntimePBRProfileVerification.h` 删除 `applyRendererPassProfile(...)` public API；profile module 不再为了 pass profile 写入直接包含 renderer header。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 PBR pass profile verification 源文件和头文件。
+- 按用户 `/subagents` 指令更新 `docs/subagents_coordination.md`：本轮 sidecar 默认只读，父 agent 保留最终集成、验证和 `worked.md` 责任；随后启动只读 sidecar `Kuhn` 审查本轮抽离残留。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRProfileVerification::applyRendererPassProfile(...)` 和 profile header 中的旧 `static applyRendererPassProfile(...)` 无残留。
+- 静态检查确认 `RuntimePBRPassProfileVerification` 已在 lifecycle、VS 工程和 filters 中注册，`RuntimeVerificationLifecycle::reportPreparedScene(...)` 直接调用新 pass-profile module。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,gbuffer-debug,deferred,deferred-transparent,deferred-tiled-heatmap,deferred-clustered-grid-timing,showcase-spheres,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimePBRPassProfileVerification.cpp`、`RuntimePBRProfileVerification.cpp` 和 `RuntimeVerificationLifecycle.cpp` 参与编译，focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- `git diff --check`：没有 whitespace error，仅输出 Windows 工作区 LF/CRLF 转换提示。
+
+结论：
+
+- Renderer pass profile policy 已从 startup profile module 中拆出，PBR verification profile 的职责边界更清晰。
+- 当前 PBR verification 继续保持“稳定现有功能、降低耦合”的方向，没有扩张 PBR pass。
+- Application 层后续优先处理 startup/content composition；PBR verification 侧的 profile line、preview grid、light-camera rig policy 和 environment/post-process/frame-pipeline startup profile policy 已在后续章节拆出，后续不要增加新渲染特性。
+
+### 2026-05-30 Runtime PBR Profile Line Verification Extraction
+
+本轮继续上一节，把 `PBR verification profile applied` 输出行从 `RuntimePBRProfileVerification` 中拆出。该切片不改变任何 profile line 文本、verification 参数或渲染行为；目标是把“启动 profile 写入”和“verification profile 摘要报告”分离。
+
+新增与修改：
+
+- 新增 `application/RuntimePBRProfileLineVerification.h/.cpp`。
+- `RuntimePBRProfileLineVerification::reportAppliedProfile(...)` 接管 `PBR verification profile applied` 字符串拼接与 `std::cout` / `LogInfo` 输出。
+- `RuntimePBRProfileVerification::applyProfile(...)` 在完成 environment、post-process、frame pipeline、preview、light rig 和 camera rig 写入后调用新 profile-line module。
+- `RuntimePBRProfileVerification.cpp` 不再直接包含 `<iostream>`、`<string>` 或 `../tools/Logger/LogManager.h`，也不再直接读取 pass/deferred/renderer timing config 来组装输出行。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 PBR profile line verification 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `PBR verification profile applied`、`LogInfo`、`std::cout`、`std::to_string` 和 pass/deferred/renderer timing profile-line 读取均集中在 `RuntimePBRProfileLineVerification.cpp`。
+- 静态检查确认 `RuntimePBRProfileVerification.cpp` 中不再存在 profile line 输出字符串、`reportLine(...)`、`LogInfo(...)`、`std::cout` 或 `std::to_string`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,gbuffer-debug,deferred,deferred-transparent,deferred-material-ibl,import,deferred-tiled-lights-32,deferred-clustered-grid-timing,showcase-spheres,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimePBRProfileLineVerification.cpp` 与 `RuntimePBRProfileVerification.cpp` 参与编译，focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimePBRProfileVerification` 的职责继续收窄为 startup profile 写入，不再持有 verification summary line/reporting 细节。
+- profile line module 仍保持原输出契约，避免影响现有脚本与日志阅读方式。
+- 后续如果继续切 PBR verification，preview grid policy 已在下一节拆出，当前优先考虑 light-camera rig policy；如果回到主线，则继续收敛 application startup/content composition。
+
+### 2026-05-30 Runtime PBR Preview Profile Verification Extraction
+
+本轮继续上一节，把 verification preview grid policy 从 `RuntimePBRProfileVerification` 中拆出。该切片不改变 preview grid 默认值、showcase override、minimal-scene disable 行为或验证输出；目标是继续缩小 startup profile module 的职责。
+
+新增与修改：
+
+- 新增 `application/RuntimePBRPreviewProfileVerification.h/.cpp`。
+- `RuntimePBRPreviewProfileVerification::applyPreviewProfile(...)` 接管 `context.pbrPreviewProfile` 的默认 PBR material grid、normal map、showcase spheres override 和 engine world minimal scene disable。
+- `RuntimePBRProfileVerification::applyProfile(...)` 在 renderer pass profile 后委托调用 `RuntimePBRPreviewProfileVerification::applyPreviewProfile(context, verification)`。
+- `RuntimePBRProfileVerification.cpp` 不再直接写入 `pbrPreviewProfile` 字段；该 module 仍负责 environment、post-process、frame pipeline、light rig、camera rig 和对 profile-line module 的调用。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 PBR preview profile verification 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `pbrPreviewProfile`、grid/normal map/showcase override 和 minimal-scene disable 写入集中在 `RuntimePBRPreviewProfileVerification.cpp`。
+- 静态检查确认 `RuntimePBRProfileVerification.cpp` 中不再直接写入 `pbrPreviewProfile` 字段；剩余 `enablePbrShowcaseSpheres` 和 `enableMinimalScene` 访问仅服务 light/camera rig。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,showcase-spheres,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimePBRPreviewProfileVerification.cpp` 与 `RuntimePBRProfileVerification.cpp` 参与编译，focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimePBRProfileVerification` 不再持有 preview grid policy，职责继续向纯 startup profile composition 收敛。
+- Preview grid policy 保持原行为，现有 scene stats 中的 `pbrPreviewMeshes` / `pbrShowcaseSpheres` 仍由 focused 和 full verification 覆盖。
+- Light-camera rig policy 已在下一节拆出；environment/post-process/frame-pipeline startup profile policy 已在后续章节拆出；如果回到主线，则继续收敛 application startup/content composition。
+
+### 2026-05-30 Runtime PBR Light Camera Rig Verification Extraction
+
+本轮继续上一节，把 verification light/camera rig policy 从 `RuntimePBRProfileVerification` 中拆出。该切片不改变默认点光源、minimal-scene 灯光、tiled-light probe、pressure-light probe、showcase camera override 或 camera near/far/apply 行为；目标是让 startup profile module 不再直接持有场景观察与灯光实验参数。
+
+新增与修改：
+
+- 新增 `application/RuntimePBRLightCameraRigVerification.h/.cpp`。
+- `RuntimePBRLightCameraRigVerification::applyLightCameraRig(...)` 接管 `context.pbrLightRigProfile` 和 `context.pbrCameraRigProfile` 的默认写入、minimal-scene override、tiled-light override、pressure-light rig 和 showcase camera override。
+- `RuntimePBRProfileVerification::applyProfile(...)` 在 renderer pass profile 与 preview profile 后委托调用 `RuntimePBRLightCameraRigVerification::applyLightCameraRig(context, verification)`。
+- `RuntimePBRProfileVerification.cpp` 不再直接写入 `pbrLightRigProfile` 或 `pbrCameraRigProfile` 字段；该 module 当前只保留 environment、post-process、frame pipeline startup composition，并委托 pass/profile-line/preview/light-camera concerns。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 PBR light/camera rig verification 源文件和头文件。
+- 按 `/subagents` 协作边界启动只读 sidecar `Bohr` 审查文档一致性；该 agent 未修改文件，指出当前方向中仍把 light-camera rig policy 写成未来工作的 stale wording，已由父 agent 集成修正。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRLightCameraRigVerification`、`applyLightCameraRig(...)`、工程注册和 light/camera policy 写入集中在新模块。
+- 静态检查确认 `RuntimePBRProfileVerification.cpp` 中不再存在 `pbrLightRigProfile`、`pbrCameraRigProfile`、`applyPressurePointLightRig`、`PBRLightRigProfile`、`PBRCameraRigProfile`、`attenuationK2` 或 `applyTo(context.camera)`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred-tiled-lights-pressure,showcase-spheres,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimePBRLightCameraRigVerification.cpp` 与 `RuntimePBRProfileVerification.cpp` 参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Light/camera rig policy 已从 startup profile composition 中拆出，PBR verification 的剩余 profile module 进一步收敛为 environment、post-process 和 frame pipeline startup defaults。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 verification 输出契约。
+- Environment/post-process/frame-pipeline startup profile policy、application startup/content composition 与 Runtime Renderer Backend Attachment Lifecycle extraction 已在后续章节接入；后续优先继续收敛 renderer backend contract 或 RendererSubsystem frame bridge internals。
+
+### 2026-05-30 Runtime PBR Startup Profile Verification Extraction
+
+本轮继续上一节，把 environment、post-process 和 runtime frame pipeline startup defaults 从 `RuntimePBRProfileVerification` 中拆出。该切片不改变 procedural environment、bloom/post-process 默认值、frame pipeline pass order、verification 输出或 renderer 行为；目标是让 `RuntimePBRProfileVerification` 变成纯 profile application 编排入口。
+
+新增与修改：
+
+- 新增 `application/RuntimePBRStartupProfileVerification.h/.cpp`。
+- `RuntimePBRStartupProfileVerification::applyStartupProfile(...)` 接管 `context.environmentProfile`、`context.postProcessSettings` 和 `context.framePipelineProfile` 的 verification startup defaults。
+- `RuntimePBRProfileVerification::applyProfile(...)` 现在只按顺序调用 startup defaults、renderer pass profile、preview profile、light/camera rig 和 profile-line reporting modules。
+- `RuntimePBRProfileVerification.cpp` 不再直接写入 environment、post-process 或 frame-pipeline profile 字段，也不再需要包含 `AppRuntimeContext.h`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 PBR startup profile verification 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRStartupProfileVerification`、`applyStartupProfile(...)`、工程注册和 startup defaults 写入集中在新模块。
+- 静态检查确认 `RuntimePBRProfileVerification.cpp` 中不再存在 `environmentProfile`、`postProcessSettings`、`framePipelineProfile`、`precomputeOnPrepare`、`proceduralSkyIntensity`、`bloomThreshold`、`sceneColorPassEnabled` 或 `passOrder` 写入残留。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimePBRProfileVerification.cpp` 与 `RuntimePBRStartupProfileVerification.cpp` 参与编译，四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- PBR verification profile 拆分已经形成稳定职责链：startup defaults、pass profile、preview profile、light/camera rig 和 profile line 各自独立，`RuntimePBRProfileVerification` 只保留编排职责。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 verification 输出契约。
+- Application startup/content composition 与 Runtime Renderer Backend Attachment Lifecycle extraction 已在后续章节接入；后续应继续收敛 renderer backend contract 或 RendererSubsystem frame bridge internals，而不是继续扩张 PBR pass。
+
+### 2026-05-30 Runtime Content Lifecycle Config Header Extraction
+
+本轮回到 Engine runtime ownership 主线，处理 application startup/content composition 的 public header 边界。`RuntimeContentLifecycle` 已经接管 startup content composition，但它的 public header 仍直接包含 camera lifecycle、scene preparer、engine lifecycle、verification lifecycle 和 legacy experiment headers。本切片把 content startup config DTOs 拆到独立 header，让调用方只依赖配置数据和前置声明。
+
+新增与修改：
+
+- 新增 `application/RuntimeCameraConfig.h`，从 `RuntimeCameraLifecycle.h` 迁出 `RuntimeCameraConfig`。
+- 新增 `application/RuntimeScenePrepareConfig.h`，从 `RuntimeScenePreparer.h` 迁出 `RuntimeScenePrepareConfig`。
+- 新增 `application/RuntimeContentLifecycleConfig.h`，从 `RuntimeContentLifecycle.h` 迁出 `RuntimeContentLifecycleConfig`。
+- `RuntimeContentLifecycle.h` 现在只包含 `RuntimeContentLifecycleConfig.h`，并以前置声明暴露 `AppRuntimeContext`、`Engine`、`LegacyExperimentRunner` 和 `RuntimeEngineLifecycleState`。
+- `RuntimeContentLifecycle.cpp` 当时保留实际实现依赖；后续 renderer backend lifecycle 与 content verification lifecycle 切片已继续移走 engine lifecycle/logger/profile loader/verification lifecycle 直接依赖。
+- `RuntimeContentConfigPolicy.h` 改为依赖 `RuntimeContentLifecycleConfig.h`，不再为了 config 返回值包含完整 content lifecycle public API。
+- `RuntimeCameraLifecycle.h` 和 `RuntimeScenePreparer.h` 也收窄为 config header + 前置声明，具体 `AppRuntimeContext`、legacy experiment 和 scene setup pipeline 实现依赖留在 `.cpp`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 config header。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeCameraConfig`、`RuntimeScenePrepareConfig` 和 `RuntimeContentLifecycleConfig` 的定义集中在新增 header，工程和 filters 均已注册。
+- 静态检查确认 `RuntimeContentLifecycle.h` 不再直接包含 `RuntimeCameraLifecycle.h`、`RuntimeEngineLifecycle.h`、`RuntimeScenePreparer.h`、`RuntimeVerificationLifecycle.h`、`AppRuntimeContext.h` 或 legacy experiment implementation header。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationStartupLifecycle.cpp`、`RuntimeContentConfigPolicy.cpp`、`RuntimeContentLifecycle.cpp`、`RuntimeCameraLifecycle.cpp` 和 `RuntimeScenePreparer.cpp` 参与编译，四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Content lifecycle public API 不再把 implementation lifecycle / legacy experiment 依赖扩散给调用者，application startup/content composition 边界更干净。
+- 该切片不改变 startup order、scene preparation、renderer backend attachment 或 verification 输出。
+- RuntimeContentLifecycle prepare 内部阶段与 Runtime Renderer Backend Attachment Lifecycle extraction 已在后续章节接入；后续继续沿 Engine runtime ownership 主线收敛 renderer backend contract 或 RendererSubsystem frame bridge internals。
+
+### 2026-05-30 Runtime Content Renderer Backend Lifecycle Extraction
+
+本轮继续拆分 `RuntimeContentLifecycle::prepare(...)` 内部阶段，把 scene preparation 后的 renderer fail-fast gate 与 Engine-owned renderer backend attachment 迁入专用 lifecycle module。目标是减少 generic content composition 对 `RuntimeEngineLifecycle` 和 logger 的直接依赖，同时保持 startup order、renderer backend selection、verification 输出和失败返回行为不变。
+
+新增与修改：
+
+- 新增 `application/RuntimeContentRendererBackendLifecycle.h/.cpp`。
+- `RuntimeContentRendererBackendLifecycle::attachAfterScenePreparation(...)` 现在集中检查 `context.renderer`，在 scene prepare 未创建 renderer 时输出原有 `LogError` 并返回 `false`。
+- `RuntimeContentRendererBackendLifecycle::attachAfterScenePreparation(...)` 通过 `RuntimeEngineLifecycle::attachRendererBackend(...)` 完成 Engine-owned renderer backend attachment。
+- `RuntimeContentLifecycle.cpp` 不再直接包含 `RuntimeEngineLifecycle.h` 或 `LogManager.h`，也不再直接调用 `RuntimeEngineLifecycle::attachRendererBackend(...)`。
+- `RuntimeContentLifecycle::prepare(...)` 保留 high-level startup content 顺序：camera init、profile load、verification startup profile、scene prepare、renderer backend lifecycle attach、prepared-scene report。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 renderer backend lifecycle 源文件和头文件。
+- 本轮按 `/subagents` 要求启动只读 sidecar subagent `McClintock` 审查该切片；该 agent 未修改文件，确认源码边界和工程注册无阻塞问题，并指出文档需要同步，已在本节和 engine docs 中采纳。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeContentRendererBackendLifecycle`、`attachAfterScenePreparation(...)`、fail-fast 日志、backend attach 调用和工程注册均可检索。
+- 静态检查确认 `RuntimeContentLifecycle.cpp` 中不再直接调用 `RuntimeEngineLifecycle::attachRendererBackend(...)`，也不再直接记录 scene-prepare renderer failure 日志。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeContentLifecycle.cpp` 与 `RuntimeContentRendererBackendLifecycle.cpp` 参与编译，四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeContentLifecycle` 仍负责编排 startup content composition，但 renderer backend attach/fail-fast 已变成可独立审查和继续下沉的阶段。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 renderer backend contract。
+- 下一步可继续拆分 content prepare 的 profile/scene/report 子阶段，或推进 renderer backend attachment 从 application-side lifecycle 进一步靠近 Engine-level contract。
+
+### 2026-05-30 Runtime Content Verification Lifecycle Extraction
+
+本轮继续拆分 `RuntimeContentLifecycle::prepare(...)` 内部阶段，把 runtime profile loading、verification startup profile application 和 prepared-scene verification report 收口到 content-side verification bridge。目标是让 `RuntimeContentLifecycle` 只保留高层 startup content 顺序，不再直接依赖 `RuntimeProfileLoader` 或 `RuntimeVerificationLifecycle`。
+
+新增与修改：
+
+- 新增 `application/RuntimeContentVerificationLifecycle.h/.cpp`。
+- `RuntimeContentVerificationLifecycle::loadStartupProfiles(...)` 统一执行 `RuntimeProfileLoader::loadAll(...)` 与 `RuntimeVerificationLifecycle::applyStartupProfile(...)`，保持原有调用顺序。
+- `RuntimeContentVerificationLifecycle::reportPreparedScene(...)` 统一转发 prepared-scene verification report。
+- `RuntimeContentLifecycle.cpp` 不再直接包含 `RuntimeProfileLoader.h` 或 `RuntimeVerificationLifecycle.h`。
+- `RuntimeContentLifecycle::prepare(...)` 现在按高层顺序委托：camera init、content verification startup profiles、scene prepare、renderer backend lifecycle attach、content verification prepared-scene report。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 content verification lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeContentVerificationLifecycle`、`loadStartupProfiles(...)`、`reportPreparedScene(...)`、profile load、verification startup/report 和工程注册均可检索。
+- 静态检查确认 `RuntimeContentLifecycle.cpp` 中不再直接出现 `RuntimeProfileLoader` 或 `RuntimeVerificationLifecycle` 依赖；剩余 report 调用只指向 `RuntimeContentVerificationLifecycle`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeContentLifecycle.cpp` 与 `RuntimeContentVerificationLifecycle.cpp` 参与编译，四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeContentLifecycle` 的直接依赖继续减少，目前只剩 camera lifecycle、scene preparer、renderer backend lifecycle 和 content verification lifecycle 这些明确阶段。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 verification 输出契约。
+- Scene preparation 阶段已在下一节拆出；后续可继续把 renderer backend attachment 推向更 Engine-level 的 contract。
+
+### 2026-05-30 Runtime Content Scene Lifecycle Extraction
+
+本轮继续拆分 `RuntimeContentLifecycle::prepare(...)` 内部阶段，把 scene preparation 的直接调用移入 content-side scene lifecycle。目标是让 `RuntimeContentLifecycle` 只保留高层 startup content 顺序，不再直接依赖 `RuntimeScenePreparer`，同时保持 scene setup pipeline、legacy experiments、Engine World prepared scene 输出和 renderer backend attach 顺序不变。
+
+新增与修改：
+
+- 新增 `application/RuntimeContentSceneLifecycle.h/.cpp`。
+- `RuntimeContentSceneLifecycle::prepareScene(...)` 负责转发到 `RuntimeScenePreparer::prepare(...)`。
+- `RuntimeContentLifecycle.cpp` 不再直接包含 `RuntimeScenePreparer.h`，也不再直接调用 `RuntimeScenePreparer::prepare(...)`。
+- `RuntimeContentLifecycle::prepare(...)` 当前只按高层阶段委托：camera init、content verification startup profiles、content scene lifecycle prepare、renderer backend lifecycle attach、content verification prepared-scene report。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 content scene lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeContentSceneLifecycle`、`prepareScene(...)`、`RuntimeScenePreparer::prepare(...)` 转发点和工程注册均可检索。
+- 静态检查确认 `RuntimeContentLifecycle.cpp` 中不再直接出现 `RuntimeScenePreparer` 依赖；剩余 scene prepare 调用只指向 `RuntimeContentSceneLifecycle`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeContentLifecycle.cpp` 与 `RuntimeContentSceneLifecycle.cpp` 参与编译，四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeContentLifecycle` 现在已收敛为高层 startup content sequence，不再直接依赖 scene preparer、profile loader、verification lifecycle、engine lifecycle 或 logger。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 verification 输出契约。
+- Camera init stage 一致性命名已在下一节拆出；后续可推进 renderer backend attachment 从 application-side lifecycle 进一步靠近 Engine-level contract。
+
+### 2026-05-30 Runtime Content Camera Lifecycle Extraction
+
+本轮继续统一 content startup stage 的命名和边界，把 camera initialization 的直接调用移入 content-side camera lifecycle。目标是让 `RuntimeContentLifecycle` 的所有 startup content stages 都通过 `RuntimeContent*Lifecycle` 入口表达，同时保持原有 camera 创建、camera control 绑定和 cleanup 行为不变。
+
+新增与修改：
+
+- 新增 `application/RuntimeContentCameraLifecycle.h/.cpp`。
+- `RuntimeContentCameraLifecycle::initializeCamera(...)` 负责转发到 `RuntimeCameraLifecycle::initializeDefaultCamera(...)`。
+- `RuntimeContentLifecycle.cpp` 不再直接包含 `RuntimeCameraLifecycle.h`，也不再直接调用 `RuntimeCameraLifecycle::initializeDefaultCamera(...)`。
+- `RuntimeContentLifecycle::prepare(...)` 当前只按高层 content stages 委托：content camera lifecycle、content verification lifecycle、content scene lifecycle、content renderer backend lifecycle、content verification prepared-scene report。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 content camera lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeContentCameraLifecycle`、`initializeCamera(...)`、`RuntimeCameraLifecycle::initializeDefaultCamera(...)` 转发点和工程注册均可检索。
+- 静态检查确认 `RuntimeContentLifecycle.cpp` 中不再直接出现 `RuntimeCameraLifecycle` 或 `initializeDefaultCamera` 依赖；剩余 camera init 调用只指向 `RuntimeContentCameraLifecycle`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeContentCameraLifecycle.cpp` 与 `RuntimeContentLifecycle.cpp` 参与编译，四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeContentLifecycle` 现在已成为纯 startup content sequence coordinator，不再直接依赖 camera lifecycle、scene preparer、profile loader、verification lifecycle、engine lifecycle 或 logger。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 camera 或 verification 输出契约。
+- Runtime legacy experiment lifecycle 已在下一节拆出；后续可继续推进 renderer backend attachment 更靠近 Engine-level contract，或继续收敛 scene setup / frame runner 边界。
+
+### 2026-05-30 Runtime Legacy Experiment Lifecycle Extraction
+
+本轮继续收敛 `RuntimeScenePreparer` 内部职责，把 legacy experiment context construction、startup enable hook 注释区和 per-frame update 迁入独立 lifecycle。目标是让 `RuntimeScenePreparer` 只负责 scene setup pipeline 和 Engine World prepared-scene stats，而 `RuntimeFrameRunner` 不再为了每帧 legacy experiment update 依赖 scene preparer。
+
+新增与修改：
+
+- 新增 `application/RuntimeLegacyExperimentLifecycle.h/.cpp`。
+- `RuntimeLegacyExperimentLifecycle::makeContext(...)` 集中构造 `GL_EXPERIMENTS::RuntimeContext`。
+- `RuntimeLegacyExperimentLifecycle::prepare(...)` 保留原有 legacy experiment startup enable hook 注释区，默认不启用任何 legacy experiment，保持 disabled 行为。
+- `RuntimeLegacyExperimentLifecycle::update(...)` 集中调用 `LegacyExperimentRunner::update(...)`。
+- `RuntimeScenePreparer.cpp` 不再暴露或实现 `makeLegacyExperimentContext(...)`、`prepareLegacyExperiments(...)` 或 `updateLegacyExperiments(...)`；scene prepare 完成后只委托 `RuntimeLegacyExperimentLifecycle::prepare(...)`。
+- `RuntimeFrameRunner.cpp` 不再包含 `RuntimeScenePreparer.h`，也不再调用 `RuntimeScenePreparer::updateLegacyExperiments(...)`，每帧改为调用 `RuntimeLegacyExperimentLifecycle::update(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 legacy experiment lifecycle 源文件和头文件。
+
+Subagent 审查：
+
+- 本轮启动只读 sidecar subagent `Darwin` 审查该切片。
+- `Darwin` 确认抽取方向正确，必须保持默认 `legacyExperiments.enable*` 全部注释、`RuntimeFrameRunner.cpp` 不再依赖 `RuntimeScenePreparer.h`、新增文件已注册到工程。
+- `Darwin` 判断该抽取不应影响 `SceneSetupPipeline`、Engine World prepared scene、`RuntimeFramePipeline` 或 verification modes；唯一风险是文档需要把“下一步收敛 legacy / scene setup 职责”更新为已完成，本节已处理。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeLegacyExperimentLifecycle`、`makeContext(...)`、`prepare(...)`、`update(...)`、工程注册和旧 scene preparer 调用迁移均可检索。
+- 静态检查确认 `RuntimeFrameRunner.cpp`、`RuntimeScenePreparer.h` 和 `RuntimeScenePreparer.cpp` 中不再出现 `RuntimeScenePreparer::updateLegacyExperiments`、`updateLegacyExperiments`、`prepareLegacyExperiments` 或 `makeLegacyExperimentContext` 残留。
+- 静态检查确认 `RuntimeLegacyExperimentLifecycle.cpp` 中没有未注释的 `legacyExperiments.enable*` 调用，默认 legacy experiment disabled 行为保持不变。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeContentSceneLifecycle.cpp`、`RuntimeFrameRunner.cpp`、`RuntimeLegacyExperimentLifecycle.cpp` 与 `RuntimeScenePreparer.cpp` 参与编译，四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeScenePreparer` 的职责进一步收窄为 scene setup pipeline、prepared-scene stats 输出和 scene setup 完成后的 lifecycle 委托。
+- `RuntimeFrameRunner` 不再通过 scene preparer 更新 legacy experiments，frame runner 与 startup scene preparation 的耦合下降。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变默认 legacy experiment disabled 行为。
+- Scene setup pipeline config/header 依赖已在下一节收敛；后续可继续推进 renderer backend attachment 更靠近 Engine-level contract，或继续收窄 scene setup result/report 边界。
+
+### 2026-05-30 Scene Setup Pipeline Config Header Extraction
+
+本轮继续收敛 scene setup public header 边界。上一轮之后 `RuntimeScenePrepareConfig.h` 仍直接包含完整 `SceneSetupPipeline.h`，这会把 `SceneSetupPipelineResult`、`SetupContext`、World-driven scene setup 与 LegacySceneWorldBuilder 相关实现依赖传播给 application runtime config 调用方。本切片把 `SceneSetupPipelineConfig` 拆成独立轻量 header，让 runtime scene prepare config 只依赖配置 DTO。
+
+新增与修改：
+
+- 新增 `tools/sceneSetup/SceneSetupPipelineConfig.h`，集中定义 `GL_SCENE::SceneSetupPipelineConfig`。
+- `tools/sceneSetup/SceneSetupPipeline.h` 改为包含 `SceneSetupPipelineConfig.h`，自身继续负责 `SceneSetupPipelineResult`、`prepareScene(...)` 和 stats format API。
+- `application/RuntimeScenePrepareConfig.h` 改为只包含 `SceneSetupPipelineConfig.h`，不再 public include 完整 `SceneSetupPipeline.h`。
+- `RuntimeScenePreparer.cpp` 仍包含完整 `SceneSetupPipeline.h`，因为该 `.cpp` 需要调用 `prepareScene(...)` 并读取 `SceneSetupPipelineResult`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 config header。
+
+已完成验证：
+
+- 静态检查确认 `SceneSetupPipelineConfig`、新 config header、pipeline API、runtime config include 和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeScenePrepareConfig.h` 不再包含完整 `SceneSetupPipeline.h`，`SceneSetupPipelineConfig` 的 struct 定义只位于新 header。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationStartupLifecycle.cpp`、`RuntimeContentConfigPolicy.cpp`、`RuntimeContentLifecycle.cpp`、`RuntimeContentSceneLifecycle.cpp`、`RuntimeFrameRunner.cpp`、`RuntimeLegacyExperimentLifecycle.cpp`、`RuntimeScenePreparer.cpp` 与 `SceneSetupPipeline.cpp` 参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- runtime scene prepare config 现在只暴露 scene setup pipeline 配置 DTO，不再传播完整 scene setup pipeline API。
+- scene setup pipeline 行为、Engine World prepared scene 输出、legacy default scene mirror 和 renderer backend verification 均保持不变。
+- 该切片仍是降耦合，不扩张 PBR 功能。
+- Scene setup report 边界已在下一节收敛；后续可继续回到 renderer backend Engine-level attachment contract，或继续清理 runtime/application composition。
+
+### 2026-05-30 Runtime Scene Setup Report Extraction
+
+本轮继续收窄 `RuntimeScenePreparer` 的职责，把 scene setup result 的 stdout/logger 输出和最终 renderer prepared 日志迁入独立 report 模块。目标是让 `RuntimeScenePreparer` 只负责编排 scene setup pipeline 与后续 lifecycle 委托，不再直接持有 logging/report formatting 细节。
+
+新增与修改：
+
+- 新增 `application/RuntimeSceneSetupReport.h/.cpp`。
+- `RuntimeSceneSetupReport::reportPreparedScene(...)` 集中处理 legacy mirror、Engine World minimal scene 和 Engine World scene probe 的 setup stats 输出。
+- `RuntimeSceneSetupReport::reportRendererPrepared()` 集中保留原有 renderer prepared `LogInfo(...)` 行，日志内容不变。
+- `RuntimeScenePreparer.cpp` 不再包含 `<iostream>` 或 `LogManager.h`，也不再直接调用 scene setup stats formatter；scene setup 完成后只委托 report 模块输出结果。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 report 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeSceneSetupReport`、`reportPreparedScene(...)`、`reportRendererPrepared()`、scene setup format API 和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeScenePreparer.cpp` 中不再出现 `<iostream>`、`LogManager`、`std::cout`、`LogInfo` 或 scene setup stats formatter 直接调用。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeScenePreparer.cpp` 与 `RuntimeSceneSetupReport.cpp` 参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeScenePreparer` 现在只保留 scene setup context 构造、pipeline 调用、legacy experiment lifecycle 委托和 report 委托。
+- scene setup stats 输出的 formatting/logging 细节集中到 report 模块，后续如果要替换 logger、拆 stdout 或改 verification 输出入口，不需要再改 preparer 编排逻辑。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 verification 输出契约。
+- Scene setup context assembly 已在下一节拆出；后续可继续回到 renderer backend Engine-level attachment contract，或继续清理 runtime/application composition。
+
+### 2026-05-31 Runtime Scene Setup Context Factory Extraction
+
+本轮继续收窄 `RuntimeScenePreparer`，把 `AppRuntimeContext` 到 `GL_SCENE::SetupContext` 的字段展开迁入独立 factory。目标是让 scene preparer 不再公开 context factory API，也不再直接知道 runtime context 中每个 renderer/scene/light/profile 字段如何映射到 scene setup pipeline。
+
+新增与修改：
+
+- 新增 `application/RuntimeSceneSetupContextFactory.h/.cpp`。
+- `RuntimeSceneSetupContextFactory::make(...)` 集中构造 `GL_SCENE::SetupContext`，保留原有字段映射和 Engine World 指针/可编辑状态引用。
+- `RuntimeScenePreparer.h` 删除公开的 `makeSceneSetupContext(...)` API，不再 forward declare `GL_SCENE::SetupContext`。
+- `RuntimeScenePreparer.cpp` 删除 context 字段展开、`AppRuntimeContext.h` 和 `Engine.h` 直接 include，只委托 `RuntimeSceneSetupContextFactory::make(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 context factory 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeSceneSetupContextFactory`、`make(...)`、runtime context 字段映射和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeScenePreparer.cpp/.h` 中不再出现 `makeSceneSetupContext`、`GL_SCENE::SetupContext`、`AppRuntimeContext.h` / `Engine.h` include 或 `context.` 字段访问残留。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeContentSceneLifecycle.cpp`、`RuntimeScenePreparer.cpp` 与 `RuntimeSceneSetupContextFactory.cpp` 参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeScenePreparer` 现在只负责 scene preparation sequence：scene setup pipeline lifecycle、legacy experiment lifecycle prepare 和 renderer prepared report。
+- runtime context 字段映射被集中到 factory，后续如果 `AppRuntimeContext` 继续瘦身或 scene setup pipeline 改用更中性的 input DTO，只需要替换 factory 入口。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 scene setup pipeline 行为或 verification 输出契约。
+- Scene setup pipeline execution 已在下一节拆出；后续可继续清理 runtime/application composition，或回到 renderer backend Engine-level attachment contract。
+
+### 2026-05-31 Runtime Scene Setup Pipeline Lifecycle Extraction
+
+本轮继续收窄 `RuntimeScenePreparer`，把 scene setup pipeline 执行、setup context factory 调用和 prepared-scene setup report 输出合并进独立 lifecycle。目标是让 `RuntimeScenePreparer` 不再直接包含完整 `SceneSetupPipeline.h`，也不再直接调用 `GL_SCENE::prepareScene(...)` 或读取 `SceneSetupPipelineResult`。
+
+新增与修改：
+
+- 新增 `application/RuntimeSceneSetupPipelineLifecycle.h/.cpp`。
+- `RuntimeSceneSetupPipelineLifecycle::prepare(...)` 集中调用 `RuntimeSceneSetupContextFactory::make(...)`、`GL_SCENE::prepareScene(...)` 和 `RuntimeSceneSetupReport::reportPreparedScene(...)`。
+- `RuntimeScenePreparer.cpp` 不再包含 `RuntimeSceneSetupContextFactory.h` 或完整 `SceneSetupPipeline.h`，只委托 `RuntimeSceneSetupPipelineLifecycle::prepare(...)`。
+- `RuntimeScenePreparer.cpp` 现在只保留高层顺序：scene setup pipeline lifecycle、legacy experiment lifecycle prepare、renderer prepared report。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 pipeline lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeSceneSetupPipelineLifecycle`、context factory、`prepareScene(...)`、`SceneSetupPipelineResult`、prepared-scene setup report 和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeScenePreparer.cpp/.h` 中不再出现完整 `SceneSetupPipeline.h` include、`GL_SCENE::prepareScene(...)`、`SceneSetupPipelineResult`、`RuntimeSceneSetupContextFactory` 或 `reportPreparedScene(...)` 直接调用。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeScenePreparer.cpp` 与 `RuntimeSceneSetupPipelineLifecycle.cpp` 参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeScenePreparer` 当前只负责 scene preparation 高层顺序，不再直接知道 scene setup pipeline execution 的具体 API。
+- scene setup pipeline 执行边界现在可单独演进，后续如果要把 setup pipeline 从 application runtime 迁向 engine-level scene bootstrap，入口已经集中。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 scene setup pipeline 行为或 verification 输出契约。
+- `RuntimeScenePreparer` 包装层已在下一节删除；后续可继续清理 runtime/application composition，或回到 renderer backend Engine-level attachment contract。
+
+### 2026-05-31 Runtime Scene Preparer Removal
+
+本轮继续清理 runtime/application composition 中已经失去实际职责的包装层。上一轮之后 `RuntimeScenePreparer` 只剩三行高层顺序委托：scene setup pipeline lifecycle、legacy experiment lifecycle prepare 和 renderer prepared report。这个类不再持有独立状态、独立策略或独立资源所有权，因此继续保留会让调用链多一层无意义 facade。
+
+新增与修改：
+
+- 删除 `application/RuntimeScenePreparer.h/.cpp`。
+- `RuntimeContentSceneLifecycle::prepareScene(...)` 直接按原顺序调用 `RuntimeSceneSetupPipelineLifecycle::prepare(...)`、`RuntimeLegacyExperimentLifecycle::prepare(...)` 和 `RuntimeSceneSetupReport::reportRendererPrepared()`。
+- `RuntimeContentSceneLifecycle.cpp` 现在成为 content-side scene preparation sequence 的直接入口。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已移除 `RuntimeScenePreparer` 源文件和头文件注册。
+
+已完成验证：
+
+- 静态检查确认 live source/project 中不再存在 `RuntimeScenePreparer.h`、`RuntimeScenePreparer.cpp`、`RuntimeScenePreparer::` 或 `class RuntimeScenePreparer` 残留。
+- 静态检查确认 `RuntimeContentSceneLifecycle.cpp` 直接引用 `RuntimeSceneSetupPipelineLifecycle`、`RuntimeLegacyExperimentLifecycle` 和 `RuntimeSceneSetupReport`。
+- `Test-Path application\RuntimeScenePreparer.cpp` 与 `Test-Path application\RuntimeScenePreparer.h` 均返回 `False`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- content scene lifecycle 现在直接拥有 scene preparation sequence，不再通过一个无状态 wrapper 间接调用。
+- scene setup pipeline、legacy experiment prepare、renderer prepared report 的执行顺序保持不变。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 verification 输出契约。
+- Application startup 的 content startup bridge 已在下一节拆出；后续可以继续沿 content/startup composition 收敛无状态 facade，或回到 renderer backend Engine-level attachment contract。
+
+### 2026-05-31 Runtime Application Content Startup Lifecycle Extraction
+
+本轮继续收敛 application startup/content composition。上一轮后 `RuntimeApplicationStartupLifecycle` 仍直接知道 content startup 的两个细节：如何从 `RuntimeApplicationShellConfig + RuntimeWindowSnapshot` 组装 `RuntimeContentLifecycleConfig`，以及如何调用 `RuntimeContentLifecycle::prepare(...)`。这会让 application startup lifecycle 同时承担 window/graphics/editor/frame 顺序和 content startup bridge 细节。本切片把 content startup bridge 迁入独立 module。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationContentStartupLifecycle.h/.cpp`。
+- `RuntimeApplicationContentStartupLifecycle::prepareContent(...)` 集中接收 `RuntimeApplicationState`、`RuntimeApplicationShellConfig` 和 `RuntimeWindowSnapshot`，再调用 `RuntimeContentConfigPolicy::makeContentLifecycleConfig(...)` 与 `RuntimeContentLifecycle::prepare(...)`。
+- `RuntimeApplicationStartupLifecycle.cpp` 不再包含 `RuntimeContentConfigPolicy.h` 或 `RuntimeContentLifecycle.h`，content stage 改为委托 `RuntimeApplicationContentStartupLifecycle::prepareContent(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 content startup lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationContentStartupLifecycle`、`prepareContent(...)`、content config policy、content lifecycle prepare 和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeApplicationStartupLifecycle.cpp` 中不再直接包含 `RuntimeContentConfigPolicy.h` / `RuntimeContentLifecycle.h`，也不再直接调用 `RuntimeContentConfigPolicy::...` 或 `RuntimeContentLifecycle::prepare(...)`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationContentStartupLifecycle.cpp` 与 `RuntimeApplicationStartupLifecycle.cpp` 参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationStartupLifecycle` 继续负责 Engine/Window/Graphics/Content/Editor/Frame 的 startup 顺序，但不再直接知道 content config policy 与 content lifecycle prepare 细节。
+- content startup bridge 现在可独立审查，后续如果 content config 继续拆分，application startup lifecycle 不需要继续膨胀。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 startup 顺序、scene preparation、renderer backend attachment 或 verification 输出。
+- Application startup 的 editor startup bridge 已在下一节拆出；后续可以继续收敛 application startup/frame/shutdown bridge，或回到 renderer backend Engine-level attachment contract。
+
+### 2026-05-31 Runtime Application Editor Startup Lifecycle Extraction
+
+本轮继续收敛 application startup composition。上一轮之后 `RuntimeApplicationStartupLifecycle` 已经不再直接组装 content startup，但它仍直接知道 editor startup 的两件事：如何从 shell config 和 window native handle 构造 editor lifecycle config，以及如何调用 `RuntimeEditorLifecycle::initialize(...)`。本切片把 editor startup bridge 拆成独立 module，让 startup lifecycle 继续保留高层顺序，但不再直接依赖 editor lifecycle implementation。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationEditorStartupLifecycle.h/.cpp`。
+- `RuntimeApplicationEditorStartupLifecycle::initializeEditor(...)` 集中接收 `RuntimeApplicationState`、`RuntimeApplicationShellConfig` 和 `RuntimeWindowSnapshot`，再调用 `RuntimeApplicationConfigPolicy::makeEditorLifecycleConfig(...)` 与 `RuntimeEditorLifecycle::initialize(...)`。
+- `RuntimeApplicationStartupLifecycle.cpp` 不再包含 `RuntimeEditorLifecycle.h`，editor stage 改为委托 `RuntimeApplicationEditorStartupLifecycle::initializeEditor(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 editor startup lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationEditorStartupLifecycle`、`initializeEditor(...)`、editor lifecycle 初始化、editor config policy 和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeApplicationStartupLifecycle.cpp` 中不再出现 `RuntimeEditorLifecycle.h` include、`RuntimeEditorLifecycle::initialize(...)` 或 `makeEditorLifecycleConfig(...)` 直接调用。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationEditorStartupLifecycle.cpp` 与 `RuntimeApplicationStartupLifecycle.cpp` 参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationStartupLifecycle` 继续保留 Engine/Window/Graphics/Content/Editor/Frame reset 的高层顺序，但不再直接知道 editor lifecycle 初始化细节。
+- editor startup bridge 现在可独立审查，后续如果 editor lifecycle config 继续拆分，startup lifecycle 不需要继续膨胀。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 startup 顺序、editor initialization、scene preparation 或 verification 输出。
+- Application startup 的 frame reset bridge 已在下一节拆出；后续可以继续收敛 application frame bridge / shutdown bridge，或回到 renderer backend Engine-level attachment contract。
+
+### 2026-05-31 Runtime Application Frame Startup Lifecycle Extraction
+
+本轮继续收敛 application startup composition。上一轮之后 `RuntimeApplicationStartupLifecycle` 已经不再直接组装 content 或 editor startup，但它仍直接调用 `RuntimeFrameLifecycle::reset(state.frameLifecycle)`。这个调用虽然很小，但它让 startup lifecycle 继续直接依赖 frame lifecycle implementation。本切片把 frame reset bridge 拆成独立 module，让 startup lifecycle 只保留高层启动顺序。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationFrameStartupLifecycle.h/.cpp`。
+- `RuntimeApplicationFrameStartupLifecycle::resetFrameLifecycle(...)` 集中接收 `RuntimeApplicationState`，再调用 `RuntimeFrameLifecycle::reset(state.frameLifecycle)`。
+- `RuntimeApplicationStartupLifecycle.cpp` 不再直接调用 `RuntimeFrameLifecycle::reset(...)`，frame reset stage 改为委托 `RuntimeApplicationFrameStartupLifecycle::resetFrameLifecycle(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 frame startup lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationFrameStartupLifecycle`、`resetFrameLifecycle(...)`、frame lifecycle reset 桥接和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeApplicationStartupLifecycle.cpp` 中不再出现 `RuntimeFrameLifecycle::reset(...)` 或 `reset(state.frameLifecycle)` 直接调用。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationFrameStartupLifecycle.cpp` 与 `RuntimeApplicationStartupLifecycle.cpp` 参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationStartupLifecycle` 继续保留 Engine/Window/Graphics/Content/Editor/Frame reset 的高层顺序，但不再直接知道 frame lifecycle reset implementation。
+- frame startup bridge 现在可独立审查，后续如果 frame lifecycle startup/reset 继续拆分，startup lifecycle 不需要继续膨胀。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 startup 顺序、frame reset 行为、scene preparation 或 verification 输出。
+- Application startup 的 engine startup bridge 已在下一节拆出；后续可以继续收敛 application frame bridge / shutdown bridge，或回到 renderer backend Engine-level attachment contract。
+
+### 2026-05-31 Runtime Application Engine Startup Lifecycle Extraction
+
+本轮继续收敛 application startup composition。上一轮之后 `RuntimeApplicationStartupLifecycle` 已经不再直接组装 content、editor 或 frame reset startup，但它仍直接调用 `RuntimeEngineLifecycle::initializeEngine(...)` 并从 application shell config 生成 Engine desc。本切片把 Engine startup bridge 拆成独立 module，让 startup lifecycle 继续保留高层启动顺序，但不再直接依赖 Engine lifecycle initialization implementation。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationEngineStartupLifecycle.h/.cpp`。
+- `RuntimeApplicationEngineStartupLifecycle::initializeEngine(...)` 集中接收 `RuntimeApplicationState` 与 `RuntimeApplicationShellConfig`，再调用 `RuntimeApplicationConfigPolicy::makeEngineDesc(...)` 和 `RuntimeEngineLifecycle::initializeEngine(...)`。
+- `RuntimeApplicationStartupLifecycle.cpp` 不再直接调用 `RuntimeEngineLifecycle::initializeEngine(...)` 或 `RuntimeApplicationConfigPolicy::makeEngineDesc(...)`，Engine startup stage 改为委托 `RuntimeApplicationEngineStartupLifecycle::initializeEngine(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 engine startup lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationEngineStartupLifecycle`、`initializeEngine(...)`、Engine lifecycle initialization 桥接和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeApplicationStartupLifecycle.cpp` 中不再出现 `RuntimeEngineLifecycle::initializeEngine(...)` 或 `makeEngineDesc(...)` 直接调用。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationEngineStartupLifecycle.cpp` 与 `RuntimeApplicationStartupLifecycle.cpp` 参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationStartupLifecycle` 继续保留 Engine/Window/Graphics/Content/Editor/Frame reset 的高层顺序，但不再直接知道 Engine desc mapping 或 Engine lifecycle initialization implementation。
+- Engine startup bridge 现在可独立审查，后续如果 Engine startup config 或 subsystem initialization 继续拆分，startup lifecycle 不需要继续膨胀。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 startup 顺序、Engine lifecycle 行为、scene preparation 或 verification 输出。
+- Application startup 的 window startup bridge 已在下一节拆出；后续可以继续收敛 application graphics startup bridge、application frame bridge / shutdown bridge，或回到 renderer backend Engine-level attachment contract。
+
+### 2026-05-31 Runtime Application Window Startup Lifecycle Extraction
+
+本轮继续收敛 application startup composition。上一轮之后 `RuntimeApplicationStartupLifecycle` 已经不再直接组装 Engine startup，但它仍直接调用 window setup prompt、`RuntimeWindowLifecycle::initialize(...)` 和 `RuntimeWindowLifecycle::captureSnapshot()`。本切片把 window startup bridge 拆成独立 module，让 startup lifecycle 继续保留高层启动顺序，但不再直接依赖 window lifecycle initialization 或 snapshot implementation。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationWindowStartupLifecycle.h/.cpp`。
+- `RuntimeApplicationWindowStartupLifecycle::initializeWindow(...)` 集中接收 `RuntimeApplicationState` 与 `RuntimeApplicationShellConfig`，再调用 `RuntimeGraphicsLifecycle::reportWindowSetupPrompt()` 与 `RuntimeWindowLifecycle::initialize(...)`。
+- `RuntimeApplicationWindowStartupLifecycle::captureWindowSnapshot()` 集中调用 `RuntimeWindowLifecycle::captureSnapshot()`。
+- `RuntimeApplicationStartupLifecycle.cpp` 不再直接调用 `RuntimeWindowLifecycle::initialize(...)`、`RuntimeWindowLifecycle::captureSnapshot()` 或 `RuntimeGraphicsLifecycle::reportWindowSetupPrompt()`，window startup stage 和 snapshot stage 改为委托 `RuntimeApplicationWindowStartupLifecycle`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 window startup lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationWindowStartupLifecycle`、`initializeWindow(...)`、`captureWindowSnapshot()`、window lifecycle bridge 和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeApplicationStartupLifecycle.cpp` 中不再出现 `RuntimeWindowLifecycle::initialize(...)`、`RuntimeWindowLifecycle::captureSnapshot()`、`RuntimeGraphicsLifecycle::reportWindowSetupPrompt()` 或 `RuntimeWindowLifecycle.h` 直接 include。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationWindowStartupLifecycle.cpp` 与 `RuntimeApplicationStartupLifecycle.cpp` 参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationStartupLifecycle` 继续保留 Engine/Window/Graphics/Content/Editor/Frame reset 的高层顺序，但不再直接知道 window initialization、window callback context 或 window snapshot implementation。
+- window startup bridge 现在可独立审查，后续如果 window config、callback binding 或 snapshot 继续拆分，startup lifecycle 不需要继续膨胀。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 startup 顺序、window lifecycle 行为、scene preparation 或 verification 输出。
+- Application startup 的 graphics startup bridge 已在下一节拆出；后续可以继续收敛 application frame bridge / shutdown bridge，或回到 renderer backend Engine-level attachment contract。
+
+### 2026-05-31 Runtime Application Graphics Startup Lifecycle Extraction
+
+本轮继续收敛 application startup composition。上一轮之后 `RuntimeApplicationStartupLifecycle` 已经不再直接组装 Engine 或 Window startup，但它仍直接调用 `RuntimeGraphicsLifecycle::initializeAfterWindow(...)` 并从 application shell config 生成 graphics lifecycle config。本切片把 graphics startup bridge 拆成独立 module，让 startup lifecycle 继续保留高层启动顺序，但不再直接依赖 graphics lifecycle implementation 或 graphics config mapping。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationGraphicsStartupLifecycle.h/.cpp`。
+- `RuntimeApplicationGraphicsStartupLifecycle::initializeGraphics(...)` 集中接收 `RuntimeApplicationShellConfig`，再调用 `RuntimeApplicationConfigPolicy::makeGraphicsLifecycleConfig(...)` 和 `RuntimeGraphicsLifecycle::initializeAfterWindow(...)`。
+- `RuntimeApplicationStartupLifecycle.cpp` 不再直接调用 `RuntimeGraphicsLifecycle::initializeAfterWindow(...)` 或 `RuntimeApplicationConfigPolicy::makeGraphicsLifecycleConfig(...)`，graphics startup stage 改为委托 `RuntimeApplicationGraphicsStartupLifecycle::initializeGraphics(...)`。
+- `RuntimeApplicationStartupLifecycle.cpp` 同时移除不再需要的 `RuntimeApplicationConfigPolicy.h` 和 `RuntimeGraphicsLifecycle.h` 直接 include。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 graphics startup lifecycle 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationGraphicsStartupLifecycle`、`initializeGraphics(...)`、graphics lifecycle initialization 桥接和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeApplicationStartupLifecycle.cpp` 中不再出现 `RuntimeGraphicsLifecycle::initializeAfterWindow(...)`、`makeGraphicsLifecycleConfig(...)`、`RuntimeGraphicsLifecycle.h` 或 `RuntimeApplicationConfigPolicy.h` 直接依赖。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-scene-probe,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationGraphicsStartupLifecycle.cpp` 与 `RuntimeApplicationStartupLifecycle.cpp` 参与编译，五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationStartupLifecycle` 继续保留 Engine/Window/Graphics/Window snapshot/Content/Editor/Frame reset 的高层顺序，但不再直接知道 graphics lifecycle config mapping 或 graphics initialization implementation。
+- graphics startup bridge 现在可独立审查，后续如果 graphics startup config、capability report 或 viewport initialization 继续拆分，startup lifecycle 不需要继续膨胀。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 startup 顺序、graphics lifecycle 行为、scene preparation 或 verification 输出。
+- Application frame editor callback bridge 已在下一节拆出；后续可以继续收敛 application frame continue/run bridge 或 shutdown bridge，或回到 renderer backend Engine-level attachment contract。
+
+### 2026-05-31 Runtime Application Frame Editor Callback Bridge Extraction
+
+本轮按 `/subagents` 要求先让只读 sidecar `Lorentz` 审查后续候选。结论是 frame editor callback bridge 是当前最小且风险最低的切片：不触碰 shutdown cleanup 顺序、不扩张 renderer backend contract、不继续扩大 PBR pass。父 agent 采纳该建议，把 `RuntimeApplicationFrameLifecycle::runFrame(...)` 中 editor callback config mapping 与 callback creation 拆出。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationFrameEditorCallbackBridge.h/.cpp`。
+- `RuntimeApplicationFrameEditorCallbackBridge::makeFrameCallbacks(...)` 集中接收 `RuntimeApplicationState`、`RuntimeApplicationShellConfig` 和 `GLFWwindow*`，再调用 `RuntimeApplicationConfigPolicy::makeEditorLifecycleConfig(...)` 与 `RuntimeEditorLifecycle::makeFrameCallbacks(...)`。
+- `RuntimeApplicationFrameLifecycle.cpp` 不再直接调用 `RuntimeEditorLifecycle::makeFrameCallbacks(...)` 或 `RuntimeApplicationConfigPolicy::makeEditorLifecycleConfig(...)`；frame loop 只向 bridge 请求 editor frame callbacks。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 frame editor callback bridge 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationFrameEditorCallbackBridge`、`makeFrameCallbacks(...)`、editor callback bridge 和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeApplicationFrameLifecycle.cpp` 中不再出现 `RuntimeEditorLifecycle::makeFrameCallbacks(...)` 或 `makeEditorLifecycleConfig(...)` 直接调用。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationFrameEditorCallbackBridge.cpp` 与 `RuntimeApplicationFrameLifecycle.cpp` 参与编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationFrameLifecycle` 继续保留 should-continue、window snapshot、frame config 和 frame execution 编排，但不再直接知道 editor lifecycle callback creation 的细节。
+- 该切片保持 `RuntimeEditorLifecycle::makeFrameCallbacks(...)` 中按值捕获 config 的行为不变，只移动调用边界。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 frame loop、renderer backend、window snapshot 或 shutdown cleanup 顺序。
+- Application frame continue/run bridge 已在下一节拆出；后续可以考虑 shutdown bridge 或 renderer backend contract continuation。
+
+### 2026-05-31 Runtime Application Frame Continue/Run Bridge Extraction
+
+本轮继续收敛 application frame composition。上一轮之后 editor callback creation 已从 `RuntimeApplicationFrameLifecycle` 中拆出，但该 facade 仍直接知道 frame continue config mapping、window snapshot、frame execution 参数展开和 `RuntimeFrameLifecycle` 调用。本切片把 continue 与 run 两条路径拆成两个小 bridge，让 `RuntimeApplicationFrameLifecycle` 只保留高层转发。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationFrameContinueBridge.h/.cpp`。
+- `RuntimeApplicationFrameContinueBridge::shouldContinue(...)` 集中接收 `RuntimeApplicationShellConfig` 与 `RuntimeApplicationState`，再调用 `RuntimeApplicationConfigPolicy::makeFrameLifecycleConfig(...)` 和 `RuntimeFrameLifecycle::shouldContinue(...)`。
+- 新增 `application/RuntimeApplicationFrameRunBridge.h/.cpp`。
+- `RuntimeApplicationFrameRunBridge::runFrame(...)` 集中接收 `RuntimeApplicationState` 与 `RuntimeApplicationShellConfig`，负责 window snapshot、frame lifecycle config、frame execution 参数展开和 editor callback bridge 串接。
+- `RuntimeApplicationFrameLifecycle.cpp` 不再直接调用 `RuntimeFrameLifecycle::shouldContinue(...)`、`RuntimeFrameLifecycle::runFrame(...)`、`RuntimeWindowLifecycle::captureSnapshot()`、`RuntimeApplicationConfigPolicy::makeFrameLifecycleConfig(...)` 或 `RuntimeApplicationFrameEditorCallbackBridge::makeFrameCallbacks(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 continue/run bridge 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationFrameContinueBridge`、`RuntimeApplicationFrameRunBridge`、continue/run 桥接和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeApplicationFrameLifecycle.cpp` 中不再出现 frame lifecycle、window snapshot、frame config policy 或 editor callback bridge 的直接调用/直接 include。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationFrameContinueBridge.cpp`、`RuntimeApplicationFrameRunBridge.cpp` 与 `RuntimeApplicationFrameLifecycle.cpp` 参与编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationFrameLifecycle` 当前只保留 `shouldContinue(...)` 和 `runFrame(...)` facade 入口，不再直接知道 frame continue/run 的底层实现细节。
+- continue/run bridge 仍保持原 frame loop 行为：max-frame/GL_APP update gating、window framebuffer size、Engine-owned renderer subsystem、legacy experiment update、editor UI callback gating 和 verification capture 顺序不变。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 renderer backend ownership 或 shutdown cleanup 顺序。
+- Application shutdown cleanup/destroy bridge 已在下一节拆出；后续优先考虑更细 shutdown phase 拆分，或回到 renderer backend contract continuation。
+
+### 2026-05-31 Runtime Application Shutdown Cleanup/Destroy Bridge Extraction
+
+本轮继续收敛 application shutdown composition。`RuntimeApplicationShutdownLifecycle` 已经接管 cleanup/destroy orchestration，但它仍直接知道 renderer cleanup report、camera cleanup、runtime context detach、Engine shutdown、engine cleanup report 和 window destroy。该区域顺序敏感，因此本切片不重排步骤，只把原顺序整体迁入窄 cleanup bridge，并把 window destroy 单独迁入 destroy bridge。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationShutdownCleanupBridge.h/.cpp`。
+- `RuntimeApplicationShutdownCleanupBridge::cleanup(...)` 保留原 cleanup 顺序：`RuntimeEngineLifecycle::beginCleanup(...)`、renderer subsystem cleanup report、camera cleanup、runtime context detach、Engine shutdown、Engine cleanup report。
+- 新增 `application/RuntimeApplicationShutdownDestroyBridge.h/.cpp`。
+- `RuntimeApplicationShutdownDestroyBridge::destroy()` 集中委托 `RuntimeWindowLifecycle::destroy()`。
+- `RuntimeApplicationShutdownLifecycle.cpp` 不再直接调用 `RuntimeEngineLifecycle::beginCleanup(...)`、`RuntimeVerificationLifecycle::reportRendererSubsystemCleanup(...)`、`RuntimeCameraLifecycle::cleanup(...)`、`RuntimeEngineLifecycle::detachRuntimeContext(...)`、`RuntimeEngineLifecycle::shutdownEngine(...)`、`RuntimeVerificationLifecycle::reportEngineCleanup(...)` 或 `RuntimeWindowLifecycle::destroy()`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 shutdown cleanup/destroy bridge 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationShutdownCleanupBridge`、`RuntimeApplicationShutdownDestroyBridge`、cleanup/destroy 细节迁移和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeApplicationShutdownLifecycle.cpp` 中不再出现 cleanup/destroy 细节直接调用或相关实现 header 直接 include。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationShutdownCleanupBridge.cpp`、`RuntimeApplicationShutdownDestroyBridge.cpp` 与 `RuntimeApplicationShutdownLifecycle.cpp` 参与编译，三条 focused verification mode 全部通过，renderer/world/subsystem cleanup stats 继续输出。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationShutdownLifecycle` 当前只保留 `cleanup(...)` 和 `destroy()` facade 入口，不再直接知道 shutdown cleanup/destroy 的底层实现细节。
+- shutdown cleanup 的观察窗口保持不变：先 detach renderer backend 并报告 renderer subsystem cleanup，再清理 camera 和 runtime context raw pointers，随后 shutdown Engine 并报告 Engine cleanup。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 renderer backend ownership、Engine shutdown 或 window destroy 行为。
+- Runtime Application Shutdown Verification Bridge、Runtime Application Shutdown Engine Bridge、Runtime Engine Lifecycle Types Header、Runtime Application State Forward Boundary、Runtime Profile State extraction、Runtime Render Resource State extraction、Runtime Camera Light State extraction、Runtime Engine Attachment State extraction 与 Runtime Renderer Backend Attachment Lifecycle extraction 已在后续章节接入；下一步可以继续收敛 renderer backend contract 或 RendererSubsystem frame bridge internals。
+
+### 2026-05-31 Runtime Application Shutdown Verification Bridge Extraction
+
+本轮继续收敛更细 shutdown phase bridge。上一轮 `RuntimeApplicationShutdownCleanupBridge` 已经持有 shutdown cleanup 顺序，但它仍直接知道 verification cleanup report 的两个调用点：renderer subsystem cleanup report 与 Engine cleanup report。本切片把这两个 verification report 委托迁入独立 bridge，让 cleanup bridge 继续只表达 shutdown 顺序，而不直接依赖 `RuntimeVerificationLifecycle`。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationShutdownVerificationBridge.h/.cpp`。
+- `RuntimeApplicationShutdownVerificationBridge::reportRendererSubsystemCleanup(...)` 集中委托 `RuntimeVerificationLifecycle::reportRendererSubsystemCleanup(...)`。
+- `RuntimeApplicationShutdownVerificationBridge::reportEngineCleanup(...)` 集中委托 `RuntimeVerificationLifecycle::reportEngineCleanup(...)`。
+- `RuntimeApplicationShutdownCleanupBridge.cpp` 不再直接 include 或调用 `RuntimeVerificationLifecycle`；cleanup 顺序保持为 begin cleanup、renderer cleanup report、camera cleanup、runtime context detach、Engine shutdown、Engine cleanup report。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 shutdown verification bridge 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationShutdownVerificationBridge`、renderer/Engine cleanup report 委托和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeApplicationShutdownCleanupBridge.cpp` 中不再出现 `RuntimeVerificationLifecycle` 或 `RuntimeVerificationLifecycle.h` 直接依赖。
+- 静态检查确认 cleanup 顺序仍覆盖 begin cleanup、renderer cleanup report、camera cleanup、runtime context detach、Engine shutdown、Engine cleanup report。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationShutdownCleanupBridge.cpp` 与 `RuntimeApplicationShutdownVerificationBridge.cpp` 参与编译，三条 focused verification mode 全部通过，renderer/world/subsystem cleanup stats 继续输出。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- shutdown verification report 现在有独立 application bridge，后续如果 verification cleanup report 继续拆分，不需要再修改 shutdown cleanup 顺序 bridge。
+- `RuntimeApplicationShutdownCleanupBridge` 仍负责高层 cleanup 顺序，但不再直接知道 `RuntimeVerificationLifecycle`。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 renderer backend ownership、Engine shutdown、camera cleanup、runtime context detach 或 window destroy 行为。
+- Runtime Application Shutdown Engine Bridge、Runtime Engine Lifecycle Types Header、Runtime Application State Forward Boundary、Runtime Profile State extraction、Runtime Render Resource State extraction、Runtime Camera Light State extraction、Runtime Engine Attachment State extraction 与 Runtime Renderer Backend Attachment Lifecycle extraction 已在后续章节接入；下一步可以继续收敛 renderer backend contract 或 RendererSubsystem frame bridge internals。
+
+### 2026-05-31 Runtime Application Shutdown Engine Bridge Extraction
+
+本轮继续收敛 camera cleanup / runtime context detach / Engine shutdown phase。上一轮后 `RuntimeApplicationShutdownCleanupBridge` 已不再直接依赖 verification lifecycle，但仍直接调用 `RuntimeEngineLifecycle::beginCleanup(...)`、`RuntimeCameraLifecycle::cleanup(...)`、`RuntimeEngineLifecycle::detachRuntimeContext(...)` 和 `RuntimeEngineLifecycle::shutdownEngine(...)`。本切片把这些 engine/camera cleanup 细节迁入独立 bridge，让 cleanup bridge 只表达高层 shutdown 顺序。
+
+新增与修改：
+
+- 新增 `application/RuntimeApplicationShutdownEngineBridge.h/.cpp`。
+- `RuntimeApplicationShutdownEngineBridge::beginCleanup(...)` 集中委托 `RuntimeEngineLifecycle::beginCleanup(...)`，并返回 application-level `RuntimeApplicationShutdownCleanupRefs`。
+- `RuntimeApplicationShutdownEngineBridge::cleanupRuntimeContext(...)` 集中执行 camera cleanup 与 runtime context detach。
+- `RuntimeApplicationShutdownEngineBridge::shutdownEngine(...)` 集中委托 Engine shutdown。
+- `RuntimeApplicationShutdownCleanupBridge.cpp` 不再直接 include 或调用 `RuntimeCameraLifecycle` / `RuntimeEngineLifecycle`；高层顺序保持为 begin cleanup、renderer cleanup report、runtime context cleanup、Engine shutdown、Engine cleanup report。
+- `RuntimeApplicationShutdownVerificationBridge` 改为接收 `RuntimeApplicationShutdownCleanupRefs`，不再暴露 `RuntimeEngineLifecycleCleanupRefs` 到 application shutdown verification API。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 shutdown engine bridge 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationShutdownEngineBridge`、`RuntimeApplicationShutdownCleanupRefs`、camera/runtime/engine cleanup 委托和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeApplicationShutdownCleanupBridge.cpp` 与 `RuntimeApplicationShutdownVerificationBridge.*` 中不再出现 `RuntimeCameraLifecycle`、`RuntimeEngineLifecycle` 或 `RuntimeEngineLifecycleCleanupRefs` 直接依赖。
+- 静态检查确认 cleanup bridge 高层顺序仍覆盖 begin cleanup、renderer cleanup report、runtime context cleanup、Engine shutdown、Engine cleanup report。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；`RuntimeApplicationShutdownCleanupBridge.cpp`、`RuntimeApplicationShutdownEngineBridge.cpp` 与 `RuntimeApplicationShutdownVerificationBridge.cpp` 参与编译，三条 focused verification mode 全部通过，renderer/world/subsystem cleanup stats 继续输出。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationShutdownCleanupBridge` 当前只保留 shutdown cleanup 的高层 phase 顺序，不再直接知道 camera cleanup、runtime context detach 或 Engine lifecycle cleanup/shutdown 实现细节。
+- `RuntimeApplicationShutdownCleanupRefs` 把 shutdown report 所需 refs 保持在 application shutdown bridge 边界，避免 verification bridge 直接暴露 engine lifecycle cleanup DTO。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 renderer backend ownership、cleanup report 输出、camera cleanup、runtime context detach、Engine shutdown 或 window destroy 行为。
+- Runtime Engine Lifecycle Types Header、Runtime Application State Forward Boundary、Runtime Profile State extraction、Runtime Render Resource State extraction、Runtime Camera Light State extraction、Runtime Engine Attachment State extraction 与 Runtime Renderer Backend Attachment Lifecycle extraction 已在后续章节接入；后续可以继续收敛 renderer backend contract 或 RendererSubsystem frame bridge internals。
+
+### 2026-05-31 Runtime Engine Lifecycle Types Header Extraction
+
+本轮继续细化 shutdown refs / Engine lifecycle cleanup DTO 边界。上一轮后 application shutdown bridge 已不再直接依赖 engine lifecycle implementation，但 `RuntimeEngineLifecycle.h` 仍把 `RuntimeEngineLifecycleState` 与 `RuntimeEngineLifecycleCleanupRefs` 和完整 `AppRuntimeContext.h`、`Engine.h`、`AssetSubsystem.h`、`RendererSubsystem.h` 一起暴露给所有调用方。本切片把 lifecycle state / cleanup refs 拆到轻量 types header，让持有 state 的 application aggregate 不再需要包含完整 lifecycle API header。
+
+新增与修改：
+
+- 新增 `application/RuntimeEngineLifecycleTypes.h`。
+- `RuntimeEngineLifecycleTypes.h` 集中 `RuntimeEngineLifecycleState` 与 `RuntimeEngineLifecycleCleanupRefs`，只前置声明 `GLengine::AssetSubsystem` 与 `GLengine::RendererSubsystem`。
+- `RuntimeEngineLifecycle.h` 改为只包含 `RuntimeEngineLifecycleTypes.h`，并前置声明 `GLframework::AppRuntimeContext`、`GLengine::Engine` 与 `GLengine::EngineDesc`。
+- `RuntimeEngineLifecycle.cpp` 显式包含 implementation 所需的 `AppRuntimeContext.h`、`Engine.h`、`AssetSubsystem.h` 与 `RendererSubsystem.h`，把完整类型依赖局部化到 `.cpp`。
+- `RuntimeApplicationState.h` 改为包含 `RuntimeEngineLifecycleTypes.h`，避免为了 `RuntimeEngineLifecycleState` 持有完整 lifecycle API header。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 engine lifecycle types header。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeEngineLifecycleTypes`、`RuntimeEngineLifecycleState`、`RuntimeEngineLifecycleCleanupRefs`、implementation 侧完整类型依赖和 VS 工程注册均可检索。
+- 静态检查确认 `RuntimeEngineLifecycle.h` 中不再出现 `AppRuntimeContext.h`、`Engine.h`、`AssetSubsystem.h` 或 `RendererSubsystem.h` public include。
+- 静态检查确认 `RuntimeApplicationState.h` 已改为包含 `RuntimeEngineLifecycleTypes.h`；该 header 仍因持有完整 `Engine` 与 `AppRuntimeContext` 保留对应 include。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；application startup/frame/shutdown/content/engine lifecycle 相关文件重新编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- Engine lifecycle state/cleanup refs 现在有独立轻量 header，调用方可以只依赖 DTO，不必引入完整 lifecycle API 或 Engine/subsystem implementation headers。
+- `RuntimeEngineLifecycle.h` 只保留 lifecycle API surface，不再把 implementation 所需完整类型作为 public include 扩散出去。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 Engine startup、renderer backend attach、cleanup refs、context detach、Engine shutdown 或 verification cleanup 行为。
+- Runtime Application State Forward Boundary、Runtime Profile State extraction、Runtime Render Resource State extraction、Runtime Camera Light State extraction、Runtime Engine Attachment State extraction 与 Runtime Renderer Backend Attachment Lifecycle extraction 已在后续章节接入；后续可以继续收敛 renderer backend contract 或 RendererSubsystem frame bridge internals。
+
+### 2026-05-31 Runtime Application State Forward Boundary
+
+本轮继续收敛 `RuntimeApplicationState / AppRuntimeContext public owner boundary` 的第一层：不改变 `RuntimeApplicationState` 当前持有的 Engine、runtime context、editor/frame state 和 legacy experiment runner，也不改 startup/frame/shutdown 顺序；只把 `RuntimeApplicationState.h` 从公共 application facade headers 中隔离出去，降低编译期耦合和公共 owner 泄漏。
+
+新增与修改：
+
+- `RuntimeApplicationShell.h` 不再 include `RuntimeApplicationState.h`，改为前置声明 `RuntimeApplicationState` 并通过 `std::unique_ptr<RuntimeApplicationState>` 持有 state。
+- `RuntimeApplicationShell.cpp` 显式 include `RuntimeApplicationState.h`，负责构造/析构隐藏的 state，并在 `makeCallbacks()` 中把 `*mState` 传给 callback binder。
+- `RuntimeApplicationShell` 显式删除 copy，保留 move 构造/赋值；析构和 move 实现在 `.cpp` 中定义，避免 incomplete type 在 public header 中要求完整 state。
+- `RuntimeApplicationCallbackBinder.h`、content/editor/engine/window startup bridge headers、frame continue/run/editor callback bridge headers、frame startup/application frame/shutdown facade headers、shutdown cleanup bridge header 改为前置声明 `RuntimeApplicationState` 与 `RuntimeApplicationShellConfig`。
+- 对应 `.cpp` 文件显式 include `RuntimeApplicationState.h` 与 `RuntimeApplicationConfig.h`，让完整类型依赖停留在 implementation files。
+
+已完成验证：
+
+- 静态检查确认上述 public headers 不再直接 include `RuntimeApplicationState.h`；除 `RuntimeApplicationShell.h` 因值持有 config 仍需要 `RuntimeApplicationConfig.h` 外，其余引用式 lifecycle/bridge headers 不再直接 include config header。
+- 静态检查确认 `RuntimeApplicationShell.h/.cpp` 中 hidden state ownership、构造/析构/move 和 callback binder 转发均可检索。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；callback binder、startup/frame/shutdown lifecycle/bridge 和 shell 相关文件重新编译，三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- `RuntimeApplicationState` 仍是 application runtime state aggregate，但不再作为 Shell 和 application lifecycle public headers 的强制完整类型依赖向外扩散。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 Engine startup、window startup、content preparation、frame loop、shutdown cleanup 或 verification cleanup 行为。
+- Runtime Profile State extraction、Runtime Render Resource State extraction、Runtime Camera Light State extraction、Runtime Engine Attachment State extraction 与 Runtime Renderer Backend Attachment Lifecycle extraction 已在后续章节接入；后续可以继续收敛 renderer backend contract 或 RendererSubsystem frame bridge internals。
+
+### 2026-05-31 Runtime Profile State Extraction
+
+本轮继续推进 `AppRuntimeContext profile/data boundary`。上一轮后 `RuntimeApplicationState` 已不再从 Shell 和 lifecycle public headers 中扩散，但 `AppRuntimeContext.h` 本身仍直接持有并暴露 frame pipeline、post-process、environment、PBR preview/light/camera profile 与各配置路径。本切片先把这些 profile/path 数据聚合到独立 `RuntimeProfileState`，让 `AppRuntimeContext` 的 profile data 成为一个明确子边界。
+
+新增与修改：
+
+- 新增 `application/RuntimeProfileState.h`。
+- `RuntimeProfileState` 集中 `RuntimeFramePipelineProfile`、frame pipeline profile path、renderer frame pass profile path、`PostProcessSettings`、post-process settings path、`EnvironmentProfile`、environment profile path、PBR preview/light/camera profiles、PBR preview profile path 与 PBR experiment profile path。
+- `AppRuntimeContext.h` 删除对 frame pipeline profile、environment profile、post-process settings、renderer frame pass profile 和 PBR scene setup profile headers 的直接 include，改为包含 `RuntimeProfileState.h` 并持有 `GL_RUNTIME::RuntimeProfileState profiles`。
+- Runtime profile loader、debug panel context mapping、runtime frame pass predicates/execution、renderer backend readiness/frame plan key、scene setup context creation 和 PBR verification startup/preview/light-camera policy 访问点改为 `context.profiles.*`。
+- `RuntimeProfileLoader.h` 改为前置声明 `GLframework::AppRuntimeContext`，完整 context include 移到 `.cpp`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 runtime profile state header。
+
+已完成验证：
+
+- 静态检查确认 application 中旧的 `context.framePipelineProfile`、`context.environmentProfile`、`context.postProcessSettings`、`context.pbrPreviewProfile`、`context.pbrLightRigProfile`、`context.pbrCameraRigProfile` 和 profile path 直接访问已迁移到 `context.profiles.*`。
+- 静态检查确认 `RuntimeProfileState.h` 是 profile headers 的集中包含点，`AppRuntimeContext.h` 只通过 `RuntimeProfileState.h` 持有 profile aggregate。
+- 静态检查确认 `RuntimeProfileLoader.h` 不再直接 include `AppRuntimeContext.h`，loader implementation file owns the complete include。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+
+结论：
+
+- `AppRuntimeContext` 仍是运行时上下文聚合，但 profile/path 数据已形成独立子结构，后续继续拆 context 时不需要再把 profile 字段和 render resource / scene object / camera-light 字段混在一起处理。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 profile load order、frame pass enable policy、post-process settings、environment precompute、PBR preview/light/camera verification policy 或 renderer backend readiness 行为。
+- Runtime Render Resource State extraction、Runtime Camera Light State extraction、Runtime Engine Attachment State extraction 与 Runtime Renderer Backend Attachment Lifecycle extraction 已在后续章节接入；后续可以继续收敛 renderer backend contract 或 RendererSubsystem frame bridge internals。
+
+### 2026-05-31 Runtime Render Resource State Extraction
+
+本轮继续推进 `AppRuntimeContext render-resource/camera-light boundary` 的 render-resource 半段。上一轮后 profile/path 数据已经进入 `context.profiles`，但 `AppRuntimeContext` 仍直接暴露 renderer、scene、frame targets、bloom、screen/runtime mesh/material、post-process pass 和 clear color。本切片先把这些渲染资源聚合到独立 `RuntimeRenderResourceState`，camera/light 留作下一片。
+
+新增与修改：
+
+- 新增 `application/RuntimeRenderResourceState.h`。
+- `RuntimeRenderResourceState` 集中 renderer、world/screen scene、point-light/screen/skybox/move-plane/text mesh、screen/grass/CSM shadow material、frame render targets、bloom、post-process pass 和 clear color。
+- `AppRuntimeContext.h` 删除这些 render resource top-level 字段，改为持有 `GL_RUNTIME::RuntimeRenderResourceState renderResources`。
+- application 内 runtime frame passes、frame runner、renderer backend readiness、window resize callback、scene setup context factory、legacy experiment context factory、editor panel coordinator、Engine lifecycle attachment 和 verification report/probe 访问点改为 `context.renderResources.*`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 runtime render resource state header。
+
+已完成验证：
+
+- 静态检查确认 application 中旧的 `context.renderer`、`context.sceneOffScreen`、`context.sceneInScreen`、`context.frameRenderTargets`、`context.bloom`、`context.screenQuad`、`context.screenMaterial`、`context.postProcessPass`、`context.clearColor` 等 top-level AppRuntimeContext render resource 访问已迁移到 `context.renderResources.*`；`RuntimeViewport` 中保留的是 resize DTO 字段名，不属于 AppRuntimeContext。
+- 静态检查确认 `RuntimeRenderResourceState.h`、`AppRuntimeContext.h`、VS 工程注册和 `context.renderResources` 访问点均可检索。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+
+结论：
+
+- `AppRuntimeContext` 的渲染资源现在有独立子边界，后续拆 camera/light 时不需要和 renderer/scene/frame-target/post-process 资源混在一起处理。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 runtime frame pass 顺序、renderer backend ownership、window resize texture sync、scene setup mapping、legacy experiment hooks 或 verification output contract。
+- Runtime Camera Light State extraction、Runtime Engine Attachment State extraction 与 Runtime Renderer Backend Attachment Lifecycle extraction 已在后续章节接入；后续可以继续收敛 renderer backend contract 或 RendererSubsystem frame bridge internals。
+
+### 2026-05-31 Runtime Camera Light State Extraction
+
+本轮继续推进 `AppRuntimeContext camera-light boundary`。上一轮后 render resources 已经进入 `context.renderResources`，但 `AppRuntimeContext` 仍直接暴露 camera、camera control、ambient/directional/spot lights 和 point light 集合。本切片把这些 camera/light 状态聚合到独立 `RuntimeCameraLightState`，让后续继续处理 Engine/runtime attachment 指针时不再和 camera/light 混在一起。
+
+新增与修改：
+
+- 新增 `application/RuntimeCameraLightState.h`。
+- `RuntimeCameraLightState` 集中 `Camera*`、`CameraControl*`、ambient light、directional light、spot light 和 point light vector。
+- `AppRuntimeContext.h` 删除这些 camera/light top-level 字段，改为持有 `GL_RUNTIME::RuntimeCameraLightState cameraLights`。
+- application 内 camera lifecycle、input/resize callback mapping、runtime frame pass scene-color 参数、scene setup context factory、legacy experiment context factory、editor panel coordinator、renderer backend readiness、PBR camera rig application 和 profile loader 访问点改为 `context.cameraLights.*`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 runtime camera light state header。
+
+已完成验证：
+
+- 静态检查确认 application 中旧的 top-level `context.camera`、`context.cameracontrol`、`context.ambientLight`、`context.dirLight`、`context.spotLight`、`context.pointLights` 访问已迁移到 `context.cameraLights.*`；`RuntimeInputController` 与 `RuntimeViewport` 中保留的是局部 DTO 字段名，不属于 AppRuntimeContext。
+- 静态检查确认 `RuntimeCameraLightState.h`、`AppRuntimeContext.h`、VS 工程注册和 `context.cameraLights` 访问点均可检索。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+
+结论：
+
+- `AppRuntimeContext` 的 camera/light 状态现在有独立子边界，后续拆 Engine/runtime attachment 指针时不需要和 camera/control/light 集合混在一起处理。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 camera init/cleanup 顺序、resize aspect sync、scene-color render 参数、scene setup light mapping、editor light/camera mapping、legacy experiment hooks、PBR light/camera verification policy 或 renderer backend readiness 行为。
+- Runtime Engine Attachment State extraction 与 Runtime Renderer Backend Attachment Lifecycle extraction 已在后续章节接入；后续可以继续收敛 renderer backend contract 或 RendererSubsystem frame bridge internals。
+
+### 2026-05-31 Runtime Engine Attachment State Extraction
+
+本轮继续推进 `AppRuntimeContext engine/runtime attachment boundary`。上一轮后 render resources、camera/light 和 profiles 已进入各自子结构，但 `AppRuntimeContext` 仍直接暴露 Engine、World、AssetSubsystem、RendererSubsystem 和 engine-world editable flag。本切片把这些 runtime attachment 指针聚合到独立 `RuntimeEngineAttachmentState`，让 `AppRuntimeContext` 只保留几个明确子边界。
+
+新增与修改：
+
+- 新增 `application/RuntimeEngineAttachmentState.h`。
+- `RuntimeEngineAttachmentState` 集中 `Engine*`、`World*`、`AssetSubsystem*`、`RendererSubsystem*` 和 `engineWorldEditable`。
+- `AppRuntimeContext.h` 删除这些 engine/runtime attachment top-level 字段，改为持有 `GL_RUNTIME::RuntimeEngineAttachmentState engineAttachments`。
+- application 内 Engine lifecycle attach/detach、editor panel context mapping、engine world verification、imported asset verification、scene setup context factory 和 verification report 访问点改为 `context.engineAttachments.*`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 runtime engine attachment state header。
+
+已完成验证：
+
+- 静态检查确认 application 中旧的 top-level `context.engine`、`context.engineWorld`、`context.assetSubsystem`、`context.rendererSubsystem`、`context.engineWorldEditable` 访问已迁移到 `context.engineAttachments.*`。
+- 静态检查确认 `RuntimeEngineAttachmentState.h` 是 Engine/World/Subsystem forward declarations 的集中包含点，`AppRuntimeContext.h` 不再直接声明这些 engine runtime types。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+
+结论：
+
+- `AppRuntimeContext` 现在主要由 `renderResources`、`cameraLights`、`engineAttachments` 和 `profiles` 四个子边界组成，不再直接暴露大量 runtime top-level 字段。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 Engine startup/shutdown、World editable gate、AssetSubsystem registry、RendererSubsystem attach/cleanup、scene setup mapping 或 verification output contract。
+- Runtime Renderer Backend Attachment Lifecycle extraction 已在下一节接入；后续可以继续收敛 renderer backend contract 或推进 RendererSubsystem frame bridge internals。
+
+### 2026-05-31 Runtime Renderer Backend Attachment Lifecycle Extraction
+
+本轮继续推进 `engine-level renderer/backend ownership`。上一轮后 `AppRuntimeContext` 的 engine attachment 状态已经聚合，但 `RuntimeEngineLifecycle.cpp` 仍直接知道 renderer backend catalog、factory、selection 和 attachment desc 组装细节。本切片把 renderer backend attach 细节拆到独立 `RuntimeRendererBackendAttachmentLifecycle`，让 Engine lifecycle 只保留对外 attach API 和 subsystem 空指针 gate。
+
+新增与修改：
+
+- 新增 `application/RuntimeRendererBackendAttachmentLifecycle.h/.cpp`。
+- `RuntimeRendererBackendAttachmentLifecycle::attachToRendererSubsystem(...)` 集中执行 renderer 绑定、backend key selection、backend factory 创建、attachment desc 组装和 `RendererSubsystem::setFrameExecutor(...)`。
+- `RuntimeEngineLifecycle::attachRendererBackend(...)` 保留原有对外接口，但实现改为委托 attachment lifecycle；`RuntimeEngineLifecycle.cpp` 不再直接 include `RuntimeRendererBackendCatalog.h` 或 `RuntimeRendererBackendFactory.h`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 runtime renderer backend attachment lifecycle 源文件和 header。
+
+已完成验证：
+
+- 静态检查确认 catalog/factory、selection、attachment desc 和 `setFrameExecutor(...)` 细节集中在 `RuntimeRendererBackendAttachmentLifecycle.cpp`；`RuntimeEngineLifecycle.cpp` 只调用新 lifecycle。
+- 静态检查确认新模块、VS 工程注册和 `RuntimeEngineLifecycle` 委托入口均可检索。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+
+结论：
+
+- Engine lifecycle 现在不再直接承担 runtime renderer backend selection/factory/attachment desc 细节，renderer backend attach 边界更接近独立 application-to-engine bridge。
+- 该切片仍是降耦合，不扩张 PBR 功能，也不改变 backend registry key、runtime pipeline backend、no-op backend、RendererSubsystem ownership、cleanup detach 或 verification output contract。
+- 后续可以继续收敛 renderer backend contract 或推进 RendererSubsystem frame bridge internals。
+
+### 2026-05-31 RendererSubsystem Frame Bridge Stats Header Extraction
+
+本轮继续推进 `RendererSubsystem frame bridge internals` 的低风险切片。上一轮后 runtime renderer backend attachment 细节已经从 `RuntimeEngineLifecycle` 中拆出，但 `RendererSubsystem.h` 仍直接承载 `RendererSubsystemFrameBridgeStats` 的完整字段列表和 `<string>` 依赖。本切片先把 stats DTO 拆到独立 header，让 subsystem public header 更接近行为 API + DTO 依赖组合，而不是继续堆积诊断字段。
+
+新增与修改：
+
+- 新增 `engine/RendererSubsystemFrameBridgeStats.h`。
+- `RendererSubsystemFrameBridgeStats` 完整迁入该 header，字段名、默认值和 namespace 保持不变。
+- `RendererSubsystem.h` 删除 stats 结构体定义和直接 `<string>` include，改为 include `RendererSubsystemFrameBridgeStats.h`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 engine header，filter 归入 `include\GLengine`。
+
+已完成验证：
+
+- 静态检查确认只有 `engine/RendererSubsystemFrameBridgeStats.h` 定义 `RendererSubsystemFrameBridgeStats`，`RendererSubsystem.h` 只 include 新 header 且不再直接 include `<string>`。
+- 静态检查确认 `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新 header，filter 为 `include\GLengine`。
+- `RuntimeVerificationReport` 和 `EngineDiagnosticsPanel` 仍通过 `RendererSubsystem::getFrameBridgeStats()` 观察同一 stats contract，不需要改输出字段或 UI 字段。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是纯 DTO/header 边界拆分，不改变 RendererSubsystem lifecycle、frame bridge call path、backend ownership、verification contract 或 PBR pass。
+- 后续可以继续收敛 RendererSubsystem frame bridge internals，例如把 frame intent/result refresh 逻辑继续拆成更小的 engine-side frame bridge state/adapter。
+
+### 2026-05-31 RendererSubsystem Frame Bridge State Extraction
+
+本轮继续推进 `RendererSubsystem frame bridge internals`。上一轮已把 stats DTO 字段列表从 `RendererSubsystem.h` 中移出，但 `RendererSubsystem.cpp` 仍直接写 `RendererSubsystemFrameBridgeStats` 的 counters、backend metadata、frame intent/result 和 Engine time/delta。本切片新增 `RendererSubsystemFrameBridgeState`，把 stats mutation policy 继续下沉到 engine-side frame bridge state，`RendererSubsystem` 保留生命周期、renderer/backend 持有和 frame dispatch。
+
+新增与修改：
+
+- 新增 `engine/RendererSubsystemFrameBridgeState.h/.cpp`。
+- `RendererSubsystemFrameBridgeState` 持有 `RendererSubsystemFrameBridgeStats`，集中 `record*` counters、frame intent/result application、backend metadata refresh、renderer observation refresh 和 Engine time/delta refresh。
+- `RendererSubsystem.h` 改为持有 `RendererSubsystemFrameBridgeState`，不再直接持有 `RendererSubsystemFrameBridgeStats`。
+- `RendererSubsystem.cpp` 删除直接 stats 字段写入和本地 backend state formatter，改为调用 `mFrameBridgeState.record... / apply... / refresh...`；`RendererSubsystem::getFrameBridgeStats()` 合同保持不变。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 frame bridge state `.cpp` 与 header，filter 分别为 `cppfile\GLengine` 和 `include\GLengine`。
+
+已完成验证：
+
+- 静态检查确认 `RendererSubsystem.cpp` 不再出现 `mFrameBridgeStats`，stats 字段写入集中到 `RendererSubsystemFrameBridgeState.cpp`。
+- 静态检查确认新 state `.cpp/.h` 已注册到 VS 工程与 filters。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是纯 frame bridge state/diagnostics 写入策略拆分，不改变 renderer backend ownership、frame bridge call order、runtime frame pipeline adapter、verification output 字段或 PBR pass。
+- 后续可继续沿 RendererSubsystem frame bridge internals 拆分 backend dispatch / frame execution state，或回到 renderer backend contract。
+
+### 2026-05-31 RendererSubsystem Backend Slot Extraction
+
+本轮继续推进 `RendererSubsystem frame bridge internals`。上一轮已把 frame bridge stats mutation policy 下沉到 `RendererSubsystemFrameBridgeState`，但 `RendererSubsystem` 仍直接持有 backend `unique_ptr`、attachment metadata，并承担 attachment desc normalization、ready 判断和 attach/detach 差异检测。本切片新增 `RendererSubsystemBackendSlot`，把这些 backend slot state 下沉到独立 engine-side object，`RendererSubsystem` 保留 lifecycle、renderer 观察和 frame dispatch facade。
+
+新增与修改：
+
+- 新增 `engine/RendererSubsystemBackendSlot.h/.cpp`。
+- `RendererSubsystemBackendSlot` 集中持有 `std::unique_ptr<RendererBackend>` 与 `RendererBackendAttachmentDesc`，封装 `setBackend(...)`、`getBackend()`、`hasBackend()`、`isBackendReady()` 和 attachment desc normalization。
+- `RendererSubsystemBackendSlotChange` 明确表达本次 backend set 操作是否发生 detach/attach，`RendererSubsystem` 只把该 change 转交给 `RendererSubsystemFrameBridgeState` 记录 lifecycle counters。
+- `RendererSubsystem.h` 改为持有 `RendererSubsystemBackendSlot mBackendSlot`，不再直接持有 `std::unique_ptr<RendererBackend>` 或 `RendererBackendAttachmentDesc` 成员。
+- `RendererSubsystem.cpp` 的 public API 保持不变：`setFrameExecutor(...)`、`clearFrameExecutor()`、`getFrameExecutor()`、`hasFrameExecutor()` 和 frame dispatch 仍是外部入口，但内部委托 backend slot。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 backend slot `.cpp` 与 header，filter 分别为 `cppfile\GLengine` 和 `include\GLengine`。
+
+已完成验证：
+
+- 静态检查确认 `RendererSubsystem.h/.cpp` 不再出现旧 `mFrameExecutor` 或 `mFrameExecutorAttachment` 成员。
+- 静态检查确认 `RendererSubsystemBackendSlot`、`RendererSubsystemBackendSlotChange`、VS 工程注册、subagent 协作文档和 `recordRendererBackendAttachmentChange(...)` 调用点均可检索。
+- 只读 sidecar subagent `Euler` 审计本轮 backend slot extraction，未修改文件，确认 attach/detach counters、attachment desc normalization、cleanup detach 语义、no-op backend mode 和 VS 工程注册没有阻塞问题。
+- 采纳 `Euler` 的低风险建议：删除未使用的 `RendererSubsystemBackendSlot::clear()`，避免未来绕过 `RendererSubsystem::clearFrameExecutor()` 时漏记 lifecycle counters。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 backend slot state / ownership 边界拆分，不改变 runtime frame pipeline adapter、renderer backend public API、verification output 字段、cleanup detach stats 或 PBR pass。
+- RendererSubsystem Backend Slot Snapshot extraction 已在下一节接入；后续可以继续把 `RendererSubsystem` 中 frame dispatch / backend execution 细节拆成更明确的 execution bridge，或者继续推进 renderer backend contract；当前仍不建议扩张 PBR 功能。
+
+### 2026-05-31 RendererSubsystem Backend Slot Snapshot Extraction
+
+本轮继续推进 `RendererSubsystem backend slot snapshot`。上一轮 `RendererSubsystemBackendSlot` 已经接管 backend pointer storage、attachment metadata 和 ready 判断，但 `RendererSubsystemFrameBridgeState` 仍通过 raw `RendererBackend*` 读取 backend key / ready 状态。本切片新增 backend slot snapshot，让 frame bridge state 只消费只读 DTO，不再直接探测 backend 对象。
+
+新增与修改：
+
+- 在 `engine/RendererSubsystemBackendSlot.h` 新增 `RendererSubsystemBackendSlotSnapshot`，集中 `attached`、`ready`、`backendKey` 和 normalized `RendererBackendAttachmentDesc`。
+- `RendererSubsystemBackendSlot::captureSnapshot()` 负责生成 backend slot snapshot，并把 backend key fallback、ready 判断和 detached metadata fallback 留在 slot 内部。
+- `RendererSubsystemFrameBridgeState::refreshRendererBackendStats(...)` 与 `refreshFrameBridgeStats(...)` 改为接收 `RendererSubsystemBackendSlotSnapshot`，不再接收 raw `RendererBackend*` 或 attachment desc pair。
+- `RendererSubsystem.cpp` 在 backend attach 与 frame bridge stats refresh 时传入 `mBackendSlot.captureSnapshot()`。
+
+已完成验证：
+
+- 静态检查确认 `RendererSubsystemFrameBridgeState.h/.cpp` 不再直接出现 `RendererBackend*` probing、`getBackendKey()` 或本地 `isRendererBackendReady(...)` helper。
+- 静态检查确认 `RendererSubsystemBackendSlotSnapshot`、`captureSnapshot()` 和 `backendSnapshot` 调用点均可检索。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 backend observation DTO 边界拆分，不改变 `RendererSubsystem` public API、backend ownership、frame dispatch、runtime/no-op backend behavior、cleanup detach stats、verification output 字段或 PBR pass。
+- 后续可以继续把 `RendererSubsystem` 中 frame dispatch / backend execution 细节拆成更明确的 execution bridge，或者转回 renderer backend contract 命名与 API 收敛。
+
+### 2026-05-31 RendererSubsystem Frame Execution Bridge Extraction
+
+本轮继续推进 `RendererSubsystem frame execution bridge`。上一轮后 backend observation 已经通过 `RendererSubsystemBackendSlotSnapshot` 下沉到只读 DTO，但 `RendererSubsystem::renderFrameBridge(...)` 仍直接决定是否调用 backend 并直接执行 `backend->renderFrame(...)`。本切片新增 `RendererSubsystemFrameExecutionBridge`，把 backend frame execution / default frame result generation 从 subsystem facade 中拆出。
+
+新增与修改：
+
+- 新增 `engine/RendererSubsystemFrameExecutionBridge.h/.cpp`。
+- 新增 `RendererSubsystemFrameExecutionResult`，明确表达 backend readiness、frame 是否实际执行，以及返回的 `RendererFrameResult`。
+- `RendererSubsystemFrameExecutionBridge::executeFrame(...)` 负责基于 backend pointer 与 ready flag 执行 backend frame，backend 不可用时返回默认 frame result。
+- `RendererSubsystem::renderFrameBridge(...)` 保留 frame bridge call counter、begin/end lifecycle、ready/not-ready frame counter 和 exception path；实际 backend 调用改为委托 execution bridge。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 execution bridge `.cpp` 与 header，filter 分别为 `cppfile\GLengine` 和 `include\GLengine`。
+
+已完成验证：
+
+- 静态检查确认 `RendererSubsystem.cpp` 不再直接调用 `backend->renderFrame(...)`，实际调用集中在 `RendererSubsystemFrameExecutionBridge.cpp`。
+- 静态检查确认 `RendererSubsystemFrameExecutionBridge`、`RendererSubsystemFrameExecutionResult`、`mFrameExecutionBridge` 和 VS 工程注册均可检索。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 frame execution dispatch 边界拆分，不改变 renderer backend public API、backend ownership、frame bridge stats 字段、ready/not-ready counter 语义、runtime/no-op backend behavior、cleanup detach stats 或 PBR pass。
+- `RendererSubsystem` 当前仍保留 subsystem lifecycle、begin/end frame bridge、stats counter coordination 和 public facade；后续建议继续收敛 renderer backend contract 命名/API，或选择下一个小型 Engine runtime boundary，避免继续扩张 PBR pass。
+
+### 2026-05-31 RendererSubsystem Renderer Backend API Naming Cleanup
+
+本轮继续推进 `renderer backend contract naming/API cleanup`。上一轮 execution bridge 已经让 backend frame execution 从 `RendererSubsystem` 中移出，但 public API、diagnostics 和 verification 仍以旧 `FrameExecutor` 命名作为主语。本切片把 live application 调用迁到 `RendererBackend` 命名，同时保留旧 `FrameExecutor` wrapper 和输出字段作为兼容层。
+
+新增与修改：
+
+- `RendererSubsystem` 新增 `setRendererBackend(...)`、`clearRendererBackend()`、`getRendererBackend()` 和 `hasRendererBackend()`。
+- `setFrameExecutor(...)`、`clearFrameExecutor()`、`getFrameExecutor()` 和 `hasFrameExecutor()` 保留为 compatibility wrapper，内部转发到新的 renderer backend API。
+- `RuntimeRendererBackendAttachmentLifecycle` 改为调用 `RendererSubsystem::setRendererBackend(...)`。
+- `RuntimeFrameRunner` 改为通过 `hasRendererBackend()` 判断是否进入 Engine-owned renderer backend path。
+- `RuntimeEngineLifecycle::beginCleanup(...)` 改为通过 `clearRendererBackend()` 清理 backend。
+- `RendererSubsystemFrameBridgeStats` 新增 `rendererBackendAttached` 与 `rendererBackendFrameCallCount`；旧 `frameExecutorAttached` / `frameExecutorCallCount` 保留并与新字段同步，保证既有 verification 输出兼容。
+- `RuntimeVerificationReport` 的 runtime renderer subsystem / renderer backend contract / cleanup stats 均新增 `rendererBackendAttached` 和 `rendererBackendFrameCalls` 字段。
+- `EngineDiagnosticsPanel` 的 UI 标签改为 Renderer Backend Attached / Renderer Backend Frame Calls。
+- `tools/verify_pbr.ps1` 新增对 `rendererBackendAttached`、`rendererBackendFrameCalls` 和 cleanup/backend detach 的断言，同时保留旧 `frameExecutor*` 断言。
+
+已完成验证：
+
+- 静态检查确认 application live code 不再直接调用 `setFrameExecutor(...)`、`clearFrameExecutor()` 或 `hasFrameExecutor()`；旧 API 只保留在 `RendererSubsystem` compatibility wrapper 中。
+- 静态检查确认 `rendererBackendAttached`、`rendererBackendFrameCalls`、`setRendererBackend(...)`、`hasRendererBackend()` 和 `clearRendererBackend()` 调用点均可检索。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 renderer backend contract 命名与诊断字段收敛，不改变 backend ownership、frame execution bridge、runtime/no-op backend behavior、cleanup detach stats 或 PBR pass。
+- 旧 `FrameExecutor` 命名仍作为兼容层存在；后续可继续收敛剩余 compatibility alias / stats 字段，或选择下一个小型 Engine runtime boundary。
+
+### 2026-05-31 RendererSubsystem Renderer Backend Public Compatibility API Removal
+
+本轮继续推进 `renderer backend compatibility cleanup`。上一轮已经把 live application code 迁到 `RendererBackend` 命名，但 `RendererSubsystem` public API 里仍保留 `setFrameExecutor(...)` / `hasFrameExecutor()` 等 wrapper，`RendererBackend.h` 里也仍保留旧 DTO / executor alias。本切片删除这些未被 live code 使用的公共兼容入口，仅保留 verification 输出中的旧 `frameExecutor*` 字段作为外部日志兼容。
+
+新增与修改：
+
+- `RendererBackend.h` 删除 `RendererFrameExecutor`、`RendererSubsystemFrameIntent` 和 `RendererSubsystemFrameResult` compatibility aliases。
+- `RendererSubsystem.h/.cpp` 删除 `setFrameExecutor(...)`、`clearFrameExecutor()`、`getFrameExecutor()` 和 `hasFrameExecutor()` public compatibility wrappers。
+- `RendererSubsystemFrameBridgeState.h/.cpp` 删除未使用的 `recordFrameExecutorCall()` wrapper。
+- `RendererSubsystem` public renderer backend API 现在只暴露 `setRendererBackend(...)`、`clearRendererBackend()`、`getRendererBackend()` 和 `hasRendererBackend()`。
+- `RendererSubsystemFrameBridgeStats` 与 verification report 仍保留 `frameExecutorAttached` / `frameExecutorCalls`，并由 renderer backend 字段同步，避免一次性破坏既有 verification/log parser。
+
+已完成验证：
+
+- 静态检查确认 engine/application/tools live code 中不再出现 `RendererFrameExecutor`、`RendererSubsystemFrameIntent`、`RendererSubsystemFrameResult`、`setFrameExecutor(...)`、`clearFrameExecutor()`、`getFrameExecutor()`、`hasFrameExecutor()` 或 `recordFrameExecutorCall()`。
+- 静态检查确认旧 `frameExecutor*` 名称只保留在 stats/report/script compatibility 输出与断言中。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 public renderer backend API cleanup，不改变 backend ownership、frame execution bridge、runtime/no-op backend behavior、verification 输出兼容字段、cleanup detach stats 或 PBR pass。
+- 后续可以继续把旧 `frameExecutor*` verification 字段逐步降级为 legacy-only 输出，或者切换到下一个小型 Engine runtime boundary；当前仍不建议扩张 PBR 功能。
+
+### 2026-05-31 RendererSubsystem Frame Executor Stats Internal Compatibility Removal
+
+本轮继续推进 `renderer backend compatibility cleanup`。上一轮已经删除旧 `FrameExecutor` public API / aliases，但 `RendererSubsystemFrameBridgeStats` 内部仍保存 `frameExecutorAttached` / `frameExecutorCallCount` 两份旧状态。本切片删除 Engine 内部旧 stats 字段，只在 verification/report 输出中保留旧字段名，并直接从 `rendererBackendAttached` / `rendererBackendFrameCallCount` 派生，降低内部命名债务。
+
+新增与修改：
+
+- `RendererSubsystemFrameBridgeStats` 删除 `frameExecutorAttached` 与 `frameExecutorCallCount`，Engine 内部 frame bridge stats 只保留 `rendererBackendAttached` 与 `rendererBackendFrameCallCount`。
+- `RendererSubsystemFrameBridgeState` 删除旧字段同步逻辑，不再维护并行 `frameExecutor*` 状态。
+- `RuntimeVerificationReport` 继续输出 `frameExecutorAttached`、`frameExecutorCalls` 和 `rendererFrameExecutorAttached` 兼容字段，但其值改为从 renderer-backend stats 派生。
+- `tools/verify_pbr.ps1` 断言保持不变，用来证明旧输出字段仍兼容既有 log/parser。
+
+已完成验证：
+
+- 静态检查确认 `engine/` 下不再出现 `frameExecutorAttached`、`frameExecutorCallCount`、`frameExecutorCalls` 或 `rendererFrameExecutorAttached`。
+- 静态检查确认旧 `frameExecutor*` 名称只保留在 `RuntimeVerificationReport.cpp` 文本输出和 `verify_pbr.ps1` parser/assertion 中。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 renderer backend stats internal compatibility cleanup，不改变 backend ownership、frame execution bridge、runtime/no-op backend behavior、verification 输出兼容字段名、cleanup detach stats 或 PBR pass。
+- 旧 `frameExecutor*` 当前已经不是 Engine 内部状态，只是 verification/log compatibility 输出；后续可以选择最终移除这些旧输出字段，或转入下一个小型 Engine runtime boundary。
+
+### 2026-05-31 RendererSubsystem Frame Executor Verification Output Removal
+
+本轮继续完成 `renderer backend compatibility cleanup`。上一轮已经让旧 `frameExecutor*` 不再作为 Engine 内部状态存在，但 live verification/report 仍保留旧输出字段名作为兼容层。本切片移除这些旧 live 输出字段和脚本断言，让 renderer backend contract 只暴露 `rendererBackend*` 语义。
+
+新增与修改：
+
+- `RuntimeVerificationReport` 删除 `frameExecutorAttached`、`frameExecutorCalls` 和 `rendererFrameExecutorAttached` 输出字段。
+- `tools/verify_pbr.ps1` 删除旧 `frameExecutor*` parser/assertion，改为只基于 `rendererBackendAttached`、`rendererBackendFrameCalls`、`rendererBackendReady`、backend key/state/ownership/registry、ready/not-ready frame counters 和 cleanup detach counters 验证 renderer backend contract。
+- `Runtime renderer subsystem stats`、`Runtime renderer backend contract stats`、cleanup stats 和 engine subsystem cleanup stats 均不再输出旧 executor 字段。
+
+已完成验证：
+
+- 静态检查确认 `engine/application/tools` live code 中不再出现 `frameExecutorAttached`、`frameExecutorCallCount`、`frameExecutorCalls`、`rendererFrameExecutorAttached`、`RendererFrameExecutor` 或旧 `setFrameExecutor(...)` API 名称。
+- 静态检查确认 `rendererBackendAttached`、`rendererBackendFrameCalls`、`rendererBackendFrameCallCount` 和 renderer backend cleanup 断言仍可检索。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 renderer backend verification output cleanup，不改变 backend ownership、frame execution bridge、runtime/no-op backend behavior、cleanup detach stats 或 PBR pass。
+- 旧 `FrameExecutor` 命名已经从 live engine/application/tools contract 中清除；后续建议转入下一个小型 Engine runtime boundary，而不是继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Renderer Backend Verification Report Formatter Extraction
+
+本轮转入下一个小型 Engine runtime boundary。当前 `RuntimeVerificationReport` 仍直接拼接 renderer subsystem / renderer backend contract / cleanup verification 字符串，导致通用 runtime report 继续承载 renderer backend 字段格式细节。本切片把这些字符串格式化函数拆到独立 application 模块，保持 `RuntimeVerificationReport` 只负责报告触发和 `reportLine(...)` 输出。
+
+新增与修改：
+
+- 新增 `RuntimeRendererBackendVerificationReport.h/.cpp`，集中格式化 `Runtime renderer subsystem stats`、`Runtime renderer backend contract stats`、`Runtime renderer subsystem cleanup stats` 和 `Runtime renderer backend contract cleanup stats` 四类行。
+- `RuntimeVerificationReport.cpp` 改为调用 formatter 函数获取完整字符串，仍由原 `reportLine(...)` 统一写 stdout/logger，避免改变日志副作用。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `.cpp/.h`，filter 分别保持在 `cppfile\Application` 和 `include\Application`。
+- 只读 sidecar `James` 审计本切片，确认四个 verification 行前缀、字段名、cleanup detach 字段和 `verify_pbr.ps1` parser contract 必须保持稳定；本实现按该边界完成，没有让新模块接管日志输出。
+
+已完成验证：
+
+- 静态检查确认新增 formatter、项目注册和 `RuntimeVerificationReport` 调用点均可检索。
+- 静态检查确认 `engine/application/tools` live code 仍不包含旧 `FrameExecutor` / `frameExecutor*` API 与输出字段。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过，renderer backend contract 与 cleanup 输出保持原字段。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime verification report formatter boundary extraction，不改变 renderer backend ownership、frame execution bridge、runtime/no-op backend behavior、verification 输出合同、cleanup detach stats 或 PBR pass。
+- 后续仍建议继续选择小型 Engine runtime boundary，优先降 runtime/application 组合层耦合；不建议回到 PBR pass 扩张。
+
+### 2026-05-31 Runtime Engine Verification Report Formatter Extraction
+
+本轮继续推进 runtime verification report 边界拆分。上一轮已经把 renderer backend report 行格式化迁出，但 `RuntimeVerificationReport` 仍直接拼接 Engine lifecycle snapshot、subsystem summary、tick health、Engine World cleanup 和 Engine subsystem cleanup 输出。本切片新增 Engine verification report formatter，让 `RuntimeVerificationReport` 只负责捕获当前 runtime/Engine 指针状态并输出 formatter 返回的字符串。
+
+新增与修改：
+
+- 新增 `RuntimeEngineVerificationReport.h/.cpp`，集中格式化 `Runtime engine lifecycle snapshot stats`、`Runtime engine subsystem summary stats`、`Runtime engine tick stats`、`Runtime subsystem health stats`、`Runtime engine world cleanup stats` 和 `Runtime engine subsystem cleanup stats`。
+- 新增 `RuntimeEngineWorldCleanupReportFields` 与 `RuntimeEngineSubsystemCleanupReportFields`，把 runtime context 指针状态、asset registry 数量和 renderer stats 指针作为明确 DTO 传入 formatter。
+- `RuntimeVerificationReport.cpp` 删除本地 `EngineRunMode`、subsystem summary 和 tick count 字符串格式化 helper，改为调用 `RuntimeEngineVerificationReport`；`reportLine(...)` 输出职责保持不变。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `.cpp/.h`，filter 分别保持在 `cppfile\Application` 和 `include\Application`。
+
+已完成验证：
+
+- 静态检查确认新增 Engine formatter、项目注册和 `RuntimeVerificationReport` 调用点均可检索。
+- Focused verification 第一次通过时发现一个 `size_t` 聚合初始化 warning，已修正为 `std::size_t{ 0 }`，随后 focused verification 重新通过且 warning 消失。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过，Engine runtime / cleanup report 行保持原字段。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime engine verification report formatter boundary extraction，不改变 Engine lifecycle、World/subsystem cleanup 行为、renderer backend contract、verification 输出合同或 PBR pass。
+- 后续建议继续沿 application runtime report/lifecycle 组合层做小步降耦合，优先保持可验证边界，而不是扩张 PBR 功能。
+
+### 2026-05-31 Runtime Verification Frame Capture Lifecycle Extraction
+
+本轮继续推进 verification lifecycle 降耦合。当前 `RuntimeVerificationLifecycle::captureFrameIfNeeded(...)` 直接编排 framebuffer capture、runtime Engine/renderer report 和 PBR renderer stats report，使 generic verification lifecycle 继续依赖 capture/report/PBR stats 细节。本切片把 capture-frame 编排迁入独立 lifecycle 模块，`RuntimeVerificationLifecycle` 保持 public facade 不变。
+
+新增与修改：
+
+- 新增 `RuntimeVerificationFrameCaptureLifecycle.h/.cpp`，集中处理 verification frame capture gate、`RuntimeVerificationCapture::captureDefaultFramebuffer(...)`、`RuntimeVerificationReport::reportRenderedFrameRuntimeStats(...)`、`RuntimePBRRendererStatsVerification::reportRenderedFrame(...)` 和 `captureWritten` 状态更新。
+- `RuntimeVerificationLifecycle.cpp` 的 `captureFrameIfNeeded(...)` 改为委托 `RuntimeVerificationFrameCaptureLifecycle`，同时移除对 `RuntimeVerificationCapture`、`RuntimePBRRendererStatsVerification` 以及 Engine/subsystem implementation headers 的直接依赖。
+- `RuntimeVerificationLifecycle` public API 不变，frame capture 调用方不需要改动。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `.cpp/.h`，filter 分别保持在 `cppfile\Application` 和 `include\Application`。
+
+已完成验证：
+
+- 静态检查确认新增 lifecycle、调用点、VS 工程注册，以及 capture/report/PBR stats 依赖已集中到新模块。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过，capture 后的 runtime Engine/renderer/PBR stats report 仍保持原输出。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime verification frame capture lifecycle boundary extraction，不改变 verification trigger、capture 输出、runtime report、PBR renderer stats report、cleanup stats 或 PBR pass。
+- 后续建议继续把 `RuntimeVerificationLifecycle` 中 prepared-scene 或 cleanup 编排按同样方式拆成小模块，持续降低 generic lifecycle 对具体 verification domain 的依赖。
+
+### 2026-05-31 Runtime Verification Prepared Scene Lifecycle Extraction
+
+本轮继续沿 `RuntimeVerificationLifecycle` 做 application verification lifecycle 降耦合。上一轮已经把 capture-frame 编排拆出，但 `reportPreparedScene(...)` 仍直接串联 Engine World probe、PBR scene probe、imported asset probe、renderer pass profile 和 prepared-scene stats。该切片把 prepared-scene verification orchestration 迁入独立 lifecycle 模块，保持 `RuntimeVerificationLifecycle` 作为 public facade。
+
+新增与修改：
+
+- 新增 `RuntimeVerificationPreparedSceneLifecycle.h/.cpp`，集中处理 `config.enabled` gate、Engine World probe、PBR scene probe、imported asset probe、renderer pass profile refresh、`PBR verification scene stats` 和 `Engine world prepared scene stats` report 顺序。
+- `RuntimeVerificationLifecycle.cpp` 的 `reportPreparedScene(...)` 改为委托 `RuntimeVerificationPreparedSceneLifecycle`，并移除对 Engine World/PBR scene probe/import/pass-profile/prepared-scene stats 模块的直接 include。
+- `RuntimeVerificationLifecycle` public API 不变，content verification lifecycle 调用方不需要改动。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `.cpp/.h`，filter 分别保持在 `cppfile\Application` 和 `include\Application`。
+- 只读 sidecar `Mendel` 审计本切片，确认这是低风险拆分，关键约束是保持 prepared-scene 调用/输出顺序、VS 工程注册和 verification parser contract 不变；本实现按该边界完成。
+
+已完成验证：
+
+- 静态检查确认新增 lifecycle、调用点、VS 工程注册，以及 prepared-scene domain 依赖已集中到新模块。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,deferred-emissive,deferred-material-ibl,deferred-alpha-mask,deferred-texture-set,showcase-spheres,engine-world-scene-probe,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；十条 focused verification mode 全部通过，覆盖 PBR probes、import probe、showcase、Engine World probes 和 no-op backend。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime verification prepared-scene lifecycle boundary extraction，不改变 scene probe 创建、renderer pass profile、prepared-scene stats、runtime renderer backend contract、cleanup stats 或 PBR pass。
+- 后续建议继续把 `RuntimeVerificationLifecycle` 中 cleanup report 或 startup profile 编排拆成小模块，持续降低 generic verification lifecycle 对具体 verification domain 的依赖。
+
+### 2026-05-31 Runtime Verification Cleanup Lifecycle Extraction
+
+本轮继续沿 `RuntimeVerificationLifecycle` 做 verification lifecycle 降耦合。上一轮 prepared-scene 编排已经拆出，但 cleanup 阶段仍直接调用 `RuntimeVerificationReport` 输出 renderer subsystem cleanup、renderer backend contract cleanup、Engine World cleanup 和 Engine subsystem cleanup。该切片把 cleanup report 编排迁入独立 lifecycle 模块，保持 `RuntimeVerificationLifecycle` public facade 不变。
+
+新增与修改：
+
+- 新增 `RuntimeVerificationCleanupLifecycle.h/.cpp`，集中处理 cleanup report 的 `config.enabled` gate、renderer subsystem null gate、renderer subsystem cleanup report、Engine World cleanup report 和 Engine subsystem cleanup report。
+- `RuntimeVerificationLifecycle.cpp` 的 `reportRendererSubsystemCleanup(...)` 与 `reportEngineCleanup(...)` 改为委托 `RuntimeVerificationCleanupLifecycle`，并移除对 `RuntimeVerificationReport.h` 的直接 include。
+- `RuntimeVerificationLifecycle` public API 不变，shutdown verification bridge 调用方不需要改动。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `.cpp/.h`，filter 分别保持在 `cppfile\Application` 和 `include\Application`。
+- 本轮没有启动新的 sidecar：该切片写域小且没有独立 sidecar 写域，按 parent-owned 方式完成实现、验证和文档记录。
+
+已完成验证：
+
+- 静态检查确认新增 cleanup lifecycle、调用点、VS 工程注册，以及 cleanup report 依赖已集中到新模块。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过，覆盖 runtime renderer cleanup、no-op backend cleanup、Engine World cleanup 和 scene package cleanup。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime verification cleanup lifecycle boundary extraction，不改变 cleanup ordering、runtime context detach state、renderer backend cleanup stats、Engine World cleanup stats、Engine subsystem cleanup stats 或 PBR pass。
+- 后续建议继续处理 `RuntimeVerificationLifecycle::applyStartupProfile(...)`，把 startup profile gate 和 PBR profile application 再拆成一个小型 lifecycle boundary。
+
+### 2026-05-31 Runtime Verification Startup Profile Lifecycle Extraction
+
+本轮继续收敛 `RuntimeVerificationLifecycle` 的具体 domain 依赖。cleanup、prepared-scene 和 capture-frame 编排已经拆出后，`applyStartupProfile(...)` 仍直接持有 `RuntimePBRProfileVerification` 依赖。本切片把 startup profile gate 与 PBR profile application 委托迁入独立 lifecycle 模块，让 generic verification lifecycle 继续向 facade 收敛。
+
+新增与修改：
+
+- 新增 `RuntimeVerificationStartupProfileLifecycle.h/.cpp`，集中处理 `config.enabled` gate 和 `RuntimePBRProfileVerification::applyProfile(...)` 调用。
+- `RuntimeVerificationLifecycle.cpp` 的 `applyStartupProfile(...)` 改为委托 `RuntimeVerificationStartupProfileLifecycle`，并移除对 `RuntimePBRProfileVerification.h` 的直接 include。
+- `RuntimeVerificationLifecycle` public API 不变，content verification lifecycle 调用方不需要改动。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `.cpp/.h`，filter 分别保持在 `cppfile\Application` 和 `include\Application`。
+- 本轮没有启动新的 sidecar：该切片写域小且没有独立 sidecar 写域，按 parent-owned 方式完成实现、验证和文档记录。
+
+已完成验证：
+
+- 静态检查确认新增 startup profile lifecycle、调用点、VS 工程注册，以及 PBR profile 依赖已集中到新模块。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred-tiled-lights-pressure-timing,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过，覆盖默认 profile、pressure timing profile、Engine World minimal profile 和 no-op backend profile 路径。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime verification startup profile lifecycle boundary extraction，不改变 startup profile defaults、renderer pass profile、preview/light/camera profile、profile applied 输出、renderer backend contract 或 PBR pass。
+- 后续建议继续收敛 `RuntimeVerificationLifecycle` public header 依赖，或把 `shouldStopAfterFrames(...)` 提成小型 stop policy；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Verification Stop Policy Extraction
+
+本轮继续收敛 `RuntimeVerificationLifecycle` facade。startup profile、prepared-scene、frame capture 和 cleanup 编排已经拆出后，facade 内部只剩 `shouldStopAfterFrames(...)` 的 max-frame 判断。本切片把 verification stop condition 提成独立 policy，保持外部调用点不变。
+
+新增与修改：
+
+- 新增 `RuntimeVerificationStopPolicy.h/.cpp`，集中处理 `config.enabled && renderedFrameCount >= config.maxFrames` 的停止判断。
+- `RuntimeVerificationLifecycle.cpp` 的 `shouldStopAfterFrames(...)` 改为委托 `RuntimeVerificationStopPolicy`，`RuntimeVerificationLifecycle` public API 不变，`RuntimeFrameLifecycle` 调用方不需要改动。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `.cpp/.h`，filter 分别保持在 `cppfile\Application` 和 `include\Application`。
+- 本轮没有启动新的 sidecar：该切片写域小且没有独立 sidecar 写域，按 parent-owned 方式完成实现、验证和文档记录。
+
+已完成验证：
+
+- 静态检查确认新增 stop policy、调用点、VS 工程注册，以及 `maxFrames` 判断已集中到新模块。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred-tiled-lights-pressure-timing,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过，覆盖默认 2 帧、pressure timing 5 帧、Engine World 和 no-op backend。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime verification stop policy boundary extraction，不改变 verification max-frame 语义、frame loop、capture timing、cleanup timing、renderer backend contract 或 PBR pass。
+- 后续建议继续收敛 `RuntimeVerificationLifecycle` public header 依赖，优先处理 forward declaration/header include boundary；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Verification Lifecycle Header Forward Boundary
+
+本轮继续收敛 `RuntimeVerificationLifecycle` facade 的 public header 依赖。经过前几轮拆分后，facade 只需要通过引用暴露 `AppRuntimeContext` 与 `RuntimeVerificationConfig`，不需要在 public header 中包含完整定义。本切片去掉这两个传递 include，让调用方按自身数据所有权显式包含配置头。
+
+新增与修改：
+
+- `RuntimeVerificationLifecycle.h` 移除 `AppRuntimeContext.h` 与 `RuntimeVerificationConfig.h` include，改为 forward declare `GLframework::AppRuntimeContext` 和 `GL_RUNTIME::RuntimeVerificationConfig`。
+- `RuntimeFrameLifecycle.h` 因为值成员 `RuntimeVerificationConfig verification{}` 需要完整类型，显式 include `RuntimeVerificationConfig.h`，不再依赖 `RuntimeVerificationLifecycle.h` 的传递 include。
+- `RuntimeVerificationLifecycle` public API、调用方入口、stop policy、startup profile、prepared-scene、frame capture 和 cleanup delegate 均不变。
+- 本轮没有新增 `.cpp/.h` 文件，因此不需要修改 `text2.vcxproj` 或 `text2.vcxproj.filters`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeVerificationLifecycle.h` 只剩 forward declarations，`RuntimeFrameLifecycle.h` 显式持有 `RuntimeVerificationConfig.h`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过，覆盖 default runtime frame path、Engine World minimal path 和 no-op backend path。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime verification facade header boundary cleanup，不改变 runtime behavior、verification config data model、frame loop、renderer backend contract 或 PBR pass。
+- 后续建议继续检查 `RuntimeFrameLifecycle.h` 的 public header include surface，优先减少 frame lifecycle 对 runtime runner / legacy experiment runner 的传递依赖。
+
+### 2026-05-31 Runtime Frame Callbacks Header Extraction
+
+本轮继续收敛 `RuntimeFrameLifecycle.h` 的 public include surface。此前 `RuntimeFrameLifecycle.h` 为了暴露 `RuntimeFrameCallbacks` 间接包含 `RuntimeFrameRunner.h`，同时把 `AppRuntimeContext.h`、`LegacyExperimentRunner.h` 和 verification lifecycle implementation header 带入 frame lifecycle public header。本切片把 callback DTO 拆成独立轻量头，让 frame lifecycle header 只保留必要值类型和 forward declarations。
+
+新增与修改：
+
+- 新增 `RuntimeFrameCallbacks.h`，单独定义 `RuntimeFrameCallbacks` 和 `renderUi` callback。
+- `RuntimeFrameRunner.h` 改为包含 `RuntimeFrameCallbacks.h`，并 forward declare `AppRuntimeContext` 与 `LegacyExperimentRunner`，不再传递 include context 或 legacy experiment runner 完整头。
+- `RuntimeFrameLifecycle.h` 改为包含 `RuntimeFrameCallbacks.h`、`RuntimeFrameClock.h` 和 `RuntimeVerificationConfig.h`，并 forward declare `AppRuntimeContext`、`LegacyExperimentRunner`、`Engine` 和 `RendererSubsystem`；runner 与 verification lifecycle 依赖迁到 `.cpp`。
+- `RuntimeApplicationFrameEditorCallbackBridge.h` 与 `RuntimeEditorLifecycle.h` 改为包含 `RuntimeFrameCallbacks.h`，不再为了返回 callback DTO 依赖 `RuntimeFrameRunner.h`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `RuntimeFrameCallbacks.h`。
+
+已完成验证：
+
+- 静态检查确认 callback DTO 可检索，`RuntimeFrameLifecycle.h` 不再 include `RuntimeFrameRunner.h`、`AppRuntimeContext.h`、`RuntimeVerificationLifecycle.h` 或 `LegacyExperimentRunner.h`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime frame callback DTO / header surface cleanup，不改变 frame loop、editor callback 行为、legacy experiment update、renderer backend contract、verification capture 或 PBR pass。
+- 后续建议继续检查 `RuntimeFrameRunner.h` / `RuntimeFrameLifecycle.h` 是否可以进一步拆分 frame config 或 frame state 类型，但优先保持小切片和全量 verification。
+
+### 2026-05-31 Runtime Frame Lifecycle Types Header Extraction
+
+本轮继续收敛 `RuntimeFrameLifecycle.h` 的 public include surface。上一轮已把 frame callbacks 拆成轻量 DTO，本轮把 `RuntimeFrameLifecycleConfig` 与 `RuntimeFrameLifecycleState` 从 lifecycle facade header 中拆出，让 lifecycle header 只暴露行为入口和引用参数。
+
+新增与修改：
+
+- 新增 `RuntimeFrameLifecycleTypes.h`，集中定义 `RuntimeFrameLifecycleConfig` 和 `RuntimeFrameLifecycleState`。
+- `RuntimeFrameLifecycle.h` 不再 include `RuntimeFrameClock.h` 或 `RuntimeVerificationConfig.h`，只 forward declare `RuntimeFrameLifecycleConfig` / `RuntimeFrameLifecycleState` 并保留 `RuntimeFrameCallbacks.h`。
+- `RuntimeFrameLifecycle.cpp` 显式 include `RuntimeFrameLifecycleTypes.h`，继续访问 frame clock、verification config 和 frame state 字段。
+- `RuntimeApplicationConfigPolicy.h` 与 `RuntimeApplicationState.h` 改为 include `RuntimeFrameLifecycleTypes.h`，因为它们分别按值返回/持有 frame lifecycle config/state。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `RuntimeFrameLifecycleTypes.h`。
+
+已完成验证：
+
+- 静态检查确认 config/state 定义只在 `RuntimeFrameLifecycleTypes.h`，`RuntimeFrameLifecycle.h` 只保留 forward declarations。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime frame lifecycle config/state DTO / header surface cleanup，不改变 frame loop、fixed delta policy、verification stop/capture、editor callback、renderer backend contract 或 PBR pass。
+- 后续建议继续检查 `RuntimeFrameRunner.h` 的 frame config DTO 是否也应拆成轻量 types header，或继续推进 application frame bridge 的头文件边界。
+
+### 2026-05-31 Runtime Application Frame Editor Callback Bridge Header Boundary
+
+本轮按 `/subagents` 协作模式启动只读 sidecar `Ptolemy` 审查下一步边界。`Ptolemy` 建议先做更小的 application frame bridge header cleanup，而不是立刻拆 `RuntimeFrameRunnerTypes.h`：`RuntimeFrameConfig` 当前没有泄漏到 bridge public header，优先清理 editor callback bridge 的 callback DTO 传递 include 风险更低。
+
+新增与修改：
+
+- `RuntimeApplicationFrameEditorCallbackBridge.h` 移除 `RuntimeFrameCallbacks.h` include，改为 forward declare `RuntimeFrameCallbacks`。
+- `RuntimeApplicationFrameEditorCallbackBridge.cpp` 显式 include `RuntimeFrameCallbacks.h`，把完整 callback DTO 依赖局部化到 implementation。
+- 本轮没有新增 `.cpp/.h` 文件，因此不需要修改 `text2.vcxproj` 或 `text2.vcxproj.filters`。
+- `Ptolemy` 为只读 sidecar，未修改文件；父 agent 接受其最小写域建议并本地完成实现、验证和文档记录。
+
+已完成验证：
+
+- 静态检查确认 bridge header 不再 include callback 完整定义，`.cpp` 显式 include `RuntimeFrameCallbacks.h`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 application frame editor callback bridge public header boundary cleanup，不改变 editor callback 执行、GUI gating、legacy experiment ticking、frame clock delta、verification capture timing、renderer backend contract 或 PBR pass。
+- 后续建议继续选择 `RuntimeFrameRunner` config DTO header extraction；该切片需要新增 runner types header 并注册 VS project/filter。
+
+### 2026-05-31 Runtime Frame Runner Types Header Extraction
+
+本轮继续收敛 `RuntimeFrameRunner.h` 的 public include/type surface。上一轮确认 `RuntimeFrameConfig` 没有泄漏到 application bridge public header，但它仍作为字段列表定义在 runner facade header 中。本切片把 runner frame config DTO 拆到独立 types header，让 runner header 只暴露 run entry、callback 默认参数所需的 callback DTO 和 config forward declaration。
+
+新增与修改：
+
+- 新增 `RuntimeFrameRunnerTypes.h`，集中定义 `RuntimeFrameConfig`。
+- `RuntimeFrameRunner.h` 移除 `RuntimeFrameConfig` 字段定义，改为 forward declare `RuntimeFrameConfig`；同时移除不再需要的 `Engine` / `RendererSubsystem` forward declarations。
+- `RuntimeFrameRunner.cpp` 和 `RuntimeFrameLifecycle.cpp` 显式 include `RuntimeFrameRunnerTypes.h`，分别用于访问 config 字段和构造 frame config。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `RuntimeFrameRunnerTypes.h` 到 `include\Application`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeFrameConfig` 的真实定义只在 `RuntimeFrameRunnerTypes.h`，`RuntimeFrameRunner.h` 只保留 forward declaration。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime frame runner config DTO / header surface cleanup，不改变 frame loop、editor callback execution、legacy experiment ticking、renderer backend bridge fallback、verification capture timing、renderer backend contract 或 PBR pass。
+- 后续建议继续选择 application frame run/continue bridge header boundary cleanup，进一步减少 application frame facade 的 public include surface。
+
+### 2026-05-31 Runtime Application Frame Bridge Implementation Include Cleanup
+
+本轮检查 application frame continue/run bridge header boundary。`RuntimeApplicationFrameContinueBridge.h`、`RuntimeApplicationFrameRunBridge.h` 与 `RuntimeApplicationFrameLifecycle.h` 已经只使用 forward declarations，没有 public include 泄漏；因此本轮选择继续收敛 implementation include surface，把不访问字段的 facade `.cpp` 和已经通过 policy header 间接获得 config 类型的 bridge `.cpp` 中的冗余完整 include 移除。
+
+新增与修改：
+
+- `RuntimeApplicationFrameLifecycle.cpp` 移除 `RuntimeApplicationConfig.h` 与 `RuntimeApplicationState.h` include，只保留 frame facade 对 continue/run bridge 的转发依赖。
+- `RuntimeApplicationFrameContinueBridge.cpp` 移除冗余 `RuntimeApplicationConfig.h` include；该文件仍显式 include `RuntimeApplicationState.h`，因为需要访问 `state.frameLifecycle`。
+- `RuntimeApplicationFrameRunBridge.cpp` 移除冗余 `RuntimeApplicationConfig.h` include；该文件仍显式 include `RuntimeApplicationState.h`，因为需要展开 runtime、engine、engine lifecycle、legacy experiments 和 frame lifecycle。
+- 本轮没有新增 `.cpp/.h` 文件，因此不需要修改 `text2.vcxproj` 或 `text2.vcxproj.filters`。
+
+已完成验证：
+
+- 静态检查确认 frame facade `.cpp` 只保留 bridge headers，continue/run bridge `.cpp` 只保留实际字段访问需要的 state include 和 policy/lifecycle/window dependencies。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 application frame bridge implementation include cleanup，不改变 shouldContinue/runFrame 转发、editor callback construction、legacy experiment ticking、frame clock delta、verification capture timing、renderer backend contract 或 PBR pass。
+- 后续建议检查 shutdown bridge 或 startup bridge 的 implementation/header include surface，继续做小切片降耦合。
+
+### 2026-05-31 Runtime Application Shutdown Bridge Implementation Include Cleanup
+
+本轮继续检查 application shutdown bridge 的 header/implementation include surface。`RuntimeApplicationShutdownLifecycle.h`、`RuntimeApplicationShutdownCleanupBridge.h`、`RuntimeApplicationShutdownDestroyBridge.h`、`RuntimeApplicationShutdownEngineBridge.h` 与 `RuntimeApplicationShutdownVerificationBridge.h` 已经主要通过 forward declarations 暴露 API；可收敛点集中在 facade/cleanup implementation 的冗余完整 config/state include。
+
+新增与修改：
+
+- `RuntimeApplicationShutdownLifecycle.cpp` 移除 `RuntimeApplicationConfig.h` 与 `RuntimeApplicationState.h` include；该 facade `.cpp` 只转发到 cleanup/destroy bridge，不访问 config/state 字段。
+- `RuntimeApplicationShutdownCleanupBridge.cpp` 移除冗余 `RuntimeApplicationConfig.h` include；该文件仍显式 include `RuntimeApplicationState.h`，因为 cleanup 顺序需要访问 `state.runtime` 和 `state.engine`。
+- `RuntimeApplicationShutdownVerificationBridge.cpp` 继续保留 `RuntimeApplicationConfig.h`，因为它读取 `config.verification` 并把 verification config 传给 `RuntimeVerificationLifecycle`。
+- 本轮没有新增 `.cpp/.h` 文件，因此不需要修改 `text2.vcxproj` 或 `text2.vcxproj.filters`。
+
+已完成验证：
+
+- 静态检查确认 shutdown facade `.cpp` 只依赖 cleanup/destroy bridge headers，cleanup bridge `.cpp` 不再依赖完整 config，verification bridge `.cpp` 保留真正需要的 config include。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 application shutdown bridge implementation include cleanup，不改变 shutdown cleanup ordering、camera cleanup、runtime context detach、Engine shutdown、renderer/Engine cleanup verification output、renderer backend contract cleanup 或 PBR pass。
+- 后续建议继续选择 startup bridge implementation/header include surface cleanup，保持小切片降耦合。
+
+### 2026-05-31 Runtime Application Startup Bridge Include Surface Cleanup
+
+本轮继续检查 application startup facade 与各 startup bridge 的 header/implementation include surface。`RuntimeApplicationStartupLifecycle.h`、content/editor/engine/frame/window startup bridge headers 已经主要使用 forward declarations；可收敛点集中在 startup facade `.cpp`、content/editor/engine startup implementation 的冗余完整 config/state include，以及 `RuntimeApplicationGraphicsStartupLifecycle.h` 对完整 shell config header 的 public include。
+
+新增与修改：
+
+- `RuntimeApplicationStartupLifecycle.cpp` 移除 `RuntimeApplicationConfig.h` 与 `RuntimeApplicationState.h` include；该 facade `.cpp` 只负责编排 engine/window/graphics/content/editor/frame startup bridge，不访问 config/state 字段。
+- `RuntimeApplicationContentStartupLifecycle.cpp` 移除冗余 `RuntimeApplicationConfig.h` include；仍保留 `RuntimeApplicationState.h`，因为需要访问 runtime、engine、engine lifecycle 和 legacy experiment state。
+- `RuntimeApplicationEditorStartupLifecycle.cpp` 移除冗余 `RuntimeApplicationConfig.h` 与 `RuntimeApplicationState.h` include；该 bridge 不访问 state 字段，config 完整依赖由 policy header 局部承载。
+- `RuntimeApplicationEngineStartupLifecycle.cpp` 移除冗余 `RuntimeApplicationConfig.h` include；仍保留 `RuntimeApplicationState.h`，因为需要访问 runtime、engine 和 engine lifecycle state。
+- `RuntimeApplicationGraphicsStartupLifecycle.h` 移除 `RuntimeApplicationConfig.h` public include，改为 forward declare `RuntimeApplicationShellConfig`。
+- 本轮没有新增 `.cpp/.h` 文件，因此不需要修改 `text2.vcxproj` 或 `text2.vcxproj.filters`。
+
+已完成验证：
+
+- 静态检查确认 startup facade `.cpp` 只保留 startup bridge headers，graphics startup header 只 forward declare shell config，仍访问字段的 window/content/engine/frame bridge 保留必要完整 state/config/window dependencies。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 application startup bridge include surface cleanup，不改变 Engine startup、window initialization、graphics initialization、content preparation、editor initialization、frame lifecycle reset、renderer backend contract 或 PBR pass。
+- 后续建议继续选择 `RuntimeApplicationConfigPolicy` header include surface cleanup 或 shutdown cleanup refs type boundary cleanup，保持小切片降耦合。
+
+### 2026-05-31 Runtime Application Config Policy Header Include Surface Cleanup
+
+本轮继续收敛 `RuntimeApplicationConfigPolicy.h` 的 public include surface。该 policy header 只需要声明从 shell config 到 Engine/frame/editor/graphics lifecycle config 的映射函数；完整的 shell config、lifecycle config DTO 与 `EngineDesc` 字段访问都只发生在 `.cpp` 或具体调用点中。因此本轮把 policy header 改成纯前置声明边界，避免所有 include policy 的 startup/frame bridge implementation 间接获得完整 config/lifecycle/EngineContext 依赖。
+
+新增与修改：
+
+- `RuntimeApplicationConfigPolicy.h` 移除 `RuntimeApplicationConfig.h`、`RuntimeEditorLifecycle.h`、`RuntimeFrameLifecycleTypes.h`、`RuntimeGraphicsLifecycle.h` 与 `EngineContext.h` public include，改为 forward declare `RuntimeApplicationShellConfig`、`RuntimeFrameLifecycleConfig`、`RuntimeEditorLifecycleConfig`、`RuntimeGraphicsLifecycleConfig` 和 `GLengine::EngineDesc`。
+- `RuntimeApplicationConfigPolicy.cpp` 显式 include 完整 config/lifecycle/EngineContext headers，因为这里实际读取 shell config 字段并构造返回 DTO。
+- `RuntimeApplicationEngineStartupLifecycle.cpp` 显式 include `EngineContext.h`，因为该调用点直接消费 `makeEngineDesc(...)` 的返回临时对象，需要 `EngineDesc` 完整定义。
+- 其它 policy 调用点已经通过对应 lifecycle/state header 获得返回类型完整定义，本轮不额外扩大 include。
+- 本轮没有新增 `.cpp/.h` 文件，因此不需要修改 `text2.vcxproj` 或 `text2.vcxproj.filters`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationConfigPolicy.h` 只保留 forward declarations，完整 headers 集中在 `RuntimeApplicationConfigPolicy.cpp` 与需要完整 `EngineDesc` 的 engine startup implementation。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 RuntimeApplicationConfigPolicy header include surface cleanup，不改变 Engine desc mapping、frame lifecycle config mapping、editor lifecycle config mapping、graphics lifecycle config mapping、startup/frame bridge 行为、renderer backend contract 或 PBR pass。
+- 后续建议继续选择 `RuntimeContentConfigPolicy` header include surface cleanup 或 shutdown cleanup refs type boundary cleanup，保持小切片降耦合。
+
+### 2026-05-31 Runtime Content Config Policy Header Include Surface Cleanup
+
+本轮继续收敛 `RuntimeContentConfigPolicy.h` 的 public include surface。该 policy header 只需要声明从 shell config 到 content lifecycle config 的映射函数；完整 shell config 字段访问和 content lifecycle config 构造都发生在 `.cpp` 中，显式消费返回临时对象的调用点负责获得返回类型完整定义。因此本轮把 content config policy header 改成 forward declaration boundary，避免所有 include policy 的 startup implementation 间接获得完整 shell/content config 依赖。
+
+新增与修改：
+
+- `RuntimeContentConfigPolicy.h` 移除 `RuntimeApplicationConfig.h` 与 `RuntimeContentLifecycleConfig.h` public include，改为 forward declare `RuntimeApplicationShellConfig` 与 `RuntimeContentLifecycleConfig`。
+- `RuntimeContentConfigPolicy.cpp` 显式 include 完整 shell/content config headers，因为这里实际读取 shell config 字段并构造 content lifecycle config。
+- `RuntimeApplicationContentStartupLifecycle.cpp` 负责显式 include `RuntimeContentLifecycleConfig.h`，因为它直接消费 `makeContentLifecycleConfig(...)` 的返回临时对象。
+- 本轮没有新增 `.cpp/.h` 文件，因此不需要修改 `text2.vcxproj` 或 `text2.vcxproj.filters`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeContentConfigPolicy.h` 只保留 forward declarations，完整 headers 集中在 `RuntimeContentConfigPolicy.cpp` 和显式消费返回临时对象的 content startup 调用点。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 RuntimeContentConfigPolicy header include surface cleanup，不改变 content lifecycle config mapping、camera config、scene setup policy、verification scene flags、renderer backend key、content preparation、renderer backend contract 或 PBR pass。
+- 后续建议继续选择 shutdown cleanup refs type boundary cleanup 或 runtime content lifecycle config/data boundary cleanup，保持小切片降耦合。
+
+### 2026-05-31 Runtime Content Lifecycle Header Config Forward Boundary Cleanup
+
+本轮继续收敛 `RuntimeContentLifecycle.h` 的 public include surface。`RuntimeContentLifecycle::prepare(...)` 只通过 `const RuntimeContentLifecycleConfig&` 接收 content startup config，因此 lifecycle facade header 不需要暴露完整 `RuntimeContentLifecycleConfig` 字段定义。完整 DTO 依赖应留在读取字段的 `.cpp` 和构造/消费临时返回值的 application content startup 调用点。
+
+新增与修改：
+
+- `RuntimeContentLifecycle.h` 移除 `RuntimeContentLifecycleConfig.h` public include，改为 forward declare `RuntimeContentLifecycleConfig`。
+- `RuntimeContentLifecycle.cpp` 显式 include `RuntimeContentLifecycleConfig.h`，因为 implementation 需要访问 `config.camera`、`config.verification`、`config.scene` 和 `config.rendererBackendKey`。
+- `RuntimeApplicationContentStartupLifecycle.cpp` 显式 include `RuntimeContentLifecycleConfig.h`，因为该调用点直接消费 `RuntimeContentConfigPolicy::makeContentLifecycleConfig(...)` 的返回临时对象。
+- 本轮没有新增 `.cpp/.h` 文件，因此不需要修改 `text2.vcxproj` 或 `text2.vcxproj.filters`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeContentLifecycle.h` 只保留 config forward declaration，完整 config DTO include 位于 lifecycle implementation 与 content startup 调用点。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 RuntimeContentLifecycle header config forward boundary cleanup，不改变 camera initialization、startup profile load、verification startup profile、scene preparation、renderer backend attachment、prepared-scene reporting、renderer backend contract 或 PBR pass。
+- 后续建议继续选择 shutdown cleanup refs type boundary cleanup 或 runtime content sub-lifecycle header include cleanup，保持小切片降耦合。
+
+### 2026-05-31 Runtime Content Camera/Scene Lifecycle Header Config Forward Boundary Cleanup
+
+本轮继续收敛 content sub-lifecycle public header include surface。`RuntimeContentCameraLifecycle::initializeCamera(...)` 与 `RuntimeContentSceneLifecycle::prepareScene(...)` 都只通过 `const&` 接收 config DTO，因此这两个 sub-lifecycle facade headers 不需要 public include 完整 config headers。完整 DTO 依赖应留在实际转发调用的 `.cpp` 和聚合 config 持有方。
+
+新增与修改：
+
+- `RuntimeContentCameraLifecycle.h` 移除 `RuntimeCameraConfig.h` public include，改为 forward declare `RuntimeCameraConfig`。
+- `RuntimeContentCameraLifecycle.cpp` 显式 include `RuntimeCameraConfig.h`，保持 camera config 完整定义位于 implementation。
+- `RuntimeContentSceneLifecycle.h` 移除 `RuntimeScenePrepareConfig.h` public include，改为 forward declare `RuntimeScenePrepareConfig`。
+- `RuntimeContentSceneLifecycle.cpp` 显式 include `RuntimeScenePrepareConfig.h`，保持 scene prepare config 完整定义位于 implementation。
+- 本轮没有新增 `.cpp/.h` 文件，因此不需要修改 `text2.vcxproj` 或 `text2.vcxproj.filters`。
+
+已完成验证：
+
+- 静态检查确认 camera/scene content sub-lifecycle headers 只保留 config forward declarations，完整 config DTO includes 位于对应 `.cpp` 与 `RuntimeContentLifecycleConfig.h`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 RuntimeContent Camera/Scene sub-lifecycle header config forward cleanup，不改变 camera initialization、scene preparation sequence、legacy experiment prepare、renderer prepared report、renderer backend contract 或 PBR pass。
+- 后续建议继续选择 shutdown cleanup refs type boundary cleanup 或 runtime content verification/renderer backend sub-lifecycle header include cleanup，保持小切片降耦合。
+
+### 2026-05-31 Runtime Application Shutdown Cleanup Refs Canonicalization
+
+本轮继续处理上一轮建议中的 shutdown cleanup refs type boundary cleanup。`RuntimeEngineLifecycle::beginCleanup(...)` 已经返回 `RuntimeEngineLifecycleCleanupRefs`，application shutdown 层此前又定义了一份结构相同的 `RuntimeApplicationShutdownCleanupRefs` 并在 bridge 中做字段复制。这会让 cleanup refs 出现两个 owner 名称，后续继续拆 shutdown verification 或 Engine lifecycle 时容易产生 DTO 漂移。
+
+新增与修改：
+
+- `RuntimeApplicationShutdownEngineBridge.h` 移除 application-local `RuntimeApplicationShutdownCleanupRefs` 定义，改为 forward declare `RuntimeEngineLifecycleCleanupRefs`。
+- `RuntimeApplicationShutdownEngineBridge::beginCleanup(...)` 直接返回 `RuntimeEngineLifecycle::beginCleanup(...)` 的 canonical refs，不再做字段复制。
+- `RuntimeApplicationShutdownVerificationBridge.h/.cpp` 改为接收 `RuntimeEngineLifecycleCleanupRefs`，完整 type include 局部化到需要访问 `assetSubsystem` / `rendererSubsystem` 字段的 `.cpp`。
+- `RuntimeApplicationShutdownCleanupBridge.cpp` 改为持有 `RuntimeEngineLifecycleCleanupRefs`，并显式 include `RuntimeEngineLifecycleTypes.h`。
+- 本轮没有新增 `.cpp/.h` 文件，因此不需要修改 `text2.vcxproj` 或 `text2.vcxproj.filters`。
+
+已完成验证：
+
+- 静态检查确认旧 `RuntimeApplicationShutdownCleanupRefs` 已完全移除，shutdown cleanup / verification bridge 统一使用 `RuntimeEngineLifecycleCleanupRefs`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 shutdown cleanup、engine 和 verification bridge 改动文件。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 shutdown cleanup refs canonicalization，不改变 renderer backend cleanup、camera cleanup、runtime context detach、Engine shutdown、cleanup verification report 或 PBR pass。
+- 后续建议继续选择 runtime content verification/renderer backend sub-lifecycle header include cleanup，或继续清理 `RuntimeEngineLifecycle.h` 与 shutdown bridge header 的 type include surface；保持小切片降耦合。
+
+### 2026-05-31 Runtime Engine Lifecycle Header Type Include Surface Cleanup
+
+本轮继续上一轮建议中的 `RuntimeEngineLifecycle.h` type include surface cleanup。`RuntimeEngineLifecycle.h` 是 Engine lifecycle facade header，当前只需要声明行为入口；`RuntimeEngineLifecycleState` 与 `RuntimeEngineLifecycleCleanupRefs` 的完整字段定义已经集中在 `RuntimeEngineLifecycleTypes.h`，因此 facade header 不需要继续 public include types header。完整 type 依赖应留在实现文件、按值持有 state 的 application state，以及需要读取 cleanup refs 字段的 shutdown bridge implementation。
+
+新增与修改：
+
+- `RuntimeEngineLifecycle.h` 移除 `RuntimeEngineLifecycleTypes.h` public include，改为 forward declare `RuntimeEngineLifecycleState` 与 `RuntimeEngineLifecycleCleanupRefs`。
+- `RuntimeEngineLifecycle.cpp` 显式 include `RuntimeEngineLifecycleTypes.h`，因为 implementation 需要访问 state 字段并构造 cleanup refs。
+- `RuntimeApplicationState.h` 继续 include `RuntimeEngineLifecycleTypes.h`，因为它按值持有 `RuntimeEngineLifecycleState`。
+- shutdown cleanup / verification bridge implementation 继续 include `RuntimeEngineLifecycleTypes.h`，因为它们持有或读取 `RuntimeEngineLifecycleCleanupRefs`。
+- 本轮没有新增 `.cpp/.h` 文件，因此不需要修改 `text2.vcxproj` 或 `text2.vcxproj.filters`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeEngineLifecycle.h` 只保留 lifecycle state/cleanup refs forward declarations，完整 `RuntimeEngineLifecycleTypes.h` include 位于 implementation 或按值持有/访问字段的调用点。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 `RuntimeEngineLifecycle.cpp` 以及依赖该 header 的 startup、shutdown、content renderer backend 调用点。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine lifecycle facade header type include surface cleanup，不改变 Engine initialization、renderer backend attachment、begin cleanup、runtime context detach、Engine shutdown、cleanup verification report 或 PBR pass。
+- 后续建议继续选择 runtime content verification/renderer backend sub-lifecycle header include cleanup，或进一步评估 renderer backend attachment lifecycle header 的 `<string>` public include surface；保持小切片降耦合。
+
+### 2026-05-31 Runtime Renderer Backend Key String View Boundary Cleanup
+
+本轮继续上一轮建议中的 renderer backend attachment lifecycle `<string>` public include surface cleanup。renderer backend key 在 attachment/catalog/registry 路径中只是只读选择 key，不需要每层 API 都表达为 `const std::string&`。本切片把只读 key 入参收敛为 `std::string_view`，保留 config DTO、registry selection 和 attachment desc 中的 `std::string` 持久化字段，避免改变输出、所有权或存储语义。
+
+新增与修改：
+
+- `RuntimeContentRendererBackendLifecycle.h/.cpp` 的 `attachAfterScenePreparation(...)` 改为接收 `std::string_view rendererBackendKey`。
+- `RuntimeEngineLifecycle.h/.cpp` 的 `attachRendererBackend(...)` 改为接收 `std::string_view rendererBackendKey`。
+- `RuntimeRendererBackendAttachmentLifecycle.h/.cpp` 的 `attachToRendererSubsystem(...)` 改为接收 `std::string_view rendererBackendKey`。
+- `RuntimeRendererBackendCatalog.h/.cpp` 的 `isRegisteredBackendKey(...)` 与 `resolveBackendSelection(...)` 改为接收 `std::string_view`。
+- `RendererBackendRegistry.h/.cpp` 的 key 查询、默认 key、selection resolve 和 attachment desc helper 改为接收 `std::string_view`，在生成 `RendererBackendSelection` / `RendererBackendAttachmentDesc` 时仍写入 `std::string` 字段。
+- `RuntimeApplicationConfig.h` 与 `RuntimeContentLifecycleConfig.h` 中的 `rendererBackendKey` 配置字段保持 `std::string`，不改变 profile/config 存储模型。
+- 本轮没有新增或删除源文件，因此不需要修改 `text2.vcxproj` 或 `text2.vcxproj.filters`。
+
+已完成验证：
+
+- 静态检查确认 renderer backend key 传递路径不再使用 `const std::string&` 入参，配置 DTO 的持久化字段仍保留 `std::string`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 registry、catalog、attachment lifecycle、content renderer backend lifecycle、Engine lifecycle 和相关 startup/shutdown call sites。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 renderer backend key read-only boundary cleanup，不改变 backend registry selection、fallback default key、runtime/no-op backend attachment、renderer backend contract report、cleanup report 或 PBR pass。
+- 后续建议继续选择 runtime content verification sub-lifecycle header include cleanup，或进入更小的 renderer backend catalog include surface cleanup；保持小切片降耦合。
+
+### 2026-05-31 Renderer Backend Registry Types Header Extraction
+
+本轮继续上一轮建议中的 renderer backend catalog include surface cleanup。`RendererBackendRegistry.h` 与 runtime backend catalog 只需要 registry metadata DTO，不应该为了 `RendererBackendRegistration`、`RendererBackendSelection` 或 `RendererBackendAttachmentDesc` 依赖完整 `RendererBackend` interface header。本切片把 registry metadata 类型拆到独立轻量头，保留 `RendererBackend.h` 只表达后端接口和 frame intent/result contract。
+
+新增与修改：
+
+- 新增 `engine/RendererBackendRegistryTypes.h`，集中定义 `RendererBackendAttachmentDesc`、`RendererBackendRegistration` 与 `RendererBackendSelection`。
+- `RendererBackend.h` 移除 registry/attachment metadata DTO 定义，只保留 `RendererBackend` interface、`RendererFrameIntent` 与 `RendererFrameResult`。
+- `RendererBackendRegistry.h` 改为 include `RendererBackendRegistryTypes.h`，不再为了 registry metadata 依赖完整 `RendererBackend.h`。
+- `RuntimeRendererBackendCatalog.h` 移除对 `RendererBackend.h` 的 public include，只保留 registry header。
+- `RuntimeRendererBackendFactory.h` 改为 forward declare `RendererBackend` 与 `RendererBackendSelection`，降低 factory header 对 engine renderer backend interface/registry header 的传递依赖。
+- `RendererSubsystem.h` 与 `RendererSubsystemBackendSlot.h` 显式 include `RendererBackendRegistryTypes.h`，因为这些 header 的 public API/slot snapshot 直接使用 `RendererBackendAttachmentDesc`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `engine\RendererBackendRegistryTypes.h`，放入 `include\GLengine` 分组。
+- 本轮使用一个只读 advisory subagent 审计 include surface、factory forward declaration、VS 项目注册和验证风险；subagent 没有改文件，主线程负责实现、验证和文档。
+
+已完成验证：
+
+- 静态检查确认 metadata DTO 只在 `RendererBackendRegistryTypes.h` 定义；`RendererBackendRegistry.h` 不再 include `RendererBackend.h`；`RuntimeRendererBackendCatalog.h` 不再 include `RendererBackend.h`；factory header 只保留前置声明。
+- 静态检查确认 `RuntimeRendererBackendAttachmentLifecycle.cpp` 的 factory 返回值 call site 通过 `RendererSubsystem.h` 获得完整 `RendererBackend` 定义，不触发 `std::unique_ptr<RendererBackend>` incomplete type 析构问题。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 registry、catalog、factory、subsystem backend slot 和 renderer subsystem 头拆分。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 default backend 与 no-op backend 仍输出 `Runtime renderer backend contract stats`、`Runtime renderer backend contract cleanup stats`、`rendererBackendRegistryCount=2`、`runtime-frame-pipeline-adapter` 与 `test-noop-renderer-backend` registry key。
+
+结论：
+
+- 这是 renderer backend registry metadata header extraction，不改变 renderer backend selection、backend creation、attachment ownership、frame execution、cleanup report、verification contract 或 PBR pass。
+- 后续建议继续选择 renderer backend catalog/factory implementation include cleanup，或回到 runtime content verification sub-lifecycle header include cleanup；保持 Engine runtime boundary 小步降耦合，不扩张 PBR 功能。
+
+### 2026-05-31 Runtime Renderer Backend Keys Header Extraction
+
+本轮继续上一轮建议中的 renderer backend catalog/factory implementation include cleanup。`RuntimeApplicationConfig.h` 只需要默认 renderer backend key，`RuntimeVerificationArgs.cpp` 只需要 no-op backend key，`RuntimeRendererBackendFactory.cpp` 只需要比较 selection key 来创建具体 backend；这些路径不需要通过 `RuntimeRendererBackendCatalog.h` 拉入 registry API。本切片把 backend key 常量抽成轻量 header，让 config、verification args 和 factory implementation 不再依赖 catalog/registry。
+
+新增与修改：
+
+- 新增 `RuntimeRendererBackendKeys.h`，集中提供 `runtimeFramePipelineBackendKey()`、`testNoOpBackendKey()` 与 `defaultBackendKey()` constexpr key helper。
+- `RuntimeApplicationConfig.h` 改为 include `RuntimeRendererBackendKeys.h`，`rendererBackendKey` 默认值不再依赖 `RuntimeRendererBackendCatalog.h`。
+- `RuntimeVerificationArgs.cpp` 改为使用 `RuntimeRendererBackendKeys::testNoOpBackendKey()`，不再为了 no-op mode key include catalog。
+- `RuntimeRendererBackendFactory.cpp` 改为使用 `RuntimeRendererBackendKeys` 比较 concrete backend key，不再 include catalog；并显式 include `RendererBackendRegistryTypes.h`，因为 implementation 读取 `RendererBackendSelection` 字段。
+- `RuntimeRendererBackendCatalog.cpp` 改为使用同一个 key header 填充 registry registration 与 default fallback，保持 catalog public API 兼容。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `application\RuntimeRendererBackendKeys.h`，放入 `include\Application` 分组。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationConfig.h`、`RuntimeVerificationArgs.cpp` 与 `RuntimeRendererBackendFactory.cpp` 不再引用 `RuntimeRendererBackendCatalog`，catalog include 只保留在 attachment lifecycle 与 catalog implementation。
+- 第一次 focused verification 构建失败，原因是 factory `.cpp` 移除 catalog include 后只剩 header forward declaration，读取 `RendererBackendSelection` 字段需要完整定义；已通过在 `RuntimeRendererBackendFactory.cpp` 显式 include `RendererBackendRegistryTypes.h` 修复。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：修复后构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 default backend 与 no-op backend 仍输出 runtime/no-op `rendererBackendKey`、`rendererBackendRegistryKey`、`rendererBackendRegistryCount=2` 与 cleanup contract 行。
+
+结论：
+
+- 这是 renderer backend key constants header extraction，不改变 backend registry selection、runtime/no-op backend creation、attachment ownership、renderer backend contract report、cleanup report 或 PBR pass。
+- 后续建议继续选择 runtime content verification sub-lifecycle header include cleanup，或继续收敛 application config header 的 remaining heavy config includes；保持 Engine runtime boundary 小步降耦合，不扩张 PBR 功能。
+
+### 2026-05-31 Runtime Window Lifecycle Types Header Extraction
+
+本轮继续收敛 `RuntimeApplicationConfig.h` 的 remaining heavy includes。`RuntimeApplicationShellConfig` 只需要按值持有 `RuntimeWindowConfig`，而旧的 `RuntimeWindowLifecycle.h` 同时定义 window config/snapshot/callback DTO 和 window lifecycle 行为，并且 public include `AppRuntimeContext.h`。这会让 application config header 为一个 window config 字段间接拉入完整 runtime context。本切片把 window lifecycle DTO 拆到轻量 types header，让 config/header-only snapshot consumers 不再依赖 window lifecycle implementation boundary。
+
+新增与修改：
+
+- 新增 `RuntimeWindowLifecycleTypes.h`，集中定义 `RuntimeWindowConfig`、`RuntimeWindowSnapshot` 与 `RuntimeWindowCallbackContext`，并只 forward declare `GLFWwindow` 与 `GLframework::AppRuntimeContext`。
+- `RuntimeWindowLifecycle.h` 移除 `AppRuntimeContext.h` include，改为 include `RuntimeWindowLifecycleTypes.h`，只保留 window lifecycle 行为入口。
+- `RuntimeWindowLifecycle.cpp` 显式 include `AppRuntimeContext.h`，因为 implementation 需要访问 camera/light 和 render resource 字段。
+- `RuntimeApplicationConfig.h` 改为 include `RuntimeWindowLifecycleTypes.h`，不再为了 `RuntimeWindowConfig` 依赖完整 `RuntimeWindowLifecycle.h`。
+- `RuntimeApplicationWindowStartupLifecycle.h` 改为 include `RuntimeWindowLifecycleTypes.h`，保留 `RuntimeWindowSnapshot` 返回值完整定义；对应 `.cpp` 显式 include `RuntimeWindowLifecycle.h` 调用 initialize/capture。
+- `RuntimeApplicationContentStartupLifecycle.cpp` 与 `RuntimeApplicationEditorStartupLifecycle.cpp` 改为 include `RuntimeWindowLifecycleTypes.h`，因为它们只读取 snapshot 字段，不调用 window lifecycle 行为。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `application\RuntimeWindowLifecycleTypes.h`，放入 `include\Application` 分组。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationConfig.h` 与只读 snapshot consumers 使用 `RuntimeWindowLifecycleTypes.h`；`AppRuntimeContext.h` 只保留在 `RuntimeWindowLifecycle.cpp`，完整 runtime context 依赖局部化到 implementation。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 window startup、content/editor startup、frame run、shutdown destroy 和 window lifecycle implementation。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime window lifecycle DTO header extraction，不改变 window initialization、resize/input callbacks、window snapshot capture、startup/content/editor/frame/shutdown order、renderer backend contract 或 PBR pass。
+- 后续建议继续选择 Runtime Frame Clock Config Header extraction，移除 `RuntimeApplicationConfig.h` 对 `RuntimeFrameClock.h` / `<chrono>` 的间接依赖；或继续 runtime content verification sub-lifecycle header cleanup。
+
+### 2026-05-31 Runtime Frame Clock Config Header Extraction
+
+本轮继续收敛 `RuntimeApplicationConfig.h` 的 remaining heavy includes。`RuntimeApplicationShellConfig` 只需要按值持有 `RuntimeFrameClockConfig`，不需要完整 `RuntimeFrameClock` 行为类，也不应该为了一个 frame clock 配置字段间接拉入 `<chrono>`。本切片把 frame clock config DTO 拆到轻量 types header，让 application config 只依赖数据定义。
+
+新增与修改：
+
+- 新增 `RuntimeFrameClockTypes.h`，集中定义 `RuntimeFrameClockConfig`。
+- `RuntimeFrameClock.h` 改为 include `RuntimeFrameClockTypes.h`，只保留 `RuntimeFrameClock` 行为类和 `std::chrono::steady_clock` 存储。
+- `RuntimeApplicationConfig.h` 改为 include `RuntimeFrameClockTypes.h`，不再为了 `RuntimeFrameClockConfig` 依赖完整 `RuntimeFrameClock.h` 或 `<chrono>`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `application\RuntimeFrameClockTypes.h`，放入 `include\Application` 分组。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationConfig.h` 只 include `RuntimeFrameClockTypes.h`；`<chrono>` 只保留在 `RuntimeFrameClock.h`；`RuntimeFrameLifecycleTypes.h` 仍因为按值持有 `RuntimeFrameClock` 而依赖完整 clock 行为头。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 `RuntimeFrameClock.cpp`、frame lifecycle 和 backend contract 关键路径。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime frame clock config DTO header extraction，不改变 fixed delta 规则、verification frame delta、frame loop timing、renderer backend contract、cleanup report 或 PBR pass。
+- 后续建议继续选择 Runtime Frame Lifecycle Config/State Header Split，让只需要 `RuntimeFrameLifecycleConfig` 的路径不再被 `RuntimeFrameLifecycleState` 的 `RuntimeFrameClock` 值成员拖入 `<chrono>`；或继续 runtime content verification sub-lifecycle header include cleanup。
+
+### 2026-05-31 Runtime Frame Lifecycle Config/State Header Split
+
+本轮继续上一轮的 frame lifecycle include boundary cleanup。`RuntimeFrameLifecycleTypes.h` 同时定义 `RuntimeFrameLifecycleConfig` 与 `RuntimeFrameLifecycleState`，而 state 按值持有 `RuntimeFrameClock`，会通过 `RuntimeFrameClock.h` 拉入 `<chrono>`。只生成或传递 frame lifecycle config 的路径不应该因此依赖 state/clock 行为。本切片把 frame lifecycle config 与 state 拆到独立头，旧 types 头保留为兼容聚合入口。
+
+新增与修改：
+
+- 新增 `RuntimeFrameLifecycleConfig.h`，集中定义 `RuntimeFrameLifecycleConfig`，只依赖 `RuntimeFrameClockTypes.h` 与 `RuntimeVerificationConfig.h`。
+- 新增 `RuntimeFrameLifecycleState.h`，集中定义 `RuntimeFrameLifecycleState`，只在按值持有 `RuntimeFrameClock` 的 state 路径引入完整 `RuntimeFrameClock.h`。
+- `RuntimeFrameLifecycleTypes.h` 改为兼容聚合头，只 include `RuntimeFrameLifecycleConfig.h` 与 `RuntimeFrameLifecycleState.h`。
+- `RuntimeApplicationConfigPolicy.cpp` 改为 include `RuntimeFrameLifecycleConfig.h`，不再为了构造 frame lifecycle config 依赖 state/clock 行为头。
+- `RuntimeApplicationState.h` 改为 include `RuntimeFrameLifecycleState.h`，因为 application state 按值持有 frame lifecycle state。
+- `RuntimeFrameLifecycle.cpp` 显式 include config/state 具体头。
+- `RuntimeApplicationFrameContinueBridge.cpp` 与 `RuntimeApplicationFrameRunBridge.cpp` 显式 include `RuntimeFrameLifecycleConfig.h`，因为它们按值接收 `RuntimeApplicationConfigPolicy::makeFrameLifecycleConfig(...)` 的返回对象。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `application\RuntimeFrameLifecycleConfig.h` 与 `application\RuntimeFrameLifecycleState.h`，放入 `include\Application` 分组。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationConfigPolicy.cpp` 只 include config 头；`RuntimeApplicationState.h` 才 include state 头；`RuntimeFrameLifecycleState.h` 是 frame lifecycle state 路径中唯一引入完整 `RuntimeFrameClock.h` 的新头；`RuntimeFrameLifecycleTypes.h` 只作为聚合兼容头保留。
+- 第一次 focused verification 构建失败，原因是 frame continue/run bridge 调用 `makeFrameLifecycleConfig(...)` 并按值接收返回对象，调用点需要完整 `RuntimeFrameLifecycleConfig` 定义；已通过在两个 bridge `.cpp` 显式 include `RuntimeFrameLifecycleConfig.h` 修复。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：修复后构建通过；三条 focused verification mode 全部通过；编译覆盖 frame continue/run bridge、frame startup 和 frame lifecycle implementation。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime frame lifecycle config/state header split，不改变 fixed-delta verification timing、frame continue condition、frame runner dispatch、editor callback gating、verification capture timing、renderer backend contract、cleanup report 或 PBR pass。
+- 后续建议继续选择 Runtime Application State Forward Boundary Cleanup，继续降低 `RuntimeApplicationState.h` 的 public include 面；或回到 runtime content verification sub-lifecycle header include cleanup。
+
+### 2026-05-31 Runtime Editor Lifecycle Config/State Header Split
+
+本轮继续 Runtime Application State Forward Boundary Cleanup。`RuntimeApplicationState.h` 需要按值持有 `RuntimeEditorLifecycleState`，但旧的 `RuntimeEditorLifecycle.h` 同时定义 editor config/state 和 editor lifecycle 行为入口，并且为了 state 直接 include `EditorPanels.h`。这让 application state 为一个 editor state 字段间接依赖 editor lifecycle 行为头和 frame callback 返回类型。本切片把 editor lifecycle config/state 拆到独立头，让 application state 只依赖 editor state 数据定义。
+
+新增与修改：
+
+- 新增 `RuntimeEditorLifecycleConfig.h`，集中定义 `RuntimeEditorLifecycleConfig`，只 forward declare `GLFWwindow`。
+- 新增 `RuntimeEditorLifecycleState.h`，集中定义 `RuntimeEditorLifecycleState`，把 `EditorPanels.h` 依赖局部化到真正按值持有 selection/transaction state 的路径。
+- `RuntimeEditorLifecycle.h` 移除 config/state 定义与 `EditorPanels.h` include，只 forward declare `RuntimeEditorLifecycleConfig` / `RuntimeEditorLifecycleState` 并保留 editor lifecycle 行为入口。
+- `RuntimeEditorLifecycle.cpp` 显式 include config/state 具体头。
+- `RuntimeApplicationState.h` 改为 include `RuntimeEditorLifecycleState.h`，不再为了 `RuntimeEditorLifecycleState` 依赖完整 editor lifecycle 行为头。
+- `RuntimeApplicationConfigPolicy.cpp` 改为 include `RuntimeEditorLifecycleConfig.h`，不再为了构造 editor lifecycle config 依赖 editor lifecycle 行为头。
+- `RuntimeApplicationEditorStartupLifecycle.cpp` 与 `RuntimeApplicationFrameEditorCallbackBridge.cpp` 显式 include `RuntimeEditorLifecycleConfig.h`，因为它们按值消费 `makeEditorLifecycleConfig(...)` 的返回对象。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `application\RuntimeEditorLifecycleConfig.h` 与 `application\RuntimeEditorLifecycleState.h`，放入 `include\Application` 分组。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationState.h` 只 include `RuntimeEditorLifecycleState.h`；`RuntimeApplicationConfigPolicy.cpp` 只 include `RuntimeEditorLifecycleConfig.h`；真正调用 editor lifecycle 行为的 startup/callback bridge `.cpp` 保留 `RuntimeEditorLifecycle.h`。
+- 静态检查确认 `EditorPanels.h` 不再通过 `RuntimeEditorLifecycle.h` 传递，而是只由 `RuntimeEditorLifecycleState.h` 承载。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 application state/editor startup/frame editor callback bridge/editor lifecycle implementation。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime editor lifecycle config/state header split，不改变 GUI 初始化、editor panel callback、selection/transaction state、frame callback gating、renderer backend contract、cleanup report 或 PBR pass。
+- 后续建议继续选择 Runtime Application State Engine/Context Include Boundary Cleanup，继续审计 `RuntimeApplicationState.h` 中仍按值持有的 Engine、runtime context、Engine lifecycle state 和 legacy experiment runner；或回到 runtime content verification sub-lifecycle header include cleanup。
+
+### 2026-05-31 Runtime Application State Engine Owner Boundary Cleanup
+
+本轮继续 Runtime Application State Engine/Context Include Boundary Cleanup 的第一步。`RuntimeApplicationState.h` 仍按值持有 `GLengine::Engine`，因此该 state 头必须 include 完整 `Engine.h`，并间接把 Engine context、World、subsystem 等实现细节暴露给所有 application state 消费者。本切片只把 Engine owner 改为 state 内部 `std::unique_ptr`，通过 out-of-line 构造/析构和 `engine()` accessor 保持 Engine 生命周期由 application state 拥有，同时把完整 `Engine.h` 依赖局部化到 `.cpp`。
+
+新增与修改：
+
+- 新增 `RuntimeApplicationState.cpp`，负责 include 完整 `Engine.h`、构造 `GLengine::Engine`、默认析构 state，并提供 `RuntimeApplicationState::engine()` / `const engine()` accessor。
+- `RuntimeApplicationState.h` 移除 `../engine/Engine.h` include，改为 forward declare `GLengine::Engine`，并把 Engine owner 存成第一个私有 `std::unique_ptr<GLengine::Engine>` 成员，保持 Engine 仍在其他 state 字段之后析构。
+- `RuntimeApplicationEngineStartupLifecycle.cpp`、`RuntimeApplicationContentStartupLifecycle.cpp`、`RuntimeApplicationFrameRunBridge.cpp`、`RuntimeApplicationShutdownEngineBridge.cpp` 与 `RuntimeApplicationShutdownCleanupBridge.cpp` 从 `state.engine` 改为 `state.engine()`，不改变初始化、内容准备、frame run、shutdown 或 cleanup report 的执行顺序。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `application\RuntimeApplicationState.cpp`，放入 `cppfile\Application` 分组。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationState.h` 不再 include `Engine.h`；完整 `Engine.h` 只出现在 `RuntimeApplicationState.cpp` 和原有 Engine 实现/工程注册路径；旧 `state.engine` 字段访问已替换为 `state.engine()`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 `RuntimeApplicationState.cpp`、engine startup、content startup、frame run、shutdown cleanup 和 shutdown engine bridge。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 runtime context Engine attachment、Engine lifecycle snapshot、renderer backend contract、cleanup、fixed delta、minimal scene 与 editor-create 关键行仍然存在。
+
+结论：
+
+- 这是 application runtime state Engine owner boundary cleanup，不改变 Engine 初始化/关闭、runtime context attach/detach、Engine-owned subsystem、frame runner、legacy experiment tick、renderer backend contract、cleanup report 或 PBR pass。
+- 后续建议继续 Runtime Application State Context/Legacy Owner Boundary Cleanup，继续审计 `RuntimeApplicationState.h` 中仍按值持有的 `AppRuntimeContext` 和 `LegacyExperimentRunner`；或切回 runtime content verification sub-lifecycle header include cleanup。
+
+### 2026-05-31 Runtime Application State Legacy Runner Owner Boundary Cleanup
+
+本轮继续上一轮的 application state owner boundary cleanup。`RuntimeApplicationState.h` 仍按值持有 `LegacyExperimentRunner`，而 `LegacyExperimentRunner.h` 是当前 application state 头里最重的 legacy implementation dependency：它会传递 renderer、scene、object、geometry、texture、materials、mesh、assimp loader、tools 和 light 等旧实验实现细节。本切片只把 legacy runner owner 改为 state 内部 `std::unique_ptr`，通过 out-of-line 构造/析构和 `legacyExperiments()` accessor 保持 application state ownership，同时把完整 legacy 实验实现头局部化到 `RuntimeApplicationState.cpp`。
+
+新增与修改：
+
+- `RuntimeApplicationState.h` 移除 `../tools/legacyExperiments/LegacyExperimentRunner.h` include，改为 forward declare `GL_EXPERIMENTS::LegacyExperimentRunner`。
+- `RuntimeApplicationState.h` 把 legacy runner owner 存成私有 `std::unique_ptr<GL_EXPERIMENTS::LegacyExperimentRunner>`，并提供 `legacyExperiments()` / `const legacyExperiments()` accessor。
+- `RuntimeApplicationState.cpp` 显式 include `LegacyExperimentRunner.h`，负责构造 legacy runner，并实现 accessor。
+- `RuntimeApplicationContentStartupLifecycle.cpp` 与 `RuntimeApplicationFrameRunBridge.cpp` 从 `state.legacyExperiments` 改为 `state.legacyExperiments()`，content prepare 和 frame update 仍向 content/frame lifecycle 传入同一个 legacy runner。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationState.h` 不再 include `LegacyExperimentRunner.h`；完整 legacy implementation header 只保留在 `RuntimeApplicationState.cpp` 和 `RuntimeLegacyExperimentLifecycle.cpp`。
+- 静态检查确认旧 `state.legacyExperiments` 字段式传参已替换为 `state.legacyExperiments()`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 state 构造、content startup、frame run 和 legacy mirror verification path。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 `legacyWorldMirror`、runtime context Engine attachment、Engine lifecycle snapshot、renderer backend contract、cleanup、fixed delta、minimal scene 与 editor-create 关键行仍然存在。
+
+结论：
+
+- 这是 application runtime state legacy runner owner boundary cleanup，不改变 legacy experiment prepare/update、content lifecycle、frame runner、Engine lifecycle、renderer backend contract、cleanup report 或 PBR pass。
+- 后续建议继续 Runtime Application State Context Header Boundary Cleanup，审计 `RuntimeApplicationState.h` 中仍按值持有的 `AppRuntimeContext`；或切回 runtime content verification sub-lifecycle header include cleanup。
+
+### 2026-05-31 Runtime Application State Runtime Context Owner Boundary Cleanup
+
+本轮完成上一轮建议的 `AppRuntimeContext` owner boundary。`RuntimeApplicationState.h` 之前仍按值持有 `AppRuntimeContext`，因此所有包含 application state 的调用点都会传递 render resources、camera/light state、engine attachment state 和 runtime profile state 的完整聚合头。本切片只把 runtime context 的构造/析构移到 `RuntimeApplicationState.cpp`，通过 `runtime()` accessor 保持 application state ownership，并保留原有成员销毁顺序：Engine 仍最后析构，runtime context 仍位于 engine lifecycle state 之后、editor lifecycle state 之前。
+
+新增与修改：
+
+- `RuntimeApplicationState.h` 移除 `AppRuntimeContext.h` include，改为 forward declare `GLframework::AppRuntimeContext`。
+- `RuntimeApplicationState.h` 把 runtime context owner 存成私有 `std::unique_ptr<GLframework::AppRuntimeContext>`，并提供 `runtime()` / `const runtime()` accessor。
+- `RuntimeApplicationState.cpp` 显式 include `AppRuntimeContext.h`，负责构造 runtime context，并实现 accessor。
+- `RuntimeApplicationContentStartupLifecycle.cpp`、`RuntimeApplicationEngineStartupLifecycle.cpp`、`RuntimeApplicationFrameEditorCallbackBridge.cpp`、`RuntimeApplicationFrameRunBridge.cpp`、`RuntimeApplicationShutdownCleanupBridge.cpp`、`RuntimeApplicationShutdownEngineBridge.cpp` 与 `RuntimeApplicationWindowStartupLifecycle.cpp` 从 `state.runtime` / `&state.runtime` 改为 `state.runtime()` / `&state.runtime()`，不改变 window callbacks、Engine attach/detach、content startup、editor callbacks、frame run 或 shutdown cleanup 顺序。
+- 启动并关闭只读 sidecar `Newton`：它确认本切片方向、8 个字段式 runtime context 调用点、无需新增 project registration，并报告无文件编辑。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationState.h` 不再 include `AppRuntimeContext.h`；完整 runtime context 依赖局部化到 `RuntimeApplicationState.cpp`。
+- 静态检查确认旧 `state.runtime` / `&state.runtime` 字段式访问已替换为 `state.runtime()` / `&state.runtime()`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 `RuntimeApplicationState.cpp` 和所有 runtime context 调用桥接点。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 runtime context Engine attach/detach、renderer backend contract、cleanup、fixed delta、legacy mirror、minimal scene 与 editor-create 关键行仍然存在。
+
+结论：
+
+- 这是 application runtime state context owner boundary cleanup，不改变 runtime context 数据模型、Engine lifecycle、window callback context、content preparation、editor frame callback、frame runner、legacy experiment update、renderer backend contract、cleanup report 或 PBR pass。
+- 后续建议继续 Runtime Application State Lifecycle State Include Boundary Audit，评估 `RuntimeApplicationState.h` 中 remaining engine/editor/frame lifecycle state 头依赖；或切回 runtime content verification sub-lifecycle header include cleanup。
+
+### 2026-05-31 Runtime Application State Editor Lifecycle State Owner Boundary Cleanup
+
+本轮继续上一轮的 lifecycle state include boundary audit。`RuntimeEngineLifecycleTypes.h` 已经是轻量 forward-declaration DTO，当前不是优先问题；`RuntimeEditorLifecycleState.h` 仍会把 `EditorPanels.h` 传入 `RuntimeApplicationState.h`，而实际只有 frame editor callback bridge 需要访问 editor lifecycle state。本切片把 editor lifecycle state 改为 application state 内部 owner，并通过 `editorLifecycle()` accessor 暴露给唯一调用点。
+
+新增与修改：
+
+- `RuntimeApplicationState.h` 移除 `RuntimeEditorLifecycleState.h` include，改为 forward declare `RuntimeEditorLifecycleState`。
+- `RuntimeApplicationState.h` 把 editor lifecycle state owner 存成私有 `std::unique_ptr<RuntimeEditorLifecycleState>`，并提供 `editorLifecycle()` / `const editorLifecycle()` accessor。
+- `RuntimeApplicationState.cpp` 显式 include `RuntimeEditorLifecycleState.h`，负责构造 editor lifecycle state，并实现 accessor。
+- `RuntimeApplicationFrameEditorCallbackBridge.cpp` 从 `state.editorLifecycle` 改为 `state.editorLifecycle()`，editor frame callback construction 行为不变。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationState.h` 不再 include `RuntimeEditorLifecycleState.h` 或传递 `EditorPanels.h`；完整 editor state 依赖局部化到 `RuntimeApplicationState.cpp` 和 editor lifecycle implementation 路径。
+- 静态检查确认旧 `state.editorLifecycle` 字段式访问已替换为 `state.editorLifecycle()`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 state 构造和 frame editor callback bridge。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 runtime context Engine attach/detach、renderer backend contract、cleanup、fixed delta、legacy mirror、minimal scene 与 editor-create 关键行仍然存在。
+
+结论：
+
+- 这是 application runtime state editor lifecycle state owner boundary cleanup，不改变 GUI 初始化、editor panel callback、selection/transaction state 数据模型、frame callback gating、renderer backend contract、cleanup report 或 PBR pass。
+- 后续建议继续 Runtime Application State Frame Lifecycle State Owner Boundary Cleanup，移出 `RuntimeFrameLifecycleState.h` 对 `RuntimeFrameClock.h` / `<chrono>` 的传递依赖；或切回 runtime content verification sub-lifecycle header include cleanup。
+
+### 2026-05-31 Runtime Application State Frame Lifecycle State Owner Boundary Cleanup
+
+本轮继续 `RuntimeApplicationState` 的剩余 include surface cleanup。`RuntimeFrameLifecycleState.h` 按值持有 `RuntimeFrameClock`，会通过 `RuntimeFrameClock.h` 把 `<chrono>` 传入 `RuntimeApplicationState.h`，而 application state 头本身只需要拥有 frame lifecycle state，不需要暴露 clock 行为细节。本切片把 frame lifecycle state 改为 application state 内部 owner，并通过 `frameLifecycle()` accessor 暴露给 frame startup/continue/run bridge。
+
+新增与修改：
+
+- `RuntimeApplicationState.h` 移除 `RuntimeFrameLifecycleState.h` include，改为 forward declare `RuntimeFrameLifecycleState`。
+- `RuntimeApplicationState.h` 把 frame lifecycle state owner 存成私有 `std::unique_ptr<RuntimeFrameLifecycleState>`，并提供 `frameLifecycle()` / `const frameLifecycle()` accessor。
+- `RuntimeApplicationState.cpp` 显式 include `RuntimeFrameLifecycleState.h`，负责构造 frame lifecycle state，并实现 accessor。
+- `RuntimeApplicationFrameStartupLifecycle.cpp`、`RuntimeApplicationFrameContinueBridge.cpp` 与 `RuntimeApplicationFrameRunBridge.cpp` 从 `state.frameLifecycle` 改为 `state.frameLifecycle()`，frame reset、continue check 和 frame run 行为不变。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationState.h` 不再 include `RuntimeFrameLifecycleState.h`，也不再通过该头传递 `RuntimeFrameClock.h` / `<chrono>`。
+- 静态检查确认旧 `state.frameLifecycle` 字段式访问已替换为 `state.frameLifecycle()`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 frame startup/continue/run bridge 和 state 构造路径。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 runtime context Engine attach/detach、renderer backend contract、cleanup、fixed delta、legacy mirror、minimal scene 与 editor-create 关键行仍然存在。
+
+结论：
+
+- 这是 application runtime state frame lifecycle state owner boundary cleanup，不改变 frame reset、max-frame continue、frame clock fixed delta、frame runner dispatch、verification capture timing、renderer backend contract、cleanup report 或 PBR pass。
+- 后续建议继续 Runtime Application State Engine Lifecycle State Accessor Boundary Cleanup，评估是否把仍公开的 `engineLifecycle` 也改为 accessor；或切回 runtime content verification sub-lifecycle header include cleanup。
+
+### 2026-05-31 Runtime Application State Engine Lifecycle State Accessor Boundary Cleanup
+
+本轮继续 `RuntimeApplicationState` 的最后一个公开 lifecycle state 字段清理。`RuntimeEngineLifecycleTypes.h` 本身已经是轻量 DTO 头，但 `RuntimeApplicationState.h` 不需要暴露 engine lifecycle state 的字段；真正需要完整字段的只有 frame run 中读取 `rendererSubsystem` 和 shutdown cleanup refs 的 by-value implementation。本切片把 engine lifecycle state 改为 application state 内部 owner，并通过 `engineLifecycle()` accessor 暴露给 startup/content/frame/shutdown bridge。
+
+新增与修改：
+
+- `RuntimeApplicationState.h` 移除 `RuntimeEngineLifecycleTypes.h` include，改为 forward declare `RuntimeEngineLifecycleState`。
+- `RuntimeApplicationState.h` 把 engine lifecycle state owner 存成私有 `std::unique_ptr<RuntimeEngineLifecycleState>`，并提供 `engineLifecycle()` / `const engineLifecycle()` accessor。
+- `RuntimeApplicationState.cpp` 显式 include `RuntimeEngineLifecycleTypes.h`，负责构造 engine lifecycle state，并实现 accessor。
+- `RuntimeApplicationContentStartupLifecycle.cpp`、`RuntimeApplicationEngineStartupLifecycle.cpp`、`RuntimeApplicationFrameRunBridge.cpp` 与 `RuntimeApplicationShutdownEngineBridge.cpp` 从 `state.engineLifecycle` 改为 `state.engineLifecycle()`。
+- `RuntimeApplicationFrameRunBridge.cpp` 显式 include `RuntimeEngineLifecycleTypes.h`，因为该文件读取 `rendererSubsystem` 字段。
+- `RuntimeApplicationShutdownEngineBridge.cpp` 显式 include `RuntimeEngineLifecycleTypes.h`，因为该文件按值定义/返回 `RuntimeEngineLifecycleCleanupRefs`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationState.h` 不再 include `RuntimeEngineLifecycleTypes.h`，只 forward declare `RuntimeEngineLifecycleState`。
+- 静态检查确认旧 `state.engineLifecycle` 字段式访问已替换为 `state.engineLifecycle()`。
+- 首次 focused build 暴露 `RuntimeApplicationShutdownEngineBridge.cpp` 的真实完整类型依赖：该文件定义 by-value cleanup refs 返回值，不能再依赖 `RuntimeApplicationState.h` 间接 include；已通过显式 include `RuntimeEngineLifecycleTypes.h` 修正。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：修正后构建通过；三条 focused verification mode 全部通过；编译覆盖 `RuntimeApplicationState.cpp`、content startup、engine startup、frame run 和 shutdown engine bridge。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 runtime context Engine attach/detach、Engine lifecycle snapshot、renderer backend contract、cleanup、fixed delta、legacy mirror、minimal scene 与 editor-create 关键行仍然存在。
+
+结论：
+
+- 这是 application runtime state engine lifecycle state accessor boundary cleanup，不改变 Engine initialization、subsystem capture、renderer backend attachment、frame renderer subsystem handoff、shutdown cleanup refs、cleanup report 或 PBR pass。
+- 后续建议继续 runtime content verification sub-lifecycle header include cleanup，或做 RuntimeApplicationState accessor call-site include audit；当前不建议继续扩张 PBR pass。
+
+### 2026-05-31 Runtime Content Verification Sub-Lifecycle Facade Dependency Cleanup
+
+本轮执行上一轮建议的 runtime content verification sub-lifecycle cleanup。复查后确认 `RuntimeContentVerificationLifecycle.h` 已经是干净的 forward declaration boundary：它只前置声明 `AppRuntimeContext` 与 `RuntimeVerificationConfig`，没有传递 `RuntimeProfileLoader`、`RuntimeVerificationLifecycle` 或完整 config/context 依赖。因此本轮不改 public header，而是清理 implementation 里对 generic `RuntimeVerificationLifecycle` facade 的直接依赖，让 content verification stage 直接委托更小的 verification sub-lifecycle 模块。
+
+新增与修改：
+
+- `RuntimeContentVerificationLifecycle.cpp` 移除 `RuntimeVerificationLifecycle.h` include。
+- `RuntimeContentVerificationLifecycle.cpp` 新增 `RuntimeVerificationStartupProfileLifecycle.h` 与 `RuntimeVerificationPreparedSceneLifecycle.h` include。
+- `RuntimeContentVerificationLifecycle::loadStartupProfiles(...)` 保持先 `RuntimeProfileLoader::loadAll(context)`，再改为调用 `RuntimeVerificationStartupProfileLifecycle::applyStartupProfile(context, config)`。
+- `RuntimeContentVerificationLifecycle::reportPreparedScene(...)` 改为调用 `RuntimeVerificationPreparedSceneLifecycle::reportPreparedScene(context, config)`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeContentVerificationLifecycle.h` 仍只保留 forward declarations。
+- 静态检查确认 `RuntimeContentVerificationLifecycle.cpp` 不再依赖 `RuntimeVerificationLifecycle` facade，完整依赖只剩 profile loader、startup profile sub-lifecycle 和 prepared-scene sub-lifecycle。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 `RuntimeContentVerificationLifecycle.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 PBR scene stats、Engine World minimal/package、legacy mirror、runtime Engine attach/detach、renderer backend contract、cleanup 和 fixed delta 关键输出仍然存在。
+
+结论：
+
+- 这是 runtime content verification sub-lifecycle facade dependency cleanup，不改变 runtime profile load 顺序、startup profile application、prepared-scene probes/report order、renderer backend contract、cleanup report 或 PBR pass。
+- 后续建议继续 RuntimeApplicationState accessor call-site include audit，或做 RuntimeVerificationLifecycle remaining facade call-site audit；当前不建议继续扩张 PBR pass。
+
+### 2026-05-31 Runtime Application Shutdown Verification Bridge Cleanup Lifecycle Direct Dependency Cleanup
+
+本轮继续上一轮建议的 `RuntimeVerificationLifecycle` remaining facade call-site audit。复查后确认 shutdown verification bridge 只负责 cleanup 阶段的 renderer subsystem cleanup report 与 Engine cleanup report，不需要再经过 generic `RuntimeVerificationLifecycle` facade；更窄的依赖应该直接指向 `RuntimeVerificationCleanupLifecycle`。frame stop/capture 路径仍属于 frame lifecycle 运行时控制，本轮不混入该职责。
+
+新增与修改：
+
+- `RuntimeApplicationShutdownVerificationBridge.cpp` 移除 `RuntimeVerificationLifecycle.h` include，改为 include `RuntimeVerificationCleanupLifecycle.h`。
+- `RuntimeApplicationShutdownVerificationBridge::reportRendererSubsystemCleanup(...)` 改为直接调用 `RuntimeVerificationCleanupLifecycle::reportRendererSubsystemCleanup(...)`。
+- `RuntimeApplicationShutdownVerificationBridge::reportEngineCleanup(...)` 改为直接调用 `RuntimeVerificationCleanupLifecycle::reportEngineCleanup(...)`。
+- `RuntimeApplicationShutdownVerificationBridge.h` public API 不变，shutdown cleanup bridge 的调用顺序不变。
+- `/subagents` 已重新确认可用；本轮未启动 sidecar，因为写集集中且 verification 是主线关键路径，协作边界记录为 parent-owned、无 delegated write scope。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationShutdownVerificationBridge.cpp` 不再依赖 `RuntimeVerificationLifecycle` facade。
+- 静态检查确认剩余外部 `RuntimeVerificationLifecycle::` 调用只在 `RuntimeFrameLifecycle.cpp` 的 `shouldStopAfterFrames(...)` 与 `captureFrameIfNeeded(...)`，本轮刻意保留给后续 frame stop/capture facade audit。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 shutdown verification bridge cleanup report 路径。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 PBR scene stats、Engine World minimal/package、legacy mirror、runtime Engine attach/detach、renderer backend contract、cleanup 和 fixed delta 关键输出仍然存在。
+
+结论：
+
+- 这是 shutdown verification bridge cleanup lifecycle direct dependency cleanup，不改变 renderer subsystem cleanup report、Engine cleanup report、cleanup ordering、runtime context detach、renderer backend contract 或 PBR pass。
+- 后续建议继续 RuntimeVerificationLifecycle frame stop/capture facade call-site audit，或做 RuntimeApplicationState accessor call-site include audit；当前不建议继续扩张 PBR pass。
+
+### 2026-05-31 Runtime Verification Lifecycle Facade Removal
+
+本轮继续上一轮留下的 frame stop/capture facade call-site audit。复查后确认 `RuntimeVerificationLifecycle` 已经只是无状态转发 facade：startup profile、prepared-scene report、frame capture、cleanup report 和 stop policy 都已拆到更窄的 sub-lifecycle/policy 模块。最后两个外部调用点位于 `RuntimeFrameLifecycle.cpp`，分别对应 max-frame stop condition 与 capture-frame report。本切片先让 frame lifecycle 直接依赖更窄模块，再删除无调用的 generic verification facade。
+
+新增与修改：
+
+- `RuntimeFrameLifecycle.cpp` 移除 `RuntimeVerificationLifecycle.h` include，改为 include `RuntimeVerificationStopPolicy.h` 与 `RuntimeVerificationFrameCaptureLifecycle.h`。
+- `RuntimeFrameLifecycle::shouldContinue(...)` 改为直接调用 `RuntimeVerificationStopPolicy::shouldStopAfterFrames(...)`。
+- `RuntimeFrameLifecycle::runFrame(...)` 改为直接调用 `RuntimeVerificationFrameCaptureLifecycle::captureFrameIfNeeded(...)`。
+- 删除无外部调用者的 `RuntimeVerificationLifecycle.h/.cpp` facade。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 移除 `RuntimeVerificationLifecycle.h/.cpp` 注册。
+- 本轮没有启动新的 sidecar：写域集中在 frame lifecycle、dead facade 和 VS project registration，且验证为主线关键路径，协作文档记录为 parent-owned、无 delegated write scope。
+
+已完成验证：
+
+- 静态检查确认 `application`、`engine`、`tools`、`main.cpp`、`text2.vcxproj` 与 `text2.vcxproj.filters` 中不再存在 `RuntimeVerificationLifecycle` 引用。
+- 静态检查确认 `RuntimeVerificationLifecycle.h/.cpp` 已从工作树移除。
+- 静态检查确认 `RuntimeFrameLifecycle.cpp` 直接调用 `RuntimeVerificationStopPolicy` 与 `RuntimeVerificationFrameCaptureLifecycle`，对应 sub-lifecycle/policy 仍在工程和 filters 中注册。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 frame stop/capture direct dependency 与 project registration removal。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 PBR scene stats、Engine World minimal/package、legacy mirror、runtime Engine attach/detach、renderer backend contract、cleanup 和 fixed delta 关键输出仍然存在。
+
+结论：
+
+- 这是 runtime verification lifecycle facade removal，不改变 frame stop condition、capture timing、runtime report 输出、PBR renderer stats report、cleanup report、renderer backend contract 或 PBR pass。
+- 后续建议继续 RuntimeApplicationState accessor call-site include audit，或做 RuntimeApplicationConfig/runtime config header include surface audit；当前不建议继续扩张 PBR pass。
+
+### 2026-05-31 Runtime Application Editor Startup State Parameter and Callback Binder Include Cleanup
+
+本轮继续 `RuntimeApplicationState accessor call-site include audit`。复查后确认 `RuntimeApplicationState.h` 当前已经是 owner/accessor forward boundary：Engine、runtime context、editor/frame/engine lifecycle state 和 legacy runner 都通过 `std::unique_ptr` 与 accessor 暴露，真正需要完整 state 类型的是调用 accessor 或构造 state 的 bridge/implementation。第一批安全清理点集中在 editor startup 和 callback binder：editor startup 初始化不读取 state，callback binder 只捕获并转发 state/config 引用，不需要完整 config/state header。
+
+新增与修改：
+
+- `RuntimeApplicationEditorStartupLifecycle.h` 移除 `RuntimeApplicationState` forward declaration，`initializeEditor(...)` 不再接收 `RuntimeApplicationState&`。
+- `RuntimeApplicationEditorStartupLifecycle.cpp` 同步移除未使用的 state 参数，仍只根据 shell config 与 window snapshot 组装 editor lifecycle config。
+- `RuntimeApplicationStartupLifecycle.cpp` 调用改为 `RuntimeApplicationEditorStartupLifecycle::initializeEditor(config, window)`。
+- `RuntimeApplicationCallbackBinder.cpp` 移除冗余 `RuntimeApplicationConfig.h` 与 `RuntimeApplicationState.h` include；该文件只在 lambda 中转发已由调用方提供的引用。
+- 实际调用 `state.runtime()`、`state.engine()`、`state.engineLifecycle()`、`state.editorLifecycle()`、`state.frameLifecycle()` 或 `state.legacyExperiments()` 的 bridge 仍显式 include `RuntimeApplicationState.h`，本轮不做过度隐藏。
+- 已按 `/subagents` 要求更新 `docs/subagents_coordination.md`，当前主线 source/docs 写集由 parent 拥有；只读 sidecar `Huygens` 正在审计下一步 `RuntimeApplicationConfig` include surface，不能改文件，结果只作为后续切片建议。
+
+已完成验证：
+
+- 静态检查确认 editor startup lifecycle 不再暴露或接收 `RuntimeApplicationState`。
+- 静态检查确认 callback binder 不再 include 完整 `RuntimeApplicationConfig.h` / `RuntimeApplicationState.h`。
+- 静态检查确认剩余 `RuntimeApplicationState.h` include 都位于构造 state 或实际调用 state accessor 的 application bridge/implementation。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 callback binder、editor startup lifecycle 与 startup lifecycle 调用点。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 runtime Engine attach/detach、renderer backend contract、cleanup、fixed delta、legacy mirror、minimal scene、editor-create 和 PBR scene stats 关键输出仍然存在。
+
+结论：
+
+- 这是 application runtime state accessor call-site include cleanup，不改变 editor startup config mapping、callback binding、window snapshot、runtime frame callbacks、renderer backend contract 或 PBR pass。
+- 后续建议优先根据 `Huygens` 只读审计结果选择一个小型 `RuntimeApplicationConfig/runtime config header include surface audit` 切片；当前不建议继续扩张 PBR pass。
+
+### 2026-05-31 Runtime Application Config Include Surface Follow-up Cleanup
+
+本轮按 `Huygens` 只读审计结果执行最小 config include surface follow-up。目标不是继续扩大架构范围，而是把已经确认安全的 config header 传递依赖再下沉一层：frame editor callback bridge implementation 不读 config 字段，只把 shell config 引用交给 config policy；runner public header 只声明 by-value API，不需要向所有入口调用方传递完整 `RuntimeApplicationConfig.h`。
+
+新增与修改：
+
+- `RuntimeApplicationFrameEditorCallbackBridge.cpp` 移除冗余 `RuntimeApplicationConfig.h` include，保留 `RuntimeApplicationConfigPolicy.h`、`RuntimeApplicationState.h`、editor lifecycle config、editor lifecycle 和 callback DTO 依赖。
+- `RuntimeApplicationRunner.h` 改为 forward declare `RuntimeApplicationShellConfig`，public API 保持 `static int run(RuntimeApplicationShellConfig config)` 不变。
+- `RuntimeApplicationRunner.cpp` 显式 include `RuntimeApplicationConfig.h`，因为 function definition 按值接收并移动 config，不能依赖 header 传递 include。
+- `RuntimeApplicationEntry.cpp` 不需要变化：它通过 `RuntimeVerificationArgs.h` 获得 by-value config 构造入口，通过 runner header 看到 runner API。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationFrameEditorCallbackBridge.cpp` 与 `RuntimeApplicationRunner.h` 不再 include `RuntimeApplicationConfig.h`。
+- 静态检查确认 `RuntimeApplicationRunner.h` 只 forward declare `RuntimeApplicationShellConfig`，`RuntimeApplicationRunner.cpp` 是 runner 路径的完整 config include 所有者。
+- 静态检查确认 frame editor callback bridge 仍通过 `RuntimeApplicationConfigPolicy::makeEditorLifecycleConfig(config, window)` 生成 editor lifecycle config，没有读取 shell config 字段。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 `RuntimeApplicationEntry.cpp`、`RuntimeApplicationFrameEditorCallbackBridge.cpp` 与 `RuntimeApplicationRunner.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime application config include surface cleanup，不改变 application entry、runner ownership、editor callback config mapping、frame callbacks、renderer backend contract 或 PBR pass。
+- 后续建议继续沿 `RuntimeApplicationConfig` 做同类小型 include surface audit，但必须遵守 `Huygens` 已确认的边界：`RuntimeApplicationShell.h`、`RuntimeVerificationArgs.h`、实际读取 config 字段的 policy/implementation 和 aggregate config DTO 的完整 include 不应强行移除。
+
+### 2026-05-31 Runtime Verification Args Public Header Config Forward Boundary Cleanup
+
+本轮继续 `RuntimeApplicationConfig` include surface audit。复查直接 include 后确认 policy/window/shutdown verification/shell/runner implementation 都确实需要完整 shell config：它们要么读取字段，要么按值存储/定义函数。唯一可继续下沉的是 `RuntimeVerificationArgs.h`：public header 只声明 `makeShellConfigFromArguments(...)`，不构造、不析构、不访问 `RuntimeApplicationShellConfig` 字段；完整 config 应由参数解析 implementation 和实际调用表达式所在的 entry implementation 显式持有。
+
+新增与修改：
+
+- `RuntimeVerificationArgs.h` 移除 `RuntimeApplicationConfig.h` include，改为 forward declare `RuntimeApplicationShellConfig`。
+- `RuntimeVerificationArgs.cpp` 显式 include `RuntimeApplicationConfig.h`，因为这里定义 `makeShellConfigFromArguments(...)`、构造 config 并写入 verification/window/backend 字段。
+- `RuntimeApplicationEntry.cpp` 显式 include `RuntimeApplicationConfig.h`，因为它把 `makeShellConfigFromArguments(...)` 的 by-value 返回值直接传给 `RuntimeApplicationRunner::run(...)`。
+- `RuntimePBRVerificationArgs.h` 继续作为兼容 header include `RuntimeVerificationArgs.h`，但不再通过它传递完整 application config header。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeVerificationArgs.h` 与 `RuntimePBRVerificationArgs.h` 不再 include `RuntimeApplicationConfig.h`。
+- 静态检查确认 `RuntimeVerificationArgs.cpp` 与 `RuntimeApplicationEntry.cpp` 显式持有完整 config include，覆盖 by-value 构造/返回/调用所需完整类型。
+- 静态检查确认剩余 `RuntimeApplicationConfig.h` 直接 include 只保留在 VS project/filter 注册、policy implementation、entry implementation、runner implementation、shell by-value owner、shutdown verification implementation、window startup implementation、content config policy implementation 和 verification args implementation。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过；编译覆盖 `RuntimeApplicationEntry.cpp`、`RuntimePBRVerificationArgs.cpp` 与 `RuntimeVerificationArgs.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime verification args public header config forward boundary cleanup，不改变 CLI argument parsing、verification profile defaults、application entry、runner ownership、renderer backend selection、renderer backend contract 或 PBR pass。
+- 后续建议如果继续 `RuntimeApplicationConfig` include audit，应优先停在当前边界；剩余直接 include 基本都有 by-value storage/definition 或字段读取依据。下一步更适合转向另一个 header surface，例如 runtime verification config/public args split 或 application startup/frame/shutdown bridge 的剩余 implementation include audit。
+
+### 2026-05-31 Runtime PBR Verification Args Compatibility Facade Removal
+
+本轮继续 runtime verification config/public args split。复查后确认 `RuntimePBRVerificationArgs.h/.cpp` 已经只是兼容空壳：header 只 include `RuntimeVerificationArgs.h`，cpp 只 include 自身并写一行注释；源码中没有任何外部 include 或调用，只有 VS project/filter 注册。上一轮 `RuntimeVerificationArgs.h` 已经不再传递完整 application config，因此继续保留 PBR-specific args facade 只会保留误导性的旧命名边界。
+
+新增与修改：
+
+- 删除 `RuntimePBRVerificationArgs.h`。
+- 删除 `RuntimePBRVerificationArgs.cpp`。
+- `text2.vcxproj` 移除 `RuntimePBRVerificationArgs.cpp` 与 `RuntimePBRVerificationArgs.h` 注册。
+- `text2.vcxproj.filters` 移除对应 filter 注册。
+- `RuntimeVerificationArgs.h/.cpp` 保持 runtime verification args 的唯一入口，不改变 CLI argument parsing 或 verification mode table。
+
+已完成验证：
+
+- 静态检查确认 `application`、`main.cpp`、`tools`、`engine`、`text2.vcxproj` 与 `text2.vcxproj.filters` 中不再存在 `RuntimePBRVerificationArgs` 引用。
+- 文件存在性检查确认 `RuntimePBRVerificationArgs.h/.cpp` 已从工作树移除。
+- 静态检查确认 `RuntimeVerificationArgs.cpp` 和 `RuntimeApplicationEntry.cpp` 仍显式持有完整 `RuntimeApplicationConfig.h`，`RuntimeVerificationArgs.h` 仍只 forward declare shell config。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 dead PBR-specific verification args compatibility facade removal，不改变 runtime verification args parser、verification defaults、mode selection、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续清理类似无外部调用者的 compatibility façade，或转向 application bridge implementation include audit；当前不建议继续扩张 PBR pass。
+
+### 2026-05-31 Runtime Camera/Scene Prepare Config Consumer Header Forward Boundary Cleanup
+
+本轮先复查旧 compatibility facade 和 application bridge include surface。确认旧 PBR args 兼容层已删除，剩余 `RuntimePBR*` 多为真实 verification module/config，不适合继续为了命名清理而删除；同时 application bridge 的剩余完整 config/state include 大多对应字段读取、返回值完整类型或 state accessor 调用。因此本轮转向计划内的 `runtime content lifecycle config/data boundary cleanup`，只清理通过 `const Runtime*Config&` 接收配置的 consumer header。
+
+新增与修改：
+
+- `RuntimeCameraLifecycle.h` 不再 include `RuntimeCameraConfig.h`，改为 forward declare `RuntimeCameraConfig`；`RuntimeCameraLifecycle.cpp` 显式 include 完整 config，因为实现读取 camera 参数字段。
+- `RuntimeLegacyExperimentLifecycle.h` 不再 include `RuntimeScenePrepareConfig.h`，改为 forward declare `RuntimeScenePrepareConfig`；`RuntimeLegacyExperimentLifecycle.cpp` 显式 include 完整 config，保持 legacy experiment prepare owner 的局部依赖。
+- `RuntimeSceneSetupContextFactory.h` 不再 include `RuntimeScenePrepareConfig.h`，改为 forward declare；`RuntimeSceneSetupContextFactory.cpp` 显式 include 完整 config，因为 setup context construction 读取 width/height/texture path。
+- `RuntimeSceneSetupPipelineLifecycle.h` 不再 include `RuntimeScenePrepareConfig.h`，改为 forward declare；`RuntimeSceneSetupPipelineLifecycle.cpp` 显式 include 完整 config，因为 implementation 读取 `sceneSetupPipeline`。
+- 本轮没有启动新的 sidecar：写域集中在四组 content/camera/scene setup consumer header 和 implementation，验证覆盖路径明确，协作文档记录为 parent-owned、无 delegated write scope。
+
+已完成验证：
+
+- 静态检查确认四个 consumer header 中只保留 `RuntimeCameraConfig` / `RuntimeScenePrepareConfig` 前置声明。
+- 静态检查确认完整 `RuntimeCameraConfig.h` / `RuntimeScenePrepareConfig.h` include 已下沉到对应 `.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 camera lifecycle、legacy experiment lifecycle、scene setup context factory 和 scene setup pipeline lifecycle。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 PBR scene stats、Engine World minimal/package、runtime Engine attach/detach、renderer backend contract、cleanup 和 fixed delta 关键输出仍然存在。
+
+结论：
+
+- 这是 runtime content config consumer header boundary cleanup，不改变 camera 初始化参数、legacy experiment gate、scene setup context construction、scene setup pipeline、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续 `runtime content lifecycle config/data boundary cleanup` 的剩余 consumer header include audit，或转向 shutdown cleanup refs type boundary cleanup；当前不建议继续扩张 PBR pass。
+
+### 2026-05-31 Runtime Engine Lifecycle State/Cleanup Refs Header Split
+
+本轮先继续 runtime content lifecycle config/data boundary audit，确认 `RuntimeCameraConfig.h` / `RuntimeScenePrepareConfig.h` 的 public include 只剩 `RuntimeContentLifecycleConfig.h`，这是按值聚合 DTO，不能改为前置声明。随后转向计划内的 shutdown cleanup refs type boundary cleanup：`RuntimeEngineLifecycleTypes.h` 同时承载 engine lifecycle state 与 cleanup refs，导致 frame run、state owner 和 shutdown cleanup/report 路径共享一个过宽类型头。
+
+新增与修改：
+
+- 新增 `RuntimeEngineLifecycleState.h`，只承载 `RuntimeEngineLifecycleState`。
+- 新增 `RuntimeEngineLifecycleCleanupRefs.h`，只承载 `RuntimeEngineLifecycleCleanupRefs`。
+- 删除旧 `RuntimeEngineLifecycleTypes.h`，避免继续保留 state/cleanup refs 聚合宽头。
+- `RuntimeApplicationFrameRunBridge.cpp` 与 `RuntimeApplicationState.cpp` 改为 include `RuntimeEngineLifecycleState.h`。
+- `RuntimeApplicationShutdownCleanupBridge.cpp`、`RuntimeApplicationShutdownEngineBridge.cpp` 与 `RuntimeApplicationShutdownVerificationBridge.cpp` 改为 include `RuntimeEngineLifecycleCleanupRefs.h`。
+- `RuntimeEngineLifecycle.cpp` 同时 include state 与 cleanup refs 两个窄头，因为 implementation 同时读写 state 并构造 cleanup refs。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 移除旧宽头注册并新增两个窄头注册。
+
+已完成验证：
+
+- 静态检查确认 `application`、`engine`、`tools`、`main.cpp`、`text2.vcxproj` 与 `text2.vcxproj.filters` 中不再存在 `RuntimeEngineLifecycleTypes` 引用。
+- 文件存在性检查确认旧 `RuntimeEngineLifecycleTypes.h` 已移除，新 `RuntimeEngineLifecycleState.h` 与 `RuntimeEngineLifecycleCleanupRefs.h` 存在。
+- 静态检查确认 frame/state 路径只 include state 窄头，shutdown cleanup/report 路径只 include cleanup refs 窄头，engine lifecycle implementation 持有两个完整类型依赖。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 frame run、shutdown cleanup、shutdown verification 和 engine lifecycle implementation。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 PBR scene stats、Engine World minimal/package、runtime Engine attach/detach、renderer backend contract、cleanup 和 fixed delta 关键输出仍然存在。
+
+结论：
+
+- 这是 Runtime Engine lifecycle type boundary split，不改变 Engine initialize/attach/detach/shutdown、renderer backend cleanup、cleanup report、frame run renderer subsystem access、Engine World verification 或 PBR pass。
+- 后续建议继续沿 header surface 做小切片：优先审计 RuntimeApplicationState accessor call-site 的剩余 type include，或继续 shutdown/application bridge 的实现 include surface；当前不建议继续扩张 PBR pass。
+
+### 2026-05-31 Runtime Frame Lifecycle Types Compatibility Aggregator Removal
+
+本轮继续 header surface cleanup。复查 frame lifecycle 类型边界后确认：`RuntimeFrameLifecycleConfig.h` 与 `RuntimeFrameLifecycleState.h` 已经是 canonical 窄头，源码和工具中没有任何 include `RuntimeFrameLifecycleTypes.h`；旧聚合头只剩 VS project/filter 注册，会继续传递一个过时的“config/state 聚合入口”概念。
+
+新增与修改：
+
+- 删除 `RuntimeFrameLifecycleTypes.h`。
+- `text2.vcxproj` 移除 `RuntimeFrameLifecycleTypes.h` 注册。
+- `text2.vcxproj.filters` 移除对应 filter 注册。
+- 保留 `RuntimeFrameLifecycleConfig.h` 与 `RuntimeFrameLifecycleState.h` 作为 frame lifecycle config/state 的唯一窄头入口。
+
+已完成验证：
+
+- 静态检查确认 `application`、`engine`、`tools`、`main.cpp`、`text2.vcxproj` 与 `text2.vcxproj.filters` 中不再存在 `RuntimeFrameLifecycleTypes` 引用。
+- 文件存在性检查确认旧聚合头已移除，`RuntimeFrameLifecycleConfig.h` 与 `RuntimeFrameLifecycleState.h` 仍存在。
+- 静态检查确认 frame lifecycle facade、frame lifecycle implementation、application frame bridge、application state 和 VS project/filter 仍直接依赖 config/state 窄头。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures`：构建通过；三条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 PBR scene stats、Engine World minimal/package、runtime Engine attach/detach、renderer backend contract、cleanup 和 fixed delta 关键输出仍然存在。
+
+结论：
+
+- 这是 dead compatibility aggregator removal，不改变 frame lifecycle reset/run/continue、frame clock、verification capture、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续沿窄 header surface 推进：优先审计 `RuntimeApplicationState` accessor call-site 的剩余 type include，或继续 application/shutdown bridge implementation include surface；当前不建议继续扩张 PBR pass。
+
+### 2026-05-31 Runtime Application Public Header Include Boundary Cleanup
+
+本轮按上一轮建议审计 `RuntimeApplicationState` accessor call-site。复查后确认真正 include `RuntimeApplicationState.h` 的 `.cpp` 基本都在函数体内调用 `state.runtime()`、`state.engine()`、`state.engineLifecycle()`、`state.editorLifecycle()`、`state.frameLifecycle()` 或 `state.legacyExperiments()`，这些调用点需要完整 state header，不能为了减少 include 而改成不透明转发。随后转向相邻 application public-header / implementation include surface，清理两个可证明的 public header 传递依赖和一个 shutdown implementation 冗余 include。
+
+新增与修改：
+
+- `RuntimeApplicationCallbackBinder.h` 移除 `RuntimeBootstrapper.h` include，改为 forward declare `RuntimeBootstrapperCallbacks`。
+- `RuntimeApplicationCallbackBinder.cpp` 显式 include `RuntimeBootstrapper.h`，因为这里定义 `makeCallbacks(...)` 并构造 callback DTO。
+- `RuntimeApplicationShell.cpp` 显式 include `RuntimeBootstrapper.h`，因为 `RuntimeApplicationShell::makeCallbacks()` 按值返回 `RuntimeBootstrapperCallbacks`。
+- `RuntimeApplicationWindowStartupLifecycle.h` 移除 `RuntimeWindowLifecycleTypes.h` include，改为 forward declare `RuntimeWindowSnapshot`。
+- `RuntimeApplicationStartupLifecycle.cpp` 显式 include `RuntimeWindowLifecycleTypes.h`，因为 startup implementation 按值接收 window snapshot 并继续传给 content/editor startup。
+- `RuntimeApplicationShutdownVerificationBridge.cpp` 移除未使用的 `RuntimeApplicationShutdownEngineBridge.h` include；该文件只需要 config、cleanup refs 和 cleanup verification lifecycle。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationCallbackBinder.h` 只 forward declare `RuntimeBootstrapperCallbacks`，完整 `RuntimeBootstrapper.h` 依赖下沉到 callback binder implementation 和 shell implementation。
+- 静态检查确认 `RuntimeApplicationWindowStartupLifecycle.h` 只 forward declare `RuntimeWindowSnapshot`，完整 window lifecycle types 依赖下沉到 startup implementation。
+- 静态检查确认 `RuntimeApplicationShutdownVerificationBridge.cpp` 不再 include shutdown engine bridge。
+- 静态检查确认实际 accessor 调用点仍保留完整 `RuntimeApplicationState.h` include，没有把需要完整类型的访问改成隐式传递。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 callback binder、shell、startup lifecycle、window startup lifecycle 和 shutdown verification bridge。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 PBR scene stats、Engine World minimal/editor-create/package、runtime Engine attach/detach、renderer backend contract、cleanup 和 fixed delta 关键输出仍然存在。
+
+结论：
+
+- 这是 application public header include boundary cleanup，不改变 bootstrapper callback 绑定、application startup order、window snapshot capture、shutdown cleanup reporting、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续做 application/shutdown bridge implementation include audit，或转向下一组 verification/report public header 的 forward boundary cleanup；当前不建议继续扩张 PBR pass。
+
+### 2026-05-31 Runtime PBR Verification Config Include Boundary Cleanup
+
+本轮继续 verification/report public header forward boundary audit。复查后确认 PBR/verification public headers 大多已经只保留前置声明；可继续收窄的是两个 PBR verification implementation：`RuntimePBRPreparedSceneStatsVerification.cpp` 的 `RuntimeVerificationConfig` 参数未使用，`RuntimePBRProfileVerification.cpp` 只把 config 作为 const 引用转发给 startup/pass/preview/light/profile-line 子模块。两者不需要完整 `RuntimeVerificationConfig.h`。
+
+新增与修改：
+
+- `RuntimePBRPreparedSceneStatsVerification.cpp` 移除 `RuntimeVerificationConfig.h` include，继续通过 header 前置声明保留未命名 `const RuntimeVerificationConfig&` 参数。
+- `RuntimePBRProfileVerification.cpp` 移除 `RuntimeVerificationConfig.h` include，只保留 PBR profile 子模块 headers；完整 config 依赖仍在实际读取字段的 pass/preview/light/profile-line implementations。
+
+已完成验证：
+
+- 静态检查确认两个目标 implementation 不再 include `RuntimeVerificationConfig.h`。
+- 静态检查确认 `RuntimePBRPreparedSceneStatsVerification.cpp` 不读取 config 字段，只输出 prepared scene stats；`RuntimePBRProfileVerification.cpp` 只把 const config 引用转发给子模块。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 `RuntimePBRPreparedSceneStatsVerification.cpp` 与 `RuntimePBRProfileVerification.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 PBR scene stats、Engine World minimal/package、runtime Engine attach/detach、renderer backend contract、cleanup 和 fixed delta 关键输出仍然存在。
+
+结论：
+
+- 这是 PBR verification implementation include boundary cleanup，不改变 PBR startup profile application、prepared scene stats、profile line输出、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续 verification/report implementation include audit，优先找“只转发 const config/context 引用、不读取字段”的 implementation；当前不建议继续扩张 PBR pass。
+
+### 2026-05-31 Subagent Boundary Restart and Next Slice Audit
+
+用户要求可以考虑使用多 agent，但必须先写清楚边界和共享沟通文档，再自行恢复 active goal。当前 goal 仍为 active，因此本轮不创建新 goal、不重置历史，只按原 objective 继续推进。
+
+本轮已先更新 `docs/subagents_coordination.md`：
+
+- 新增 `Subagent Restart Protocol`，明确 parent 先写边界、sidecar 默认只读、只有显式 disjoint write scope 才能改文件。
+- 当前 active round 切到 `Subagent Boundary Restart and Next Slice Audit`。
+- `imgui.ini` 继续作为无关本地状态，parent 与 sidecar 都不得触碰。
+- sidecar 结论必须通过共享格式汇报，parent 验证、整合并写入 `worked.md` 后才算接受。
+
+已启动两个只读 sidecar：
+
+- `Harvey`：审计 verification/report implementation include surface，目标是找下一步最安全的降耦合候选。
+- `Galileo`：审计 application/startup/frame/shutdown bridge implementation include surface，目标是找不改变生命周期顺序的最小 cleanup 候选。
+
+结论：
+
+- 这是 goal continuation 和 subagent coordination restart，不是代码行为变更。
+- parent 下一步会基于 sidecar 结果选择一个最小切片，本地完成实现、验证和文档更新。
+
+### 2026-05-31 Runtime Editor Lifecycle Callback DTO Header Boundary Cleanup
+
+两个只读 sidecar 均已返回：
+
+- `Harvey` 审计 verification/report include surface，未找到安全的“直接删 include”候选；建议后续可考虑把 `EngineSubsystemLifecycleSummary` / `EngineLifecycleSnapshot` 从 `Engine.h` 拆成轻量 engine header，但该方向涉及 engine header 与 project registration，风险高于本轮目标。
+- `Galileo` 审计 application startup/frame/shutdown bridge include surface，确认多数 include 因 DTO 字段访问、state accessor、config 字段读取或按值返回需要保留；唯一低风险候选是 `RuntimeEditorLifecycle.h` 只为返回值声明包含 `RuntimeFrameCallbacks.h`。
+
+本轮接受 `Galileo` 的更小切片：
+
+- `RuntimeEditorLifecycle.h` 移除 `RuntimeFrameCallbacks.h` include，改为 forward declare `RuntimeFrameCallbacks`。
+- `RuntimeEditorLifecycle.cpp` 显式 include `RuntimeFrameCallbacks.h`，因为函数定义内部构造并填充 callback DTO。
+- `RuntimeApplicationFrameEditorCallbackBridge.cpp` 原本已 include 完整 callback DTO，因此调用 `RuntimeEditorLifecycle::makeFrameCallbacks(...)` 的完整类型需求不变。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeEditorLifecycle.h` 只 forward declare `RuntimeFrameCallbacks`，完整 DTO include 位于 `RuntimeEditorLifecycle.cpp` 与 frame editor callback bridge implementation。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 `RuntimeEditorLifecycle.cpp`、editor startup 和 frame editor callback bridge。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+- 日志检查确认 PBR scene stats、Engine World minimal/editor-create、runtime Engine attach/detach、renderer backend contract、cleanup 和 fixed delta 关键输出仍然存在。
+
+结论：
+
+- 这是 editor lifecycle public header include boundary cleanup，不改变 GUI 初始化、editor panel callback 创建、startup/frame/shutdown 顺序、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议优先评估 `Harvey` 提到的 `EngineLifecycleSnapshot` type header extraction，或继续做低风险 application/shutdown bridge include audit；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Engine Lifecycle Snapshot Type Header Extraction
+
+本轮按上一轮 `Harvey` 的较大候选继续推进，但保持切片只覆盖 Engine lifecycle snapshot DTO 边界，不改 Engine 行为、不扩张 PBR。审计确认：`EngineLifecycleSnapshot` / `EngineSubsystemLifecycleSummary` 定义在 `Engine.h`，导致纯 formatter implementation `RuntimeEngineVerificationReport.cpp` 为了读取快照字段而包含完整 Engine owner header。
+
+新增与修改：
+
+- 新增 `engine/EngineLifecycleSnapshot.h`，集中定义 `EngineSubsystemLifecycleSummary` 与 `EngineLifecycleSnapshot`。
+- `Engine.h` 移除 snapshot DTO 定义，改为 include `EngineLifecycleSnapshot.h`，继续暴露 `Engine::captureLifecycleSnapshot()`。
+- `RuntimeEngineVerificationReport.cpp` 不再 include 完整 `Engine.h`，改为 include `EngineLifecycleSnapshot.h`；report formatter 只依赖 snapshot DTO 与 renderer backend stats DTO。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `EngineLifecycleSnapshot.h` 到 `include\GLengine`。
+
+已完成验证：
+
+- 静态检查确认 snapshot/summary 结构只在 `EngineLifecycleSnapshot.h` 定义，`RuntimeEngineVerificationReport.cpp` 已改为 include 轻量 snapshot header。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 `Engine.cpp`、`RuntimeEngineVerificationReport.cpp`、`RuntimeVerificationReport.cpp` 和 `EngineDiagnosticsPanel.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine lifecycle snapshot DTO header extraction，不改变 `Engine::captureLifecycleSnapshot()` 输出、diagnostics、runtime engine verification report、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续评估是否需要把 `EngineRunMode` 从 `EngineContext.h` 中拆成更小枚举头，或回到 application/shutdown bridge implementation include audit；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Engine Run Mode Header Extraction
+
+本轮继续上一轮的后续方向。审计确认：`EngineLifecycleSnapshot.h` 只需要 `EngineRunMode`，但此前为了这个枚举包含完整 `EngineContext.h`；而 `EngineContext.h` 还定义 `EngineDesc` 并包含 `<string>`。因此 snapshot/report 路径仍被不必要地牵连到完整 Engine context/desc 数据模型。
+
+新增与修改：
+
+- 新增 `engine/EngineRunMode.h`，单独承载 `EngineRunMode` 枚举。
+- `EngineContext.h` 移除 `EngineRunMode` 枚举定义，改为 include `EngineRunMode.h`，继续承载 `EngineDesc` 与 `EngineContext`。
+- `EngineLifecycleSnapshot.h` 不再 include `EngineContext.h`，改为 include `EngineRunMode.h`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `EngineRunMode.h` 到 `include\GLengine`。
+
+已完成验证：
+
+- 静态检查确认 `EngineRunMode` 只在 `EngineRunMode.h` 定义；`EngineDesc` / `EngineContext` 仍只在 `EngineContext.h` 定义；`EngineLifecycleSnapshot.h` 只依赖 `EngineRunMode.h`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 `RuntimeApplicationConfigPolicy.cpp`、`RuntimeApplicationEngineStartupLifecycle.cpp`、`Engine.cpp`、`RendererSubsystem.cpp`、`RuntimeEngineVerificationReport.cpp` 与 `EngineDiagnosticsPanel.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine run mode enum header extraction，不改变 `EngineDesc`、`EngineContext`、`Engine::captureLifecycleSnapshot()`、diagnostics、runtime engine verification report、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续评估 `EngineDesc` / `EngineContext` 是否需要拆分，或回到低风险 application/shutdown bridge implementation include audit；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Engine Desc Header Extraction
+
+本轮继续上一轮留下的 `EngineDesc` / `EngineContext` 数据模型拆分方向。审计确认：`RuntimeApplicationConfigPolicy.cpp` 和 `RuntimeApplicationEngineStartupLifecycle.cpp` 只需要构造或消费 `EngineDesc`，不需要完整的 per-frame `EngineContext`。此前它们为了 `EngineDesc` 直接 include `EngineContext.h`，会把 runtime context 数据模型不必要地传递到 application startup/config policy 实现中。
+
+新增与修改：
+
+- 新增 `engine/EngineDesc.h`，单独承载 `EngineDesc` 以及其需要的 `<string>` 和 `EngineRunMode.h` 依赖。
+- `EngineContext.h` 移除 `EngineDesc` 定义，改为 include `EngineDesc.h`，继续只承载 per-frame `EngineContext`。
+- `RuntimeApplicationConfigPolicy.cpp` 与 `RuntimeApplicationEngineStartupLifecycle.cpp` 改为 include `EngineDesc.h`，不再 include `EngineContext.h`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `EngineDesc.h` 到 `include\GLengine`。
+
+已完成验证：
+
+- 静态检查确认 `EngineDesc` 只在 `EngineDesc.h` 定义；`EngineContext` 仍只在 `EngineContext.h` 定义；`EngineRunMode` 仍只在 `EngineRunMode.h` 定义；两个 application 调用点没有残留 `EngineContext.h` include。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 `RuntimeApplicationConfigPolicy.cpp`、`RuntimeApplicationEngineStartupLifecycle.cpp`、`RuntimeEngineLifecycle.cpp`、`Engine.cpp`、`RendererSubsystem.cpp` 与 `EngineDiagnosticsPanel.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine desc DTO header extraction，不改变 `EngineDesc` 字段、`EngineContext` 字段、Engine 初始化行为、runtime lifecycle、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续低风险 application/shutdown bridge implementation include audit，或继续审计 Engine public header 对 `EngineContext.h` 的暴露边界；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Application Shutdown Verification Config Boundary Cleanup
+
+本轮继续上一轮建议中的 application/shutdown bridge implementation include audit。审计确认：`RuntimeApplicationShutdownVerificationBridge` 只需要 verification 子配置，但此前 API 接收完整 `RuntimeApplicationShellConfig` 并在 implementation 中 include `RuntimeApplicationConfig.h` 读取 `config.verification`。这会让 shutdown verification bridge 依赖完整 shell config、window config、frame clock config、renderer backend key 等无关字段。
+
+新增与修改：
+
+- `RuntimeApplicationConfigPolicy` 新增 `verificationConfig(const RuntimeApplicationShellConfig&) -> const RuntimeVerificationConfig&`，把 shell config 字段读取集中到 config policy implementation。
+- `RuntimeApplicationShutdownCleanupBridge.cpp` 通过 `RuntimeApplicationConfigPolicy::verificationConfig(config)` 传递 verification 子配置。
+- `RuntimeApplicationShutdownVerificationBridge.h/.cpp` 将 `reportRendererSubsystemCleanup(...)` 与 `reportEngineCleanup(...)` 的 config 参数从完整 `RuntimeApplicationShellConfig` 收敛为 `RuntimeVerificationConfig`。
+- `RuntimeApplicationShutdownVerificationBridge.cpp` 移除 `RuntimeApplicationConfig.h` include，只保留 cleanup refs 与 verification cleanup lifecycle 依赖。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationShutdownVerificationBridge` 不再 include 或 forward declare `RuntimeApplicationShellConfig`，也不再 include `RuntimeApplicationConfig.h`；完整 shell config 字段读取仅保留在 `RuntimeApplicationConfigPolicy.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 `RuntimeApplicationConfigPolicy.cpp`、`RuntimeApplicationShutdownCleanupBridge.cpp` 与 `RuntimeApplicationShutdownVerificationBridge.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 shutdown verification config boundary cleanup，不改变 shutdown cleanup order、camera cleanup、runtime context detach、Engine shutdown、renderer backend contract cleanup、Engine cleanup verification output 或 PBR pass。
+- 后续建议继续审计 application/shutdown bridge implementation include surface 的剩余调用点，或转向 Engine public header 对 `EngineContext.h` 的暴露边界。
+
+### 2026-05-31 Engine Public Header Context Ownership Boundary Cleanup
+
+本轮按上一轮建议转向 Engine public header 暴露边界。审计确认：`Engine.h` 此前为了按值持有 `EngineContext` 和 `std::unique_ptr<World>` 直接 include `EngineContext.h` / `World.h`，会把完整 per-frame context 和 World 行为头传递给所有只需要 Engine API 的调用点。
+
+新增与修改：
+
+- `Engine.h` 移除 `EngineContext.h` 与 `World.h` include，改为 forward declare `EngineContext`、`EngineDesc` 和 `World`。
+- `Engine` 将 `EngineContext` 从按值成员改为 `std::unique_ptr<EngineContext>`，构造函数改为 out-of-line，由 `Engine.cpp` 初始化完整 context。
+- `Engine.cpp` 显式 include `EngineContext.h` 和 `World.h`，集中 context 字段访问、World 生命周期、subsystem initialize/tick/shutdown 和 lifecycle snapshot 字段读取。
+- `addSubsystem(...)` 行为不变：Engine 已初始化时仍立即用当前 `EngineContext` 初始化新 subsystem。
+
+并行只读 sidecar：
+
+- `Erdos` 审计 `Engine.h` / `Engine.cpp`，未修改文件。
+- 结论：forward declarations 足够；`std::unique_ptr<EngineContext>` 在 out-of-line 构造/析构下安全；inline `addSubsystem(...)` 当前只形成并传递 `EngineContext&`，MSVC 构建也已验证通过。
+- 非阻塞建议：如后续希望做到 public header 完全不解引用 context，可再把 subsystem 初始化调用移入 `.cpp` helper；本轮不增加额外行为改动。
+
+已完成验证：
+
+- 静态检查确认 `Engine.h` 不再 include `EngineContext.h` / `World.h`，只保留 forward declarations 和 `std::unique_ptr<EngineContext>` ownership。
+- 静态检查确认完整 `EngineContext.h` / `World.h` 依赖集中在 `Engine.cpp`，Engine 初始化、tick、shutdown、snapshot、World create/get 路径继续通过完整类型实现。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 Engine 初始化、World ownership、renderer backend contract、Engine World package 和 cleanup。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine public header include / ownership boundary cleanup，不改变 Engine startup desc、EngineContext 字段、subsystem lifecycle、active World lifecycle、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续审计 Engine public header 中 inline template 对 context 的边界是否需要 helper 下沉，或回到 application/shutdown bridge include audit；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Engine AddSubsystem Context Helper Boundary Cleanup
+
+本轮承接上一轮留下的非阻塞 follow-up：虽然 `Engine.h` 已不再 include `EngineContext.h` / `World.h`，但 public template `Engine::addSubsystem(...)` 仍直接执行 `subsystemRef.initialize(*mContext)`。这会让 public header 的模板体继续触碰 context 存储细节，不利于后续维持 “header 只声明边界，implementation 承载完整类型行为” 的方向。
+
+新增与修改：
+
+- `Engine.h` 新增私有 `initializeSubsystemIfNeeded(EngineSubsystem&)` 声明。
+- `Engine::addSubsystem(...)` 在 Engine 已初始化时改为调用 `initializeSubsystemIfNeeded(subsystemRef)`，不再直接解引用 `mContext`。
+- `Engine.cpp` 新增 `Engine::initializeSubsystemIfNeeded(...)`，在 `.cpp` 内通过完整 `EngineContext.h` 依赖执行 `subsystem.initialize(*mContext)`。
+- 现有行为保持不变：如果 Engine 已初始化，新增 subsystem 仍立即接收当前 Engine context 并执行 initialize。
+
+已完成验证：
+
+- 静态检查确认 `Engine.h` 没有 `EngineContext.h` / `World.h` include，也没有 `*mContext` 或 `mContext->` 直接访问；public template 只调用私有 helper。
+- 静态检查确认 context 解引用集中到 `Engine.cpp`，其中包含完整 `EngineContext.h` / `World.h`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 Engine 初始化、subsystem attach、World ownership、renderer backend contract、Engine World package 和 cleanup。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine public template implementation-detail cleanup，不改变 Engine startup desc、EngineContext 字段、subsystem lifecycle、active World lifecycle、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议回到 application/shutdown bridge include audit，或继续审计 Engine public header 里是否还有可下沉的 implementation 细节；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup
+
+本轮回到 application/shutdown bridge include audit。审计确认：`RuntimeApplicationShutdownCleanupBridge` 仍接收完整 `RuntimeApplicationShellConfig`，但它自身只需要把 verification 子配置传给 shutdown verification bridge。完整 shell config 字段读取可以上移到 shutdown lifecycle facade，由 `RuntimeApplicationConfigPolicy` 做映射。
+
+新增与修改：
+
+- `RuntimeApplicationShutdownCleanupBridge.h/.cpp` 的 `cleanup(...)` 参数从 `RuntimeApplicationShellConfig` 收窄为 `RuntimeVerificationConfig`。
+- `RuntimeApplicationShutdownCleanupBridge.cpp` 移除 `RuntimeApplicationConfigPolicy.h` include，不再调用 `verificationConfig(...)`，也不再知道完整 shell config。
+- `RuntimeApplicationShutdownLifecycle.cpp` 显式 include `RuntimeApplicationConfigPolicy.h`，在 facade 层通过 `RuntimeApplicationConfigPolicy::verificationConfig(config)` 把 shell config 映射为 verification config，再传入 cleanup bridge。
+- shutdown cleanup 顺序不变：begin cleanup -> renderer subsystem cleanup report -> camera/runtime context detach -> Engine shutdown -> Engine cleanup report。
+
+已完成验证：
+
+- 静态检查确认 shutdown cleanup bridge 不再引用 `RuntimeApplicationShellConfig`、`RuntimeApplicationConfigPolicy` 或 `RuntimeApplicationConfig.h`。
+- 静态检查确认 `RuntimeApplicationShutdownLifecycle.cpp` 是本轮新增的 shell config 到 verification config 映射点。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；编译覆盖 `RuntimeApplicationShutdownCleanupBridge.cpp` 与 `RuntimeApplicationShutdownLifecycle.cpp`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 shutdown cleanup bridge config boundary cleanup，不改变 shutdown cleanup order、camera cleanup、runtime context detach、Engine shutdown、renderer backend contract cleanup、Engine cleanup verification output 或 PBR pass。
+- 后续建议继续 application/shutdown bridge include audit，或继续审计 Engine public header 里是否还有可下沉的 implementation 细节；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup
+
+本轮继续 shutdown config boundary audit。上一轮已经让 cleanup bridge 只接收 `RuntimeVerificationConfig`，但 `RuntimeApplicationShutdownLifecycle` facade 仍暴露完整 `RuntimeApplicationShellConfig`，它实际也只负责把 verification config 继续传给 cleanup bridge。更合适的边界是：callback binder 作为 shell callback 组装层读取 shell config 并完成 mapping，shutdown lifecycle / cleanup bridge 只看 verification 子配置。
+
+新增与修改：
+
+- `RuntimeApplicationShutdownLifecycle.h/.cpp` 的 `cleanup(...)` 参数从 `RuntimeApplicationShellConfig` 收窄为 `RuntimeVerificationConfig`。
+- `RuntimeApplicationShutdownLifecycle.cpp` 移除 `RuntimeApplicationConfigPolicy.h` include，不再做 shell config 到 verification config 的映射。
+- `RuntimeApplicationCallbackBinder.cpp` 新增 `RuntimeApplicationConfigPolicy.h` include，并在 cleanup callback 中通过 `RuntimeApplicationConfigPolicy::verificationConfig(config)` 传入 `RuntimeApplicationShutdownLifecycle::cleanup(...)`。
+- `RuntimeApplicationShutdownLifecycle` 与 `RuntimeApplicationShutdownCleanupBridge` 当前都不再引用完整 shell config、config policy 或 `RuntimeApplicationConfig.h`。
+- shutdown cleanup 顺序不变：begin cleanup -> renderer subsystem cleanup report -> camera/runtime context detach -> Engine shutdown -> Engine cleanup report。
+
+已完成验证：
+
+- 静态检查确认 shutdown lifecycle 和 cleanup bridge 都不再引用 `RuntimeApplicationShellConfig`、`RuntimeApplicationConfigPolicy` 或 `RuntimeApplicationConfig.h`。
+- 静态检查确认 cleanup callback 是 shell config 到 verification config 的唯一新增映射点。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；四条 focused verification mode 全部通过；覆盖 callback binder、shutdown lifecycle、cleanup bridge、Engine World 和 renderer backend cleanup 合同。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 shutdown lifecycle config boundary cleanup，不改变 shutdown cleanup order、camera cleanup、runtime context detach、Engine shutdown、renderer backend contract cleanup、Engine cleanup verification output、runtime frame behavior 或 PBR pass。
+- 后续建议继续 application shutdown bridge / callback binder include audit，或回到 Engine public header 低风险 implementation detail audit；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Application Callback Binder Shutdown Bridge Boundary Cleanup
+
+本轮继续 application shutdown bridge / callback binder include audit。上一轮把 shell config 到 verification config 的映射上移到了 `RuntimeApplicationCallbackBinder.cpp`，但这让 generic callback binder implementation 直接 include `RuntimeApplicationConfigPolicy.h` 和 `RuntimeApplicationShutdownLifecycle.h`。更合适的边界是：callback binder 只组装 bootstrap callbacks，shutdown callback 的 config mapping 与 lifecycle forwarding 下沉到专用 shutdown callback bridge。
+
+新增与修改：
+
+- 新增 `RuntimeApplicationShutdownCallbackBridge.h/.cpp`，负责 cleanup callback 的 shell config 到 verification config 映射，并负责 destroy callback 的 shutdown lifecycle 转发。
+- `RuntimeApplicationCallbackBinder.cpp` 移除 `RuntimeApplicationConfigPolicy.h` 和 `RuntimeApplicationShutdownLifecycle.h` include，改为 include `RuntimeApplicationShutdownCallbackBridge.h`。
+- cleanup lambda 改为调用 `RuntimeApplicationShutdownCallbackBridge::cleanup(state, config)`；destroy lambda 改为调用 `RuntimeApplicationShutdownCallbackBridge::destroy()`。
+- `RuntimeApplicationShutdownCallbackBridge.cpp` 是本轮唯一持有 `RuntimeApplicationConfigPolicy::verificationConfig(config)` 与 `RuntimeApplicationShutdownLifecycle::cleanup(...)` 组合逻辑的 callback 层。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 shutdown callback bridge source/header 到 Application 分组。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationCallbackBinder.cpp` 不再直接引用 `RuntimeApplicationConfigPolicy` 或 `RuntimeApplicationShutdownLifecycle`。
+- 静态检查确认 `RuntimeApplicationShutdownLifecycle` 与 `RuntimeApplicationShutdownCleanupBridge` 仍不引用完整 shell config、config policy 或 `RuntimeApplicationConfig.h`。
+- 静态检查确认 `RuntimeApplicationShutdownCallbackBridge.h/.cpp` 已注册到 VS project/filter。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `RuntimeApplicationCallbackBinder.cpp` 与 `RuntimeApplicationShutdownCallbackBridge.cpp`；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 callback binder shutdown bridge boundary cleanup，不改变 startup/frame callback 顺序、shutdown cleanup order、camera cleanup、runtime context detach、Engine shutdown、renderer backend contract cleanup、Engine cleanup verification output、runtime frame behavior 或 PBR pass。
+- 后续建议继续 callback binder startup/frame include audit，或回到 Engine public header 低风险 implementation detail audit；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Application Callback Binder Frame Bridge Boundary Cleanup
+
+本轮继续 callback binder startup/frame include audit。上一轮已经把 shutdown callback 的 mapping/forwarding 下沉到 shutdown callback bridge；当前 `RuntimeApplicationCallbackBinder.cpp` 仍直接 include `RuntimeApplicationFrameLifecycle.h` 并直接调用 shouldContinue / runFrame。更合适的边界是：generic callback binder 只组装 bootstrap callbacks，frame callback 的 lifecycle forwarding 下沉到专用 frame callback bridge。
+
+新增与修改：
+
+- 新增 `RuntimeApplicationFrameCallbackBridge.h/.cpp`，负责 bootstrapper shouldContinue / runFrame callback 到 `RuntimeApplicationFrameLifecycle` 的转发。
+- `RuntimeApplicationCallbackBinder.cpp` 移除 `RuntimeApplicationFrameLifecycle.h` include，改为 include `RuntimeApplicationFrameCallbackBridge.h`。
+- shouldContinue lambda 改为调用 `RuntimeApplicationFrameCallbackBridge::shouldContinue(config, state)`。
+- runFrame lambda 改为调用 `RuntimeApplicationFrameCallbackBridge::runFrame(state, config)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 frame callback bridge source/header 到 Application 分组。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationCallbackBinder.cpp` 不再直接引用 `RuntimeApplicationFrameLifecycle`。
+- 静态检查确认 `RuntimeApplicationCallbackBinder.cpp` 仍不直接引用 shutdown lifecycle 或 config policy。
+- 静态检查确认 `RuntimeApplicationFrameCallbackBridge.h/.cpp` 已注册到 VS project/filter。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `RuntimeApplicationCallbackBinder.cpp` 与 `RuntimeApplicationFrameCallbackBridge.cpp`；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 callback binder frame bridge boundary cleanup，不改变 startup/frame/shutdown callback 顺序、frame continue 判断、frame execution、editor callback 执行、legacy experiment ticking、verification capture timing、renderer backend contract、Engine cleanup verification output 或 PBR pass。
+- 后续建议继续 callback binder startup include audit，或回到 Engine public header 低风险 implementation detail audit；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Application Callback Binder Startup Bridge Boundary Cleanup
+
+本轮继续 callback binder startup include audit。上一轮已经把 frame callback forwarding 下沉到 frame callback bridge；当前 `RuntimeApplicationCallbackBinder.cpp` 仍直接 include `RuntimeApplicationStartupLifecycle.h` 并直接调用 initialize。更合适的边界是：generic callback binder 只组装 bootstrap callbacks，startup callback 的 lifecycle forwarding 也下沉到专用 startup callback bridge。
+
+新增与修改：
+
+- 新增 `RuntimeApplicationStartupCallbackBridge.h/.cpp`，负责 bootstrapper initialize callback 到 `RuntimeApplicationStartupLifecycle` 的转发。
+- `RuntimeApplicationCallbackBinder.cpp` 移除 `RuntimeApplicationStartupLifecycle.h` include，改为 include `RuntimeApplicationStartupCallbackBridge.h`。
+- startup lambda 改为调用 `RuntimeApplicationStartupCallbackBridge::initialize(state, config)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 startup callback bridge source/header 到 Application 分组。
+- 当前 `RuntimeApplicationCallbackBinder.cpp` 只直接依赖 startup/frame/shutdown callback bridge headers 和 `RuntimeBootstrapper.h` 的 callback DTO 完整定义。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeApplicationCallbackBinder.cpp` 不再直接引用 startup/frame/shutdown lifecycle 或 config policy。
+- 静态检查确认 `RuntimeApplicationStartupCallbackBridge.h/.cpp` 已注册到 VS project/filter。
+- 静态检查确认 startup lifecycle forwarding 只在 startup callback bridge implementation 中发生。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `RuntimeApplicationCallbackBinder.cpp` 与 `RuntimeApplicationStartupCallbackBridge.cpp`；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+只读 sidecar 审计：
+
+- `Singer` 审计 callback binder、startup callback bridge、VS project/filter 注册和当前架构文档；未修改文件，未发现代码或工程注册阻塞问题。
+- `Singer` 报告的接口设计文档 stale wording 已由父 agent 修正为 startup bridge 已完成，后续转向 callback bridge / bootstrapper include surface audit。
+
+结论：
+
+- 这是 callback binder startup bridge boundary cleanup，不改变 startup/frame/shutdown callback 顺序、startup initialize result propagation、Engine startup、window/graphics/content/editor/frame startup 顺序、renderer backend contract、Engine cleanup verification output 或 PBR pass。
+- 后续建议继续审计 `RuntimeApplicationCallbackBinder.cpp` 是否还能隐藏 `RuntimeBootstrapper.h` callback DTO 完整依赖，或回到 Engine public header 低风险 implementation detail audit；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Bootstrapper Callbacks Header Extraction
+
+本轮承接上一轮后续建议，继续 callback/bootstrapper include surface audit。审计确认：`RuntimeApplicationCallbackBinder.cpp` 与 `RuntimeApplicationShell.cpp` 只需要构造或返回 `RuntimeBootstrapperCallbacks`，不需要完整 `RuntimeBootstrapper` runner facade；`RuntimeApplicationRunner.cpp` 才是真正同时调用 bootstrapper runner 并消费 callback DTO 的 composition root。
+
+新增与修改：
+
+- 新增 `RuntimeBootstrapperCallbacks.h`，集中定义 `RuntimeBootstrapperCallbacks` 和其 `std::function` 字段。
+- `RuntimeBootstrapper.h` 移除 `<functional>` 与 callback DTO 定义，只 forward declare `RuntimeBootstrapperCallbacks` 并保留 `RuntimeBootstrapper::run(...)` runner facade。
+- `RuntimeBootstrapper.cpp` 显式 include `RuntimeBootstrapperCallbacks.h`，因为 implementation 会读取 callback 字段并执行启动/循环/cleanup/destroy 顺序。
+- `RuntimeApplicationCallbackBinder.cpp` 和 `RuntimeApplicationShell.cpp` 改为 include `RuntimeBootstrapperCallbacks.h`，不再 include `RuntimeBootstrapper.h`。
+- `RuntimeApplicationRunner.cpp` 显式 include `RuntimeBootstrapper.h` 与 `RuntimeBootstrapperCallbacks.h`，因为它既调用 runner facade，也消费 `shell.makeCallbacks()` 返回的完整 DTO。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 callback DTO header 到 Application 分组。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeBootstrapperCallbacks` 只有 `RuntimeBootstrapperCallbacks.h` 定义，`RuntimeBootstrapper.h` 只 forward declare DTO。
+- 静态检查确认 `RuntimeApplicationCallbackBinder.cpp` 与 `RuntimeApplicationShell.cpp` 不再 include `RuntimeBootstrapper.h`，只依赖 callback DTO 头。
+- 静态检查确认 `RuntimeApplicationRunner.cpp` 是同时 include runner facade 与 callback DTO 的 composition root，VS project/filter 已注册新增 header。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `RuntimeApplicationCallbackBinder.cpp`、`RuntimeApplicationRunner.cpp`、`RuntimeApplicationShell.cpp` 与 `RuntimeBootstrapper.cpp`；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 bootstrapper callback DTO header extraction，不改变 initialize / shouldContinue / runFrame / cleanup / destroy 执行顺序、callback result propagation、runtime frame loop、renderer backend contract、Engine World verification 或 PBR pass。
+- 后续建议继续审计 callback/bootstrapper include surface 的剩余可下沉点，或回到 Engine public header 低风险 implementation detail audit；当前不建议继续扩张 PBR 功能。
+
+### 2026-05-31 RendererSubsystem Implementation State Header Boundary Cleanup
+
+本轮回到 Engine public header 低风险 implementation detail audit。审计确认：`RendererSubsystem.h` 仍通过按值成员暴露 backend slot、frame execution bridge 和 frame bridge state 的完整实现头。这个边界会让任何 include `RendererSubsystem.h` 的调用点间接依赖 renderer subsystem 内部实现，和当前“public header 只保留稳定 API / implementation headers 下沉到 `.cpp`”的方向不一致。
+
+新增与修改：
+
+- `RendererSubsystem.h` 移除 `RendererBackend.h`、`RendererBackendRegistryTypes.h`、`RendererSubsystemBackendSlot.h`、`RendererSubsystemFrameExecutionBridge.h` 与 `RendererSubsystemFrameBridgeState.h` 的 public include，改为 forward declare `RendererBackend`、`RendererBackendAttachmentDesc`、`RendererFrameIntent`、`RendererSubsystemFrameBridgeStats` 和三个内部 implementation type。
+- `RendererSubsystem` 的 backend slot、frame execution bridge、frame bridge state 从按值成员改为 private `std::unique_ptr` owning pointers，并把 destructor 改为 out-of-line，以保证 incomplete type 下的 `unique_ptr` 析构安全。
+- `RendererSubsystem.cpp` 显式 include 完整 implementation headers，并在 constructor 中通过 `std::make_unique` 构造三个内部组件；所有内部访问从 `.` 调整为 `->`。
+- `setRendererBackend(std::unique_ptr<RendererBackend>)` 新增一参 overload，用 `RendererBackendAttachmentDesc{}` 保持原先 default attachment desc 语义；带 desc 的 overload 保留。
+- `RuntimeRendererBackendAttachmentLifecycle.cpp` 显式 include `RendererBackend.h`，因为该路径创建并转移 `std::unique_ptr<RendererBackend>`，需要完整 backend 类型。
+- `EngineDiagnosticsPanel.cpp` 显式 include `RendererSubsystemFrameBridgeStats.h`，因为 diagnostics UI 读取 stats 字段，不能再依赖 `RendererSubsystem.h` 的传递 include。
+- 响应 `/subagents` 要求，启动只读 sidecar `Einstein` 审计本轮 header boundary、incomplete-type safety 和文档一致性；`Einstein` 未修改文件，未运行写输出测试，确认源码无 blocker，并指出 `work.md` / `worked.md` 需要补本轮记录。
+
+已完成验证：
+
+- 初次 focused build 暴露两个合理的 include 边界 fallout：`RuntimeRendererBackendAttachmentLifecycle.cpp` 需要完整 `RendererBackend`，`EngineDiagnosticsPanel.cpp` 需要完整 `RendererSubsystemFrameBridgeStats`；已改为显式 include 对应 owner header。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`：修正 include 后构建通过；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 RendererSubsystem public header implementation-state cleanup，不改变 renderer backend contract、frame bridge stats 语义、frame execution、Engine World verification 或 PBR pass。
+- 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到 callback/bootstrapper include surface audit；当前仍不建议继续扩张 PBR 功能。

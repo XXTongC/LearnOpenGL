@@ -15,12 +15,14 @@ namespace GL_RUNTIME
 		);
 
 		static GL_EDITOR::EditorPanelContext makeEditorPanelContext(
-			GLframework::AppRuntimeContext& context
+			GLframework::AppRuntimeContext& context,
+			GL_EDITOR::EditTransactionLog& editTransactions
 		);
 
 		static void drawPanels(
 			GLframework::AppRuntimeContext& context,
 			GL_EDITOR::SelectionContext& selection,
+			GL_EDITOR::EditTransactionLog& editTransactions,
 			float* orbitAngle
 		);
 	};

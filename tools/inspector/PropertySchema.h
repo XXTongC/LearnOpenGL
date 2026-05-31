@@ -29,6 +29,7 @@ namespace GL_EDITOR
 		std::string label{};
 		std::string configKey{};
 		std::vector<std::string> configKeys{};
+		bool readOnly{ false };
 		float minValue{ 0.0f };
 		float maxValue{ 0.0f };
 		std::string format{ "%.3f" };
@@ -56,6 +57,28 @@ namespace GL_EDITOR
 			mProperties.push_back(std::move(descriptor));
 		}
 
+		void addReadOnlyFloat(std::string label, const std::function<float()>& getter, std::string format = "%.3f")
+		{
+			addFloat(
+				std::move(label),
+				getter,
+				[](float) {},
+				0.0f,
+				0.0f,
+				std::move(format)
+			);
+			setLastReadOnly();
+		}
+
+		void addReadOnlyFloat(std::string label, float value, std::string format = "%.3f")
+		{
+			addReadOnlyFloat(
+				std::move(label),
+				[value]() { return value; },
+				std::move(format)
+			);
+		}
+
 		void addFloat(
 			std::string label,
 			const std::function<float()>& getter,
@@ -74,6 +97,24 @@ namespace GL_EDITOR
 			descriptor.getFloat = getter;
 			descriptor.setFloat = setter;
 			mProperties.push_back(std::move(descriptor));
+		}
+
+		void addReadOnlyBool(std::string label, const std::function<bool()>& getter)
+		{
+			addBool(
+				std::move(label),
+				getter,
+				[](bool) {}
+			);
+			setLastReadOnly();
+		}
+
+		void addReadOnlyBool(std::string label, bool value)
+		{
+			addReadOnlyBool(
+				std::move(label),
+				[value]() { return value; }
+			);
 		}
 
 		void addFloat(std::string label, float* value, float minValue, float maxValue, std::string format = "%.3f")
@@ -115,6 +156,26 @@ namespace GL_EDITOR
 			mProperties.push_back(std::move(descriptor));
 		}
 
+		void addReadOnlyInt(std::string label, const std::function<int()>& getter)
+		{
+			addInt(
+				std::move(label),
+				getter,
+				[](int) {},
+				0,
+				0
+			);
+			setLastReadOnly();
+		}
+
+		void addReadOnlyInt(std::string label, int value)
+		{
+			addReadOnlyInt(
+				std::move(label),
+				[value]() { return value; }
+			);
+		}
+
 		void addBool(std::string label, bool* value)
 		{
 			addBool(
@@ -146,6 +207,24 @@ namespace GL_EDITOR
 			descriptor.getInt = getter;
 			descriptor.setInt = setter;
 			mProperties.push_back(std::move(descriptor));
+		}
+
+		void addReadOnlyVec3(std::string label, const std::function<glm::vec3()>& getter)
+		{
+			addVec3(
+				std::move(label),
+				getter,
+				[](glm::vec3) {}
+			);
+			setLastReadOnly();
+		}
+
+		void addReadOnlyVec3(std::string label, glm::vec3 value)
+		{
+			addReadOnlyVec3(
+				std::move(label),
+				[value]() { return value; }
+			);
 		}
 
 		void addInt(std::string label, int* value, int minValue, int maxValue)
@@ -190,6 +269,24 @@ namespace GL_EDITOR
 			descriptor.getVec3 = getter;
 			descriptor.setVec3 = setter;
 			mProperties.push_back(std::move(descriptor));
+		}
+
+		void addReadOnlyString(std::string label, const std::function<std::string()>& getter)
+		{
+			addString(
+				std::move(label),
+				getter,
+				[](const std::string&) {}
+			);
+			setLastReadOnly();
+		}
+
+		void addReadOnlyString(std::string label, std::string value)
+		{
+			addReadOnlyString(
+				std::move(label),
+				[value = std::move(value)]() { return value; }
+			);
 		}
 
 		void addVec3(std::string label, glm::vec3* value)
@@ -338,6 +435,14 @@ namespace GL_EDITOR
 					std::move(keys[1]),
 					std::move(keys[2])
 				};
+			}
+		}
+
+		void setLastReadOnly()
+		{
+			if (!mProperties.empty())
+			{
+				mProperties.back().readOnly = true;
 			}
 		}
 

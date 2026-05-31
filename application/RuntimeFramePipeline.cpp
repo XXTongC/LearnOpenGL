@@ -4,18 +4,28 @@
 
 namespace GL_RUNTIME
 {
-	void RuntimeFramePipeline::render(
+	RuntimeFramePipelineStats RuntimeFramePipeline::render(
 		GLframework::AppRuntimeContext& context,
 		const RuntimeFramePipelineConfig& config
 	)
 	{
-		const auto passPlan = RuntimeFramePassRegistry::buildPassPlan(context.framePipelineProfile);
+		const auto passPlan = RuntimeFramePassRegistry::buildPassPlan(context.profiles.framePipelineProfile);
+		RuntimeFramePipelineStats stats{};
+		stats.plannedPassCount = static_cast<int>(passPlan.size());
 		for (const auto* pass : passPlan)
 		{
-			if (pass && pass->shouldExecute(context))
+			if (!pass || !pass->shouldExecute(context))
+			{
+				++stats.skippedPassCount;
+				continue;
+			}
+
+			if (pass)
 			{
 				pass->executePass(context, config);
+				++stats.executedPassCount;
 			}
 		}
+		return stats;
 	}
 }

@@ -1,22 +1,9 @@
 #pragma once
 
-#include "AppRuntimeContext.h"
+#include "RuntimeWindowLifecycleTypes.h"
 
 namespace GL_RUNTIME
 {
-	struct RuntimeWindowConfig
-	{
-		int width{ 1200 };
-		int height{ 900 };
-	};
-
-	struct RuntimeWindowCallbackContext
-	{
-		GLframework::AppRuntimeContext* runtime{ nullptr };
-		int* width{ nullptr };
-		int* height{ nullptr };
-	};
-
 	class RuntimeWindowLifecycle
 	{
 	public:
@@ -24,5 +11,8 @@ namespace GL_RUNTIME
 			const RuntimeWindowConfig& config,
 			const RuntimeWindowCallbackContext& callbackContext
 		);
+
+		static RuntimeWindowSnapshot captureSnapshot();
+		static void destroy();
 	};
 }

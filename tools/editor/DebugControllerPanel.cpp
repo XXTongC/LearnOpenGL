@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 
+#include "EngineDiagnosticsPanel.h"
 #include "../../application/RuntimeFramePipelineProfile.h"
 #include "../../renderer/EnvironmentProfile.h"
 #include "../../renderer/renderer.h"
@@ -524,6 +525,12 @@ void GL_EDITOR::drawDebugControllerPanel(const DebugControllerContext& context)
 	drawFramePipelineControls(context.framePipelineProfile, context.framePipelineProfilePath);
 	drawRendererFramePassControls(context.renderer, context.rendererFramePassProfilePath);
 	drawRendererFrameStats(context.renderer);
+	GL_EDITOR::EngineDiagnosticsContext engineDiagnosticsContext{};
+	engineDiagnosticsContext.engine = context.engine;
+	engineDiagnosticsContext.engineWorld = context.engineWorld;
+	engineDiagnosticsContext.assetSubsystem = context.assetSubsystem;
+	engineDiagnosticsContext.rendererSubsystem = context.rendererSubsystem;
+	GL_EDITOR::drawEngineDiagnosticsPanel(engineDiagnosticsContext);
 	drawPBRPreviewControls(context.pbrPreviewProfile, context.pbrPreviewProfilePath);
 	drawPBRExperimentControls(context);
 	drawEnvironmentControls(context.renderer, context.environmentProfile, context.environmentProfilePath);

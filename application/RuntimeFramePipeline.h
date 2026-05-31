@@ -10,10 +10,17 @@ namespace GL_RUNTIME
 		unsigned int framebufferHeight{ 0 };
 	};
 
+	struct RuntimeFramePipelineStats
+	{
+		int plannedPassCount{ 0 };
+		int executedPassCount{ 0 };
+		int skippedPassCount{ 0 };
+	};
+
 	class RuntimeFramePipeline
 	{
 	public:
-		static void render(
+		static RuntimeFramePipelineStats render(
 			GLframework::AppRuntimeContext& context,
 			const RuntimeFramePipelineConfig& config
 		);

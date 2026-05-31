@@ -18,6 +18,14 @@ namespace GLframework
 	class Renderer;
 }
 
+namespace GLengine
+{
+	class AssetSubsystem;
+	class Engine;
+	class RendererSubsystem;
+	class World;
+}
+
 namespace GL_SCENE
 {
 	struct PBRCameraRigProfile;
@@ -45,6 +53,7 @@ namespace GL_EDITOR
 		GLframework::PostProcessSettings* postProcessSettings{ nullptr };
 		const std::string* postProcessSettingsPath{ nullptr };
 		std::shared_ptr<GLframework::Renderer> renderer{ nullptr };
+		const GLengine::RendererSubsystem* rendererSubsystem{ nullptr };
 		GLframework::EnvironmentProfile* environmentProfile{ nullptr };
 		const std::string* environmentProfilePath{ nullptr };
 		GL_SCENE::PBRPreviewProfile* pbrPreviewProfile{ nullptr };
@@ -54,6 +63,9 @@ namespace GL_EDITOR
 		GL_SCENE::PBRCameraRigProfile* cameraRigProfile{ nullptr };
 		Camera* mainCamera{ nullptr };
 		float* orbitAngle{ nullptr };
+		const GLengine::Engine* engine{ nullptr };
+		const GLengine::World* engineWorld{ nullptr };
+		const GLengine::AssetSubsystem* assetSubsystem{ nullptr };
 	};
 
 	void drawDebugControllerPanel(const DebugControllerContext& context);

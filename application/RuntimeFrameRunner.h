@@ -1,22 +1,20 @@
 #pragma once
 
-#include <functional>
+#include "RuntimeFrameCallbacks.h"
 
-#include "AppRuntimeContext.h"
-#include "../tools/legacyExperiments/LegacyExperimentRunner.h"
+namespace GLframework
+{
+	struct AppRuntimeContext;
+}
+
+namespace GL_EXPERIMENTS
+{
+	class LegacyExperimentRunner;
+}
 
 namespace GL_RUNTIME
 {
-	struct RuntimeFrameConfig
-	{
-		unsigned int framebufferWidth{ 0 };
-		unsigned int framebufferHeight{ 0 };
-	};
-
-	struct RuntimeFrameCallbacks
-	{
-		std::function<void()> renderUi{};
-	};
+	struct RuntimeFrameConfig;
 
 	class RuntimeFrameRunner
 	{

@@ -7,44 +7,44 @@ namespace GL_RUNTIME
 {
 	void RuntimeSceneColorPass::execute(GLframework::AppRuntimeContext& context)
 	{
-		context.renderer->render(
-			context.sceneOffScreen,
-			context.camera,
-			context.dirLight,
-			context.spotLight,
-			context.pointLights,
-			context.ambientLight,
-			context.frameRenderTargets.getSceneFbo()
+			context.renderResources.renderer->render(
+			context.renderResources.sceneOffScreen,
+			context.cameraLights.camera,
+			context.cameraLights.dirLight,
+			context.cameraLights.spotLight,
+			context.cameraLights.pointLights,
+			context.cameraLights.ambientLight,
+			context.renderResources.frameRenderTargets.getSceneFbo()
 		);
 	}
 
 	void RuntimeSceneResolvePass::execute(GLframework::AppRuntimeContext& context)
 	{
-		context.postProcessPass.resolveMultisample(
-			context.frameRenderTargets.getMultisample(),
-			context.frameRenderTargets.getResolved()
+		context.renderResources.postProcessPass.resolveMultisample(
+			context.renderResources.frameRenderTargets.getMultisample(),
+			context.renderResources.frameRenderTargets.getResolved()
 		);
 	}
 
 	void RuntimeBloomPass::execute(GLframework::AppRuntimeContext& context)
 	{
-		if (!context.postProcessSettings.bloomEnabled)
+		if (!context.profiles.postProcessSettings.bloomEnabled)
 		{
 			return;
 		}
 
-		context.postProcessPass.extractBloomBright(
-			context.bloom,
-			context.frameRenderTargets.getResolved(),
-			context.frameRenderTargets.getBloomBright(),
-			context.postProcessSettings.bloomThreshold
+		context.renderResources.postProcessPass.extractBloomBright(
+			context.renderResources.bloom,
+			context.renderResources.frameRenderTargets.getResolved(),
+			context.renderResources.frameRenderTargets.getBloomBright(),
+			context.profiles.postProcessSettings.bloomThreshold
 		);
-		context.postProcessPass.blurBloom(
-			context.bloom,
-			context.frameRenderTargets.getBloomBright(),
-			context.frameRenderTargets.getBloomPing(),
-			context.frameRenderTargets.getBloomPong(),
-			context.postProcessSettings.bloomIterations
+		context.renderResources.postProcessPass.blurBloom(
+			context.renderResources.bloom,
+			context.renderResources.frameRenderTargets.getBloomBright(),
+			context.renderResources.frameRenderTargets.getBloomPing(),
+			context.renderResources.frameRenderTargets.getBloomPong(),
+			context.profiles.postProcessSettings.bloomIterations
 		);
 	}
 
@@ -53,10 +53,10 @@ namespace GL_RUNTIME
 		const RuntimeFramePipelineConfig& config
 	)
 	{
-		context.postProcessPass.renderScreenComposite(
-			context.screenQuad,
-			context.renderer->getShader(GLframework::MaterialType::ScreenMaterial),
-			context.postProcessSettings,
+		context.renderResources.postProcessPass.renderScreenComposite(
+			context.renderResources.screenQuad,
+			context.renderResources.renderer->getShader(GLframework::MaterialType::ScreenMaterial),
+			context.profiles.postProcessSettings,
 			config.framebufferWidth,
 			config.framebufferHeight
 		);

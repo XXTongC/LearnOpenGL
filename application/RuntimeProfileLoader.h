@@ -1,6 +1,9 @@
 #pragma once
 
-#include "AppRuntimeContext.h"
+namespace GLframework
+{
+	struct AppRuntimeContext;
+}
 
 namespace GL_RUNTIME
 {

@@ -1,58 +1,30 @@
 #pragma once
 
-#include <string>
+#include <memory>
 
-#include "AppRuntimeContext.h"
-#include "RuntimeBootstrapper.h"
-#include "RuntimeCameraLifecycle.h"
-#include "RuntimeFrameRunner.h"
-#include "RuntimePBRVerification.h"
-#include "RuntimeScenePreparer.h"
-#include "RuntimeWindowLifecycle.h"
-#include "../tools/editor/EditorPanels.h"
-#include "../tools/legacyExperiments/LegacyExperimentRunner.h"
+#include "RuntimeApplicationConfig.h"
 
 namespace GL_RUNTIME
 {
-	struct RuntimeApplicationShellConfig
-	{
-		RuntimeWindowConfig window{ 1920, 1080 };
-		std::string skyboxTexturePath{ "Texture/bk.jpg" };
-		int legacyGrassRows{ 30 };
-		int legacyGrassColumns{ 30 };
-		float editorOrbitAngle{ 0.0f };
-		bool enableGui{ true };
-		RuntimePBRVerificationConfig pbrVerification{};
-	};
+	struct RuntimeBootstrapperCallbacks;
+	struct RuntimeApplicationState;
 
 	class RuntimeApplicationShell
 	{
 	public:
-		RuntimeApplicationShell() = default;
+		RuntimeApplicationShell();
 		explicit RuntimeApplicationShell(RuntimeApplicationShellConfig config);
+		~RuntimeApplicationShell();
+
+		RuntimeApplicationShell(const RuntimeApplicationShell&) = delete;
+		RuntimeApplicationShell& operator=(const RuntimeApplicationShell&) = delete;
+		RuntimeApplicationShell(RuntimeApplicationShell&&) noexcept;
+		RuntimeApplicationShell& operator=(RuntimeApplicationShell&&) noexcept;
 
 		RuntimeBootstrapperCallbacks makeCallbacks();
 
 	private:
-		bool initialize();
-		bool shouldContinue();
-		void runFrame();
-		void cleanup();
-		void destroy();
-
-		RuntimeFrameConfig makeFrameConfig() const;
-		RuntimeCameraConfig makeCameraConfig() const;
-		RuntimeScenePrepareConfig makeScenePrepareConfig() const;
-		void renderFrameUi();
-		void drawEditorPanels();
-		void captureVerificationFrameIfNeeded();
-		void printOpenGLCapabilities() const;
-
-		GLframework::AppRuntimeContext mRuntime{};
-		GL_EDITOR::SelectionContext mEditorSelection{};
-		GL_EXPERIMENTS::LegacyExperimentRunner mLegacyExperiments{};
+		std::unique_ptr<RuntimeApplicationState> mState{};
 		RuntimeApplicationShellConfig mConfig{};
-		int mRenderedFrameCount{ 0 };
-		bool mVerificationCaptureWritten{ false };
 	};
 }

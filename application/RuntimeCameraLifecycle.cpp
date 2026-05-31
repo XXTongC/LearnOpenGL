@@ -1,5 +1,8 @@
 #include "RuntimeCameraLifecycle.h"
 
+#include "AppRuntimeContext.h"
+#include "RuntimeCameraConfig.h"
+
 #include "../camera/gamecameracontrol.h"
 #include "../camera/perspectivecamera.h"
 #include "../tools/Logger/LogManager.h"
@@ -27,24 +30,24 @@ namespace GL_RUNTIME
 		LogInfo(static_cast<std::string>(__func__) + "(): Camera preparing...");
 
 		cleanup(context);
-		context.camera = new PerspectiveCamera(
+		context.cameraLights.camera = new PerspectiveCamera(
 			config.fovy,
 			calculateAspect(config.width, config.height),
 			config.nearPlane,
 			config.farPlane
 		);
-		context.cameracontrol = new GameCameraControl();
-		context.cameracontrol->setCamera(context.camera);
+		context.cameraLights.cameracontrol = new GameCameraControl();
+		context.cameraLights.cameracontrol->setCamera(context.cameraLights.camera);
 
 		LogInfo("Camera prepared");
 	}
 
 	void RuntimeCameraLifecycle::cleanup(GLframework::AppRuntimeContext& context)
 	{
-		delete context.cameracontrol;
-		context.cameracontrol = nullptr;
+		delete context.cameraLights.cameracontrol;
+		context.cameraLights.cameracontrol = nullptr;
 
-		delete context.camera;
-		context.camera = nullptr;
+		delete context.cameraLights.camera;
+		context.cameraLights.camera = nullptr;
 	}
 }

@@ -1,5 +1,6 @@
 #include "RuntimeProfileLoader.h"
 
+#include "AppRuntimeContext.h"
 #include "../renderer/renderer.h"
 #include "../tools/Logger/LogManager.h"
 
@@ -7,84 +8,96 @@ namespace
 {
 	void loadEnvironmentProfile(GLframework::AppRuntimeContext& context)
 	{
-		if (GLframework::EnvironmentProfileStorage::loadFromFile(context.environmentProfilePath, context.environmentProfile))
+		if (GLframework::EnvironmentProfileStorage::loadFromFile(
+			context.profiles.environmentProfilePath,
+			context.profiles.environmentProfile
+		))
 		{
-			LogInfo("Environment profile loaded from " + context.environmentProfilePath);
+			LogInfo("Environment profile loaded from " + context.profiles.environmentProfilePath);
 			return;
 		}
 
-		LogInfo("Environment profile config not found, using defaults: " + context.environmentProfilePath);
+		LogInfo("Environment profile config not found, using defaults: " + context.profiles.environmentProfilePath);
 	}
 
 	void loadPostProcessSettings(GLframework::AppRuntimeContext& context)
 	{
-		if (GLframework::PostProcessSettingsStorage::loadFromFile(context.postProcessSettingsPath, context.postProcessSettings))
+		if (GLframework::PostProcessSettingsStorage::loadFromFile(
+			context.profiles.postProcessSettingsPath,
+			context.profiles.postProcessSettings
+		))
 		{
-			LogInfo("Postprocess settings loaded from " + context.postProcessSettingsPath);
+			LogInfo("Postprocess settings loaded from " + context.profiles.postProcessSettingsPath);
 			return;
 		}
 
-		LogInfo("Postprocess settings config not found, using defaults: " + context.postProcessSettingsPath);
+		LogInfo("Postprocess settings config not found, using defaults: " + context.profiles.postProcessSettingsPath);
 	}
 
 	void loadFramePipelineProfile(GLframework::AppRuntimeContext& context)
 	{
-		if (GL_RUNTIME::RuntimeFramePipelineProfileStorage::loadFromFile(context.framePipelineProfilePath, context.framePipelineProfile))
+		if (GL_RUNTIME::RuntimeFramePipelineProfileStorage::loadFromFile(
+			context.profiles.framePipelineProfilePath,
+			context.profiles.framePipelineProfile
+		))
 		{
-			LogInfo("Runtime frame pipeline profile loaded from " + context.framePipelineProfilePath);
+			LogInfo("Runtime frame pipeline profile loaded from " + context.profiles.framePipelineProfilePath);
 			return;
 		}
 
-		LogInfo("Runtime frame pipeline profile config not found, using defaults: " + context.framePipelineProfilePath);
+		LogInfo("Runtime frame pipeline profile config not found, using defaults: " + context.profiles.framePipelineProfilePath);
 	}
 
 	void loadRendererFramePassProfile(GLframework::AppRuntimeContext& context)
 	{
-		if (!context.renderer)
+		if (!context.renderResources.renderer)
 		{
 			return;
 		}
 
 		if (GLframework::RendererFramePassProfileStorage::loadFromFile(
-			context.rendererFramePassProfilePath,
-			context.renderer->getFramePassProfile()
+			context.profiles.rendererFramePassProfilePath,
+			context.renderResources.renderer->getFramePassProfile()
 		))
 		{
-			LogInfo("Renderer frame pass profile loaded from " + context.rendererFramePassProfilePath);
+			LogInfo("Renderer frame pass profile loaded from " + context.profiles.rendererFramePassProfilePath);
 			return;
 		}
 
-		LogInfo("Renderer frame pass profile config not found, using defaults: " + context.rendererFramePassProfilePath);
+		LogInfo("Renderer frame pass profile config not found, using defaults: " + context.profiles.rendererFramePassProfilePath);
 	}
 
 	void loadPBRPreviewProfile(GLframework::AppRuntimeContext& context)
 	{
-		if (GL_SCENE::PBRPreviewProfileStorage::loadFromFile(context.pbrPreviewProfilePath, context.pbrPreviewProfile))
+		if (GL_SCENE::PBRPreviewProfileStorage::loadFromFile(
+			context.profiles.pbrPreviewProfilePath,
+			context.profiles.pbrPreviewProfile
+		))
 		{
-			LogInfo("PBR preview profile loaded from " + context.pbrPreviewProfilePath);
+			LogInfo("PBR preview profile loaded from " + context.profiles.pbrPreviewProfilePath);
 			return;
 		}
 
-		LogInfo("PBR preview profile config not found, using defaults: " + context.pbrPreviewProfilePath);
+		LogInfo("PBR preview profile config not found, using defaults: " + context.profiles.pbrPreviewProfilePath);
 	}
 
 	void loadPBRExperimentProfile(GLframework::AppRuntimeContext& context)
 	{
 		if (GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
-			context.pbrExperimentProfilePath,
-			context.environmentProfile,
-			context.postProcessSettings,
-			context.pbrPreviewProfile,
-			context.pbrLightRigProfile,
-			context.pbrCameraRigProfile
+			context.profiles.pbrExperimentProfilePath,
+			context.profiles.environmentProfile,
+			context.profiles.postProcessSettings,
+			context.profiles.pbrPreviewProfile,
+			context.profiles.pbrLightRigProfile,
+			context.profiles.pbrCameraRigProfile
 		))
 		{
-			context.pbrCameraRigProfile.applyTo(context.camera);
-			LogInfo("PBR experiment profile loaded from " + context.pbrExperimentProfilePath);
+			context.profiles.pbrCameraRigProfile.applyTo(context.cameraLights.camera);
+			LogInfo("PBR experiment profile loaded from " + context.profiles.pbrExperimentProfilePath);
 			return;
 		}
 
-		LogInfo("PBR experiment profile config not found, using layered defaults: " + context.pbrExperimentProfilePath);
+		LogInfo("PBR experiment profile config not found, using layered defaults: " + context.profiles.pbrExperimentProfilePath);
 	}
 }
 

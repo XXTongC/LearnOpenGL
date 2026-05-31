@@ -6,11 +6,46 @@
 #include "../../mesh/mesh.h"
 #include "../../camera/orthographiccamera.h"
 #include "../../camera/perspectivecamera.h"
+#include "../../engine/Actor.h"
+#include "../../engine/ActorAdapters.h"
+#include "../../engine/ActorComponent.h"
+#include "../../engine/AssetRegistry.h"
+#include "../../engine/Level.h"
+#include "../../engine/SceneComponent.h"
+#include "../../engine/World.h"
+#include "EditorWorldActions.h"
+#include "SceneTransformSnapshot.h"
 #include "../inspector/MaterialInspector.h"
+#include "../inspector/PropertyInspector.h"
 #include "../../third_party/imgui/imgui.h"
 
 namespace
 {
+	std::string getEngineObjectDisplayName(const GLengine::EngineObject& object, const std::string& fallback)
+	{
+		if (!object.getName().empty()) return object.getName();
+		return fallback;
+	}
+
+	std::string getActorTypeName(const GLengine::Actor& actor)
+	{
+		if (dynamic_cast<const GLengine::MeshActor*>(&actor)) return "MeshActor";
+		if (dynamic_cast<const GLengine::LightActor*>(&actor)) return "LightActor";
+		if (dynamic_cast<const GLengine::CameraActor*>(&actor)) return "CameraActor";
+		if (dynamic_cast<const GLengine::LegacyObjectActor*>(&actor)) return "LegacyObjectActor";
+		return "Actor";
+	}
+
+	std::string getComponentTypeName(const GLengine::ActorComponent& component)
+	{
+		if (dynamic_cast<const GLengine::MeshComponent*>(&component)) return "MeshComponent";
+		if (dynamic_cast<const GLengine::LightComponent*>(&component)) return "LightComponent";
+		if (dynamic_cast<const GLengine::CameraComponent*>(&component)) return "CameraComponent";
+		if (dynamic_cast<const GLengine::LegacyObjectComponent*>(&component)) return "LegacyObjectComponent";
+		if (dynamic_cast<const GLengine::SceneComponent*>(&component)) return "SceneComponent";
+		return "ActorComponent";
+	}
+
 	std::string getObjectTypeName(GLframework::ObjectType type)
 	{
 		switch (type)
@@ -41,6 +76,266 @@ namespace
 		if (std::dynamic_pointer_cast<GLframework::DirectionalLightShadow>(shadow)) return "DirectionalLightShadow";
 		if (std::dynamic_pointer_cast<GLframework::PointLightShadow>(shadow)) return "PointLightShadow";
 		return "Shadow";
+	}
+
+	glm::vec3 toGlmVec3(const GLengine::Vector3& value)
+	{
+		return { value.x, value.y, value.z };
+	}
+
+	GLengine::Vector3 toEngineVector3(const glm::vec3& value)
+	{
+		return { value.x, value.y, value.z };
+	}
+
+	bool areVec3Equal(const glm::vec3& left, const glm::vec3& right)
+	{
+		return left.x == right.x && left.y == right.y && left.z == right.z;
+	}
+
+	std::shared_ptr<GLframework::Object> getLegacyObjectForSceneComponent(GLengine::SceneComponent& component)
+	{
+		if (auto* meshComponent = dynamic_cast<GLengine::MeshComponent*>(&component))
+		{
+			return std::static_pointer_cast<GLframework::Object>(meshComponent->getMesh());
+		}
+		if (auto* lightComponent = dynamic_cast<GLengine::LightComponent*>(&component))
+		{
+			return std::static_pointer_cast<GLframework::Object>(lightComponent->getLight());
+		}
+		if (auto* legacyComponent = dynamic_cast<GLengine::LegacyObjectComponent*>(&component))
+		{
+			return legacyComponent->getObject();
+		}
+
+		return nullptr;
+	}
+
+	void syncLegacyObjectTransform(GLengine::SceneComponent& component, const GLengine::Transform& transform)
+	{
+		const auto object = getLegacyObjectForSceneComponent(component);
+		if (!object)
+		{
+			return;
+		}
+
+		object->setPosition(toGlmVec3(transform.location));
+		object->setAngleX(transform.rotation.x);
+		object->setAngleY(transform.rotation.y);
+		object->setAngleZ(transform.rotation.z);
+		object->setScale(toGlmVec3(transform.scale));
+	}
+
+	void recordSceneComponentVec3Edit(
+		GL_EDITOR::EditTransactionLog* editTransactions,
+		GLengine::SceneComponent& component,
+		const std::string& field,
+		const glm::vec3& beforeValue,
+		const glm::vec3& afterValue
+	)
+	{
+		if (!editTransactions || areVec3Equal(beforeValue, afterValue))
+		{
+			return;
+		}
+
+		editTransactions->recordVec3(
+			getEngineObjectDisplayName(component, "SceneComponent"),
+			getComponentTypeName(component),
+			component.getObjectId(),
+			reinterpret_cast<std::uintptr_t>(&component),
+			&component,
+			field,
+			beforeValue,
+			afterValue
+		);
+	}
+
+	void setSceneComponentLocation(GLengine::SceneComponent& component, glm::vec3 location, GL_EDITOR::EditTransactionLog* editTransactions)
+	{
+		auto transform = component.getRelativeTransform();
+		const glm::vec3 beforeValue = toGlmVec3(transform.location);
+		transform.location = toEngineVector3(location);
+		component.setRelativeTransform(transform);
+		syncLegacyObjectTransform(component, transform);
+		recordSceneComponentVec3Edit(editTransactions, component, "Relative Location", beforeValue, location);
+	}
+
+	void setSceneComponentRotation(GLengine::SceneComponent& component, glm::vec3 rotation, GL_EDITOR::EditTransactionLog* editTransactions)
+	{
+		auto transform = component.getRelativeTransform();
+		const glm::vec3 beforeValue = toGlmVec3(transform.rotation);
+		transform.rotation = toEngineVector3(rotation);
+		component.setRelativeTransform(transform);
+		syncLegacyObjectTransform(component, transform);
+		recordSceneComponentVec3Edit(editTransactions, component, "Relative Rotation", beforeValue, rotation);
+	}
+
+	void setSceneComponentScale(GLengine::SceneComponent& component, glm::vec3 scale, GL_EDITOR::EditTransactionLog* editTransactions)
+	{
+		auto transform = component.getRelativeTransform();
+		const glm::vec3 beforeValue = toGlmVec3(transform.scale);
+		transform.scale = toEngineVector3(scale);
+		component.setRelativeTransform(transform);
+		syncLegacyObjectTransform(component, transform);
+		recordSceneComponentVec3Edit(editTransactions, component, "Relative Scale", beforeValue, scale);
+	}
+
+	bool undoLatestSceneComponentVec3Edit(GL_EDITOR::EditTransactionLog& editTransactions)
+	{
+		const auto* latest = editTransactions.getLatestRecord();
+		if (!latest
+			|| latest->kind != GL_EDITOR::EditTransactionRecordKind::TransformVec3
+			|| !latest->sceneComponent)
+		{
+			return false;
+		}
+
+		auto* sceneComponent = latest->sceneComponent;
+		const std::string field = latest->field;
+		const glm::vec3 beforeValue = latest->beforeValue;
+
+		if (field == "Relative Location")
+		{
+			setSceneComponentLocation(*sceneComponent, beforeValue, nullptr);
+		}
+		else if (field == "Relative Rotation")
+		{
+			setSceneComponentRotation(*sceneComponent, beforeValue, nullptr);
+		}
+		else if (field == "Relative Scale")
+		{
+			setSceneComponentScale(*sceneComponent, beforeValue, nullptr);
+		}
+		else
+		{
+			return false;
+		}
+
+		editTransactions.popLatestRecord();
+		editTransactions.markDirty();
+		return true;
+	}
+
+	GL_EDITOR::PropertyBuilder buildActorPropertySchema(GLengine::Actor& actor, bool engineWorldEditable)
+	{
+		const auto* level = actor.getLevel();
+		const auto* world = actor.getWorld();
+
+		GL_EDITOR::PropertyBuilder builder{};
+		builder.addSection("Actor");
+		builder.addReadOnlyString("Name", getEngineObjectDisplayName(actor, "Actor"));
+		builder.addReadOnlyString("Type", getActorTypeName(actor));
+		builder.addReadOnlyString("Object ID", std::to_string(actor.getObjectId()));
+		builder.addReadOnlyString("Persistent ID", actor.getPersistentId().empty() ? "None" : actor.getPersistentId());
+		builder.addReadOnlyString("World", world ? getEngineObjectDisplayName(*world, "World") : "None");
+		builder.addReadOnlyString("Level", level ? getEngineObjectDisplayName(*level, "Level") : "None");
+		builder.addReadOnlyInt("Components", static_cast<int>(actor.getComponents().size()));
+		builder.addReadOnlyBool("Editable World", engineWorldEditable);
+
+		if (auto* root = actor.getRootComponent())
+		{
+			const auto& transform = root->getRelativeTransform();
+			builder.addSection("Root SceneComponent");
+			builder.addReadOnlyString("Name", getEngineObjectDisplayName(*root, "SceneComponent"));
+			builder.addReadOnlyString("Type", getComponentTypeName(*root));
+			builder.addReadOnlyVec3("Location", toGlmVec3(transform.location));
+			builder.addReadOnlyVec3("Rotation", toGlmVec3(transform.rotation));
+			builder.addReadOnlyVec3("Scale", toGlmVec3(transform.scale));
+			builder.addReadOnlyInt("Attached Children", static_cast<int>(root->getChildren().size()));
+		}
+
+		return builder;
+	}
+
+	GL_EDITOR::PropertyBuilder buildComponentPropertySchema(
+		GLengine::ActorComponent& component,
+		bool engineWorldEditable,
+		GL_EDITOR::EditTransactionLog* editTransactions
+	)
+	{
+		GL_EDITOR::PropertyBuilder builder{};
+		builder.addSection("Component");
+		builder.addReadOnlyString("Name", getEngineObjectDisplayName(component, "Component"));
+		builder.addReadOnlyString("Type", getComponentTypeName(component));
+		builder.addReadOnlyString("Persistent ID", component.getPersistentId().empty() ? "None" : component.getPersistentId());
+		builder.addReadOnlyBool("Active", component.isActive());
+		builder.addReadOnlyBool("Can Tick", component.canTick());
+		if (const auto* owner = component.getOwner())
+		{
+			builder.addReadOnlyString("Owner", getEngineObjectDisplayName(*owner, "Actor"));
+		}
+		else
+		{
+			builder.addReadOnlyString("Owner", "None");
+		}
+
+		if (auto* sceneComponent = dynamic_cast<GLengine::SceneComponent*>(&component))
+		{
+			const auto& transform = sceneComponent->getRelativeTransform();
+			const auto* parent = sceneComponent->getParent();
+			const bool canEditTransform = engineWorldEditable && getLegacyObjectForSceneComponent(*sceneComponent) != nullptr;
+			builder.addSection("SceneComponent");
+			builder.addReadOnlyBool("Transform Editable", canEditTransform);
+			if (canEditTransform)
+			{
+				builder.addVec3(
+					"Relative Location",
+					[sceneComponent]() { return toGlmVec3(sceneComponent->getRelativeTransform().location); },
+					[sceneComponent, editTransactions](glm::vec3 value) { setSceneComponentLocation(*sceneComponent, value, editTransactions); }
+				);
+				builder.addVec3(
+					"Relative Rotation",
+					[sceneComponent]() { return toGlmVec3(sceneComponent->getRelativeTransform().rotation); },
+					[sceneComponent, editTransactions](glm::vec3 value) { setSceneComponentRotation(*sceneComponent, value, editTransactions); }
+				);
+				builder.addVec3(
+					"Relative Scale",
+					[sceneComponent]() { return toGlmVec3(sceneComponent->getRelativeTransform().scale); },
+					[sceneComponent, editTransactions](glm::vec3 value) { setSceneComponentScale(*sceneComponent, value, editTransactions); }
+				);
+			}
+			else
+			{
+				builder.addReadOnlyVec3("Relative Location", toGlmVec3(transform.location));
+				builder.addReadOnlyVec3("Relative Rotation", toGlmVec3(transform.rotation));
+				builder.addReadOnlyVec3("Relative Scale", toGlmVec3(transform.scale));
+			}
+			builder.addReadOnlyString("Parent", parent ? getEngineObjectDisplayName(*parent, "SceneComponent") : "None");
+			builder.addReadOnlyInt("Children", static_cast<int>(sceneComponent->getChildren().size()));
+		}
+
+		if (auto* meshComponent = dynamic_cast<GLengine::MeshComponent*>(&component))
+		{
+			builder.addSection("Mesh Adapter");
+			builder.addReadOnlyString(
+				"Mesh",
+				meshComponent->getMesh() ? getObjectDisplayName(meshComponent->getMesh()) : "None"
+			);
+		}
+		else if (auto* lightComponent = dynamic_cast<GLengine::LightComponent*>(&component))
+		{
+			builder.addSection("Light Adapter");
+			builder.addReadOnlyString(
+				"Light",
+				lightComponent->getLight() ? getObjectDisplayName(lightComponent->getLight()) : "None"
+			);
+		}
+		else if (auto* cameraComponent = dynamic_cast<GLengine::CameraComponent*>(&component))
+		{
+			builder.addSection("Camera Adapter");
+			builder.addReadOnlyBool("Bound Camera", cameraComponent->getCamera() != nullptr);
+		}
+		else if (auto* legacyComponent = dynamic_cast<GLengine::LegacyObjectComponent*>(&component))
+		{
+			builder.addSection("Legacy Object Adapter");
+			builder.addReadOnlyString(
+				"Object",
+				legacyComponent->getObject() ? getObjectDisplayName(legacyComponent->getObject()) : "None"
+			);
+		}
+
+		return builder;
 	}
 
 	void renderLightInspector(const std::shared_ptr<GLframework::Light>& light, GL_EDITOR::SelectionContext& selection)
@@ -181,6 +476,185 @@ namespace
 		}
 	}
 
+	void renderActorInspector(GLengine::Actor& actor, bool engineWorldEditable, GL_EDITOR::EditTransactionLog* editTransactions)
+	{
+		const auto actorProperties = buildActorPropertySchema(actor, engineWorldEditable);
+		GL_EDITOR::drawProperties(actorProperties);
+
+		if (ImGui::TreeNodeEx("actor-components", ImGuiTreeNodeFlags_DefaultOpen, "%s", "Components"))
+		{
+			for (const auto& component : actor.getComponents())
+			{
+				if (!component)
+				{
+					continue;
+				}
+
+				const std::string componentName = getEngineObjectDisplayName(*component, "Component");
+				const std::string componentTypeName = getComponentTypeName(*component);
+				ImGui::PushID(component.get());
+				const bool componentOpen = ImGui::TreeNodeEx(
+					"component-properties",
+					ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth,
+					"%s (%s)",
+					componentName.c_str(),
+					componentTypeName.c_str()
+				);
+				if (componentOpen)
+				{
+					const auto componentProperties = buildComponentPropertySchema(*component, engineWorldEditable, editTransactions);
+					GL_EDITOR::drawProperties(componentProperties);
+					ImGui::TreePop();
+				}
+				ImGui::PopID();
+			}
+			ImGui::TreePop();
+		}
+	}
+
+	void renderComponentInspector(GLengine::ActorComponent& component, bool engineWorldEditable, GL_EDITOR::EditTransactionLog* editTransactions)
+	{
+		const auto componentProperties = buildComponentPropertySchema(component, engineWorldEditable, editTransactions);
+		GL_EDITOR::drawProperties(componentProperties);
+	}
+
+	void renderEditTransactionSummary(
+		GL_EDITOR::EditTransactionLog* editTransactions,
+		GLengine::World* engineWorld,
+		bool engineWorldEditable
+	)
+	{
+		if (!editTransactions)
+		{
+			return;
+		}
+
+		static std::string lastSnapshotStatus{};
+
+		ImGui::Spacing();
+		ImGui::Separator();
+		ImGui::TextUnformatted("Edit Transactions");
+		ImGui::Text("Dirty: %s", editTransactions->isDirty() ? "yes" : "no");
+		ImGui::Text("Records: %d", static_cast<int>(editTransactions->getRecords().size()));
+		if (ImGui::Button("Mark Saved"))
+		{
+			editTransactions->markSaved();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Clear Transactions"))
+		{
+			editTransactions->clear();
+			return;
+		}
+		if (engineWorld && engineWorldEditable)
+		{
+			if (ImGui::Button("Create Empty Actor"))
+			{
+				const auto result = GL_EDITOR::createEditorEmptyActor(*engineWorld);
+				if (result.created && result.actor)
+				{
+					editTransactions->recordLifecycle(
+						getEngineObjectDisplayName(*result.actor, "Editor Created Empty Actor"),
+						getActorTypeName(*result.actor),
+						result.actor->getObjectId(),
+						reinterpret_cast<std::uintptr_t>(result.actor),
+						"Create Actor"
+					);
+					lastSnapshotStatus =
+						"Actor created: " + result.actorPersistentId
+						+ " root=" + result.rootComponentPersistentId;
+				}
+				else
+				{
+					lastSnapshotStatus = "Actor create failed: " + result.error;
+				}
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Save Transform Snapshot"))
+			{
+				const auto result = GL_EDITOR::saveSceneTransformSnapshot(
+					*engineWorld,
+					GL_EDITOR::defaultSceneTransformSnapshotPath()
+				);
+				if (result.saved)
+				{
+					editTransactions->markSaved();
+					lastSnapshotStatus =
+						"Snapshot saved: " + result.path
+						+ " actors=" + std::to_string(result.actorCount)
+						+ " sceneComponents=" + std::to_string(result.sceneComponentCount);
+				}
+				else
+				{
+					lastSnapshotStatus = "Snapshot save failed: " + result.error;
+				}
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Apply Transform Snapshot"))
+			{
+				const auto result = GL_EDITOR::applySceneTransformSnapshot(
+					*engineWorld,
+					GL_EDITOR::defaultSceneTransformSnapshotPath()
+				);
+				if (result.applied)
+				{
+					editTransactions->markSaved();
+					lastSnapshotStatus =
+						"Snapshot applied: " + result.path
+						+ " matched=" + std::to_string(result.matchedSceneComponentCount)
+						+ " applied=" + std::to_string(result.appliedSceneComponentCount)
+						+ " changed=" + std::to_string(result.changedSceneComponentCount);
+				}
+				else
+				{
+					lastSnapshotStatus = "Snapshot apply failed: " + result.error;
+				}
+			}
+		}
+		else if (engineWorld && !engineWorldEditable)
+		{
+			ImGui::TextDisabled("Transform snapshot disabled for read-only World mirror.");
+		}
+		if (!lastSnapshotStatus.empty())
+		{
+			ImGui::TextWrapped("%s", lastSnapshotStatus.c_str());
+		}
+		if (const auto* latest = editTransactions->getLatestRecord())
+		{
+			ImGui::Text(
+				"Latest: #%llu %s.%s",
+				static_cast<unsigned long long>(latest->sequence),
+				latest->targetLabel.c_str(),
+				latest->field.c_str()
+			);
+			if (latest->kind == GL_EDITOR::EditTransactionRecordKind::Lifecycle)
+			{
+				ImGui::Text("Lifecycle transaction; undo is not implemented yet.");
+			}
+			else
+			{
+				ImGui::Text(
+					"Before: %.3f, %.3f, %.3f",
+					latest->beforeValue.x,
+					latest->beforeValue.y,
+					latest->beforeValue.z
+				);
+				ImGui::Text(
+					"After: %.3f, %.3f, %.3f",
+					latest->afterValue.x,
+					latest->afterValue.y,
+					latest->afterValue.z
+				);
+			}
+			if (latest->kind == GL_EDITOR::EditTransactionRecordKind::TransformVec3
+				&& latest->sceneComponent
+				&& ImGui::Button("Undo Latest Transform"))
+			{
+				undoLatestSceneComponentVec3Edit(*editTransactions);
+			}
+		}
+	}
+
 	void renderObjectHierarchyNode(const std::shared_ptr<GLframework::Object>& object, GL_EDITOR::SelectionContext& selection)
 	{
 		if (!object) return;
@@ -209,6 +683,201 @@ namespace
 			ImGui::TreePop();
 		}
 		ImGui::PopID();
+	}
+
+	void renderActorHierarchyNode(GLengine::Actor& actor, GL_EDITOR::SelectionContext& selection)
+	{
+		const bool isSelected = selection.kind == GL_EDITOR::SelectionKind::Actor && GL_EDITOR::getSelectedActor(selection) == &actor;
+		const bool hasComponents = !actor.getComponents().empty();
+
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+		if (!hasComponents) flags |= ImGuiTreeNodeFlags_Leaf;
+		if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
+
+		ImGui::PushID(&actor);
+		const std::string actorName = getEngineObjectDisplayName(actor, "Actor");
+		const std::string actorTypeName = getActorTypeName(actor);
+		const bool isOpen = ImGui::TreeNodeEx(
+			"actor",
+			flags,
+			"%s (%s)",
+			actorName.c_str(),
+			actorTypeName.c_str()
+		);
+		if (ImGui::IsItemClicked())
+		{
+			GL_EDITOR::selectActor(selection, &actor, actorName);
+		}
+
+		if (isOpen)
+		{
+			for (const auto& component : actor.getComponents())
+			{
+				if (!component)
+				{
+					continue;
+				}
+
+				ImGuiTreeNodeFlags componentFlags =
+					ImGuiTreeNodeFlags_Leaf
+					| ImGuiTreeNodeFlags_NoTreePushOnOpen
+					| ImGuiTreeNodeFlags_SpanAvailWidth;
+				const bool componentSelected =
+					selection.kind == GL_EDITOR::SelectionKind::Component
+					&& GL_EDITOR::getSelectedComponent(selection) == component.get();
+				if (componentSelected)
+				{
+					componentFlags |= ImGuiTreeNodeFlags_Selected;
+				}
+				const std::string componentName = getEngineObjectDisplayName(*component, "Component");
+				const std::string componentTypeName = getComponentTypeName(*component);
+				ImGui::PushID(component.get());
+				ImGui::TreeNodeEx(
+					"component",
+					componentFlags,
+					"%s (%s)",
+					componentName.c_str(),
+					componentTypeName.c_str()
+				);
+				if (ImGui::IsItemClicked())
+				{
+					GL_EDITOR::selectComponent(selection, component.get(), componentName);
+				}
+				ImGui::PopID();
+			}
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+
+	void renderEngineWorldHierarchy(GLengine::World* world, GL_EDITOR::SelectionContext& selection)
+	{
+		if (!world)
+		{
+			ImGui::TextUnformatted("No runtime engine World.");
+			return;
+		}
+
+		const GLengine::Level* level = world->getPersistentLevel();
+		const int actorCount = level ? static_cast<int>(level->getActors().size()) : 0;
+		const std::string worldName = getEngineObjectDisplayName(*world, "World");
+		ImGui::PushID(world);
+		const bool worldOpen = ImGui::TreeNodeEx(
+			"engine-world",
+			ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth,
+			"%s (actors=%d)",
+			worldName.c_str(),
+			actorCount
+		);
+		if (worldOpen)
+		{
+			if (!level)
+			{
+				ImGui::TextUnformatted("No persistent level.");
+			}
+			else
+			{
+				const std::string levelName = getEngineObjectDisplayName(*level, "Persistent Level");
+				ImGui::PushID(level);
+				const bool levelOpen = ImGui::TreeNodeEx(
+					"persistent-level",
+					ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth,
+					"%s",
+					levelName.c_str()
+				);
+				if (levelOpen)
+				{
+					for (const auto& actor : level->getActors())
+					{
+						if (actor)
+						{
+							renderActorHierarchyNode(*actor, selection);
+						}
+					}
+					ImGui::TreePop();
+				}
+				ImGui::PopID();
+			}
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+
+	bool isImportedAsset(const GLengine::AssetDescriptor& asset)
+	{
+		return asset.source == "imported-asset";
+	}
+
+	std::string getAssetDisplayName(const GLengine::AssetDescriptor& asset)
+	{
+		return asset.name.empty() ? asset.handle.value : asset.name;
+	}
+
+	void renderAssetDescriptor(const GLengine::AssetDescriptor& asset, GL_EDITOR::SelectionContext& selection)
+	{
+		const std::string label = getAssetDisplayName(asset);
+		const bool isSelected =
+			selection.kind == GL_EDITOR::SelectionKind::Asset
+			&& GL_EDITOR::getSelectedAssetHandle(selection) == asset.handle.value;
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+		if (isSelected)
+		{
+			flags |= ImGuiTreeNodeFlags_Selected;
+		}
+
+		ImGui::PushID(asset.handle.value.c_str());
+		const bool isOpen = ImGui::TreeNodeEx(
+			"asset",
+			flags,
+			"%s (%s)",
+			label.c_str(),
+			std::string(GLengine::assetKindToken(asset.kind)).c_str()
+		);
+		if (ImGui::IsItemClicked())
+		{
+			GL_EDITOR::selectAsset(selection, asset.handle.value, label);
+		}
+		if (isOpen)
+		{
+			ImGui::TextWrapped("Handle: %s", asset.handle.value.c_str());
+			ImGui::Text("Source: %s", asset.source.empty() ? "unknown" : asset.source.c_str());
+			ImGui::TextWrapped("Path: %s", asset.path.empty() ? "unknown" : asset.path.c_str());
+			if (!asset.materialType.empty())
+			{
+				ImGui::Text("Material Type: %s", asset.materialType.c_str());
+			}
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+
+	void renderAssetInspector(const GLengine::AssetRegistry* assetRegistry, const std::string& assetHandle)
+	{
+		if (!assetRegistry)
+		{
+			ImGui::TextUnformatted("No asset registry.");
+			return;
+		}
+
+		const auto* asset = assetRegistry->find(GLengine::AssetHandle{ assetHandle });
+		if (!asset)
+		{
+			ImGui::TextWrapped("Asset handle is no longer registered: %s", assetHandle.c_str());
+			return;
+		}
+
+		GL_EDITOR::PropertyBuilder builder{};
+		builder.addSection("Asset");
+		builder.addReadOnlyString("Name", getAssetDisplayName(*asset));
+		builder.addReadOnlyString("Kind", std::string(GLengine::assetKindToken(asset->kind)));
+		builder.addReadOnlyString("Handle", asset->handle.value);
+		builder.addReadOnlyString("Source", asset->source.empty() ? "unknown" : asset->source);
+		builder.addReadOnlyString("Path", asset->path.empty() ? "unknown" : asset->path);
+		if (!asset->materialType.empty())
+		{
+			builder.addReadOnlyString("Material Type", asset->materialType);
+		}
+		GL_EDITOR::drawProperties(builder);
 	}
 
 	void renderLightHierarchyNode(const std::shared_ptr<GLframework::Light>& light, const std::string& fallbackName, GL_EDITOR::SelectionContext& selection)
@@ -302,12 +971,34 @@ Camera* GL_EDITOR::getSelectedCamera(const SelectionContext& selection)
 	return selection.selectedCamera;
 }
 
+GLengine::Actor* GL_EDITOR::getSelectedActor(const SelectionContext& selection)
+{
+	if (selection.kind != SelectionKind::Actor) return nullptr;
+	return selection.selectedActor;
+}
+
+GLengine::ActorComponent* GL_EDITOR::getSelectedComponent(const SelectionContext& selection)
+{
+	if (selection.kind != SelectionKind::Component) return nullptr;
+	return selection.selectedComponent;
+}
+
+const std::string& GL_EDITOR::getSelectedAssetHandle(const SelectionContext& selection)
+{
+	static const std::string empty{};
+	if (selection.kind != SelectionKind::Asset) return empty;
+	return selection.selectedAssetHandle;
+}
+
 void GL_EDITOR::selectObject(SelectionContext& selection, const std::shared_ptr<GLframework::Object>& object)
 {
 	selection.kind = SelectionKind::Object;
 	selection.selectedObject = object;
 	selection.selectedShadow.reset();
 	selection.selectedCamera = nullptr;
+	selection.selectedActor = nullptr;
+	selection.selectedComponent = nullptr;
+	selection.selectedAssetHandle.clear();
 	selection.label.clear();
 }
 
@@ -317,6 +1008,9 @@ void GL_EDITOR::selectShadow(SelectionContext& selection, const std::shared_ptr<
 	selection.selectedObject.reset();
 	selection.selectedShadow = shadow;
 	selection.selectedCamera = nullptr;
+	selection.selectedActor = nullptr;
+	selection.selectedComponent = nullptr;
+	selection.selectedAssetHandle.clear();
 	selection.label = label;
 }
 
@@ -326,6 +1020,45 @@ void GL_EDITOR::selectCamera(SelectionContext& selection, Camera* selectedCamera
 	selection.selectedObject.reset();
 	selection.selectedShadow.reset();
 	selection.selectedCamera = selectedCamera;
+	selection.selectedActor = nullptr;
+	selection.selectedComponent = nullptr;
+	selection.selectedAssetHandle.clear();
+	selection.label = label;
+}
+
+void GL_EDITOR::selectActor(SelectionContext& selection, GLengine::Actor* actor, const std::string& label)
+{
+	selection.kind = SelectionKind::Actor;
+	selection.selectedObject.reset();
+	selection.selectedShadow.reset();
+	selection.selectedCamera = nullptr;
+	selection.selectedActor = actor;
+	selection.selectedComponent = nullptr;
+	selection.selectedAssetHandle.clear();
+	selection.label = label;
+}
+
+void GL_EDITOR::selectComponent(SelectionContext& selection, GLengine::ActorComponent* component, const std::string& label)
+{
+	selection.kind = SelectionKind::Component;
+	selection.selectedObject.reset();
+	selection.selectedShadow.reset();
+	selection.selectedCamera = nullptr;
+	selection.selectedActor = nullptr;
+	selection.selectedComponent = component;
+	selection.selectedAssetHandle.clear();
+	selection.label = label;
+}
+
+void GL_EDITOR::selectAsset(SelectionContext& selection, std::string assetHandle, const std::string& label)
+{
+	selection.kind = SelectionKind::Asset;
+	selection.selectedObject.reset();
+	selection.selectedShadow.reset();
+	selection.selectedCamera = nullptr;
+	selection.selectedActor = nullptr;
+	selection.selectedComponent = nullptr;
+	selection.selectedAssetHandle = std::move(assetHandle);
 	selection.label = label;
 }
 
@@ -337,6 +1070,11 @@ void GL_EDITOR::drawHierarchyPanel(const EditorPanelContext& context, SelectionC
 	{
 		renderObjectHierarchyNode(context.sceneOffScreen, selection);
 		renderObjectHierarchyNode(context.sceneInScreen, selection);
+	}
+
+	if (ImGui::CollapsingHeader("Engine World", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		renderEngineWorldHierarchy(context.engineWorld, selection);
 	}
 
 	if (ImGui::CollapsingHeader("Lights", ImGuiTreeNodeFlags_DefaultOpen))
@@ -367,16 +1105,107 @@ void GL_EDITOR::drawHierarchyPanel(const EditorPanelContext& context, SelectionC
 	ImGui::End();
 }
 
-void GL_EDITOR::drawSelectionInspectorPanel(const EditorPanelContext&, SelectionContext& selection)
+void GL_EDITOR::drawAssetBrowserPanel(const EditorPanelContext& context, SelectionContext& selection)
+{
+	ImGui::Begin("asset browser");
+
+	if (!context.assetRegistry)
+	{
+		ImGui::TextUnformatted("No asset registry.");
+		ImGui::End();
+		return;
+	}
+
+	const auto assets = context.assetRegistry->listAssets();
+	int importedAssetCount = 0;
+	for (const auto& asset : assets)
+	{
+		if (isImportedAsset(asset))
+		{
+			++importedAssetCount;
+		}
+	}
+
+	ImGui::Text("Assets: %d", context.assetRegistry->count());
+	ImGui::Text(
+		"Meshes: %d  Materials: %d  Textures: %d",
+		context.assetRegistry->countByKind(GLengine::AssetKind::Mesh),
+		context.assetRegistry->countByKind(GLengine::AssetKind::Material),
+		context.assetRegistry->countByKind(GLengine::AssetKind::Texture)
+	);
+	ImGui::Text("Imported Handles: %d", importedAssetCount);
+
+	if (ImGui::CollapsingHeader("Imported Asset Handles", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		if (importedAssetCount == 0)
+		{
+			ImGui::TextDisabled("No imported assets registered.");
+		}
+		for (const auto& asset : assets)
+		{
+			if (isImportedAsset(asset))
+			{
+				renderAssetDescriptor(asset, selection);
+			}
+		}
+	}
+
+	if (ImGui::CollapsingHeader("All Asset Handles"))
+	{
+		if (assets.empty())
+		{
+			ImGui::TextDisabled("No assets registered.");
+		}
+		for (const auto& asset : assets)
+		{
+			renderAssetDescriptor(asset, selection);
+		}
+	}
+
+	ImGui::End();
+}
+
+void GL_EDITOR::drawSelectionInspectorPanel(const EditorPanelContext& context, SelectionContext& selection)
 {
 	ImGui::Begin("inspector");
 
 	auto selectedObject = getSelectedObject(selection);
 	auto selectedShadow = getSelectedShadow(selection);
 	auto selectedCamera = getSelectedCamera(selection);
-	if (!selectedObject && !selectedShadow && !selectedCamera)
+	auto selectedActor = getSelectedActor(selection);
+	auto selectedComponent = getSelectedComponent(selection);
+	const auto& selectedAssetHandle = getSelectedAssetHandle(selection);
+	if (!selectedObject
+		&& !selectedShadow
+		&& !selectedCamera
+		&& !selectedActor
+		&& !selectedComponent
+		&& selectedAssetHandle.empty())
 	{
 		ImGui::TextUnformatted("No target selected.");
+		ImGui::End();
+		return;
+	}
+
+	if (!selectedAssetHandle.empty())
+	{
+		renderAssetInspector(context.assetRegistry, selectedAssetHandle);
+		ImGui::End();
+		return;
+	}
+
+	if (selectedComponent)
+	{
+		renderComponentInspector(*selectedComponent, context.engineWorldEditable, context.editTransactions);
+		renderEditTransactionSummary(context.editTransactions, context.engineWorld, context.engineWorldEditable);
+		ImGui::End();
+		return;
+	}
+
+	if (selectedActor)
+	{
+		renderActorInspector(*selectedActor, context.engineWorldEditable, context.editTransactions);
+		renderEditTransactionSummary(context.editTransactions, context.engineWorld, context.engineWorldEditable);
 		ImGui::End();
 		return;
 	}

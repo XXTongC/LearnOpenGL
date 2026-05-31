@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "Application.h"
+#include "AppRuntimeContext.h"
 #include "RuntimeInputController.h"
 #include "RuntimeViewport.h"
 #include "../tools/Logger/LogManager.h"
@@ -21,8 +22,8 @@ namespace GL_RUNTIME
 			}
 
 			return {
-				gCallbackContext.runtime->camera,
-				gCallbackContext.runtime->cameracontrol
+				gCallbackContext.runtime->cameraLights.camera,
+				gCallbackContext.runtime->cameraLights.cameracontrol
 			};
 		}
 
@@ -44,9 +45,9 @@ namespace GL_RUNTIME
 				{
 					gCallbackContext.width,
 					gCallbackContext.height,
-					gCallbackContext.runtime->camera,
-					&gCallbackContext.runtime->frameRenderTargets,
-					gCallbackContext.runtime->screenMaterial
+					gCallbackContext.runtime->cameraLights.camera,
+					&gCallbackContext.runtime->renderResources.frameRenderTargets,
+					gCallbackContext.runtime->renderResources.screenMaterial
 				}
 			);
 
@@ -103,5 +104,19 @@ namespace GL_RUNTIME
 
 		LogInfo("Window Initialized");
 		return true;
+	}
+
+	RuntimeWindowSnapshot RuntimeWindowLifecycle::captureSnapshot()
+	{
+		return {
+			static_cast<int>(GL_APP->getWidth()),
+			static_cast<int>(GL_APP->getHeight()),
+			GL_APP->getWindow()
+		};
+	}
+
+	void RuntimeWindowLifecycle::destroy()
+	{
+		GL_APP->destroy();
 	}
 }

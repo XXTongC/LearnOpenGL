@@ -292,10 +292,73 @@
     <Filter Include="include\GLframework\tools\inspector">
       <UniqueIdentifier>{53b6ea34-1a18-4f91-9ea2-a899fb4d9598}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cppfile\GLengine">
+      <UniqueIdentifier>{b9b735dc-8661-4e4f-88d5-5d3d3e64c981}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\GLengine">
+      <UniqueIdentifier>{56f2e510-9901-4ad0-a5f3-0701359ca30c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>cppfile</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\ActorAdapters.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\Actor.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\ActorComponent.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\AssetRegistry.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\AssetSubsystem.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\Engine.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\EngineObject.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\LegacySceneWorldBuilder.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\Level.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\PersistentIdPolicy.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\RendererBackendRegistry.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\RendererSubsystemBackendSlot.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\RendererSubsystemFrameExecutionBridge.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\RendererSubsystemFrameBridgeState.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\RendererSubsystem.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\ScenePackage.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\SceneComponent.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\WorldLegacySceneExporter.cpp">
+      <Filter>cppfile\GLengine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\World.cpp">
+      <Filter>cppfile\GLengine</Filter>
     </ClCompile>
     <ClCompile Include="third_party\src\glad.c">
       <Filter>cppfile</Filter>
@@ -309,7 +372,76 @@
     <ClCompile Include="application\Application.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationCallbackBinder.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationContentStartupLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationEditorStartupLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationEngineStartupLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationFrameCallbackBridge.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationFrameContinueBridge.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationFrameEditorCallbackBridge.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationFrameRunBridge.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationFrameStartupLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationGraphicsStartupLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationConfigPolicy.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationEntry.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationRunner.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationShutdownCallbackBridge.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationShutdownCleanupBridge.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationShutdownDestroyBridge.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationShutdownEngineBridge.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationShutdownLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationShutdownVerificationBridge.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeApplicationShell.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationStartupCallbackBridge.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationState.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationStartupLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationWindowStartupLifecycle.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
     <ClCompile Include="application\RuntimeBootstrapper.cpp">
@@ -318,7 +450,46 @@
     <ClCompile Include="application\RuntimeCameraLifecycle.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeContentCameraLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeContentConfigPolicy.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeContentLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeContentRendererBackendLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeContentSceneLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeContentVerificationLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeEditorLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeEditorPanelCoordinator.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeEngineLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeEngineWorldVerification.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeImportedAssetVerification.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeApplicationFrameLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeFrameClock.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeFrameLifecycle.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
     <ClCompile Include="application\RuntimeFramePipeline.cpp">
@@ -336,22 +507,100 @@
     <ClCompile Include="application\RuntimeFrameRunner.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeGraphicsLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeLegacyExperimentLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeNoOpRendererBackend.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeRendererBackendAttachmentLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeRendererBackendCatalog.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeRendererBackendFactory.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeRendererFrameBridgeAdapter.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeGuiHost.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
     <ClCompile Include="application\RuntimeInputController.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
-    <ClCompile Include="application\RuntimePBRVerification.cpp">
+    <ClCompile Include="application\RuntimePBRLightCameraRigVerification.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
-    <ClCompile Include="application\RuntimePBRVerificationArgs.cpp">
+    <ClCompile Include="application\RuntimePBRPassProfileVerification.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimePBRProfileLineVerification.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimePBRPreviewProfileVerification.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimePBRProfileVerification.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimePBRPreparedSceneStatsVerification.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimePBRRendererStatsVerification.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimePBRSceneProbeVerification.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimePBRStartupProfileVerification.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeVerificationArgs.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeVerificationCleanupLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeVerificationCapture.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeVerificationFrameCaptureLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeVerificationPreparedSceneLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeVerificationStartupProfileLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeVerificationStopPolicy.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeEngineVerificationReport.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeRendererBackendVerificationReport.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeVerificationReport.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
     <ClCompile Include="application\RuntimeProfileLoader.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
-    <ClCompile Include="application\RuntimeScenePreparer.cpp">
+    <ClCompile Include="application\RuntimeSceneSetupContextFactory.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeSceneSetupPipelineLifecycle.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="application\RuntimeSceneSetupReport.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
     <ClCompile Include="application\RuntimeViewport.cpp">
@@ -666,6 +915,12 @@
     <ClCompile Include="tools\sceneSetup\SceneSetup.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\sceneSetup\SceneSetupPipeline.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\sceneSetup\WorldDrivenSceneSetup.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\config\ProfileConfigParser.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -673,6 +928,15 @@
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\editor\EngineDiagnosticsPanel.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\editor\SceneTransformSnapshot.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\editor\EditorWorldActions.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
     <ClCompile Include="renderer\Bloom\Bloom.cpp">
@@ -689,6 +953,90 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine\ActorAdapters.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\Actor.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ActorComponent.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\AssetRegistry.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\AssetSubsystem.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\Engine.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\EngineContext.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\EngineDesc.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\EngineLifecycleSnapshot.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\EngineObject.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\EngineRunMode.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\EngineSubsystem.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\LegacySceneWorldBuilder.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\Level.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\PersistentIdPolicy.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\RendererBackend.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\RendererBackendRegistry.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\RendererBackendRegistryTypes.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\RendererSubsystemBackendSlot.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\RendererSubsystemFrameExecutionBridge.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\RendererSubsystemFrameBridgeState.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\RendererSubsystemFrameBridgeStats.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\RendererSubsystem.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ScenePackage.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\SceneComponent.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\Transform.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\WorldLegacySceneExporter.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\World.h">
+      <Filter>include\GLengine</Filter>
+    </ClInclude>
     <ClInclude Include="legacy\OldTestCode.h">
       <Filter>include\OldTestCode</Filter>
     </ClInclude>
@@ -701,16 +1049,163 @@
     <ClInclude Include="application\AppRuntimeContext.h">
       <Filter>include\Application</Filter>
     </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationCallbackBinder.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationConfig.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationContentStartupLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationEditorStartupLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationEngineStartupLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationFrameCallbackBridge.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationFrameContinueBridge.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationFrameEditorCallbackBridge.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationFrameRunBridge.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationFrameStartupLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationGraphicsStartupLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationConfigPolicy.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationEntry.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationRunner.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationShutdownCallbackBridge.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationShutdownCleanupBridge.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationShutdownDestroyBridge.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationShutdownEngineBridge.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationShutdownLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationShutdownVerificationBridge.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
     <ClInclude Include="application\RuntimeApplicationShell.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationStartupCallbackBridge.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationStartupLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationWindowStartupLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeBootstrapperCallbacks.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeBootstrapper.h">
       <Filter>include\Application</Filter>
     </ClInclude>
+    <ClInclude Include="application\RuntimeCameraConfig.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
     <ClInclude Include="application\RuntimeCameraLifecycle.h">
       <Filter>include\Application</Filter>
     </ClInclude>
+    <ClInclude Include="application\RuntimeContentCameraLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeContentConfigPolicy.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeContentLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeContentLifecycleConfig.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeContentRendererBackendLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeContentSceneLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeContentVerificationLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeEditorLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeEditorLifecycleConfig.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeEditorLifecycleState.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
     <ClInclude Include="application\RuntimeEditorPanelCoordinator.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeEngineLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeEngineAttachmentState.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeEngineLifecycleCleanupRefs.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeEngineLifecycleState.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeEngineWorldVerification.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeImportedAssetVerification.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationFrameLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeFrameCallbacks.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeFrameClock.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeFrameClockTypes.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeApplicationState.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeFrameLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeFrameLifecycleConfig.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeFrameLifecycleState.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeFramePipeline.h">
@@ -728,28 +1223,133 @@
     <ClInclude Include="application\RuntimeFrameRunner.h">
       <Filter>include\Application</Filter>
     </ClInclude>
+    <ClInclude Include="application\RuntimeFrameRunnerTypes.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeGraphicsLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeLegacyExperimentLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeNoOpRendererBackend.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeCameraLightState.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeProfileState.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeRenderResourceState.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeRendererBackendAttachmentLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeRendererBackendCatalog.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeRendererBackendFactory.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeRendererBackendKeys.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeRendererFrameBridgeAdapter.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
     <ClInclude Include="application\RuntimeGuiHost.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeInputController.h">
       <Filter>include\Application</Filter>
     </ClInclude>
-    <ClInclude Include="application\RuntimePBRVerification.h">
+    <ClInclude Include="application\RuntimePBRLightCameraRigVerification.h">
       <Filter>include\Application</Filter>
     </ClInclude>
-    <ClInclude Include="application\RuntimePBRVerificationArgs.h">
+    <ClInclude Include="application\RuntimePBRPassProfileVerification.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimePBRProfileLineVerification.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimePBRPreviewProfileVerification.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimePBRProfileVerification.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimePBRPreparedSceneStatsVerification.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimePBRRendererStatsVerification.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimePBRSceneProbeVerification.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimePBRStartupProfileVerification.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimePBRVerificationConfig.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeVerificationConfig.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeVerificationArgs.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeVerificationCleanupLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeVerificationCapture.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeVerificationFrameCaptureLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeVerificationPreparedSceneLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeVerificationStartupProfileLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeVerificationStopPolicy.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeEngineVerificationReport.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeRendererBackendVerificationReport.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeVerificationReport.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeProfileLoader.h">
       <Filter>include\Application</Filter>
     </ClInclude>
-    <ClInclude Include="application\RuntimeScenePreparer.h">
+    <ClInclude Include="application\RuntimeScenePrepareConfig.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeSceneSetupContextFactory.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeSceneSetupPipelineLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeSceneSetupReport.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeViewport.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeWindowLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeWindowLifecycleTypes.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\AssimpMaterialImporter.h">
@@ -2138,7 +2738,25 @@
     <ClInclude Include="tools\sceneSetup\SceneSetup.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
+    <ClInclude Include="tools\sceneSetup\SceneSetupPipeline.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\sceneSetup\SceneSetupPipelineConfig.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\sceneSetup\WorldDrivenSceneSetup.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
     <ClInclude Include="tools\editor\DebugControllerPanel.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\editor\EngineDiagnosticsPanel.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\editor\SceneTransformSnapshot.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\editor\EditorWorldActions.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\inspector\MaterialInspector.h">

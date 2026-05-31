@@ -14,6 +14,12 @@
 #include "PBRLightRigProfile.h"
 #include "PBRPreviewProfile.h"
 
+namespace GLengine
+{
+	class Engine;
+	class World;
+}
+
 namespace GL_SCENE
 {
 	struct SetupContext
@@ -37,7 +43,13 @@ namespace GL_SCENE
 		GLframework::EnvironmentProfile& environmentProfile;
 		PBRPreviewProfile& pbrPreviewProfile;
 		PBRLightRigProfile& lightRigProfile;
+		GLengine::Engine* engine{ nullptr };
+		GLengine::World*& engineWorld;
+		bool& engineWorldEditable;
 	};
 
 	void prepareDefaultScene(SetupContext& context);
+	void prepareSceneInfrastructure(SetupContext& context);
+	void prepareLegacyDefaultSceneContent(SetupContext& context);
+	void prepareConfiguredPBRPreview(SetupContext& context);
 }

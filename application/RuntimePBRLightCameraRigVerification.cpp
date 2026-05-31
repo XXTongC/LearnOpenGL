@@ -1,0 +1,132 @@
+#include "RuntimePBRLightCameraRigVerification.h"
+
+#include <algorithm>
+#include <cstddef>
+
+#include "AppRuntimeContext.h"
+#include "RuntimeVerificationConfig.h"
+
+namespace
+{
+	void applyPressurePointLightRig(GLframework::AppRuntimeContext& context)
+	{
+		struct PressureLightPreset
+		{
+			glm::vec3 position{ 0.0f };
+			glm::vec3 color{ 1.0f };
+			float intensity{ 1.0f };
+		};
+
+		const PressureLightPreset presets[] = {
+			{ { -2.35f, 1.05f, 2.15f }, { 1.0f, 0.32f, 0.18f }, 2.8f },
+			{ { -1.45f, -0.75f, 2.05f }, { 1.0f, 0.72f, 0.25f }, 2.4f },
+			{ { -0.35f, 1.20f, 2.35f }, { 0.45f, 0.95f, 1.0f }, 2.6f },
+			{ { 0.75f, -0.95f, 2.10f }, { 0.28f, 0.55f, 1.0f }, 2.5f },
+			{ { 1.85f, 0.85f, 2.20f }, { 1.0f, 0.25f, 0.65f }, 2.7f },
+			{ { 2.55f, -0.35f, 1.55f }, { 0.45f, 1.0f, 0.38f }, 2.2f },
+			{ { -2.15f, -1.25f, 1.35f }, { 0.75f, 0.45f, 1.0f }, 2.1f },
+			{ { 0.15f, 0.05f, 0.95f }, { 1.0f, 1.0f, 0.45f }, 2.3f }
+		};
+
+		const int count = std::min(
+			static_cast<int>(sizeof(presets) / sizeof(presets[0])),
+			GL_SCENE::PBRLightRigProfile::maxPointLights
+		);
+		context.profiles.pbrLightRigProfile.pointLightCount = count;
+		for (int index = 0; index < count; ++index)
+		{
+			auto& pointLight = context.profiles.pbrLightRigProfile.pointLights[static_cast<std::size_t>(index)];
+			pointLight.position = presets[index].position;
+			pointLight.color = presets[index].color;
+			pointLight.intensity = presets[index].intensity;
+			pointLight.specularIntensity = 1.0f;
+			pointLight.attenuationK2 = 96.0f;
+			pointLight.attenuationK1 = 0.0f;
+			pointLight.attenuationK0 = 1.0f;
+		}
+	}
+}
+
+namespace GL_RUNTIME
+{
+	void RuntimePBRLightCameraRigVerification::applyLightCameraRig(
+		GLframework::AppRuntimeContext& context,
+		const RuntimeVerificationConfig& verification
+	)
+	{
+		const auto& probes = verification.pbr.probes;
+		const auto& engineWorld = verification.engineWorld;
+
+		context.profiles.pbrLightRigProfile.ambientColor = { 0.1f, 0.1f, 0.1f };
+		context.profiles.pbrLightRigProfile.ambientIntensity = 1.0f;
+		context.profiles.pbrLightRigProfile.directional.color = { 0.0f, 0.0f, 0.0f };
+		context.profiles.pbrLightRigProfile.spot.color = { 0.0f, 0.0f, 0.0f };
+		context.profiles.pbrLightRigProfile.pointLightCount = 2;
+		context.profiles.pbrLightRigProfile.pointLights[0].position = { 3.0f, 3.0f, -1.0f };
+		context.profiles.pbrLightRigProfile.pointLights[0].color = { 0.8f, 0.8f, 0.9f };
+		context.profiles.pbrLightRigProfile.pointLights[0].intensity = 1.0f;
+		context.profiles.pbrLightRigProfile.pointLights[0].specularIntensity = 0.9f;
+		context.profiles.pbrLightRigProfile.pointLights[1].position = { -3.0f, 3.0f, -1.0f };
+		context.profiles.pbrLightRigProfile.pointLights[1].color = { 1.0f, 1.0f, 1.0f };
+		context.profiles.pbrLightRigProfile.pointLights[1].intensity = 1.0f;
+		context.profiles.pbrLightRigProfile.pointLights[1].specularIntensity = 0.9f;
+		if (engineWorld.enableMinimalScene)
+		{
+			context.profiles.pbrLightRigProfile.pointLightCount = 2;
+			context.profiles.pbrLightRigProfile.pointLights[0].position = { -1.55f, 1.25f, 2.75f };
+			context.profiles.pbrLightRigProfile.pointLights[0].color = { 1.0f, 0.74f, 0.38f };
+			context.profiles.pbrLightRigProfile.pointLights[0].intensity = 2.8f;
+			context.profiles.pbrLightRigProfile.pointLights[0].specularIntensity = 1.0f;
+			context.profiles.pbrLightRigProfile.pointLights[0].attenuationK2 = 24.0f;
+			context.profiles.pbrLightRigProfile.pointLights[0].attenuationK1 = 0.0f;
+			context.profiles.pbrLightRigProfile.pointLights[0].attenuationK0 = 1.0f;
+			context.profiles.pbrLightRigProfile.pointLights[1].position = { 1.45f, -0.65f, 2.25f };
+			context.profiles.pbrLightRigProfile.pointLights[1].color = { 0.32f, 0.72f, 1.0f };
+			context.profiles.pbrLightRigProfile.pointLights[1].intensity = 2.4f;
+			context.profiles.pbrLightRigProfile.pointLights[1].specularIntensity = 1.0f;
+			context.profiles.pbrLightRigProfile.pointLights[1].attenuationK2 = 24.0f;
+			context.profiles.pbrLightRigProfile.pointLights[1].attenuationK1 = 0.0f;
+			context.profiles.pbrLightRigProfile.pointLights[1].attenuationK0 = 1.0f;
+		}
+		if (probes.enablePbrTiledLightProbe)
+		{
+			context.profiles.pbrLightRigProfile.pointLightCount = 2;
+			context.profiles.pbrLightRigProfile.pointLights[0].position = { -1.45f, 0.65f, 2.2f };
+			context.profiles.pbrLightRigProfile.pointLights[0].color = { 1.0f, 0.45f, 0.25f };
+			context.profiles.pbrLightRigProfile.pointLights[0].intensity = 2.5f;
+			context.profiles.pbrLightRigProfile.pointLights[0].specularIntensity = 1.0f;
+			context.profiles.pbrLightRigProfile.pointLights[0].attenuationK2 = 96.0f;
+			context.profiles.pbrLightRigProfile.pointLights[0].attenuationK1 = 0.0f;
+			context.profiles.pbrLightRigProfile.pointLights[0].attenuationK0 = 1.0f;
+			context.profiles.pbrLightRigProfile.pointLights[1].position = { 1.45f, -0.35f, 2.2f };
+			context.profiles.pbrLightRigProfile.pointLights[1].color = { 0.25f, 0.65f, 1.0f };
+			context.profiles.pbrLightRigProfile.pointLights[1].intensity = 2.5f;
+			context.profiles.pbrLightRigProfile.pointLights[1].specularIntensity = 1.0f;
+			context.profiles.pbrLightRigProfile.pointLights[1].attenuationK2 = 96.0f;
+			context.profiles.pbrLightRigProfile.pointLights[1].attenuationK1 = 0.0f;
+			context.profiles.pbrLightRigProfile.pointLights[1].attenuationK0 = 1.0f;
+		}
+		if (probes.enablePbrLightPressureProbe)
+		{
+			applyPressurePointLightRig(context);
+		}
+
+		context.profiles.pbrCameraRigProfile.position = { 0.0f, 0.0f, 5.0f };
+		context.profiles.pbrCameraRigProfile.up = { 0.0f, 1.0f, 0.0f };
+		context.profiles.pbrCameraRigProfile.right = { 1.0f, 0.0f, 0.0f };
+		context.profiles.pbrCameraRigProfile.fovy = 60.0f;
+		if (probes.enablePbrShowcaseSpheres)
+		{
+			context.profiles.pbrCameraRigProfile.position = { 0.0f, 0.2f, 6.1f };
+			context.profiles.pbrCameraRigProfile.fovy = 52.0f;
+		}
+		if (engineWorld.enableMinimalScene)
+		{
+			context.profiles.pbrCameraRigProfile.position = { 0.0f, 0.08f, 4.85f };
+			context.profiles.pbrCameraRigProfile.fovy = 48.0f;
+		}
+		context.profiles.pbrCameraRigProfile.nearPlane = 0.1f;
+		context.profiles.pbrCameraRigProfile.farPlane = 1000.0f;
+		context.profiles.pbrCameraRigProfile.applyTo(context.cameraLights.camera);
+	}
+}
