@@ -9164,3 +9164,28 @@ Subagent 审查：
 
 - 这是 Runtime profile state post-process settings owner boundary cleanup，不改变 post-process settings 默认路径、profile loading、startup exposure/bloom defaults、bloom bright extraction、bloom blur、screen composite、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 runtime profile/state 边界收敛，但 `pbrLightRigProfile` 与 `pbrPreviewProfile` 访问面较大，应优先评估是否先拆小的 profile DTO 或访问器层，而不是一次性大范围改动。
+
+### 2026-06-01 Runtime Profile State Light Rig Owner Boundary Cleanup
+
+本轮继续 application runtime profile/state public header include surface 收敛，不扩张 PBR 功能。审计确认：`RuntimeProfileState.h` 仍为了按值持有 `PBRLightRigProfile` 直接 include `PBRLightRigProfile.h`；但 light rig profile 的真实读写集中在 PBR light/camera verification、profile loader、scene setup context 和 editor/debug controller context 构造，访问面虽然大于 camera/environment，但仍可通过访问器局部化完整依赖。
+
+新增与修改：
+
+- `RuntimeProfileState.h` 移除 `PBRLightRigProfile.h` include，改为 forward declare `GL_SCENE::PBRLightRigProfile`。
+- `RuntimeProfileState` 改为通过 private `std::unique_ptr<GL_SCENE::PBRLightRigProfile>` 持有 light rig profile，继续禁用拷贝并保留移动语义。
+- `RuntimeProfileState` 新增 `pbrLightRigProfile()` / `pbrLightRigProfile() const` 访问器。
+- `RuntimeProfileState.cpp` 显式 include `PBRLightRigProfile.h`，集中创建、销毁和访问 light rig profile owner。
+- `RuntimePBRLightCameraRigVerification.cpp` 在真实写入 verification light preset 的 implementation 中显式 include `PBRLightRigProfile.h`，并通过局部引用写入 ambient、directional、spot 和 point light preset。
+- `RuntimeProfileLoader.cpp`、`RuntimeSceneSetupContextFactory.cpp` 与 `RuntimeEditorPanelCoordinator.cpp` 改为通过访问器向 PBR experiment profile loader、scene setup 和 debug controller context 传递 light rig profile 引用或指针。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeProfileState.h` 不再传播 `PBRLightRigProfile.h`，旧字段式 `context.profiles.pbrLightRigProfile` 访问已迁移为访问器调用。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,deferred-tiled-lights,showcase-spheres,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeProfileState.cpp`、`RuntimePBRLightCameraRigVerification.cpp`、`RuntimeProfileLoader.cpp`、`RuntimeSceneSetupContextFactory.cpp`、`RuntimeEditorPanelCoordinator.cpp` 和相关 runtime 使用点。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime profile state light rig owner boundary cleanup，不改变 light rig 默认值、PBR experiment profile loading、verification light presets、多点光源数量/位置/衰减、scene setup、debug controller 指针传递、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 runtime profile/state 边界收敛；`pbrPreviewProfile` 是当前 `RuntimeProfileState.h` 中最后一个 PBR scene setup profile 按值成员，但访问面和 profile/material preset 绑定更大，应单独审计后再动。

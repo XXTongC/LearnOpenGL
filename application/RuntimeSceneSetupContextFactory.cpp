@@ -31,7 +31,7 @@ namespace GL_RUNTIME
 			config.texturePath,
 			context.profiles.environmentProfile(),
 			context.profiles.pbrPreviewProfile,
-			context.profiles.pbrLightRigProfile,
+			context.profiles.pbrLightRigProfile(),
 			&engine,
 			context.engineAttachments.engineWorld,
 			context.engineAttachments.engineWorldEditable

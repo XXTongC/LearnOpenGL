@@ -302,6 +302,7 @@ passed
 - Runtime Profile State Camera Rig Owner Boundary Cleanup 已接入：`RuntimeProfileState.h` 不再传播 `PBRCameraRigProfile.h`，camera rig profile 由 implementation-owned pointer 持有；profile loader、PBR light/camera verification 和 debug controller context 构造通过访问器取得引用。
 - Runtime Profile State Environment Profile Owner Boundary Cleanup 已接入：`RuntimeProfileState.h` 不再传播 `EnvironmentProfile.h`，environment profile 由 implementation-owned pointer 持有；startup verification、profile loader、scene setup 和 debug controller context 构造通过访问器取得引用。
 - Runtime Profile State PostProcess Settings Owner Boundary Cleanup 已接入：`RuntimeProfileState.h` 不再传播 `PostProcessSettings.h`，post-process settings 由 implementation-owned pointer 持有；profile loader、startup verification、runtime frame pass、renderer backend readiness 和 debug controller context 构造通过访问器取得引用。
+- Runtime Profile State Light Rig Owner Boundary Cleanup 已接入：`RuntimeProfileState.h` 不再传播 `PBRLightRigProfile.h`，light rig profile 由 implementation-owned pointer 持有；PBR light/camera verification、profile loader、scene setup 和 debug controller context 构造通过访问器取得引用。
 - Runtime Render Resource PostProcessPass Owner Boundary Cleanup 已接入：`RuntimeRenderResourceState.h` 不再传播 `PostProcessPass.h`，post-process pass 由 implementation-owned pointer 持有；frame pass implementation 显式 include 并通过访问器执行 resolve/bloom/composite。
 - Runtime Render Resource FrameRenderTargets Owner Boundary Cleanup 已接入：`RuntimeRenderResourceState.h` 不再传播 `FrameRenderTargets.h`，frame render targets 由 implementation-owned pointer 持有；runtime frame pass、backend readiness、scene setup 和 resize callback 路径通过访问器取得引用。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
@@ -364,6 +365,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Runtime Profile State PostProcess Settings Owner Boundary Cleanup 已接入后，`RuntimeProfileState.h` 不再传播 `PostProcessSettings.h`，post-process settings owner 和完整依赖局部化到 implementation/真实 post-process settings 调用点；下一步继续 runtime profile/state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit，但不扩张 PBR pass。
+当前最新修正：Runtime Profile State Light Rig Owner Boundary Cleanup 已接入后，`RuntimeProfileState.h` 不再传播 `PBRLightRigProfile.h`，light rig profile owner 和完整依赖局部化到 implementation/真实 light rig 调用点；下一步继续 runtime profile/state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit，但不扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime profile state post-process settings owner cleanup 后，下一步优先继续 runtime profile/state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime profile state light rig owner cleanup 后，下一步优先继续 runtime profile/state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；当前不建议继续扩张 PBR pass。

@@ -93,7 +93,7 @@ namespace
 			context.profiles.environmentProfile(),
 			context.profiles.postProcessSettings(),
 			context.profiles.pbrPreviewProfile,
-			context.profiles.pbrLightRigProfile,
+			context.profiles.pbrLightRigProfile(),
 			context.profiles.pbrCameraRigProfile()
 		))
 		{
