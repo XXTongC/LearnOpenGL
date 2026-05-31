@@ -109,6 +109,7 @@ Current phase:
 - `PBRExperimentProfile.h` now forwards environment/postprocess/preview/light/camera profile parameter types; full profile definitions and config/property builder dependencies are localized to the experiment profile implementation.
 - `PBRMaterialProfile.h` now owns material profile/storage DTOs, so `PBRPreviewProfile.h` no longer exposes full runtime `PBRMaterial.h` behavior APIs just to store a by-value material preset.
 - `AssimpMaterialImporter.h`, `assimpLoader.h`, and `assimpInstanceLoader.h` now expose only import public contracts and forward declarations; full material/Assimp/mesh/renderer/texture/shader import helper dependencies are localized to implementation files.
+- `MaterialTypes.h` now owns `MaterialType` and `PreStencilType`, so `ShaderLibrary.h` no longer exposes full `material.h` behavior APIs just to store/query material shader keys.
 - `RuntimeSceneSetupReport` now owns scene setup result stdout/logger reporting and the renderer prepared log line, so `RuntimeScenePreparer` no longer directly depends on logger/stdout or scene setup stats formatters.
 - `RuntimeSceneSetupContextFactory` now owns the `AppRuntimeContext` to `GL_SCENE::SetupContext` field mapping, so `RuntimeScenePreparer` no longer exposes or implements `makeSceneSetupContext(...)`.
 - `RuntimeSceneSetupPipelineLifecycle` now owns setup context creation, scene setup pipeline execution, and prepared-scene setup reporting, so `RuntimeScenePreparer` no longer directly includes full `SceneSetupPipeline.h`.
@@ -195,18 +196,17 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Assimp Loader Public Header Boundary Cleanup
+### Current Round: Material Types Header Extraction
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `application/AssimpMaterialImporter.h`
-- `application/AssimpMaterialImporter.cpp`
-- `application/assimpLoader.h`
-- `application/assimpLoader.cpp`
-- `application/assimpInstanceLoader.h`
-- `application/assimpInstanceLoader.cpp`
+- `materials/MaterialTypes.h`
+- `materials/material.h`
+- `renderer/ShaderLibrary.h`
+- `text2.vcxproj`
+- `text2.vcxproj.filters`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -217,7 +217,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Assimp loader public header boundary cleanup remains parent-reviewed.
+- Material types header extraction remains parent-reviewed.
 
 Rules for this round:
 
@@ -1674,7 +1674,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-06-01 Assimp Loader Public Header Boundary Cleanup.
+Round: 2026-06-01 Material Types Header Extraction.
 
 Parent local work:
 
@@ -1682,20 +1682,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: remove full material/Assimp/mesh/renderer/texture/shader implementation headers and private helper declarations from Assimp loader public headers, while keeping complete import behavior in implementation files.
+- Current local implementation target for this slice: extract `MaterialType` / `PreStencilType` into `MaterialTypes.h`, then make `ShaderLibrary.h` depend on the type-only header instead of full `material.h`.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the Assimp loader public header cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the Material Types header extraction is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `application/AssimpMaterialImporter.h`, `application/AssimpMaterialImporter.cpp`, `application/assimpLoader.h`, `application/assimpLoader.cpp`, `application/assimpInstanceLoader.h`, `application/assimpInstanceLoader.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `materials/MaterialTypes.h`, `materials/material.h`, `renderer/ShaderLibrary.h`, `text2.vcxproj`, `text2.vcxproj.filters`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's Assimp Loader Public Header Boundary Cleanup was parent-owned and had no delegated write scope.
 - Previous round's PBR Material Profile Header Extraction was parent-owned and had no delegated write scope.
 - Previous round's PBR Experiment Profile Header Boundary Cleanup was parent-owned and had no delegated write scope.
 - Previous round's PBR Light Rig Profile Header Boundary Cleanup was parent-owned and had no delegated write scope.

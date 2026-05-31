@@ -3,7 +3,7 @@
 #include <map>
 #include <memory>
 
-#include "material.h"
+#include "../materials/MaterialTypes.h"
 
 namespace GLframework
 {

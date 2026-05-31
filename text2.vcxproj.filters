@@ -1412,6 +1412,9 @@
     <ClInclude Include="materials\material.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>
+    <ClInclude Include="materials\MaterialTypes.h">
+      <Filter>include\GLframework\material</Filter>
+    </ClInclude>
     <ClInclude Include="materials\phongMaterial.h">
       <Filter>include\GLframework\material</Filter>
     </ClInclude>

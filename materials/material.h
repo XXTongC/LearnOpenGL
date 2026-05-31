@@ -1,5 +1,6 @@
 #pragma once
 #include "core.h"
+#include "MaterialTypes.h"
 
 namespace GL_EDITOR
 {
@@ -8,34 +9,6 @@ namespace GL_EDITOR
 
 namespace GLframework
 {
-	enum class MaterialType
-	{
-		PhongMaterial,
-		PBRMaterial,
-		WhiteMaterial,
-		DepthMaterial,
-		OpacityMaskMaterial,
-		ScreenMaterial,
-		CubeMaterial,
-		CubeSphereMaterial,
-		PhongEnvMaterial,
-		PhongEnvSphereMaterial,
-		PhongInstanceMaterial,
-		PhongNormalMaterial,
-		GrassInstanceMaterial,
-		PhongParallaxMaterial,
-		PhongShadowMaterial,
-		PhongCSMShadowMaterial,
-		PhongPointShadowMaterial,
-	};
-
-	enum class PreStencilType
-	{
-		Normal,
-		Outlining,
-		Custom,
-	};
-
 	class Material
 	{
 	public:

@@ -8889,3 +8889,25 @@ Subagent 审查：
 
 - 这是 Assimp loader public header boundary cleanup，不改变 Assimp load behavior、legacy import path、instanced grass import path、PBR imported asset verification、scene package、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root / runtime context state 的依赖边界收敛，或继续 Engine/scene setup public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Material Types Header Extraction
+
+本轮继续 renderer/material public header include audit，不扩张 PBR 功能。审计确认：`ShaderLibrary.h` 只需要 `MaterialType` 作为 shader map key，却直接 include 完整 `material.h`，导致 shader library facade 用户间接获得 material behavior、OpenGL state 和 `core.h` surface。
+
+新增与修改：
+
+- 新增 `materials/MaterialTypes.h`，集中承载 `MaterialType` 与 `PreStencilType`。
+- `materials/material.h` 改为 include `MaterialTypes.h`，自身继续只负责 `Material` 行为类、OpenGL state 访问器和 property visitor contract。
+- `renderer/ShaderLibrary.h` 改为 include `MaterialTypes.h`，不再为了 shader map key 传播完整 `material.h`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 header。
+
+已完成验证：
+
+- 静态检查确认 `MaterialType` / `PreStencilType` 定义只保留在 `MaterialTypes.h`，`material.h` 通过窄头复用枚举，`ShaderLibrary.h` 不再 include `material.h`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,texture-set,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 material、ShaderLibrary、renderer pass、runtime verification 和 scene setup 相关路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 material type header extraction，不改变 material enum values、shader lookup behavior、Material state behavior、renderer frame pipeline、Engine World verification、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root / runtime context state 的依赖边界收敛，或继续 renderer/material public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
