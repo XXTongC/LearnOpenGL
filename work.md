@@ -8505,3 +8505,25 @@ Subagent 审查：
 
 - 这是 runtime editor panel coordinator public include boundary cleanup，不改变 debug controller context composition、editor panel context composition、draw panel order、selection state、Engine World editor create verification、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续 editor/runtime public header audit，优先处理 DebugControllerPanel context header 或 RuntimeEditorLifecycle headers；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Editor Selection State Header Extraction
+
+本轮继续 editor/runtime public header audit，不扩张 PBR 功能。审计确认：`DebugControllerPanel.h` 和 `RuntimeEditorLifecycle.h` 已经主要由前置声明组成，当前更实际的耦合点是 `RuntimeEditorLifecycleState.h` 为了持有 `SelectionContext` 与 `EditTransactionLog`，仍必须 include 整个 `EditorPanels.h`，从而把 panel context/draw facade 也带入 runtime lifecycle state 边界。
+
+新增与修改：
+
+- 新增 `tools/editor/EditorSelectionState.h`，承载 `EditTransactionRecordKind`、`EditTransactionRecord`、`EditTransactionLog`、`SelectionKind`、`SelectionContext` 以及 selection helper 函数声明。
+- `EditorPanels.h` 改为 include `EditorSelectionState.h`，自身只保留 `EditorPanelContext` 与 hierarchy/asset browser/inspector draw facade 声明。
+- `RuntimeEditorLifecycleState.h` 改为 include `EditorSelectionState.h`，不再依赖完整 `EditorPanels.h`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 header，并补齐 `EditorPanels.h` 的 VS filter 归类。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeEditorLifecycleState.h` 只 include `EditorSelectionState.h`，`EditorPanels.h` 的 public surface 已收敛到 panel context/draw declarations。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeApplicationState.cpp`、`RuntimeEditorLifecycle.cpp`、`RuntimeEditorPanelCoordinator.cpp` 与 `EditorPanels.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 editor selection/transaction state header extraction，不改变 selection 初始化、hierarchy/asset browser/inspector 绘制、edit transaction undo/dirty state、Engine World editor create verification、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续 editor/runtime public header audit，优先处理 DebugControllerContext 与 EngineDiagnosticsContext 的 DTO 分离或 RuntimeEditor lifecycle state owner 边界；当前仍不建议继续扩张 PBR 功能。

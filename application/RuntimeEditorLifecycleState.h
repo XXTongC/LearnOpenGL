@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../tools/editor/EditorPanels.h"
+#include "../tools/editor/EditorSelectionState.h"
 
 namespace GL_RUNTIME
 {

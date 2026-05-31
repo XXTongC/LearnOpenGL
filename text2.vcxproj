@@ -945,6 +945,7 @@
     <ClInclude Include="tools\editor\DebugControllerPanel.h" />
     <ClInclude Include="tools\editor\EngineDiagnosticsPanel.h" />
     <ClInclude Include="tools\editor\EditorPanels.h" />
+    <ClInclude Include="tools\editor\EditorSelectionState.h" />
     <ClInclude Include="tools\editor\SceneTransformSnapshot.h" />
     <ClInclude Include="tools\editor\EditorWorldActions.h" />
     <ClInclude Include="tools\inspector\MaterialInspector.h" />

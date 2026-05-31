@@ -2756,6 +2756,12 @@
     <ClInclude Include="tools\editor\EngineDiagnosticsPanel.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
+    <ClInclude Include="tools\editor\EditorPanels.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\editor\EditorSelectionState.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
     <ClInclude Include="tools\editor\SceneTransformSnapshot.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
