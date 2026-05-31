@@ -1,18 +1,8 @@
 #pragma once
 
-#include "../../framework/scene.h"
-#include "../../light/ambientLight.h"
-#include "../../light/directionalLight.h"
-#include "../../light/pointLight.h"
-#include "../../light/spotLight.h"
-#include "../../materials/screenMaterial.h"
-#include "../../mesh/mesh.h"
-#include "../../renderer/Bloom/Bloom.h"
-#include "../../renderer/EnvironmentProfile.h"
-#include "../../renderer/FrameRenderTargets.h"
-#include "../../renderer/renderer.h"
-#include "PBRLightRigProfile.h"
-#include "PBRPreviewProfile.h"
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace GLengine
 {
@@ -20,8 +10,26 @@ namespace GLengine
 	class World;
 }
 
+namespace GLframework
+{
+	class AmbientLight;
+	class Bloom;
+	class DirectionalLight;
+	struct EnvironmentProfile;
+	class FrameRenderTargets;
+	class Mesh;
+	class PointLight;
+	class Renderer;
+	class Scene;
+	class ScreenMaterial;
+	class SpotLight;
+}
+
 namespace GL_SCENE
 {
+	struct PBRLightRigProfile;
+	struct PBRPreviewProfile;
+
 	struct SetupContext
 	{
 		std::shared_ptr<GLframework::Renderer>& renderer;

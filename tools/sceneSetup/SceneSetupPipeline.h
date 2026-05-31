@@ -3,12 +3,13 @@
 #include <string>
 
 #include "../../engine/LegacySceneWorldBuilder.h"
-#include "SceneSetup.h"
 #include "SceneSetupPipelineConfig.h"
 #include "WorldDrivenSceneSetup.h"
 
 namespace GL_SCENE
 {
+	struct SetupContext;
+
 	struct SceneSetupPipelineResult
 	{
 		bool legacyDefaultPrepared{ false };

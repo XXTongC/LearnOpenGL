@@ -3,11 +3,26 @@
 #include <algorithm>
 #include <string>
 
+#include "../../framework/geometry.h"
+#include "../../framework/scene.h"
+#include "../../framework/texture.h"
+#include "../../light/ambientLight.h"
+#include "../../light/directionalLight.h"
+#include "../../light/pointLight.h"
 #include "../../light/shadow/pointLightShadow/pointLightShadow.h"
+#include "../../light/spotLight.h"
+#include "../../materials/screenMaterial.h"
 #include "../../materials/cubeSphereMaterial.h"
 #include "../../materials/pbrMaterial/PBRMaterial.h"
 #include "../../materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
+#include "../../mesh/mesh.h"
+#include "../../renderer/Bloom/Bloom.h"
+#include "../../renderer/EnvironmentProfile.h"
+#include "../../renderer/FrameRenderTargets.h"
+#include "../../renderer/renderer.h"
 #include "../../tools/Logger/LogManager.h"
+#include "PBRLightRigProfile.h"
+#include "PBRPreviewProfile.h"
 
 namespace
 {

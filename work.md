@@ -8440,3 +8440,25 @@ Subagent 审查：
 
 - 这是 renderer facade ownership/include boundary cleanup，不改变 shader lookup、environment precompute、frame pass plan、shadow atlas/G-buffer/deferred/PBR/legacy scene pass 执行、runtime frame pipeline、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 下一步建议继续收敛宽 facade 和 runtime/editor 调用点的显式依赖，但仍应避免继续扩张 PBR 功能；renderer 侧后续优先服务 Engine runtime/backend contract，而不是继续堆叠材质模型特性。
+
+### 2026-06-01 SceneSetup Context Header Boundary Cleanup
+
+本轮继续 runtime/scene setup header surface audit，不扩张 PBR 功能。审计确认：`tools/sceneSetup/SceneSetup.h` 只定义 `SetupContext` 和 prepare 函数声明，字段全部是引用或 `std::shared_ptr`，但 header 之前直接传播完整 scene、light、screen material、mesh、Bloom、environment profile、frame render targets、renderer 和 PBR profile headers。该依赖面会污染 scene setup pipeline、runtime scene setup lifecycle 和任何只需要构造/传递 setup context 的调用点。
+
+新增与修改：
+
+- `SceneSetup.h` 移除完整 scene/light/material/mesh/renderer/profile includes，改为只 include `<memory>`、`<string>` 和 `<vector>`，并 forward declare `Renderer`、`Scene`、`Mesh`、lights、`Bloom`、`FrameRenderTargets`、`EnvironmentProfile`、`ScreenMaterial`、`PBRPreviewProfile` 与 `PBRLightRigProfile`。
+- `SceneSetup.cpp` 显式 include 实际构造/访问的完整依赖，包括 scene、geometry、texture、lights、screen material、mesh、Bloom、environment profile、frame targets、renderer 和 PBR profile headers。
+- `SceneSetupPipeline.h` 不再 include `SceneSetup.h`，只 forward declare `SetupContext`；实际读取 context 字段和调用 prepare 函数的 `SceneSetupPipeline.cpp` 显式 include `SceneSetup.h`。
+- `RuntimeSceneSetupPipelineLifecycle.cpp` 显式 include `SceneSetup.h`，因为该 translation unit 按值接收 `RuntimeSceneSetupContextFactory::make(...)` 返回的 `SetupContext` 并管理其生命周期。
+
+已完成验证：
+
+- 静态检查确认 `SceneSetup.h` 当前只 include `<memory>`、`<string>` 和 `<vector>`；`SceneSetupPipeline.h` 不再 include `SceneSetup.h`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-probe,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 scene setup context factory、pipeline lifecycle、scene setup、scene setup pipeline 和 report 路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 scene setup context public include boundary cleanup，不改变 default scene prepare、PBR preview prepare、screen pass setup、environment precompute、light rig application、Engine World minimal/probe/package scene setup、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续 runtime/scene setup 或 editor public header include audit，优先处理只传递上下文/DTO 的 headers；当前仍不建议继续扩张 PBR 功能。

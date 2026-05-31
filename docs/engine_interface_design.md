@@ -463,7 +463,8 @@ public:
 253. PBR Deferred Lighting Grid Header Boundary Cleanup 已完成第一版：`PBRDeferredLightingPass.h`、`PBRDeferredLightBuffer.h`、`PBRDeferredTiledLightGrid.h` 与 `PBRDeferredClusteredLightGrid.h` 不再 include 完整 material binding context、mesh 或 GL core headers，只保留必要 stats/config/value-member 类型、`glm::ivec4` 轻量头和参数前置声明；实际 context 字段读取、light packing、CPU tiled/clustered grid 构建、GPU clustered dispatch、lighting quad mesh 和 GL buffer 操作依赖集中到对应 `.cpp`。
 254. Renderer Infrastructure and Runtime Input Header Boundary Cleanup 已完成第一版：`RenderQueue.h`、`ShadowRenderer.h`、`ShaderLibrary.h`、`PBRShadowAtlasRenderTargets.h` 与 `RuntimeInputController.h` 不再传播 camera/scene/mesh/shader/core/camera-control 等 implementation-only headers；实际 render queue projection/sort、shadow renderer pass dispatch、shader construction、shadow atlas GL texture allocation 和 input controller camera/control 操作依赖集中到对应 `.cpp`。
 255. Renderer Facade PImpl Header Boundary Cleanup 已完成第一版：`renderer.h` 不再按私有成员传播 render pass、queue、shadow renderer、shader library、render target、scene/camera/light/mesh/shader/core 等 implementation-only headers；`Renderer` 的内部渲染状态迁入 `Renderer::Impl` 并由 `renderer.cpp` 完整拥有，实际读取 stats/profile/environment/scene 的调用点改为显式 include 所需窄头。
-256. 下一步建议继续 runtime/renderer header surface audit，优先收敛宽 facade 和 editor/runtime 调用点的显式依赖；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+256. SceneSetup Context Header Boundary Cleanup 已完成第一版：`SceneSetup.h` 不再传播 scene/light/material/mesh/Bloom/environment/frame-target/renderer/profile 完整 headers，只保留 `SetupContext` 引用/shared_ptr 契约和前置声明；实际 scene setup 构造、pipeline context 字段读取和 runtime lifecycle 按值持有完整 context 的依赖集中到对应 `.cpp`。
+257. 下一步建议继续 runtime/scene setup 或 editor public header include audit，优先处理只传递上下文/DTO 的 headers；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

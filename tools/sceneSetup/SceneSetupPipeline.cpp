@@ -3,6 +3,7 @@
 #include "../../engine/Engine.h"
 #include "../../engine/LegacySceneWorldBuilder.h"
 #include "../../engine/World.h"
+#include "SceneSetup.h"
 
 namespace
 {

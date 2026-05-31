@@ -3,6 +3,7 @@
 #include "RuntimeScenePrepareConfig.h"
 #include "RuntimeSceneSetupContextFactory.h"
 #include "RuntimeSceneSetupReport.h"
+#include "../tools/sceneSetup/SceneSetup.h"
 #include "../tools/sceneSetup/SceneSetupPipeline.h"
 
 namespace GL_RUNTIME
