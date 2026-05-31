@@ -1860,6 +1860,8 @@ Delegated sidecar work:
 - Previous read-only sidecar subagent `Lagrange` audited subagent coordination and documentation update scope in the prior round; it changed no files and ran no tests.
 - Previous read-only extraction/args/docs audit agents have been closed; their duplicate-symbol and documentation-overclaim warnings remain reflected in the staged report extraction.
 - Subagents must not edit files in this round unless the parent explicitly assigns a disjoint write scope.
+- No new sidecar subagent was started in this round; the Runtime render resource frame render targets owner boundary cleanup is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `application/RuntimeFramePasses.cpp`, `application/RuntimeRendererFrameBridgeAdapter.cpp`, `application/RuntimeSceneSetupContextFactory.cpp`, `application/RuntimeWindowLifecycle.cpp`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

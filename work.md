@@ -9068,3 +9068,27 @@ Subagent 审查：
 
 - 这是 Runtime render resource post-process pass owner boundary cleanup，不改变 resolve、bloom bright extraction、bloom blur、screen composite、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root / runtime context state 依赖边界收敛，优先审计 remaining runtime render resource state 的 implementation detail exposure；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Render Resource FrameRenderTargets Owner Boundary Cleanup
+
+本轮继续 application runtime state public header include surface 收敛，不扩张 PBR 功能。审计确认：`RuntimeRenderResourceState.h` 仍为了公开按值持有 `FrameRenderTargets` 直接 include `FrameRenderTargets.h`，导致所有 `AppRuntimeContext.h` 用户间接获得 framebuffer/texture render-target 组合的完整实现接口；真实读写集中在 runtime frame pass、backend readiness、scene setup context 和 resize callback 路径。
+
+新增与修改：
+
+- `RuntimeRenderResourceState.h` 移除 `FrameRenderTargets.h` include，改为 forward declare `GLframework::FrameRenderTargets`。
+- `RuntimeRenderResourceState` 改为通过 private `std::unique_ptr<GLframework::FrameRenderTargets>` 持有 frame render targets，继续禁用拷贝并保留移动语义。
+- `RuntimeRenderResourceState` 新增 `frameRenderTargets()` / `frameRenderTargets() const` 访问器，与上一轮 `postProcessPass()` owner boundary 保持一致。
+- `RuntimeRenderResourceState.cpp` 显式 include `FrameRenderTargets.h`，集中创建、销毁和访问 frame render targets owner。
+- `RuntimeFramePasses.cpp` 与 `RuntimeRendererFrameBridgeAdapter.cpp` 在真实调用 render-target API 的 implementation 中显式 include `FrameRenderTargets.h`。
+- `RuntimeFramePasses.cpp`、`RuntimeRendererFrameBridgeAdapter.cpp`、`RuntimeSceneSetupContextFactory.cpp` 与 `RuntimeWindowLifecycle.cpp` 从公开字段访问迁移到 `frameRenderTargets()` 访问器。
+
+已完成验证：
+
+- 静态检查确认 runtime 内部不再存在字段式 `context.renderResources.frameRenderTargets` 访问；`RuntimeRenderResourceState.h` 不再传播 `FrameRenderTargets.h`，完整 render-target 依赖只保留在 implementation 和真实调用点。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeRenderResourceState.cpp`、`RuntimeFramePasses.cpp`、`RuntimeRendererFrameBridgeAdapter.cpp`、`RuntimeSceneSetupContextFactory.cpp` 与 `RuntimeWindowLifecycle.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime render resource frame render targets owner boundary cleanup，不改变 framebuffer 初始化/resize、scene FBO、MSAA resolve、bloom render targets、screen material texture sync、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root / runtime context state 依赖边界收敛，优先审计 remaining runtime render resource state 里仍按 shared_ptr 暴露的材质/mesh/scene 组合；当前仍不建议继续扩张 PBR 功能。

@@ -1,9 +1,11 @@
 #include "RuntimeRenderResourceState.h"
 
+#include "../renderer/FrameRenderTargets.h"
 #include "../renderer/PostProcessPass.h"
 
 GL_RUNTIME::RuntimeRenderResourceState::RuntimeRenderResourceState()
-	: mPostProcessPass(std::make_unique<GLframework::PostProcessPass>())
+	: mFrameRenderTargets(std::make_unique<GLframework::FrameRenderTargets>()),
+	  mPostProcessPass(std::make_unique<GLframework::PostProcessPass>())
 {
 }
 
@@ -14,6 +16,16 @@ GL_RUNTIME::RuntimeRenderResourceState::RuntimeRenderResourceState(RuntimeRender
 GL_RUNTIME::RuntimeRenderResourceState& GL_RUNTIME::RuntimeRenderResourceState::operator=(
 	RuntimeRenderResourceState&&
 ) noexcept = default;
+
+GLframework::FrameRenderTargets& GL_RUNTIME::RuntimeRenderResourceState::frameRenderTargets()
+{
+	return *mFrameRenderTargets;
+}
+
+const GLframework::FrameRenderTargets& GL_RUNTIME::RuntimeRenderResourceState::frameRenderTargets() const
+{
+	return *mFrameRenderTargets;
+}
 
 GLframework::PostProcessPass& GL_RUNTIME::RuntimeRenderResourceState::postProcessPass()
 {

@@ -47,7 +47,7 @@ namespace GL_RUNTIME
 					gCallbackContext.width,
 					gCallbackContext.height,
 					gCallbackContext.runtime->cameraLights.camera,
-					&gCallbackContext.runtime->renderResources.frameRenderTargets,
+					&gCallbackContext.runtime->renderResources.frameRenderTargets(),
 					gCallbackContext.runtime->renderResources.screenMaterial
 				}
 			);

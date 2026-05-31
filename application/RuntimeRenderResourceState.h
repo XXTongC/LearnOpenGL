@@ -2,12 +2,12 @@
 
 #include <memory>
 
-#include "../renderer/FrameRenderTargets.h"
 #include "../third_party/glm/glm.hpp"
 
 namespace GLframework
 {
 	class Bloom;
+	class FrameRenderTargets;
 	class GrassInstanceMaterial;
 	class Mesh;
 	class PhongCSMShadowMaterial;
@@ -34,7 +34,6 @@ namespace GL_RUNTIME
 		std::shared_ptr<GLframework::Scene> sceneInScreen{ nullptr };
 		std::shared_ptr<GLframework::Mesh> meshPointLight{ nullptr };
 		std::shared_ptr<GLframework::Mesh> screenQuad{ nullptr };
-		GLframework::FrameRenderTargets frameRenderTargets{};
 		std::shared_ptr<GLframework::Bloom> bloom{ nullptr };
 		std::shared_ptr<GLframework::GrassInstanceMaterial> grassMaterial{ nullptr };
 		std::shared_ptr<GLframework::Mesh> skyBoxMesh{ nullptr };
@@ -44,10 +43,13 @@ namespace GL_RUNTIME
 		std::shared_ptr<GLframework::PhongCSMShadowMaterial> csmShadowMaterial{ nullptr };
 		glm::vec3 clearColor{};
 
+		GLframework::FrameRenderTargets& frameRenderTargets();
+		const GLframework::FrameRenderTargets& frameRenderTargets() const;
 		GLframework::PostProcessPass& postProcessPass();
 		const GLframework::PostProcessPass& postProcessPass() const;
 
 	private:
+		std::unique_ptr<GLframework::FrameRenderTargets> mFrameRenderTargets{};
 		std::unique_ptr<GLframework::PostProcessPass> mPostProcessPass{};
 	};
 }

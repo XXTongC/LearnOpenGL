@@ -8,6 +8,7 @@
 #include "RuntimeFramePipeline.h"
 #include "RuntimeFramePipelineProfile.h"
 #include "../engine/RendererBackendFrameTypes.h"
+#include "../renderer/FrameRenderTargets.h"
 
 namespace
 {
@@ -57,14 +58,14 @@ namespace
 		return context.renderResources.renderer != nullptr
 			&& context.renderResources.sceneOffScreen != nullptr
 			&& context.cameraLights.camera != nullptr
-			&& context.renderResources.frameRenderTargets.isInitialized()
-			&& context.renderResources.frameRenderTargets.getSceneFbo() != 0;
+			&& context.renderResources.frameRenderTargets().isInitialized()
+			&& context.renderResources.frameRenderTargets().getSceneFbo() != 0;
 	}
 
 	bool isSceneResolveReady(const GLframework::AppRuntimeContext& context)
 	{
-		return context.renderResources.frameRenderTargets.getMultisample() != nullptr
-			&& context.renderResources.frameRenderTargets.getResolved() != nullptr;
+		return context.renderResources.frameRenderTargets().getMultisample() != nullptr
+			&& context.renderResources.frameRenderTargets().getResolved() != nullptr;
 	}
 
 	bool isBloomReady(const GLframework::AppRuntimeContext& context)
@@ -75,17 +76,17 @@ namespace
 		}
 
 		return context.renderResources.bloom != nullptr
-			&& context.renderResources.frameRenderTargets.getResolved() != nullptr
-			&& context.renderResources.frameRenderTargets.getBloomBright() != nullptr
-			&& context.renderResources.frameRenderTargets.getBloomPing() != nullptr
-			&& context.renderResources.frameRenderTargets.getBloomPong() != nullptr;
+			&& context.renderResources.frameRenderTargets().getResolved() != nullptr
+			&& context.renderResources.frameRenderTargets().getBloomBright() != nullptr
+			&& context.renderResources.frameRenderTargets().getBloomPing() != nullptr
+			&& context.renderResources.frameRenderTargets().getBloomPong() != nullptr;
 	}
 
 	bool isScreenCompositeReady(const GLframework::AppRuntimeContext& context)
 	{
 		return context.renderResources.renderer != nullptr
 			&& context.renderResources.screenQuad != nullptr
-			&& context.renderResources.frameRenderTargets.isInitialized();
+			&& context.renderResources.frameRenderTargets().isInitialized();
 	}
 
 	bool isFramePassReady(
