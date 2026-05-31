@@ -528,6 +528,9 @@
     <ClCompile Include="application\RuntimeProfileState.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeRenderResourceState.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeRendererBackendAttachmentLifecycle.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>

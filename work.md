@@ -9044,3 +9044,27 @@ Subagent 审查：
 
 - 这是 Runtime profile state storage path boundary cleanup，不改变 profile 默认路径、profile loading order、renderer frame pass profile loading、PBR experiment profile loading、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root / runtime context state 依赖边界收敛，优先审计 remaining runtime state/config headers 的 implementation detail exposure；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Render Resource PostProcessPass Owner Boundary Cleanup
+
+本轮继续 application runtime state public header include surface 收敛，不扩张 PBR 功能。审计确认：`RuntimeRenderResourceState.h` 只有为了按值持有 `PostProcessPass` 才直接 include `PostProcessPass.h`，而实际调用 `postProcessPass` 的位置只在 `RuntimeFramePasses.cpp`；这使所有 `AppRuntimeContext.h` 用户间接获得 post-process pass implementation surface。
+
+新增与修改：
+
+- 新增 `application/RuntimeRenderResourceState.cpp`，集中创建、销毁和访问 `PostProcessPass` owner。
+- `RuntimeRenderResourceState.h` 移除 `PostProcessPass.h` include，改为 forward declare `GLframework::PostProcessPass`。
+- `RuntimeRenderResourceState` 改为通过 private `std::unique_ptr<GLframework::PostProcessPass>` 拥有 post-process pass，禁用拷贝并保留移动声明。
+- `RuntimeRenderResourceState` 新增 `postProcessPass()` / `postProcessPass() const` 访问器。
+- `RuntimeFramePasses.cpp` 显式 include `PostProcessPass.h`，并通过访问器调用 resolve、bloom 和 screen composite pass。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 implementation 文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeRenderResourceState.h` 不再传播 `PostProcessPass.h`，完整 post-process pass 依赖只保留在 `RuntimeRenderResourceState.cpp` 和真实 frame pass 调用点。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeRenderResourceState.cpp`、`RuntimeFramePasses.cpp` 和相关 runtime 使用点。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime render resource post-process pass owner boundary cleanup，不改变 resolve、bloom bright extraction、bloom blur、screen composite、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root / runtime context state 依赖边界收敛，优先审计 remaining runtime render resource state 的 implementation detail exposure；当前仍不建议继续扩张 PBR 功能。

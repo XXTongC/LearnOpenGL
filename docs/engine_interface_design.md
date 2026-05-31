@@ -490,7 +490,8 @@ public:
 280. Application Header Boundary Cleanup 已完成第一版：`Application.h` 不再传播 `texture.h`、`Logger.h` 或未使用的 `extern Logger logger`，窗口/application facade 只保留 callback、window 和 lifecycle API。
 281. Assimp Instance Loader GLM Header Boundary Cleanup 已完成第一版：`assimpInstanceLoader.h` 不再传播完整 `glm.hpp`，只保留 `glm/fwd.hpp` 与 `const glm::mat4&` 参数契约；完整矩阵定义和 instanced matrix 写入依赖局部化到 implementation。
 282. Runtime Profile State Storage Path Boundary Cleanup 已完成第一版：`RuntimeProfileState.h` 不再为了 default path 初始化传播 `RendererFramePassProfile.h` 或 `PBRExperimentProfile.h`；storage-only 依赖和 path 初始化局部化到 `RuntimeProfileState.cpp`，profile loader 显式 include 真实 storage 使用点。
-283. 下一步建议继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+283. Runtime Render Resource PostProcessPass Owner Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再传播 `PostProcessPass.h`，post-process pass 由 implementation-owned pointer 持有，frame pass implementation 显式 include 并通过访问器执行 resolve/bloom/composite。
+284. 下一步建议继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

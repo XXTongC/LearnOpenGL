@@ -299,6 +299,7 @@ passed
 - Application Header Boundary Cleanup 已接入：`Application.h` 不再传播 `texture.h`、`Logger.h` 或未使用的 `extern Logger logger`，窗口/application facade 只保留 callback、window 和 lifecycle API。
 - Assimp Instance Loader GLM Header Boundary Cleanup 已接入：`assimpInstanceLoader.h` 不再传播完整 `glm.hpp`，只保留 `glm/fwd.hpp` 与 `const glm::mat4&` 参数契约；完整矩阵定义和 instanced matrix 写入依赖局部化到 implementation。
 - Runtime Profile State Storage Path Boundary Cleanup 已接入：`RuntimeProfileState.h` 不再为了 default path 初始化传播 `RendererFramePassProfile.h` 或 `PBRExperimentProfile.h`；storage-only 依赖和 path 初始化局部化到 `RuntimeProfileState.cpp`，profile loader 显式 include 真实 storage 使用点。
+- Runtime Render Resource PostProcessPass Owner Boundary Cleanup 已接入：`RuntimeRenderResourceState.h` 不再传播 `PostProcessPass.h`，post-process pass 由 implementation-owned pointer 持有；frame pass implementation 显式 include 并通过访问器执行 resolve/bloom/composite。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -359,6 +360,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Runtime Profile State Storage Path Boundary Cleanup 已接入后，`RuntimeProfileState.h` 不再传播 renderer frame pass profile 或 PBR experiment profile 的 storage-only 头，默认路径初始化迁入 implementation；下一步继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit，但不扩张 PBR pass。
+当前最新修正：Runtime Render Resource PostProcessPass Owner Boundary Cleanup 已接入后，`RuntimeRenderResourceState.h` 不再传播 `PostProcessPass.h`，post-process pass owner 和完整依赖局部化到 implementation/真实 frame pass 调用点；下一步继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit，但不扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime profile state storage-path cleanup 后，下一步优先继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime render resource post-process pass owner cleanup 后，下一步优先继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；当前不建议继续扩张 PBR pass。

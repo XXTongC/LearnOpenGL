@@ -3,6 +3,7 @@
 #include "AppRuntimeContext.h"
 #include "RuntimeFramePipeline.h"
 #include "../materials/material.h"
+#include "../renderer/PostProcessPass.h"
 #include "../renderer/renderer.h"
 
 namespace GL_RUNTIME
@@ -22,7 +23,7 @@ namespace GL_RUNTIME
 
 	void RuntimeSceneResolvePass::execute(GLframework::AppRuntimeContext& context)
 	{
-		context.renderResources.postProcessPass.resolveMultisample(
+		context.renderResources.postProcessPass().resolveMultisample(
 			context.renderResources.frameRenderTargets.getMultisample(),
 			context.renderResources.frameRenderTargets.getResolved()
 		);
@@ -35,13 +36,13 @@ namespace GL_RUNTIME
 			return;
 		}
 
-		context.renderResources.postProcessPass.extractBloomBright(
+		context.renderResources.postProcessPass().extractBloomBright(
 			context.renderResources.bloom,
 			context.renderResources.frameRenderTargets.getResolved(),
 			context.renderResources.frameRenderTargets.getBloomBright(),
 			context.profiles.postProcessSettings.bloomThreshold
 		);
-		context.renderResources.postProcessPass.blurBloom(
+		context.renderResources.postProcessPass().blurBloom(
 			context.renderResources.bloom,
 			context.renderResources.frameRenderTargets.getBloomBright(),
 			context.renderResources.frameRenderTargets.getBloomPing(),
@@ -55,7 +56,7 @@ namespace GL_RUNTIME
 		const RuntimeFramePipelineConfig& config
 	)
 	{
-		context.renderResources.postProcessPass.renderScreenComposite(
+		context.renderResources.postProcessPass().renderScreenComposite(
 			context.renderResources.screenQuad,
 			context.renderResources.renderer->getShader(GLframework::MaterialType::ScreenMaterial),
 			context.profiles.postProcessSettings,
