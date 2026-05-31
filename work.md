@@ -9020,3 +9020,27 @@ Subagent 审查：
 
 - 这是 Assimp instance loader GLM header boundary cleanup，不改变 instanced model loading、grass legacy experiment matrix assignment、material assignment、Engine World verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root / runtime context state 依赖边界收敛，优先审计 remaining runtime state/config headers 的 implementation detail exposure；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Profile State Storage Path Boundary Cleanup
+
+本轮继续 application runtime state public header include surface 收敛，不扩张 PBR 功能。审计确认：`RuntimeProfileState.h` 按值持有 frame pipeline、post-process、environment、preview/light/camera profile，确实需要这些完整类型；但它为了初始化 `rendererFramePassProfilePath` 与 `pbrExperimentProfilePath` 额外 include `RendererFramePassProfile.h` 和 `PBRExperimentProfile.h`，这两个在该 header 中只是 storage default path 依赖。
+
+新增与修改：
+
+- 新增 `application/RuntimeProfileState.cpp`，集中初始化 runtime profile path 默认值。
+- `RuntimeProfileState.h` 新增 out-of-line 默认构造函数声明，并移除 `RendererFramePassProfile.h` 与 `PBRExperimentProfile.h` includes。
+- `RuntimeProfileState.cpp` 显式 include `RendererFramePassProfile.h` 与 `PBRExperimentProfile.h`，把 storage-only default path 依赖局部化到 implementation。
+- `RuntimeProfileLoader.cpp` 显式 include `PBRExperimentProfile.h`，修正以前通过 `RuntimeProfileState.h` 间接获得 `PBRExperimentProfileStorage` 的隐式依赖。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 implementation 文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeProfileState.h` 不再传播 renderer frame pass profile 或 PBR experiment profile headers，新增 `.cpp` 已注册到 VS 工程。
+- 第一次 focused build 暴露 `RuntimeProfileLoader.cpp` 对 `PBRExperimentProfileStorage` 的隐式 include 依赖；已改为在实际使用点显式 include。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,showcase-spheres,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeProfileState.cpp`、`RuntimeProfileLoader.cpp` 和相关 runtime/profile 使用点。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime profile state storage path boundary cleanup，不改变 profile 默认路径、profile loading order、renderer frame pass profile loading、PBR experiment profile loading、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root / runtime context state 依赖边界收敛，优先审计 remaining runtime state/config headers 的 implementation detail exposure；当前仍不建议继续扩张 PBR 功能。

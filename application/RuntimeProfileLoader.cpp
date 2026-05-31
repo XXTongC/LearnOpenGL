@@ -6,6 +6,7 @@
 #include "../renderer/RendererFramePassProfile.h"
 #include "../renderer/renderer.h"
 #include "../tools/Logger/LogManager.h"
+#include "../tools/sceneSetup/PBRExperimentProfile.h"
 
 namespace
 {

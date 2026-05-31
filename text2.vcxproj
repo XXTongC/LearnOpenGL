@@ -206,6 +206,7 @@
     <ClCompile Include="application\RuntimeGraphicsLifecycle.cpp" />
     <ClCompile Include="application\RuntimeLegacyExperimentLifecycle.cpp" />
     <ClCompile Include="application\RuntimeNoOpRendererBackend.cpp" />
+    <ClCompile Include="application\RuntimeProfileState.cpp" />
     <ClCompile Include="application\RuntimeRendererBackendAttachmentLifecycle.cpp" />
     <ClCompile Include="application\RuntimeRendererBackendCatalog.cpp" />
     <ClCompile Include="application\RuntimeRendererBackendFactory.cpp" />
