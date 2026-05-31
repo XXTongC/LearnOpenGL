@@ -7610,3 +7610,26 @@ Subagent 审查：
 
 - 这是 runtime application shell config header boundary cleanup，不改变 bootstrapper callback construction、startup/frame/shutdown callback 顺序、runtime frame loop、renderer backend contract、Engine World verification 或 PBR pass。
 - 后续建议继续 callback/bootstrapper include surface audit，或回到 Engine public header 低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Engine World Persistent Level Header Boundary Cleanup
+
+本轮转向 Engine public header 的低风险 implementation detail audit。审计确认：`World.h` 仍为了 `std::unique_ptr<Level>` 持有 persistent level 而 include 完整 `Level.h`，这会把 `Level` / `Actor` / `SceneComponent` 的模板创建表面传递给所有只需要 World facade 的调用点。更窄边界是：`World.h` 只 forward declare `Level`，完整 Level 依赖由 `World.cpp` 和实际读取 level 字段/方法的调用点显式持有。
+
+新增与修改：
+
+- `World.h` 移除 `Level.h` include，新增 `class Level;` forward declaration。
+- `World` destructor 从 header inline default 改为 out-of-line `~World() override;`，保证 incomplete `std::unique_ptr<Level>` 析构安全。
+- `World.cpp` 显式 include `Level.h`，并定义 `World::~World() = default;`。
+- `RuntimeImportedAssetVerification.cpp` 显式 include `Level.h`，因为该文件通过 `getPersistentLevel()` 访问 Level API，不再依赖 `World.h` 的传递 include。
+
+已完成验证：
+
+- 静态检查确认 `World.h` 不再 include `Level.h`，只保留 `class Level` 和 `std::unique_ptr<Level>`。
+- 初次 focused verification 命令使用了不存在的 mode 名 `verify-pbr-import`，脚本明确正确 mode 为 `import`；该命令不作为验证证据。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,import,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `World.cpp`、`Level.cpp`、`ScenePackage.cpp`、`RuntimeImportedAssetVerification.cpp`、Engine World/editor/scene setup 相关实现；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine World persistent level public header boundary cleanup，不改变 World ownership、persistent level lifecycle、scene package/import verification、Engine World verification、renderer backend contract 或 PBR pass。
+- 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到 callback/bootstrapper include surface audit；当前仍不建议继续扩张 PBR 功能。

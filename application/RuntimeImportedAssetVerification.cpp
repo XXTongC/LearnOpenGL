@@ -8,6 +8,7 @@
 #include "../engine/AssetRegistry.h"
 #include "../engine/AssetSubsystem.h"
 #include "../engine/LegacySceneWorldBuilder.h"
+#include "../engine/Level.h"
 #include "../engine/PersistentIdPolicy.h"
 #include "../engine/ScenePackage.h"
 #include "../engine/World.h"

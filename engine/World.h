@@ -4,15 +4,16 @@
 #include <string>
 
 #include "engine\EngineObject.h"
-#include "engine\Level.h"
 
 namespace GLengine
 {
+	class Level;
+
 	class World : public EngineObject
 	{
 	public:
 		explicit World(std::string name = {});
-		~World() override = default;
+		~World() override;
 
 		Level& createPersistentLevel(std::string name = "Persistent Level");
 		Level* getPersistentLevel() const;

@@ -1,5 +1,7 @@
 #include "engine/World.h"
 
+#include "engine/Level.h"
+
 #include <utility>
 
 using namespace GLengine;
@@ -9,6 +11,8 @@ World::World(std::string name)
 {
 	createPersistentLevel();
 }
+
+World::~World() = default;
 
 Level& World::createPersistentLevel(std::string name)
 {

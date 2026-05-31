@@ -51,6 +51,7 @@ Current phase:
 - Verification is being neutralized around a renderer backend contract surface: existing subsystem/PBR-oriented output remains for compatibility, while new `Runtime renderer backend contract ...` lines describe backend attachment, readiness, frame pass counts, no-op backend behavior, and cleanup state without implying a PBR-only renderer boundary.
 - Verification now checks Engine World cleanup: after runtime context raw pointers are cleared and `Engine::shutdown()` runs, the Engine must be uninitialized, active World must be reset, and runtime context Engine / World / subsystem pointers must be null.
 - Verification now checks Engine subsystem cleanup: after `Engine::shutdown()`, AssetSubsystem registry/ticks must reset and RendererSubsystem must release renderer/executor/backend state while preserving attach/detach lifecycle evidence.
+- `World.h` now forward-declares `Level` and owns the persistent level through an out-of-line destructor, so code that only needs the World facade no longer receives the full Level/Actor template surface.
 - `RuntimeEngineLifecycle` now owns application-side Engine lifecycle composition: creating Engine-owned subsystems, attaching renderer backends, detaching runtime context pointers, and shutting down the Engine.
 - `RuntimeEngineLifecycleState.h` now owns `RuntimeEngineLifecycleState`, and `RuntimeEngineLifecycleCleanupRefs.h` now owns `RuntimeEngineLifecycleCleanupRefs`, so frame/state paths and shutdown cleanup/report paths do not share one broad lifecycle types header.
 - `RuntimeEngineLifecycle.h` now forward-declares lifecycle state/cleanup refs; full state/cleanup refs dependencies are localized to implementation, state owners, frame field access, and cleanup refs field access sites.
@@ -180,14 +181,15 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Runtime Application Shell Config Header Boundary Cleanup
+### Current Round: Engine World Persistent Level Header Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `application/RuntimeApplicationShell.h`
-- `application/RuntimeApplicationShell.cpp`
+- `engine/World.h`
+- `engine/World.cpp`
+- `application/RuntimeImportedAssetVerification.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -198,7 +200,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- shell config ownership, incomplete-type destructor safety, and callback binding behavior remain parent-reviewed.
+- World persistent level ownership, incomplete-type destructor safety, and explicit Level include fallout remain parent-reviewed.
 
 Rules for this round:
 
@@ -1655,7 +1657,7 @@ Task:
 
 ## Current Active Agent Round
 
-Round: 2026-05-31 Runtime Application Shell Config Header Boundary Cleanup.
+Round: 2026-05-31 Engine World Persistent Level Header Boundary Cleanup.
 
 Parent local work:
 
@@ -1663,20 +1665,21 @@ Parent local work:
 - Owns source edits for the current slice and any integration that follows from the sidecar audit.
 - Must keep the existing `RuntimeFramePipeline` render path operational and must not expand PBR feature scope unless explicitly required by the engine architecture.
 - Must keep `imgui.ini` treated as unrelated local state.
-- Current local implementation target for this slice: hide `RuntimeApplicationShellConfig` behind a private owning pointer in `RuntimeApplicationShell.h`, so the shell facade can forward-declare the config while complete config access stays in implementation/composition-root files.
+- Current local implementation target for this slice: hide the complete `Level` type from `World.h` behind a forward declaration and out-of-line `World` destructor, so code that only needs the World facade does not inherit the full Level/Actor template surface.
 - Parent owns final integration, verification commands, `work.md`, `worked.md`, and user-facing summary.
 
 Delegated sidecar work:
 
 - Sidecar subagents in this round are read-only unless the parent explicitly assigns a disjoint write scope.
 - No active subagent has write ownership in this round.
-- No new sidecar subagent is started in this round; the runtime application shell config header cleanup is parent-owned and has no delegated write scope.
+- No new sidecar subagent is started in this round; the Engine World persistent level header cleanup is parent-owned and has no delegated write scope.
 - No active sidecar remains open in this round.
-- Parent-owned write scope for this round: `application/RuntimeApplicationShell.h`, `application/RuntimeApplicationShell.cpp`, docs, and logs.
+- Parent-owned write scope for this round: `engine/World.h`, `engine/World.cpp`, `application/RuntimeImportedAssetVerification.cpp`, docs, and logs.
 - Parent local work is not blocked on the sidecar audit; implementation, project registration, verification, and documentation remain parent-owned.
 - Sidecar findings must be reported in the shared communication format and are not accepted until the parent records accepted work in `worked.md`.
 - This round restarts/continues the active goal under the existing objective; no new goal is created while the current goal remains active.
 - No sidecar has write ownership in this round; source/project/documentation edits remain parent-owned.
+- Previous round's runtime application shell config header cleanup was parent-owned and had no delegated write scope.
 - Previous round's runtime frame callback default-argument header cleanup was parent-owned and had no delegated write scope.
 - Previous round's RendererSubsystem implementation-state header boundary cleanup was parent-owned after read-only `Einstein` audit and had no delegated write scope.
 - Completed read-only sidecar subagent `Einstein` audited the RendererSubsystem implementation-state header boundary, changed no files, found no source blocker, confirmed incomplete-type `std::unique_ptr` handling and explicit complete-type call-site includes, and reported missing `work.md` / `worked.md` current-round records that the parent integrated.
