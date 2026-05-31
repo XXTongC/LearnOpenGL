@@ -427,7 +427,8 @@ public:
 217. Runtime Frame Callback Default Argument Header Boundary Cleanup 已完成第一版：`RuntimeFrameRunner.h` 与 `RuntimeFrameLifecycle.h` 用无 callback overload 替代 `RuntimeFrameCallbacks` 默认参数，public headers 只 forward declare callback DTO；完整 callback include 局部化到 runner/lifecycle implementation 和实际构造 editor frame callbacks 的 frame run bridge。
 218. Runtime Application Shell Config Header Boundary Cleanup 已完成第一版：`RuntimeApplicationShell.h` 不再 include 完整 `RuntimeApplicationConfig.h`，shell config 改由 private owning pointer 持有；完整 config 依赖局部化到 shell implementation 和 runner composition root。
 219. Engine World Persistent Level Header Boundary Cleanup 已完成第一版：`World.h` 不再 include 完整 `Level.h`，persistent level 通过 forward declaration + out-of-line destructor 隐藏；实际构造或遍历 Level 的实现文件显式 include `Level.h`。
-220. 下一步建议继续 Engine public header 低风险 implementation detail audit，或回到 callback/bootstrapper include surface audit。renderer 侧只推进通用 backend contract，不扩张 PBR pass。
+220. Engine Actor Root SceneComponent Header Boundary Cleanup 已完成第一版：`Actor.h` 不再 include 完整 `SceneComponent.h`，root component pointer API 改由 forward declaration 暴露；`Actor.cpp` 显式 include `SceneComponent.h` 以支持 register/dynamic_cast 逻辑。
+221. 下一步建议继续 Engine public header 低风险 implementation detail audit，或回到 callback/bootstrapper include surface audit。renderer 侧只推进通用 backend contract，不扩张 PBR pass。
 
 ## 约束
 

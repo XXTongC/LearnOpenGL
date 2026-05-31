@@ -8,11 +8,11 @@
 
 #include "engine\ActorComponent.h"
 #include "engine\EngineObject.h"
-#include "engine\SceneComponent.h"
 
 namespace GLengine
 {
 	class Level;
+	class SceneComponent;
 	class World;
 
 	class Actor : public EngineObject

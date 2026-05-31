@@ -1,5 +1,7 @@
 #include "engine/Actor.h"
 
+#include "engine/SceneComponent.h"
+
 #include <utility>
 
 using namespace GLengine;

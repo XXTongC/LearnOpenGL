@@ -7633,3 +7633,24 @@ Subagent 审查：
 
 - 这是 Engine World persistent level public header boundary cleanup，不改变 World ownership、persistent level lifecycle、scene package/import verification、Engine World verification、renderer backend contract 或 PBR pass。
 - 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到 callback/bootstrapper include surface audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Engine Actor Root SceneComponent Header Boundary Cleanup
+
+本轮继续 Engine public header 的低风险 implementation detail audit。审计确认：`Actor.h` 只通过 `SceneComponent*` 暴露 root component API，但仍 public include 完整 `SceneComponent.h`，导致只需要 Actor facade 的调用点也获得 SceneComponent/Transform surface。更窄边界是：`Actor.h` forward declare `SceneComponent`，完整类型依赖只留在 `Actor.cpp` 的 register/dynamic_cast 实现和真正访问 SceneComponent API 的调用点。
+
+新增与修改：
+
+- `Actor.h` 移除 `SceneComponent.h` include，新增 `class SceneComponent;` forward declaration。
+- `Actor.h` 保持 root component pointer API 不变：`getRootComponent()`、`setRootComponent(...)` 和 `mRootComponent` 仍使用 `SceneComponent*`。
+- `Actor.cpp` 显式 include `SceneComponent.h`，因为 `registerComponent(...)` 内部需要 `dynamic_cast<SceneComponent*>`。
+
+已完成验证：
+
+- 静态检查确认 `Actor.h` 不再 include `SceneComponent.h`，只保留 forward declaration 与 pointer API。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,engine-world-scene-package,import,renderer-backend-registry-noop -DiscardCaptures`：构建通过；MSBuild 明确编译 `Actor.cpp`、`ActorAdapters.cpp`、`ScenePackage.cpp`、Engine World/editor/scene setup 相关实现；五条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine Actor root SceneComponent public header boundary cleanup，不改变 Actor/component ownership、root component registration、scene package/import verification、Engine World verification、renderer backend contract 或 PBR pass。
+- 后续建议继续 Engine public header 的低风险 implementation detail audit，或回到 callback/bootstrapper include surface audit；当前仍不建议继续扩张 PBR 功能。
