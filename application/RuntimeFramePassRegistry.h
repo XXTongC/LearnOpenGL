@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include <string_view>
 #include <vector>
 
 namespace GLframework
@@ -46,7 +46,7 @@ namespace GL_RUNTIME
 	{
 	public:
 		static const std::vector<RuntimeFramePassDefinition>& defaultPasses();
-		static const RuntimeFramePassDefinition* findPassByKey(const std::string& key);
+		static const RuntimeFramePassDefinition* findPassByKey(std::string_view key);
 		static std::vector<const RuntimeFramePassDefinition*> buildPassPlan(
 			const RuntimeFramePipelineProfile& profile
 		);

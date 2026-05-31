@@ -7879,3 +7879,25 @@ Subagent 审查：
 
 - 这是 runtime frame pipeline/pass context header boundary cleanup，不改变 runtime frame pass order、frame pass execution、runtime backend adapter frame plan key、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-05-31 Runtime Frame Pass Registry Key String View Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit。审计确认：`RuntimeFramePassRegistry.h` 的 `findPassByKey(...)` 只做只读 key 查询，却用 `const std::string&` 迫使 registry public header include `<string>`。更窄边界是：public API 使用 `std::string_view` 表达只读非拥有 key view，具体 trim/token 字符串处理保留在 `.cpp`。
+
+新增与修改：
+
+- `RuntimeFramePassRegistry.h` 将 `<string>` include 替换为 `<string_view>`。
+- `RuntimeFramePassRegistry::findPassByKey(...)` 参数从 `const std::string&` 改为 `std::string_view`，调用方仍可传入 `std::string` token 或字符串字面量。
+- `RuntimeFramePassRegistry.cpp` 保留 `<string>`，并把 anonymous-namespace `trim(...)` 改为接收 `std::string_view` 后在 implementation 内构造 normalized string。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeFramePassRegistry.h` 不再 include `<string>`，只传播 `<string_view>` 与 `<vector>`。
+- 静态检查确认现有 `findPassByKey(...)` 调用点只有 registry implementation 内的 pass-order token 路径，`std::string` token 可隐式转换为 `std::string_view`。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `RuntimeFramePassRegistry.cpp`、`RuntimeFramePipeline.cpp` 与 `RuntimeRendererFrameBridgeAdapter.cpp`；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime frame pass registry key lookup header boundary cleanup，不改变 pass key matching、pass order parsing、runtime backend adapter frame plan key、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

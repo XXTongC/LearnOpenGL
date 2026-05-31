@@ -4,6 +4,7 @@
 #include <cctype>
 #include <sstream>
 #include <string>
+#include <string_view>
 
 #include "AppRuntimeContext.h"
 #include "RuntimeFramePasses.h"
@@ -11,22 +12,23 @@
 
 namespace
 {
-	std::string trim(std::string value)
+	std::string trim(std::string_view value)
 	{
+		std::string normalized{ value };
 		auto isSpace = [](unsigned char ch)
 		{
 			return std::isspace(ch) != 0;
 		};
 
-		value.erase(value.begin(), std::find_if(value.begin(), value.end(), [isSpace](char ch)
+		normalized.erase(normalized.begin(), std::find_if(normalized.begin(), normalized.end(), [isSpace](char ch)
 		{
 			return !isSpace(static_cast<unsigned char>(ch));
 		}));
-		value.erase(std::find_if(value.rbegin(), value.rend(), [isSpace](char ch)
+		normalized.erase(std::find_if(normalized.rbegin(), normalized.rend(), [isSpace](char ch)
 		{
 			return !isSpace(static_cast<unsigned char>(ch));
-		}).base(), value.end());
-		return value;
+		}).base(), normalized.end());
+		return normalized;
 	}
 
 	bool isSceneColorPassEnabled(const GLframework::AppRuntimeContext& context)
@@ -147,7 +149,7 @@ namespace GL_RUNTIME
 		return passes;
 	}
 
-	const RuntimeFramePassDefinition* RuntimeFramePassRegistry::findPassByKey(const std::string& key)
+	const RuntimeFramePassDefinition* RuntimeFramePassRegistry::findPassByKey(std::string_view key)
 	{
 		const auto normalizedKey = trim(key);
 		if (normalizedKey.empty())
