@@ -334,6 +334,7 @@ flowchart TD
 - Material Types Header Extraction 已完成第一版：新增 `MaterialTypes.h` 承载 `MaterialType` / `PreStencilType`，`ShaderLibrary.h` 不再为了 shader map key 传播完整 `material.h`。
 - Legacy Experiment Runner Implementation Split 已完成第一版：`LegacyExperimentRunner` 不再是 header-only，历史实验构建/更新逻辑迁入 `LegacyExperimentRunner.cpp`，public header 只保留 runtime context/API 声明和类型前置声明。
 - Legacy Experiment Runner Private State PIMPL Cleanup 已完成第一版：`LegacyExperimentRunner.h` 不再暴露 solar system / orbiting point light 私有状态布局、历史实验 enable flags 或 `Object` 依赖，完整历史实验状态由 implementation-owned `Impl` 持有。
+- Runtime Frame Clock Private State PIMPL Cleanup 已完成第一版：`RuntimeFrameClock.h` 不再传播 `<chrono>` 或 `RuntimeFrameClockTypes.h`，完整 steady-clock time point 与 tick state 由 implementation-owned `Impl` 持有。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已完成第一版：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已完成第一版：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已完成第一版：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -392,6 +393,6 @@ flowchart TD
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Legacy Experiment Runner Private State PIMPL Cleanup 后，下一步优先继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Frame Clock Private State PIMPL Cleanup 后，下一步优先继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 的低风险 include audit；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Legacy Experiment Runner Private State PIMPL Cleanup 已接入后，`LegacyExperimentRunner.h` 不再暴露历史实验私有状态布局或 `Object` 依赖；下一步继续 application composition root / runtime context state 依赖边界收敛，但不扩张 PBR pass。
+当前最新修正：Runtime Frame Clock Private State PIMPL Cleanup 已接入后，`RuntimeFrameClock.h` 不再传播 chrono-backed 私有状态或完整 frame clock config 头；下一步继续 application composition root / runtime context state 依赖边界收敛，但不扩张 PBR pass。

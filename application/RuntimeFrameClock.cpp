@@ -1,5 +1,9 @@
 #include "RuntimeFrameClock.h"
 
+#include <chrono>
+
+#include "RuntimeFrameClockTypes.h"
+
 namespace
 {
 	float sanitizeDelta(float deltaSeconds)
@@ -10,10 +14,27 @@ namespace
 
 namespace GL_RUNTIME
 {
+	struct RuntimeFrameClock::Impl
+	{
+		using Clock = std::chrono::steady_clock;
+
+		Clock::time_point lastTick{};
+		bool hasLastTick{ false };
+	};
+
+	RuntimeFrameClock::RuntimeFrameClock()
+		: mImpl(std::make_unique<Impl>())
+	{
+	}
+
+	RuntimeFrameClock::~RuntimeFrameClock() = default;
+	RuntimeFrameClock::RuntimeFrameClock(RuntimeFrameClock&&) noexcept = default;
+	RuntimeFrameClock& RuntimeFrameClock::operator=(RuntimeFrameClock&&) noexcept = default;
+
 	void RuntimeFrameClock::reset()
 	{
-		mLastTick = Clock::now();
-		mHasLastTick = true;
+		mImpl->lastTick = Impl::Clock::now();
+		mImpl->hasLastTick = true;
 	}
 
 	float RuntimeFrameClock::tick(const RuntimeFrameClockConfig& config)
@@ -21,23 +42,23 @@ namespace GL_RUNTIME
 		const float fallbackDelta = sanitizeDelta(config.fixedDeltaSeconds);
 		if (config.useFixedDelta)
 		{
-			if (!mHasLastTick)
+			if (!mImpl->hasLastTick)
 			{
 				reset();
 			}
 			return fallbackDelta;
 		}
 
-		const auto now = Clock::now();
-		if (!mHasLastTick)
+		const auto now = Impl::Clock::now();
+		if (!mImpl->hasLastTick)
 		{
-			mLastTick = now;
-			mHasLastTick = true;
+			mImpl->lastTick = now;
+			mImpl->hasLastTick = true;
 			return fallbackDelta;
 		}
 
-		const std::chrono::duration<float> elapsed = now - mLastTick;
-		mLastTick = now;
+		const std::chrono::duration<float> elapsed = now - mImpl->lastTick;
+		mImpl->lastTick = now;
 		float deltaSeconds = sanitizeDelta(elapsed.count());
 		const float maxDeltaSeconds = sanitizeDelta(config.maxDeltaSeconds);
 		if (deltaSeconds > maxDeltaSeconds)

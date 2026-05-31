@@ -8954,3 +8954,25 @@ Subagent 审查：
 
 - 这是 legacy experiment runner private state PIMPL cleanup，不改变历史实验开关 API、太阳系更新、orbiting point light update、legacy import path、Engine World verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root / runtime context state 依赖边界收敛，或继续 legacy/runtime public header 低风险 include audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Frame Clock Private State PIMPL Cleanup
+
+本轮继续 application runtime header boundary 收敛，不扩张 PBR 功能。审计确认：`RuntimeFrameClock.h` 只需要暴露 reset/tick facade，却因为私有 `std::chrono::steady_clock::time_point` 直接传播 `<chrono>`，并因为 `tick(...)` 参数直接 include `RuntimeFrameClockTypes.h`；这些都是 implementation detail，不应成为 frame clock public header surface。
+
+新增与修改：
+
+- `RuntimeFrameClock.h` 移除 `<chrono>` 与 `RuntimeFrameClockTypes.h` include，改为 forward declare `RuntimeFrameClockConfig`。
+- `RuntimeFrameClock.h` 新增显式构造、析构、移动构造和移动赋值声明，禁用拷贝。
+- `RuntimeFrameClock.h` 改为只暴露 `struct Impl; std::unique_ptr<Impl> mImpl;`，完整 chrono-backed clock state 下沉到 implementation。
+- `RuntimeFrameClock.cpp` 定义 `RuntimeFrameClock::Impl`，集中拥有 `steady_clock::time_point` 与 has-last-tick flag，并继续保持 fixed-delta、fallback delta 和 max-delta clamp 行为不变。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeFrameClock.h` 不再 include `<chrono>` 或 `RuntimeFrameClockTypes.h`，完整 clock/config 依赖只保留在 `RuntimeFrameClock.cpp` 和真实 frame lifecycle 使用点。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeFrameClock.cpp`、`RuntimeFrameLifecycle.cpp` 和 `RuntimeFrameLifecycleState.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime frame clock private state PIMPL cleanup，不改变固定 delta、实时 delta、max delta clamp、frame lifecycle、Engine tick、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 application composition root / runtime context state 的依赖边界收敛，尤其是 remaining runtime state headers 的 implementation detail exposure；当前仍不建议继续扩张 PBR 功能。
