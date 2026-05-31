@@ -1,6 +1,8 @@
 #include "MaterialBinder.h"
 
 #include "camera/camera.h"
+#include "framework/shader.h"
+#include "framework/texture.h"
 #include "materials/cubeMaterial.h"
 #include "materials/cubeSphereMaterial.h"
 #include "materials/depthMaterial.h"
@@ -16,10 +18,13 @@
 #include "materials/phongParallaxMaterial/phongParallaxMaterial.h"
 #include "materials/phongPointShadowMaterial/phongPointShadowMaterial.h"
 #include "materials/phongShadowMaterial/phongShadowMaterial.h"
+#include "materials/material.h"
 #include "materials/whiteMaterial.h"
+#include "mesh/mesh.h"
 #include "mesh/instancedMesh.h"
 #include "renderer/EnvironmentRenderTargets.h"
 #include "renderer/LightResourceBinder.h"
+#include "renderer/MaterialBindingContext.h"
 #include "renderer/PBRMaterialBinder.h"
 #include "renderer/ShadowResourceBinder.h"
 

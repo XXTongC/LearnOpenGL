@@ -8080,3 +8080,25 @@ Subagent 审查：
 
 - 这是 DepthPrepassBinder public include boundary cleanup，不改变 depth prepass render state、depth uniform layout、PBR depth prepass draw call 统计、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
 - 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Material Binder Header Boundary Cleanup
+
+本轮继续 runtime/renderer header surface audit。审计确认：`MaterialBinder.h` 只声明 legacy/Phong/PBR material binding facade，却为了一个 `bind(...)` 函数签名直接 include 完整 `framework/shader.h`、`materials/material.h`、`mesh/mesh.h` 和 `MaterialBindingContext.h`。实际材质类型分发、texture binding、shader uniform 写入、mesh model matrix 读取和 PBR binder 转发全部在 `MaterialBinder.cpp` 中，header 可以只保留参数类型前置声明。
+
+新增与修改：
+
+- `MaterialBinder.h` 移除完整 shader、material、mesh 和 material binding context includes。
+- `MaterialBinder.h` 新增 `Shader`、`Material`、`Mesh` 和 `MaterialBindingContext` forward declarations，保留现有 `bind(...)` public API。
+- `MaterialBinder.cpp` 显式 include `framework/shader.h`、`framework/texture.h`、`materials/material.h`、`mesh/mesh.h` 和 `renderer/MaterialBindingContext.h`，因为 implementation 实际读取材质、贴图、shader、mesh 和绑定上下文字段。
+
+已完成验证：
+
+- 静态检查确认 `MaterialBinder.h` 不再 include 完整 shader/material/mesh/material binding context headers，`MaterialBinder.cpp` 显式 include 所需完整依赖。
+- 静态检查确认调用点集中在 `SceneRenderPass.cpp`，MaterialBinder public API 未改名也未改变参数。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop,engine-world-minimal-scene,engine-world-scene-package -DiscardCaptures`：构建通过；MSBuild 明确编译 `MaterialBinder.cpp` 与 `SceneRenderPass.cpp`；四条 focused verification mode 全部通过。
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`：默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 MaterialBinder public include boundary cleanup，不改变 legacy/Phong/PBR material binding 分发逻辑、texture unit 绑定、shader uniform layout、runtime frame pipeline frame plan、renderer backend registry/no-op verification、Engine World verification 或 PBR pass。
+- 后续建议继续 runtime/renderer header surface audit，或回到 Engine public header 的低风险 implementation detail audit；当前仍不建议继续扩张 PBR 功能。

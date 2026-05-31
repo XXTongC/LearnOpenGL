@@ -2,13 +2,13 @@
 
 #include <memory>
 
-#include "framework/shader.h"
-#include "materials/material.h"
-#include "mesh/mesh.h"
-#include "renderer/MaterialBindingContext.h"
-
 namespace GLframework
 {
+	struct MaterialBindingContext;
+	class Material;
+	class Mesh;
+	class Shader;
+
 	class MaterialBinder
 	{
 	public:
