@@ -5,6 +5,7 @@
 
 #include "AppRuntimeContext.h"
 #include "RuntimeVerificationConfig.h"
+#include "../tools/sceneSetup/PBRCameraRigProfile.h"
 
 namespace
 {
@@ -111,22 +112,23 @@ namespace GL_RUNTIME
 			applyPressurePointLightRig(context);
 		}
 
-		context.profiles.pbrCameraRigProfile.position = { 0.0f, 0.0f, 5.0f };
-		context.profiles.pbrCameraRigProfile.up = { 0.0f, 1.0f, 0.0f };
-		context.profiles.pbrCameraRigProfile.right = { 1.0f, 0.0f, 0.0f };
-		context.profiles.pbrCameraRigProfile.fovy = 60.0f;
+		auto& cameraRigProfile = context.profiles.pbrCameraRigProfile();
+		cameraRigProfile.position = { 0.0f, 0.0f, 5.0f };
+		cameraRigProfile.up = { 0.0f, 1.0f, 0.0f };
+		cameraRigProfile.right = { 1.0f, 0.0f, 0.0f };
+		cameraRigProfile.fovy = 60.0f;
 		if (probes.enablePbrShowcaseSpheres)
 		{
-			context.profiles.pbrCameraRigProfile.position = { 0.0f, 0.2f, 6.1f };
-			context.profiles.pbrCameraRigProfile.fovy = 52.0f;
+			cameraRigProfile.position = { 0.0f, 0.2f, 6.1f };
+			cameraRigProfile.fovy = 52.0f;
 		}
 		if (engineWorld.enableMinimalScene)
 		{
-			context.profiles.pbrCameraRigProfile.position = { 0.0f, 0.08f, 4.85f };
-			context.profiles.pbrCameraRigProfile.fovy = 48.0f;
+			cameraRigProfile.position = { 0.0f, 0.08f, 4.85f };
+			cameraRigProfile.fovy = 48.0f;
 		}
-		context.profiles.pbrCameraRigProfile.nearPlane = 0.1f;
-		context.profiles.pbrCameraRigProfile.farPlane = 1000.0f;
-		context.profiles.pbrCameraRigProfile.applyTo(context.cameraLights.camera);
+		cameraRigProfile.nearPlane = 0.1f;
+		cameraRigProfile.farPlane = 1000.0f;
+		cameraRigProfile.applyTo(context.cameraLights.camera);
 	}
 }

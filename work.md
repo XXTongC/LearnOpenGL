@@ -9092,3 +9092,27 @@ Subagent 审查：
 
 - 这是 Runtime render resource frame render targets owner boundary cleanup，不改变 framebuffer 初始化/resize、scene FBO、MSAA resolve、bloom render targets、screen material texture sync、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 application composition root / runtime context state 依赖边界收敛，优先审计 remaining runtime render resource state 里仍按 shared_ptr 暴露的材质/mesh/scene 组合；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Profile State Camera Rig Owner Boundary Cleanup
+
+本轮继续 application runtime state public header include surface 收敛，不扩张 PBR 功能。审计确认：`RuntimeProfileState.h` 仍为了按值持有 `PBRCameraRigProfile` 直接 include `PBRCameraRigProfile.h`；但 camera rig profile 的真实读写集中在 PBR profile loader、PBR light/camera verification 和 debug controller context 构造，访问面明显小于 light rig / preview / environment profile。
+
+新增与修改：
+
+- `RuntimeProfileState.h` 移除 `PBRCameraRigProfile.h` include，改为 forward declare `GL_SCENE::PBRCameraRigProfile`。
+- `RuntimeProfileState` 改为通过 private `std::unique_ptr<GL_SCENE::PBRCameraRigProfile>` 持有 camera rig profile，禁用拷贝并显式保留移动语义。
+- `RuntimeProfileState` 新增 `pbrCameraRigProfile()` / `pbrCameraRigProfile() const` 访问器。
+- `RuntimeProfileState.cpp` 显式 include `PBRCameraRigProfile.h`，集中创建、销毁和访问 camera rig profile owner。
+- `RuntimeProfileLoader.cpp` 和 `RuntimePBRLightCameraRigVerification.cpp` 在真实读取/写入 camera profile 字段或调用 `applyTo(...)` 的 implementation 中显式 include `PBRCameraRigProfile.h`。
+- `RuntimeEditorPanelCoordinator.cpp` 改为通过访问器把 camera rig profile 指针传给 debug controller context。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeProfileState.h` 不再传播 `PBRCameraRigProfile.h`，旧字段式 `context.profiles.pbrCameraRigProfile` 访问已迁移为访问器调用。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,showcase-spheres,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeProfileState.cpp`、`RuntimeProfileLoader.cpp`、`RuntimePBRLightCameraRigVerification.cpp`、`RuntimeEditorPanelCoordinator.cpp` 和相关 runtime 使用点。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime profile state camera rig owner boundary cleanup，不改变 camera rig 默认值、PBR experiment profile loading、verification camera preset、debug controller camera profile 指针传递、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 runtime profile/state 边界收敛，优先评估访问面较小且不会扩张 PBR 功能的 profile/state owner 化；light rig / preview profile 访问面较大，拆分时应谨慎。

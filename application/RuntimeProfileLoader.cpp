@@ -6,6 +6,7 @@
 #include "../renderer/RendererFramePassProfile.h"
 #include "../renderer/renderer.h"
 #include "../tools/Logger/LogManager.h"
+#include "../tools/sceneSetup/PBRCameraRigProfile.h"
 #include "../tools/sceneSetup/PBRExperimentProfile.h"
 
 namespace
@@ -93,10 +94,10 @@ namespace
 			context.profiles.postProcessSettings,
 			context.profiles.pbrPreviewProfile,
 			context.profiles.pbrLightRigProfile,
-			context.profiles.pbrCameraRigProfile
+			context.profiles.pbrCameraRigProfile()
 		))
 		{
-			context.profiles.pbrCameraRigProfile.applyTo(context.cameraLights.camera);
+			context.profiles.pbrCameraRigProfile().applyTo(context.cameraLights.camera);
 			LogInfo("PBR experiment profile loaded from " + context.profiles.pbrExperimentProfilePath);
 			return;
 		}

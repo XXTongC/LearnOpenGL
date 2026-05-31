@@ -33,7 +33,7 @@ namespace GL_RUNTIME
 			&context.profiles.pbrPreviewProfilePath,
 			&context.profiles.pbrExperimentProfilePath,
 			&context.profiles.pbrLightRigProfile,
-			&context.profiles.pbrCameraRigProfile,
+			&context.profiles.pbrCameraRigProfile(),
 			context.cameraLights.camera,
 			orbitAngle,
 			context.engineAttachments.engine,
