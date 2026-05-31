@@ -8804,3 +8804,23 @@ Subagent 审查：
 
 - 这是 world-driven scene stats header extraction，不改变 world-driven scene probe/minimal scene 构造、stats 字段、formatter 输出、legacy mirror、scene package、imported asset verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 Engine/scene setup public headers 的低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 PBR Light Rig Profile Header Boundary Cleanup
+
+本轮继续 scene setup/profile public header include audit，不扩张 PBR 功能。审计确认：`PBRLightRigProfile.h` 只在 public API 中通过 `std::shared_ptr` 参数传递 runtime light 类型，却直接 include 了 `ambientLight.h`、`directionalLight.h`、`pointLight.h` 和 `spotLight.h`。同时该 header 使用 `glm::vec3`，但之前依赖 light headers 的间接 include。
+
+新增与修改：
+
+- `PBRLightRigProfile.h` 移除四个具体 light 行为头，改为显式 include `third_party/glm/glm.hpp` 并 forward declare `AmbientLight`、`DirectionalLight`、`PointLight` 和 `SpotLight`。
+- `PBRLightRigProfile.cpp` 显式 include ambient/directional/base light/point/spot light headers，以及 point shadow header；实际 light 创建、字段读写、attenuation 读写、spot angle 读写和 `PointLightShadow::setMAX_POINT_LIGHT(...)` 依赖集中到 implementation。
+
+已完成验证：
+
+- 静态检查确认 `PBRLightRigProfile.h` 不再传播具体 light 行为头，完整 light API 依赖只保留在 `PBRLightRigProfile.cpp` 和其他真实 light 读取调用点。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred-tiled-lights-pressure,showcase-spheres,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `PBRLightRigProfile.cpp`、`SceneSetup.cpp`、`DebugControllerPanel.cpp`、runtime PBR light/camera rig verification、profile loader、frame pipeline 和相关 runtime paths。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBR light rig profile header boundary cleanup，不改变 light rig 默认值、light apply/copy 行为、point light count、pressure-light verification、showcase camera/light setup、Engine World verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 Engine/scene setup public headers 的低风险 include audit，或回到 application composition root 中 shell/config/runner headers 的显式依赖收敛；当前仍不建议继续扩张 PBR 功能。

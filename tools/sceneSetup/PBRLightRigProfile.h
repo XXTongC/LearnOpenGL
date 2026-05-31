@@ -4,14 +4,19 @@
 #include <memory>
 #include <vector>
 
-#include "../../light/ambientLight.h"
-#include "../../light/directionalLight.h"
-#include "../../light/pointLight.h"
-#include "../../light/spotLight.h"
+#include "../../third_party/glm/glm.hpp"
 
 namespace GL_EDITOR
 {
 	class PropertyBuilder;
+}
+
+namespace GLframework
+{
+	class AmbientLight;
+	class DirectionalLight;
+	class PointLight;
+	class SpotLight;
 }
 
 namespace GL_SCENE

@@ -3,7 +3,12 @@
 #include <algorithm>
 #include <string>
 
+#include "../../light/ambientLight.h"
+#include "../../light/directionalLight.h"
+#include "../../light/light.h"
+#include "../../light/pointLight.h"
 #include "../../light/shadow/pointLightShadow/pointLightShadow.h"
+#include "../../light/spotLight.h"
 #include "../inspector/PropertySchema.h"
 
 namespace
