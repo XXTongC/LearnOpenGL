@@ -61,7 +61,6 @@ namespace GLframework
 	{
 	public:
 		PBRMaterial();
-		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder) override;
 		std::array<PBRTextureSlot, 6> getTextureSlots();
 		std::array<PBRConstTextureSlot, 6> getTextureSlots() const;
 		std::array<PBRVec3UniformSlot, 2> getVec3UniformSlots();

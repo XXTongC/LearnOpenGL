@@ -3,7 +3,6 @@
 #include <cstddef>
 
 #include "tools/config/ProfileConfigIO.h"
-#include "tools/inspector/MaterialInspector.h"
 #include "tools/inspector/PropertySchema.h"
 
 using namespace GLframework;
@@ -124,10 +123,6 @@ namespace
 		return slots;
 	}
 
-	void addFloatUniformProperty(GL_EDITOR::PropertyBuilder& builder, const PBRFloatUniformSlot& slot)
-	{
-		builder.addFloat(slot.label, slot.value, slot.minValue, slot.maxValue);
-	}
 }
 
 void PBRMaterialProfile::applyTo(PBRMaterial& material) const
@@ -283,44 +278,4 @@ std::array<PBRFloatUniformSlot, 2> PBRMaterial::getIblFloatUniformSlots()
 std::array<PBRConstFloatUniformSlot, 2> PBRMaterial::getIblFloatUniformSlots() const
 {
 	return makeFloatUniformSlots(*this, pbrIblFloatUniformMetadata);
-}
-
-void PBRMaterial::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
-{
-	Material::visitEditableProperties(builder);
-
-	builder.addSection("PBR Surface");
-	const auto vec3UniformSlots = getVec3UniformSlots();
-	const auto surfaceFloatUniformSlots = getSurfaceFloatUniformSlots();
-	builder.addColor3(vec3UniformSlots[0].label, vec3UniformSlots[0].value);
-	addFloatUniformProperty(builder, surfaceFloatUniformSlots[0]);
-	addFloatUniformProperty(builder, surfaceFloatUniformSlots[1]);
-	addFloatUniformProperty(builder, surfaceFloatUniformSlots[2]);
-	builder.addColor3(vec3UniformSlots[1].label, vec3UniformSlots[1].value);
-	addFloatUniformProperty(builder, surfaceFloatUniformSlots[3]);
-
-	builder.addSection("PBR Alpha Mask");
-	builder.addBool("Use Alpha Mask", &mUseAlphaMask);
-	builder.addFloat("Alpha Cutoff", &mAlphaCutoff, 0.0f, 1.0f);
-
-	builder.addSection("PBR Texture Channels");
-	builder.addInt("Metallic Map Channel", &mMetallicMapChannel, 0, 3);
-	builder.addInt("Roughness Map Channel", &mRoughnessMapChannel, 0, 3);
-	builder.addInt("AO Map Channel", &mAoMapChannel, 0, 3);
-
-	builder.addSection("PBR IBL");
-	builder.addBool("Use IBL", &mUseIBL);
-	for (const auto& slot : getIblFloatUniformSlots())
-	{
-		addFloatUniformProperty(builder, slot);
-	}
-
-	builder.addSection("PBR Textures");
-	for (const auto& slot : getTextureSlots())
-	{
-		builder.addText(slot.label, [texture = slot.texture]()
-		{
-			return GL_EDITOR::describeTexture(texture ? *texture : nullptr);
-		});
-	}
 }

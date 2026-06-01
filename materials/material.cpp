@@ -1,54 +1,6 @@
 #include "material.h"
-#include "tools/inspector/MaterialInspector.h"
-#include "tools/inspector/PropertySchema.h"
 
 using namespace GLframework;
-
-void Material::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
-{
-	builder.addSection("Render State");
-	builder.addBool(
-		"Depth Test",
-		[this]() { return getDepthTest(); },
-		[this](bool value) { setDepthTest(value); }
-	);
-	builder.addBool(
-		"Depth Write",
-		[this]() { return getDepthWrite(); },
-		[this](bool value) { setDepthWrite(value); }
-	);
-	builder.addBool(
-		"Blend",
-		[this]() { return getColorBlendState(); },
-		[this](bool value) { setColorBlendState(value); }
-	);
-	builder.addBool(
-		"Face Culling",
-		[this]() { return getFaceCullingState(); },
-		[this](bool value) { setFaceCullingState(value); }
-	);
-	builder.addFloat(
-		"Opacity",
-		[this]() { return getOpacity(); },
-		[this](float value) { setOpacity(value); },
-		0.0f,
-		1.0f
-	);
-	builder.addFloat(
-		"Polygon Offset Factor",
-		[this]() { return getFactor(); },
-		[this](float value) { setFactor(value); },
-		-8.0f,
-		8.0f
-	);
-	builder.addFloat(
-		"Polygon Offset Unit",
-		[this]() { return getUnit(); },
-		[this](float value) { setUnit(value); },
-		-8.0f,
-		8.0f
-	);
-}
 
 unsigned Material::getCullFace() const
 {

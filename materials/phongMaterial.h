@@ -15,7 +15,6 @@ namespace GLframework
 			setMaterialType(MaterialType::PhongMaterial);
 		}
 		~PhongMaterial();
-		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder) override;
 		
 
 	public:

@@ -50,7 +50,7 @@ namespace GL_EDITOR
 	{
 		PropertyBuilder builder;
 		MaterialPropertyProviderContext providerContext{ material };
-		getDefaultMaterialPropertyProviderRegistry().buildFirst(builder, providerContext);
+		getDefaultMaterialPropertyProviderRegistry().buildMatching(builder, providerContext);
 		return drawProperties(builder);
 	}
 }

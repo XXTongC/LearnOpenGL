@@ -50,4 +50,24 @@ namespace GL_EDITOR
 		provider->build(builder, context);
 		return true;
 	}
+
+	std::size_t MaterialPropertyProviderRegistry::buildMatching(
+		PropertyBuilder& builder,
+		const MaterialPropertyProviderContext& context
+	) const
+	{
+		std::size_t builtProviders = 0;
+		for (const auto& provider : mProviders)
+		{
+			if (!provider.canBuild(context))
+			{
+				continue;
+			}
+
+			provider.build(builder, context);
+			++builtProviders;
+		}
+
+		return builtProviders;
+	}
 }

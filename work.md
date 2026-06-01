@@ -10206,3 +10206,29 @@ Subagent 审查：
 
 - 这是 Material property provider registry compatibility layer，不改变 material runtime 类、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract。
 - 下一步可以选择继续把具体 Material 类型字段从 `visitEditableProperties(...)` 逐步迁入 provider 模块，或先设计 Material property DTO/accessor 边界，避免 editor schema 继续由 runtime material 类直接声明。
+
+### 2026-06-01 Runtime Material Property Provider Schema Extraction
+
+本轮继续上一轮 Material provider registry 的后半步：上一轮只是把 `MaterialInspector` 的直接调用换成兼容 provider，runtime material 类中仍保留 `visitEditableProperties(...)` virtual override。本轮把 Material UI schema 的实际字段生成迁入 editor provider 模块，让 runtime material 类不再声明或实现 editor inspector schema。
+
+新增与修改：
+
+- `MaterialPropertyProviderRegistry` 新增 `buildMatching(...)`，支持多个 provider 顺序叠加构建同一个 Material inspector schema。
+- `MaterialInspector.cpp` 改为调用 `buildMatching(...)`，让通用 Render State provider 与具体 Material 类型 provider 可以同时生效。
+- `MaterialPropertyProviders.cpp` 删除旧的 `legacy-visit-editable-properties` provider，新增通用 `render-state` provider，并为 `PhongMaterial`、`PhongCSMShadowMaterial`、`PhongPointShadowMaterial`、`GrassInstanceMaterial`、`ScreenMaterial` 和 `PBRMaterial` 注册类型 provider。
+- `Material` 基类删除 `visitEditableProperties(...)` virtual API，`material.cpp` 不再 include editor inspector/schema 头。
+- `PhongMaterial`、`PhongCSMShadowMaterial`、`PhongPointShadowMaterial`、`GrassInstanceMaterial`、`ScreenMaterial` 和 `PBRMaterial` 删除 `visitEditableProperties(...)` override，相关 `.cpp` 不再为了 inspector UI include `MaterialInspector.h` / `PropertySchema.h`。
+- `PBRMaterialProfile::visitEditableProperties(...)` 保留，因为它仍是 PBR profile config load/save 的配置 schema 路径，不属于 runtime material inspector override。
+
+已完成验证：
+
+- 静态检查确认 `materials` 中不再存在 `Material::visitEditableProperties(...)`、`material.visitEditableProperties(...)` 或 `legacy-visit-editable-properties`。
+- 静态检查确认 runtime material inspector override 已清空，剩余 `visitEditableProperties(...)` 只属于 `PBRMaterialProfile` 配置读写。
+- focused verification 第一次在 124 秒处被工具超时截断，随后触发 Debug `vc143.pdb` 锁；确认无残留 `MSBuild` / `CL` / `mspdbsrv` 进程后删除单个 build output `text2\x64\Debug\vc143.pdb` 并重跑。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译并链接通过，五条 focused verification mode 全部通过。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Material inspector schema extraction，不改变 Material inspector 字段、字段顺序、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续缩窄 Material runtime 暴露面：把 provider 当前直接访问的 public material fields 迁为 Material property DTO/accessor，或者先处理 `PBRMaterialProfile` 配置 schema 与 editor `PropertyBuilder` 的边界。

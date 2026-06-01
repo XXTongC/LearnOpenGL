@@ -15,7 +15,6 @@ namespace GLframework
 		}
 
 		~PhongCSMShadowMaterial() override{}
-		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder) override;
 
 
 	public:

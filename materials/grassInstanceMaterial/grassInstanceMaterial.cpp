@@ -1,6 +1,4 @@
 #include "grassInstanceMaterial.h"
-#include "../../tools/inspector/MaterialInspector.h"
-#include "../../tools/inspector/PropertySchema.h"
 
 using namespace GLframework;
 
@@ -13,43 +11,6 @@ GrassInstanceMaterial::GrassInstanceMaterial()
 
 GrassInstanceMaterial::~GrassInstanceMaterial()
 {
-}
-
-void GrassInstanceMaterial::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
-{
-	Material::visitEditableProperties(builder);
-
-	builder.addSection("Surface");
-	builder.addFloat("Shininess", &mShiness, 0.0f, 256.0f, "%.1f");
-	builder.addFloat("UV Scale", Control_UVScale(), 0.0f, 100.0f);
-	builder.addFloat("Brightness", Control_Brightness(), 0.0f, 8.0f);
-	builder.addText("Diffuse", [this]() { return GL_EDITOR::describeTexture(mDiffuse); });
-	builder.addText("Opacity Mask", [this]() { return GL_EDITOR::describeTexture(mOpacityMask); });
-	builder.addText("Cloud Mask", [this]() { return GL_EDITOR::describeTexture(mCloudMask); });
-
-	builder.addSection("Wind");
-	builder.addFloat("Wind Scale", Control_WindScale(), -0.12f, 0.12f, "%.4f");
-	builder.addFloat("Phase Scale", Control_PhaseScale(), 0.0f, 10.0f);
-	builder.addVec3(
-		"Wind Direction",
-		[this]() { return *Control_WindDirection(); },
-		[this](glm::vec3 value) { setWindDirection(value); }
-	);
-
-	builder.addSection("Cloud");
-	builder.addFloat("Cloud Lerp", Control_CloudLerp(), 0.0f, 1.0f);
-	builder.addFloat("Cloud UV Scale", Control_CloudUVScale(), 0.0f, 100.0f);
-	builder.addFloat("Cloud Speed", Control_CloudSpeed(), 0.0f, 3.0f);
-	builder.addColor3(
-		"Cloud White Color",
-		[this]() { return *Control_CloudWhiteColor(); },
-		[this](glm::vec3 value) { seCloudWhiteColor(value); }
-	);
-	builder.addColor3(
-		"Cloud Black Color",
-		[this]() { return *Control_CloudBlackColor(); },
-		[this](glm::vec3 value) { setCloudBlackColor(value); }
-	);
 }
 
 float GrassInstanceMaterial::getBrightness() const

@@ -16,7 +16,6 @@ namespace GLframework
 			setMaterialType(MaterialType::PhongPointShadowMaterial);
 		}
 		~PhongPointShadowMaterial();
-		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder) override;
 
 
 	public:

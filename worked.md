@@ -7845,3 +7845,20 @@
   - 已执行 focused verification：第一次使用错误 mode 名 `pbr-texture-set`，脚本按预期报 unknown mode；修正为 `texture-set` 后执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了 `MaterialInspector.cpp` 与新增 Material provider 文件，五条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Material 字段、字段顺序、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百二十七轮 Runtime Material Property Provider Schema Extraction：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `f55f6f9 Add material property providers`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把下一步聚焦到把具体 Material 类型字段从 runtime `visitEditableProperties(...)` 迁入 provider 模块。
+  - 更新 [MaterialPropertyProviderRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialPropertyProviderRegistry.h) 与 [MaterialPropertyProviderRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialPropertyProviderRegistry.cpp)，新增 `buildMatching(...)`，支持通用 provider 与类型 provider 顺序叠加。
+  - 更新 [MaterialInspector.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialInspector.cpp)，改为通过 `buildMatching(...)` 构建 Material inspector schema。
+  - 更新 [MaterialPropertyProviders.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialPropertyProviders.cpp)，删除旧 `legacy-visit-editable-properties` provider，新增通用 `render-state` provider 与 `PhongMaterial`、`PhongCSMShadowMaterial`、`PhongPointShadowMaterial`、`GrassInstanceMaterial`、`ScreenMaterial`、`PBRMaterial` 类型 provider。
+  - 更新 [material.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\material.h) 与 [material.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\material.cpp)，删除 `visitEditableProperties(...)` virtual API 和 editor inspector/schema include。
+  - 更新 Phong / CSM Shadow / Point Shadow / Grass / Screen / PBR material headers and implementations，删除 `visitEditableProperties(...)` override；runtime material 类不再为了 inspector UI include `MaterialInspector.h`。
+  - 保留 `PBRMaterialProfile::visitEditableProperties(...)`，因为它仍服务于 PBR profile config load/save，不是 runtime material inspector override。
+  - 已执行静态检查：确认 `materials` 中不再存在 `Material::visitEditableProperties(...)`、`material.visitEditableProperties(...)` 或 `legacy-visit-editable-properties`。
+  - 已执行静态检查：确认剩余 `visitEditableProperties(...)` 只属于 `PBRMaterialProfile` 配置读写路径。
+  - focused verification 第一次在 124 秒处被工具超时截断；重跑时出现 Debug `vc143.pdb` 锁，确认无残留 build 进程后删除单个 build output `text2\x64\Debug\vc143.pdb` 并重跑。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；五条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 Material inspector 字段、字段顺序、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
