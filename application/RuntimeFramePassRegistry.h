@@ -21,7 +21,7 @@ namespace GL_RUNTIME
 		ScreenComposite
 	};
 
-	using RuntimeFramePassEnabledPredicate = bool (*)(const GLframework::AppRuntimeContext& context);
+	using RuntimeFramePassEnabledPredicate = bool (*)(const RuntimeFramePipelineProfile& profile);
 	using RuntimeFramePassExecutor = void (*)(
 		GLframework::AppRuntimeContext& context,
 		const RuntimeFramePipelineConfig& config
@@ -35,7 +35,7 @@ namespace GL_RUNTIME
 		RuntimeFramePassEnabledPredicate isEnabled{ nullptr };
 		RuntimeFramePassExecutor execute{ nullptr };
 
-		bool shouldExecute(const GLframework::AppRuntimeContext& context) const;
+		bool shouldExecute(const RuntimeFramePipelineProfile& profile) const;
 		void executePass(
 			GLframework::AppRuntimeContext& context,
 			const RuntimeFramePipelineConfig& config

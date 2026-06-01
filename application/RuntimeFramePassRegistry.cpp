@@ -6,7 +6,6 @@
 #include <string>
 #include <string_view>
 
-#include "AppRuntimeContext.h"
 #include "RuntimeFramePasses.h"
 #include "RuntimeFramePipelineProfile.h"
 
@@ -31,24 +30,24 @@ namespace
 		return normalized;
 	}
 
-	bool isSceneColorPassEnabled(const GLframework::AppRuntimeContext& context)
+	bool isSceneColorPassEnabled(const GL_RUNTIME::RuntimeFramePipelineProfile& profile)
 	{
-		return context.profiles.framePipelineProfile().sceneColorPassEnabled;
+		return profile.sceneColorPassEnabled;
 	}
 
-	bool isSceneResolvePassEnabled(const GLframework::AppRuntimeContext& context)
+	bool isSceneResolvePassEnabled(const GL_RUNTIME::RuntimeFramePipelineProfile& profile)
 	{
-		return context.profiles.framePipelineProfile().sceneResolvePassEnabled;
+		return profile.sceneResolvePassEnabled;
 	}
 
-	bool isBloomPassEnabled(const GLframework::AppRuntimeContext& context)
+	bool isBloomPassEnabled(const GL_RUNTIME::RuntimeFramePipelineProfile& profile)
 	{
-		return context.profiles.framePipelineProfile().bloomPassEnabled;
+		return profile.bloomPassEnabled;
 	}
 
-	bool isScreenCompositePassEnabled(const GLframework::AppRuntimeContext& context)
+	bool isScreenCompositePassEnabled(const GL_RUNTIME::RuntimeFramePipelineProfile& profile)
 	{
-		return context.profiles.framePipelineProfile().screenCompositePassEnabled;
+		return profile.screenCompositePassEnabled;
 	}
 
 	void executeSceneColorPass(
@@ -97,9 +96,9 @@ namespace
 
 namespace GL_RUNTIME
 {
-	bool RuntimeFramePassDefinition::shouldExecute(const GLframework::AppRuntimeContext& context) const
+	bool RuntimeFramePassDefinition::shouldExecute(const RuntimeFramePipelineProfile& profile) const
 	{
-		return !isEnabled || isEnabled(context);
+		return !isEnabled || isEnabled(profile);
 	}
 
 	void RuntimeFramePassDefinition::executePass(

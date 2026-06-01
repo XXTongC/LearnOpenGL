@@ -9868,3 +9868,27 @@ Subagent 审查：
 
 - 这是 render resource read-only view 过渡 facade 的删除，不改变 frame pass readiness 判断、backend ready 语义、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步应重新审计剩余 direct render resource accessor 是否已经全部位于 resource adapter implementation；如果是，这条 render resource decoupling 可以阶段性收束，转入更高层 Engine runtime ownership 或 editor/gameplay boundary。
+
+### 2026-06-01 Runtime Frame Pass Registry Profile Predicate Cleanup
+
+本轮在 read-only view facade 删除后重新审计 render resource decoupling 状态，确认剩余 `renderResources.*` 直接访问都已集中在 resource adapter/service implementation 内，非 adapter 主流程不再直接触碰 render resource owner。随后选择 frame pass registry 的启用谓词作为下一步接口收窄：`RuntimeFramePassRegistry` 原本只为了读取 pass enabled flags 而依赖完整 `AppRuntimeContext`，这会让 pass registry 的计划构建逻辑继续知道 runtime context 布局。更合理的边界是让 registry 只依赖 `RuntimeFramePipelineProfile`，因为 pass enabled policy 本质上属于 frame pipeline profile，而不是 runtime context。
+
+新增与修改：
+
+- `RuntimeFramePassRegistry.h` 将 `RuntimeFramePassEnabledPredicate` 从 `bool (*)(const AppRuntimeContext&)` 收窄为 `bool (*)(const RuntimeFramePipelineProfile&)`。
+- `RuntimeFramePassRegistry.h/.cpp` 将 `RuntimeFramePassDefinition::shouldExecute(...)` 改为接收 `const RuntimeFramePipelineProfile&`。
+- `RuntimeFramePassRegistry.cpp` 移除 `AppRuntimeContext.h` include，四个 pass enabled helper 直接读取 `RuntimeFramePipelineProfile` 的 `sceneColorPassEnabled`、`sceneResolvePassEnabled`、`bloomPassEnabled` 与 `screenCompositePassEnabled`。
+- `RuntimeFramePipeline.cpp` 在每帧 render 开始取得一次 `const auto& profile = context.profiles.framePipelineProfile()`，pass plan 构建与 pass enabled 判断共用该 profile。
+- `RuntimeRendererFrameBridgeAdapter.cpp` 在 backend readiness 检查中同样取得 frame pipeline profile，pass plan 构建与 readiness pass enabled 判断共用该 profile。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeFramePassRegistry.cpp` 不再 include `AppRuntimeContext.h`，也不再通过 `context.profiles.framePipelineProfile()` 读取 profile。
+- 静态检查确认 application 中不再存在 `pass->shouldExecute(context)` 或 `pass->shouldExecute(mContext)`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `RuntimeFramePassRegistry.cpp`、`RuntimeFramePipeline.cpp`、`RuntimeFrameReadinessResourceAdapter.cpp` 与 `RuntimeRendererFrameBridgeAdapter.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 frame pass registry 的 profile predicate cleanup，不改变 pass order、pass enabled policy、frame plan key、frame readiness 判断、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- render resource decoupling 已经达到阶段性收束条件：剩余 direct render resource accessor 位于 adapter/service implementation 内。下一步应转向更高层 Engine runtime ownership、editor/gameplay boundary、场景/资产生命周期或系统化 UI/inspector 的边界整理，而不是继续扩张 PBR 功能。

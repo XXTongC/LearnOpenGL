@@ -1924,6 +1924,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `application/RuntimeRendererStateResourceAdapter.h`, `application/RuntimeRendererStateResourceAdapter.cpp`, `application/RuntimeFrameRunner.cpp`, `application/RuntimePBRPassProfileVerification.cpp`, `application/RuntimeProfileLoader.cpp`, `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime render resource read-only view facade removal is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `application/RuntimeFrameReadinessResourceAdapter.cpp`, `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime frame pass registry profile predicate cleanup is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `application/RuntimeFramePassRegistry.h`, `application/RuntimeFramePassRegistry.cpp`, `application/RuntimeFramePipeline.cpp`, `application/RuntimeRendererFrameBridgeAdapter.cpp`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

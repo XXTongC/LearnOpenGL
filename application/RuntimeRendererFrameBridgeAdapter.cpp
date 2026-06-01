@@ -69,10 +69,11 @@ namespace GL_RUNTIME
 
 	bool RuntimeRendererFrameBridgeAdapter::isBackendReady() const
 	{
-		const auto passPlan = RuntimeFramePassRegistry::buildPassPlan(mContext.profiles.framePipelineProfile());
+		const auto& profile = mContext.profiles.framePipelineProfile();
+		const auto passPlan = RuntimeFramePassRegistry::buildPassPlan(profile);
 		for (const auto* pass : passPlan)
 		{
-			if (!pass || !pass->shouldExecute(mContext))
+			if (!pass || !pass->shouldExecute(profile))
 			{
 				continue;
 			}

@@ -524,7 +524,8 @@ public:
 314. Runtime Probe Scene Resource Adapter Cleanup 已完成第一版：新增 `RuntimeProbeSceneResourceAdapter` 集中 verification probe 对 offscreen scene readiness、PBR probe geometry 创建和 probe object 注入的访问，`RuntimePBRSceneProbeVerification.cpp` 与 `RuntimeImportedAssetVerification.cpp` 不再直接调用 render resource probe helper，`RuntimeRenderResourceState` 删除 probe-only public helper。
 315. Runtime Renderer State Resource Adapter Cleanup 已完成第一版：新增 `RuntimeRendererStateResourceAdapter` 集中 frame runner clear color sync 与 renderer frame pass profile access，`RuntimeFrameRunner.cpp`、`RuntimePBRPassProfileVerification.cpp` 与 `RuntimeProfileLoader.cpp` 不再直接调用 render resource state 窄 helper，`RuntimeRenderResourceState` 删除 `syncClearColorToRenderer()` 与 `rendererFramePassProfile()` public helper。
 316. Runtime Render Resource ReadOnly View Facade Removal 已完成第一版：`RuntimeFrameReadinessResourceAdapter.cpp` 改为直接使用 `RuntimeRenderResourceState` const accessor，`RuntimeRenderResourceState` 删除 `RuntimeRenderResourceView` class 与 `readOnlyView()` public facade，application 源码不再存在 read-only view 过渡 API。
-317. 下一步建议重新审计剩余 direct render resource accessor 是否已经全部位于 resource adapter implementation；如果是，render resource decoupling 可阶段性收束，转入更高层 Engine runtime ownership 或 editor/gameplay boundary。
+317. Runtime Frame Pass Registry Profile Predicate Cleanup 已完成第一版：`RuntimeFramePassRegistry` 的 pass enabled predicate 从完整 `AppRuntimeContext` 收窄到 `RuntimeFramePipelineProfile`，registry implementation 不再 include `AppRuntimeContext.h`，frame pipeline 与 renderer frame bridge readiness 共用 profile 引用判断 pass enabled。
+318. Render resource decoupling 已达到阶段性收束条件：剩余 direct render resource accessor 已集中在 resource adapter/service implementation；下一步建议转入更高层 Engine runtime ownership、editor/gameplay boundary、场景/资产生命周期或系统化 UI/inspector 边界整理。
 
 ## 约束
 

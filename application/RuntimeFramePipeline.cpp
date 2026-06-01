@@ -10,12 +10,13 @@ namespace GL_RUNTIME
 		const RuntimeFramePipelineConfig& config
 	)
 	{
-		const auto passPlan = RuntimeFramePassRegistry::buildPassPlan(context.profiles.framePipelineProfile());
+		const auto& profile = context.profiles.framePipelineProfile();
+		const auto passPlan = RuntimeFramePassRegistry::buildPassPlan(profile);
 		RuntimeFramePipelineStats stats{};
 		stats.plannedPassCount = static_cast<int>(passPlan.size());
 		for (const auto* pass : passPlan)
 		{
-			if (!pass || !pass->shouldExecute(context))
+			if (!pass || !pass->shouldExecute(profile))
 			{
 				++stats.skippedPassCount;
 				continue;
