@@ -1,5 +1,7 @@
 #include "RuntimeRenderResourceState.h"
 
+#include "../framework/scene.h"
+#include "../materials/MaterialTypes.h"
 #include "../renderer/FrameRenderTargets.h"
 #include "../renderer/PostProcessPass.h"
 #include "../renderer/renderer.h"
@@ -46,6 +48,28 @@ std::shared_ptr<GLframework::Renderer>& GL_RUNTIME::RuntimeRenderResourceState::
 const std::shared_ptr<GLframework::Renderer>& GL_RUNTIME::RuntimeRenderResourceState::renderer() const
 {
 	return mRenderer;
+}
+
+bool GL_RUNTIME::RuntimeRenderResourceState::hasOffScreenSceneAndRenderer() const
+{
+	return mSceneOffScreen && mRenderer;
+}
+
+std::shared_ptr<GLframework::Shader> GL_RUNTIME::RuntimeRenderResourceState::pbrMaterialShader() const
+{
+	if (!mRenderer)
+	{
+		return nullptr;
+	}
+
+	return mRenderer->getShader(GLframework::MaterialType::PBRMaterial);
+}
+
+void GL_RUNTIME::RuntimeRenderResourceState::addOffScreenSceneChild(
+	const std::shared_ptr<GLframework::Object>& object
+) const
+{
+	mSceneOffScreen->addChild(object);
 }
 
 GLframework::RendererFramePassProfile* GL_RUNTIME::RuntimeRenderResourceState::rendererFramePassProfile()

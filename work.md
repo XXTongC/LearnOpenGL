@@ -9501,3 +9501,24 @@ Subagent 审查：
 
 - 这是 renderer clear color 写入口边界 cleanup，不改变 clear color 默认值、每帧同步时机、runtime frame pipeline、renderer backend contract、scene setup 或 PBR pass。
 - 下一步可继续处理剩余 direct renderer/scene owner 访问点，优先选择语义明确的小 mutation boundary 或纯只读 consumer；仍不建议扩张 PBR pass。
+
+### 2026-06-01 Runtime Render Resource PBR Scene Probe Boundary Cleanup
+
+本轮继续处理剩余 direct renderer/scene owner 访问点，不扩张 PBR 功能。`RuntimePBRSceneProbeVerification` 是 verification probe mutation path：它需要读取 PBR shader 并向 offscreen scene 添加 probe mesh。本轮把这两个操作收敛为 `RuntimeRenderResourceState` 的小边界，避免 probe 模块反复直接取得 renderer/scene owner。
+
+新增与修改：
+
+- `RuntimeRenderResourceState.h` 新增 `hasOffScreenSceneAndRenderer()`、`pbrMaterialShader()` 与 `addOffScreenSceneChild(...)`。
+- `RuntimeRenderResourceState.cpp` 集中通过 renderer owner 取得 PBR material shader，并通过 offscreen scene owner 添加 probe object；完整 `scene.h` / `MaterialTypes.h` 依赖局部化到 implementation。
+- `RuntimePBRSceneProbeVerification.cpp` 移除对 `renderer.h` 与 `scene.h` 的直接 include，改为通过 resource state 边界检查 readiness、取得 PBR shader 并添加 probe mesh。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRSceneProbeVerification.cpp` 中不再直接调用 `context.renderResources.renderer()` / `sceneOffScreen()`，也不再 include `renderer.h` / `scene.h`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,deferred-transparent,deferred-emissive,deferred-material-ibl,deferred-alpha-mask,showcase-spheres,renderer-backend-registry-noop -DiscardCaptures` 已通过；覆盖本轮 probe mutation 相关模式。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBR scene probe 的 renderer/scene resource boundary cleanup，不改变 probe mesh/material 创建、PBR shader 选择、probe 添加时机、verification 判定标准、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步可继续处理 imported asset probe、engine world verification 或 frame pass 中剩余 direct renderer/scene owner 访问点；仍需按“只读 view vs 明确 mutation boundary”区分处理。
