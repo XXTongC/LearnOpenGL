@@ -418,10 +418,11 @@ passed
 - PBR Preview Profile Config Schema Adapter 已接入：新增 `PBRPreviewProfileConfig` schema adapter；`PBRPreviewProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，DebugControllerPanel、PBR preview profile storage 与 PBR experiment preset 的 `pbrPreview.*` 子配置改为通过 adapter 构建 schema。
 - PBR Light/Camera Rig Config Schema Adapter 已接入：新增 `PBRLightRigProfileConfig` 与 `PBRCameraRigProfileConfig` schema adapter；`PBRLightRigProfile.h` 和 `PBRCameraRigProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，PBR experiment preset 的 `lightRig.*` 与 `cameraRig.*` 子配置改为通过 adapter 构建 schema。
 - Runtime Frame Pipeline Profile Config Schema Adapter 已接入：新增 `RuntimeFramePipelineProfileConfig` schema adapter；`RuntimeFramePipelineProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，Runtime Frame Pipeline debug panel 与 profile storage 改为通过 adapter 构建 schema。
+- Debug Profile Controls Panel Extraction 已接入：新增 `DebugProfileControlsPanel` facade；Post Process、Runtime Frame Pipeline、Renderer Frame Pass、PBR Preview、PBR Experiment 与 Environment profile 控制从 `DebugControllerPanel.cpp` 迁出，DebugControllerPanel 只保留高层编排。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Runtime Frame Pipeline Profile Config Schema Adapter 已接入后，RuntimeFramePipelineProfile header 不再暴露 editor `PropertyBuilder`，frame pipeline pass order 与 pass enable 配置 schema 集中到 `RuntimeFramePipelineProfileConfig`；`config/runtime_frame_pipeline.local.ini` 默认路径、frame pass key、DebugControllerPanel save/reload 行为和 renderer backend contract 保持不变。
+当前最新修正：Debug Profile Controls Panel Extraction 已接入后，DebugControllerPanel 不再直接承载 profile 控制 helper 和 profile/config adapter include；profile 面板编排集中到 `DebugProfileControlsPanel`，UI 顺序、配置 key、save/reload 行为和 renderer backend contract 保持不变。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议检查 config/provider 层的 `PropertyBuilder` 依赖是否都处在合理边界，或继续把 DebugControllerPanel 的 profile panel 编排拆成独立 profile panel facade；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议继续拆 `DebugControllerPanel.cpp` 的 legacy debug controls / renderer stats 编排，或把 Debug profile controls facade 内部进一步拆成可注册 profile panel provider；当前不建议继续扩张 PBR pass。

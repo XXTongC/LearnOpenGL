@@ -10583,3 +10583,27 @@ Subagent 审查：
 
 - 这是 Runtime frame pipeline profile config schema adapter slice，不改变 `config/runtime_frame_pipeline.local.ini` 默认路径、`passOrder` key、`sceneColorPassEnabled` / `sceneResolvePassEnabled` / `bloomPassEnabled` / `screenCompositePassEnabled` key、runtime frame pass registry predicate 或 renderer backend contract。
 - profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；下一步建议从“profile schema adapter”转入更高层系统化 UI 收束，例如检查 `PropertyBuilder` 仍在 config/provider 层的合理性，或把 DebugControllerPanel 的 profile panel 编排继续拆成独立 profile panel facade。
+
+### 2026-06-01 Debug Profile Controls Panel Extraction
+
+本轮从 profile/config schema adapter 转入 DebugControllerPanel 编排拆分，处理 profile/settings 控制面板聚合逻辑。目标是让 `DebugControllerPanel.cpp` 不再同时承载所有 profile 控件实现，同时保持 Debug Controller 面板的原有 UI 顺序、配置 key、save/reload 行为和 renderer/backend contract 不变。
+
+新增与修改：
+
+- 新增 `tools/editor/DebugProfileControlsPanel.h/.cpp`，提供 `drawDebugPipelineProfileControls(...)` 与 `drawDebugSceneProfileControls(...)` 两个 facade。
+- 将 Post Process、Runtime Frame Pipeline、Renderer Frame Pass Plan 控制迁入 pipeline profile controls facade。
+- 将 PBR Preview Profile、PBR Experiment Preset、Environment / IBL 控制迁入 scene profile controls facade。
+- `DebugControllerPanel.cpp` 收敛为 Engine Diagnostics、renderer frame stats、legacy debug controls 与 profile facade 编排，不再直接 include 各 profile config adapter 和 `PropertyInspector`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 Debug profile controls panel 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 profile helper 只保留在 `DebugProfileControlsPanel.cpp`，`DebugControllerPanel.cpp` 只调用两个 facade 入口。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `DebugControllerPanel.cpp` 与新增 `DebugProfileControlsPanel.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Debug profile controls facade extraction slice，不改变 postprocess、runtime frame pipeline、renderer frame pass、PBR preview、PBR experiment preset 或 environment profile 的配置字段与存储路径。
+- 下一步建议继续拆 `DebugControllerPanel.cpp` 的 legacy debug controls / renderer stats 编排，或把 Debug profile controls facade 内部进一步拆成可注册 profile panel provider。

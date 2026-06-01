@@ -582,6 +582,8 @@ public:
 372. 下一步建议处理最后剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile 对象：`RuntimeFramePipelineProfile`。
 373. Runtime Frame Pipeline Profile Config Schema Adapter 已完成第一版：新增 `RuntimeFramePipelineProfileConfig` schema adapter，`RuntimeFramePipelineProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，Runtime Frame Pipeline debug panel 与 profile storage 改为通过 adapter 构建 schema。
 374. Profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；下一步建议检查 config/provider 层的 `PropertyBuilder` 依赖是否都处在合理边界，或继续把 DebugControllerPanel 的 profile panel 编排拆成独立 facade。
+375. Debug Profile Controls Panel Extraction 已完成第一版：新增 `DebugProfileControlsPanel` facade，Post Process、Runtime Frame Pipeline、Renderer Frame Pass、PBR Preview、PBR Experiment 与 Environment profile 控制从 `DebugControllerPanel.cpp` 迁出，DebugControllerPanel 只保留高层编排。
+376. 下一步建议继续拆 `DebugControllerPanel.cpp` 的 legacy debug controls / renderer stats 编排，或把 Debug profile controls facade 内部进一步拆成可注册 profile panel provider。
 
 ## 约束
 

@@ -1053,6 +1053,9 @@
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\editor\DebugProfileControlsPanel.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\editor\EngineDiagnosticsPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -2964,6 +2967,9 @@
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\editor\DebugControllerPanel.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\editor\DebugProfileControlsPanel.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\editor\EngineDiagnosticsContext.h">

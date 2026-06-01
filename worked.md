@@ -8078,3 +8078,16 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；5 个 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 runtime frame pipeline profile 默认路径、`passOrder` key、frame pass enable key、runtime frame pass registry predicate、runtime renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百四十二轮 Debug Profile Controls Panel Extraction：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `891247e Extract runtime frame pipeline profile config schema`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档从 profile schema adapter 转入系统化 UI/inspector 边界，选择先拆 `DebugControllerPanel.cpp` 中的 profile 控制面板编排，降低 DebugControllerPanel 对 profile/config adapter 和 `PropertyInspector` 的直接耦合。
+  - 新增 [DebugProfileControlsPanel.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugProfileControlsPanel.h) 与 [DebugProfileControlsPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugProfileControlsPanel.cpp)，提供 `drawDebugPipelineProfileControls(...)` 与 `drawDebugSceneProfileControls(...)` 两个 facade。
+  - 更新 [DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，移除 profile helper 实现和 profile/config adapter 直接 include，改为按原有 UI 顺序调用 Debug profile controls facade。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 Debug profile controls panel 源文件和头文件。
+  - 已执行静态检查：确认 profile 控制 helper 只保留在 `DebugProfileControlsPanel.cpp`，`DebugControllerPanel.cpp` 只保留两个 facade 调用点。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 Debug Controller 面板 UI 顺序、profile 配置 key、profile save/reload 行为、PBR pass、runtime frame pipeline、renderer backend contract 或历史实验入口；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
