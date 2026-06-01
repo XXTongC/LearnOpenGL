@@ -10607,3 +10607,26 @@ Subagent 审查：
 
 - 这是 Debug profile controls facade extraction slice，不改变 postprocess、runtime frame pipeline、renderer frame pass、PBR preview、PBR experiment preset 或 environment profile 的配置字段与存储路径。
 - 下一步建议继续拆 `DebugControllerPanel.cpp` 的 legacy debug controls / renderer stats 编排，或把 Debug profile controls facade 内部进一步拆成可注册 profile panel provider。
+
+### 2026-06-01 Debug Controller Remaining Panel Extraction
+
+本轮继续拆 `DebugControllerPanel.cpp`，处理上一轮后仍留在 controller 内的两个直接 UI 块：legacy debug controls 与 renderer frame stats。目标是让 Debug Controller 从“面板实现聚合”进一步收敛为“顺序编排 shell”，同时保持旧实验调试控件、renderer stats 文案和 Debug Controller 面板顺序不变。
+
+新增与修改：
+
+- 新增 `tools/editor/DebugLegacyControlsPanel.h/.cpp`，提供 `drawDebugLegacyControls(...)`，集中旧 directional light、shadow tightness / PCF、text rotate 和 point light orbit 调试控件。
+- 新增 `tools/editor/RendererFrameStatsPanel.h/.cpp`，提供 `drawRendererFrameStatsPanel(...)`，集中 renderer frame stats 展示，包括 PBR pass、shadow atlas、tiled / clustered light grid、GPU timing 和 debug draw call 统计。
+- `DebugControllerPanel.cpp` 删除 legacy controls 与 renderer stats 直接实现，只保留 Debug Controller 窗口、legacy/profile/stats/diagnostics 调用顺序和 FPS 文案。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 panel facade 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `DebugControllerPanel.cpp` 只保留 `drawDebugLegacyControls(...)`、`drawDebugPipelineProfileControls(...)`、`drawRendererFrameStatsPanel(...)`、`drawEngineDiagnosticsPanel(...)` 与 `drawDebugSceneProfileControls(...)` 编排调用。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `DebugControllerPanel.cpp`、`DebugLegacyControlsPanel.cpp` 与 `RendererFrameStatsPanel.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Debug Controller remaining panel extraction slice，不改变旧实验调试参数、renderer frame stats 字段、profile controls、Engine diagnostics、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议从“文件级拆分”进入更系统的 Debug panel provider / section registry，或继续检查 `DebugProfileControlsPanel.cpp` 内部 profile section 是否需要按 provider 化拆分。

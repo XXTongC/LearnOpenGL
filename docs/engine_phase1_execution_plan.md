@@ -419,10 +419,11 @@ passed
 - PBR Light/Camera Rig Config Schema Adapter 已接入：新增 `PBRLightRigProfileConfig` 与 `PBRCameraRigProfileConfig` schema adapter；`PBRLightRigProfile.h` 和 `PBRCameraRigProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，PBR experiment preset 的 `lightRig.*` 与 `cameraRig.*` 子配置改为通过 adapter 构建 schema。
 - Runtime Frame Pipeline Profile Config Schema Adapter 已接入：新增 `RuntimeFramePipelineProfileConfig` schema adapter；`RuntimeFramePipelineProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，Runtime Frame Pipeline debug panel 与 profile storage 改为通过 adapter 构建 schema。
 - Debug Profile Controls Panel Extraction 已接入：新增 `DebugProfileControlsPanel` facade；Post Process、Runtime Frame Pipeline、Renderer Frame Pass、PBR Preview、PBR Experiment 与 Environment profile 控制从 `DebugControllerPanel.cpp` 迁出，DebugControllerPanel 只保留高层编排。
+- Debug Controller Remaining Panel Extraction 已接入：新增 `DebugLegacyControlsPanel` 与 `RendererFrameStatsPanel` facade；legacy debug controls 与 renderer frame stats 从 `DebugControllerPanel.cpp` 迁出，DebugControllerPanel 收敛为 Debug Controller section 顺序编排 shell。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Debug Profile Controls Panel Extraction 已接入后，DebugControllerPanel 不再直接承载 profile 控制 helper 和 profile/config adapter include；profile 面板编排集中到 `DebugProfileControlsPanel`，UI 顺序、配置 key、save/reload 行为和 renderer backend contract 保持不变。
+当前最新修正：Debug Controller Remaining Panel Extraction 已接入后，DebugControllerPanel 不再直接承载 legacy debug controls 或 renderer frame stats 实现；这些 UI section 分别集中到 `DebugLegacyControlsPanel` 与 `RendererFrameStatsPanel`，DebugControllerPanel 只保留 section 顺序和 FPS 文案。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议继续拆 `DebugControllerPanel.cpp` 的 legacy debug controls / renderer stats 编排，或把 Debug profile controls facade 内部进一步拆成可注册 profile panel provider；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议从文件级拆分进入 Debug panel provider / section registry，或继续检查 `DebugProfileControlsPanel.cpp` 内部 profile section 是否需要 provider 化；当前不建议继续扩张 PBR pass。

@@ -584,6 +584,8 @@ public:
 374. Profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；下一步建议检查 config/provider 层的 `PropertyBuilder` 依赖是否都处在合理边界，或继续把 DebugControllerPanel 的 profile panel 编排拆成独立 facade。
 375. Debug Profile Controls Panel Extraction 已完成第一版：新增 `DebugProfileControlsPanel` facade，Post Process、Runtime Frame Pipeline、Renderer Frame Pass、PBR Preview、PBR Experiment 与 Environment profile 控制从 `DebugControllerPanel.cpp` 迁出，DebugControllerPanel 只保留高层编排。
 376. 下一步建议继续拆 `DebugControllerPanel.cpp` 的 legacy debug controls / renderer stats 编排，或把 Debug profile controls facade 内部进一步拆成可注册 profile panel provider。
+377. Debug Controller Remaining Panel Extraction 已完成第一版：新增 `DebugLegacyControlsPanel` 与 `RendererFrameStatsPanel` facade，legacy debug controls 与 renderer frame stats 从 `DebugControllerPanel.cpp` 迁出，DebugControllerPanel 收敛为 Debug Controller section 顺序编排 shell。
+378. 下一步建议从文件级拆分进入 Debug panel provider / section registry，或继续检查 `DebugProfileControlsPanel.cpp` 内部 profile section 是否需要 provider 化。
 
 ## 约束
 

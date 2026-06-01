@@ -8091,3 +8091,17 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；5 个 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Debug Controller 面板 UI 顺序、profile 配置 key、profile save/reload 行为、PBR pass、runtime frame pipeline、renderer backend contract 或历史实验入口；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百四十三轮 Debug Controller Remaining Panel Extraction：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `aed5057 Extract debug profile controls panel`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续拆 `DebugControllerPanel.cpp` 的 legacy debug controls / renderer stats 编排，目标是让 controller 只保留 Debug Controller 窗口和 section 顺序。
+  - 新增 [DebugLegacyControlsPanel.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugLegacyControlsPanel.h) 与 [DebugLegacyControlsPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugLegacyControlsPanel.cpp)，集中旧 directional light、shadow、text rotate 和 point light orbit 调试控件。
+  - 新增 [RendererFrameStatsPanel.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\RendererFrameStatsPanel.h) 与 [RendererFrameStatsPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\RendererFrameStatsPanel.cpp)，集中 renderer frame stats 展示。
+  - 更新 [DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，删除 legacy controls 与 renderer stats 直接实现，保留 legacy/profile/stats/diagnostics/profile/FPS 的顺序编排。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 panel facade 源文件和头文件。
+  - 已执行静态检查：确认旧控件 label 与 `Renderer Frame Stats` header 只保留在新 facade 内，`DebugControllerPanel.cpp` 只保留 section facade 调用。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改旧实验调试控件语义、renderer stats 字段、profile controls、Engine diagnostics、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
