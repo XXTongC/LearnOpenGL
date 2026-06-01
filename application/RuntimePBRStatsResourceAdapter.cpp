@@ -53,20 +53,23 @@ namespace
 				++stats.pbrShowcaseSphereCount;
 			}
 			const auto pbrMaterial = std::dynamic_pointer_cast<GLframework::PBRMaterial>(mesh->getMaterial());
-			if (pbrMaterial && pbrMaterial->mEmissiveIntensity > 0.0f && glm::length(pbrMaterial->mEmissiveColor) > 0.0001f)
+			const auto surface = pbrMaterial ? pbrMaterial->surfaceState() : GLframework::PBRSurfaceRuntimeState{};
+			const auto alphaMask = pbrMaterial ? pbrMaterial->alphaMaskState() : GLframework::PBRAlphaMaskRuntimeState{};
+			const auto ibl = pbrMaterial ? pbrMaterial->iblState() : GLframework::PBRIblRuntimeState{};
+			if (pbrMaterial && surface.emissiveIntensity > 0.0f && glm::length(surface.emissiveColor) > 0.0001f)
 			{
 				++stats.pbrEmissiveMeshCount;
 			}
-			if (pbrMaterial && pbrMaterial->mUseAlphaMask)
+			if (pbrMaterial && alphaMask.useAlphaMask)
 			{
 				++stats.pbrAlphaMaskedMeshCount;
 			}
 			if (pbrMaterial
-				&& pbrMaterial->mUseIBL
-				&& (pbrMaterial->mIblDiffuseStrength < 0.999f
-					|| pbrMaterial->mIblDiffuseStrength > 1.001f
-					|| pbrMaterial->mIblSpecularStrength < 0.999f
-					|| pbrMaterial->mIblSpecularStrength > 1.001f))
+				&& ibl.useIbl
+				&& (ibl.diffuseStrength < 0.999f
+					|| ibl.diffuseStrength > 1.001f
+					|| ibl.specularStrength < 0.999f
+					|| ibl.specularStrength > 1.001f))
 			{
 				++stats.pbrCustomIblMeshCount;
 			}

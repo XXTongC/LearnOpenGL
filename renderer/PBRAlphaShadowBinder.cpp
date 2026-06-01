@@ -17,7 +17,7 @@ namespace
 		}
 
 		auto pbrMaterial = std::static_pointer_cast<PBRMaterial>(material);
-		return pbrMaterial->mUseAlphaMask ? pbrMaterial : nullptr;
+		return pbrMaterial->alphaMaskState().useAlphaMask ? pbrMaterial : nullptr;
 	}
 
 	void bindAlphaMaskUniforms(
@@ -25,15 +25,18 @@ namespace
 		const std::shared_ptr<PBRMaterial>& material
 	)
 	{
-		shader->setFloat("alphaCutoff", material->mAlphaCutoff);
-		shader->setInt("useAlbedoMap", material->mAlbedoMap ? 1 : 0);
-		if (!material->mAlbedoMap)
+		const auto alphaMask = material->alphaMaskState();
+		const auto textures = material->textureState();
+		const auto albedoMap = textures.albedoMap ? *textures.albedoMap : nullptr;
+		shader->setFloat("alphaCutoff", alphaMask.alphaCutoff);
+		shader->setInt("useAlbedoMap", albedoMap ? 1 : 0);
+		if (!albedoMap)
 		{
 			return;
 		}
 
-		shader->setInt("albedoMap", material->mAlbedoMap->getUnit());
-		material->mAlbedoMap->Bind();
+		shader->setInt("albedoMap", albedoMap->getUnit());
+		albedoMap->Bind();
 	}
 }
 

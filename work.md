@@ -10358,3 +10358,29 @@ Subagent 审查：
 
 - 这是 Grass surface runtime state encapsulation first slice，不改变 Grass inspector 字段、实例化草模型导入行为、历史 grass field 实验材质贴图来源、Grass shader sampler/uniform 绑定、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议转入 `PBRMaterial`，先为 PBR texture/surface/IBL/alpha/channel 字段建立完整 runtime setter/slot DTO，再分批私有化 PBR 的公开字段。
+
+### 2026-06-01 PBR Material Runtime State API
+
+本轮进入 `PBRMaterial` 封装前置阶段。PBR 材质公开字段数量较多，且同时被 profile、renderer、shadow、GBuffer、IBL、stats 和场景创建路径使用；直接一次性私有化风险较高。因此本轮先建立完整 runtime input/state API，让可控读取路径先脱离 public field，为后续分批 private-field migration 做准备。
+
+新增与修改：
+
+- `MaterialEditControls.h` 新增 `PBRSurfaceInput` / `PBRSurfaceRuntimeState`、`PBRTextureInput` / `PBRTextureRuntimeState`、`PBRTextureChannelInput` / `PBRTextureChannelRuntimeState`、`PBRAlphaMaskInput` / `PBRAlphaMaskRuntimeState`、`PBRIblInput` / `PBRIblRuntimeState`。
+- `PBRMaterial` 新增 `setSurface(...)`、`setTextures(...)`、`setTextureChannels(...)`、`setAlphaMask(...)`、`setIbl(...)` 以及单项 setter，作为后续 scene/import/profile 写入迁移入口。
+- `PBRMaterial` 新增 `surfaceState()`、`textureState()`、`textureChannelState()`、`alphaMaskState()` 和 `iblState()`，作为 renderer / stats 只读观察入口。
+- `PBRMaterialProfile::applyTo(...)` / `copyFrom(...)` 改为通过 `PBRMaterial` 的 runtime API 写入和读取 surface、alpha mask 与 IBL 参数。
+- `PBRSurfaceResourceBinder` 改为通过 `textureChannelState()` / `alphaMaskState()` 读取贴图通道与 alpha mask。
+- `PBRAlphaShadowBinder` 与 `PBRDepthPrepass` 改为通过 `alphaMaskState()` / `textureState()` 读取 alpha mask 和 albedo map。
+- `PBRIBLResourceBinder` 与 `PBRGBufferPass` 改为通过 `iblState()` 判断材质级 IBL。
+- `RuntimePBRStatsResourceAdapter` 改为通过 `surfaceState()` / `alphaMaskState()` / `iblState()` 统计 emissive、alpha masked 与 custom IBL 材质。
+
+已完成验证：
+
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 PBR material、renderer binder/pass 和 stats adapter 相关路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBR material runtime state API bridge，不改变 PBR inspector 字段、profile 参数语义、texture channel 规则、alpha mask 行为、IBL 开关、shadow/depth/GBuffer/forward 绑定语义、runtime frame pipeline 或 renderer backend contract。
+- 本轮没有把 `PBRMaterial` 公开字段下沉为 private。下一步应迁移 scene setup、importer、engine world probe 和 verification scene writer 到 setter/API，再按 surface、texture slot、channel、alpha、IBL 分批私有化。

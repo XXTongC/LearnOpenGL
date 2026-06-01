@@ -22,7 +22,7 @@ bool PBRIBLResourceBinder::canUseIBL(
 )
 {
 	return material
-		&& material->mUseIBL
+		&& material->iblState().useIbl
 		&& environmentTargets != nullptr
 		&& environmentTargets->isInitialized()
 		&& environmentTargets->hasPrecomputedEnvironment();

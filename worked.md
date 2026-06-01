@@ -7936,3 +7936,18 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了 `assimpInstanceLoader.cpp`、`grassInstanceMaterial.cpp`、`MaterialBinder.cpp`、`MaterialPropertyProviders.cpp`、`LegacyExperimentRunner.cpp` 等相关路径，五条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Grass inspector 字段、实例化草模型导入行为、历史 grass field 实验材质贴图来源、Grass shader sampler/uniform 绑定、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百三十三轮 PBR Material Runtime State API：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `856cd90 Encapsulate grass surface state`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档转入 `PBRMaterial`，但先选择 runtime state API bridge，而不是直接私有化所有 PBR public fields，避免一次性影响 profile、renderer、shadow、GBuffer、IBL、stats 和 scene/import 写入路径。
+  - 更新 [MaterialEditControls.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\MaterialEditControls.h)，新增 `PBRSurfaceInput` / `PBRSurfaceRuntimeState`、`PBRTextureInput` / `PBRTextureRuntimeState`、`PBRTextureChannelInput` / `PBRTextureChannelRuntimeState`、`PBRAlphaMaskInput` / `PBRAlphaMaskRuntimeState`、`PBRIblInput` / `PBRIblRuntimeState`。
+  - 更新 [PBRMaterial.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.h) 与 [PBRMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.cpp)，新增 grouped setter、单项 setter 与 `surfaceState()` / `textureState()` / `textureChannelState()` / `alphaMaskState()` / `iblState()`，并让 `PBRMaterialProfile::applyTo(...)` / `copyFrom(...)` 通过 runtime API 读写 surface、alpha mask 与 IBL。
+  - 更新 [PBRSurfaceResourceBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRSurfaceResourceBinder.cpp)，贴图通道与 alpha mask 绑定改为通过 `textureChannelState()` / `alphaMaskState()` 读取。
+  - 更新 [PBRAlphaShadowBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRAlphaShadowBinder.cpp) 与 [PBRDepthPrepass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRDepthPrepass.cpp)，alpha shadow / depth prepass 改为通过 `alphaMaskState()` / `textureState()` 读取。
+  - 更新 [PBRIBLResourceBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRIBLResourceBinder.cpp) 与 [PBRGBufferPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PBRGBufferPass.cpp)，材质级 IBL 判断改为通过 `iblState()` 读取。
+  - 更新 [RuntimePBRStatsResourceAdapter.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRStatsResourceAdapter.cpp)，PBR prepared scene stats 改为通过 `surfaceState()` / `alphaMaskState()` / `iblState()` 统计 emissive、alpha masked 和 custom IBL。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；五条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 PBR inspector 字段、profile 参数语义、texture channel 规则、alpha mask 行为、IBL 开关、shadow/depth/GBuffer/forward 绑定语义、runtime frame pipeline 或 renderer backend contract；`PBRMaterial` public fields 尚未私有化，下一轮应迁移 scene/import/probe writer 后再分批 private。

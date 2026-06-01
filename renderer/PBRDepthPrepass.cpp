@@ -67,7 +67,7 @@ bool PBRDepthPrepass::renderObject(
 	}
 
 	const auto pbrMaterial = std::static_pointer_cast<PBRMaterial>(material);
-	if (pbrMaterial->mUseAlphaMask)
+	if (pbrMaterial->alphaMaskState().useAlphaMask)
 	{
 		return false;
 	}

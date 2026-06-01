@@ -1,6 +1,7 @@
 #include "PBRMaterial.h"
 
 #include <cstddef>
+#include <utility>
 
 #include "tools/config/ProfileConfigIO.h"
 #include "tools/inspector/PropertySchema.h"
@@ -127,32 +128,34 @@ namespace
 
 void PBRMaterialProfile::applyTo(PBRMaterial& material) const
 {
-	material.mAlbedo = albedo;
-	material.mEmissiveColor = emissiveColor;
-	material.mMetallic = metallic;
-	material.mRoughness = roughness;
-	material.mAo = ao;
-	material.mEmissiveIntensity = emissiveIntensity;
-	material.mUseAlphaMask = useAlphaMask;
-	material.mAlphaCutoff = alphaCutoff;
-	material.mUseIBL = useIBL;
-	material.mIblDiffuseStrength = iblDiffuseStrength;
-	material.mIblSpecularStrength = iblSpecularStrength;
+	material.setSurface({
+		albedo,
+		emissiveColor,
+		metallic,
+		roughness,
+		ao,
+		emissiveIntensity
+	});
+	material.setAlphaMask({ useAlphaMask, alphaCutoff });
+	material.setIbl({ useIBL, iblDiffuseStrength, iblSpecularStrength });
 }
 
 void PBRMaterialProfile::copyFrom(const PBRMaterial& material)
 {
-	albedo = material.mAlbedo;
-	emissiveColor = material.mEmissiveColor;
-	metallic = material.mMetallic;
-	roughness = material.mRoughness;
-	ao = material.mAo;
-	emissiveIntensity = material.mEmissiveIntensity;
-	useAlphaMask = material.mUseAlphaMask;
-	alphaCutoff = material.mAlphaCutoff;
-	useIBL = material.mUseIBL;
-	iblDiffuseStrength = material.mIblDiffuseStrength;
-	iblSpecularStrength = material.mIblSpecularStrength;
+	const auto surface = material.surfaceState();
+	const auto alphaMask = material.alphaMaskState();
+	const auto ibl = material.iblState();
+	albedo = surface.albedo;
+	emissiveColor = surface.emissiveColor;
+	metallic = surface.metallic;
+	roughness = surface.roughness;
+	ao = surface.ao;
+	emissiveIntensity = surface.emissiveIntensity;
+	useAlphaMask = alphaMask.useAlphaMask;
+	alphaCutoff = alphaMask.alphaCutoff;
+	useIBL = ibl.useIbl;
+	iblDiffuseStrength = ibl.diffuseStrength;
+	iblSpecularStrength = ibl.specularStrength;
 }
 
 void PBRMaterialProfile::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
@@ -196,6 +199,177 @@ bool PBRMaterialProfileStorage::saveToFile(const std::string& path, const PBRMat
 PBRMaterial::PBRMaterial()
 {
 	setMaterialType(MaterialType::PBRMaterial);
+}
+
+void PBRMaterial::setSurface(PBRSurfaceInput surface)
+{
+	mAlbedo = surface.albedo;
+	mEmissiveColor = surface.emissiveColor;
+	mMetallic = surface.metallic;
+	mRoughness = surface.roughness;
+	mAo = surface.ao;
+	mEmissiveIntensity = surface.emissiveIntensity;
+}
+
+void PBRMaterial::setTextures(PBRTextureInput textures)
+{
+	mAlbedoMap = std::move(textures.albedoMap);
+	mMetallicMap = std::move(textures.metallicMap);
+	mRoughnessMap = std::move(textures.roughnessMap);
+	mAoMap = std::move(textures.aoMap);
+	mNormalMap = std::move(textures.normalMap);
+	mEmissiveMap = std::move(textures.emissiveMap);
+}
+
+void PBRMaterial::setTextureChannels(PBRTextureChannelInput channels)
+{
+	mMetallicMapChannel = channels.metallicMapChannel;
+	mRoughnessMapChannel = channels.roughnessMapChannel;
+	mAoMapChannel = channels.aoMapChannel;
+}
+
+void PBRMaterial::setAlphaMask(PBRAlphaMaskInput alphaMask)
+{
+	mUseAlphaMask = alphaMask.useAlphaMask;
+	mAlphaCutoff = alphaMask.alphaCutoff;
+}
+
+void PBRMaterial::setIbl(PBRIblInput ibl)
+{
+	mUseIBL = ibl.useIbl;
+	mIblDiffuseStrength = ibl.diffuseStrength;
+	mIblSpecularStrength = ibl.specularStrength;
+}
+
+void PBRMaterial::setAlbedo(glm::vec3 albedo)
+{
+	mAlbedo = albedo;
+}
+
+void PBRMaterial::setEmissiveColor(glm::vec3 emissiveColor)
+{
+	mEmissiveColor = emissiveColor;
+}
+
+void PBRMaterial::setMetallic(float metallic)
+{
+	mMetallic = metallic;
+}
+
+void PBRMaterial::setRoughness(float roughness)
+{
+	mRoughness = roughness;
+}
+
+void PBRMaterial::setAo(float ao)
+{
+	mAo = ao;
+}
+
+void PBRMaterial::setEmissiveIntensity(float emissiveIntensity)
+{
+	mEmissiveIntensity = emissiveIntensity;
+}
+
+void PBRMaterial::setAlbedoMap(std::shared_ptr<Texture> texture)
+{
+	mAlbedoMap = std::move(texture);
+}
+
+void PBRMaterial::setMetallicMap(std::shared_ptr<Texture> texture)
+{
+	mMetallicMap = std::move(texture);
+}
+
+void PBRMaterial::setRoughnessMap(std::shared_ptr<Texture> texture)
+{
+	mRoughnessMap = std::move(texture);
+}
+
+void PBRMaterial::setAoMap(std::shared_ptr<Texture> texture)
+{
+	mAoMap = std::move(texture);
+}
+
+void PBRMaterial::setNormalMap(std::shared_ptr<Texture> texture)
+{
+	mNormalMap = std::move(texture);
+}
+
+void PBRMaterial::setEmissiveMap(std::shared_ptr<Texture> texture)
+{
+	mEmissiveMap = std::move(texture);
+}
+
+void PBRMaterial::setUseAlphaMask(bool useAlphaMask)
+{
+	mUseAlphaMask = useAlphaMask;
+}
+
+void PBRMaterial::setAlphaCutoff(float alphaCutoff)
+{
+	mAlphaCutoff = alphaCutoff;
+}
+
+void PBRMaterial::setUseIbl(bool useIbl)
+{
+	mUseIBL = useIbl;
+}
+
+void PBRMaterial::setIblStrengths(float diffuseStrength, float specularStrength)
+{
+	mIblDiffuseStrength = diffuseStrength;
+	mIblSpecularStrength = specularStrength;
+}
+
+PBRSurfaceRuntimeState PBRMaterial::surfaceState() const
+{
+	return PBRSurfaceRuntimeState{
+		mAlbedo,
+		mEmissiveColor,
+		mMetallic,
+		mRoughness,
+		mAo,
+		mEmissiveIntensity
+	};
+}
+
+PBRTextureRuntimeState PBRMaterial::textureState() const
+{
+	return PBRTextureRuntimeState{
+		&mAlbedoMap,
+		&mMetallicMap,
+		&mRoughnessMap,
+		&mAoMap,
+		&mNormalMap,
+		&mEmissiveMap
+	};
+}
+
+PBRTextureChannelRuntimeState PBRMaterial::textureChannelState() const
+{
+	return PBRTextureChannelRuntimeState{
+		mMetallicMapChannel,
+		mRoughnessMapChannel,
+		mAoMapChannel
+	};
+}
+
+PBRAlphaMaskRuntimeState PBRMaterial::alphaMaskState() const
+{
+	return PBRAlphaMaskRuntimeState{
+		mUseAlphaMask,
+		mAlphaCutoff
+	};
+}
+
+PBRIblRuntimeState PBRMaterial::iblState() const
+{
+	return PBRIblRuntimeState{
+		mUseIBL,
+		mIblDiffuseStrength,
+		mIblSpecularStrength
+	};
 }
 
 std::array<PBRTextureSlot, 6> PBRMaterial::getTextureSlots()

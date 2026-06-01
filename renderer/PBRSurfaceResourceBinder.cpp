@@ -45,11 +45,13 @@ bool PBRSurfaceResourceBinder::bind(
 	{
 		shader->setFloat(slot.uniformName, slot.value ? *slot.value : 0.0f);
 	}
-	shader->setInt("metallicMapChannel", material->mMetallicMapChannel);
-	shader->setInt("roughnessMapChannel", material->mRoughnessMapChannel);
-	shader->setInt("aoMapChannel", material->mAoMapChannel);
-	shader->setInt("useAlphaMask", material->mUseAlphaMask ? 1 : 0);
-	shader->setFloat("alphaCutoff", material->mAlphaCutoff);
+	const auto textureChannels = material->textureChannelState();
+	const auto alphaMask = material->alphaMaskState();
+	shader->setInt("metallicMapChannel", textureChannels.metallicMapChannel);
+	shader->setInt("roughnessMapChannel", textureChannels.roughnessMapChannel);
+	shader->setInt("aoMapChannel", textureChannels.aoMapChannel);
+	shader->setInt("useAlphaMask", alphaMask.useAlphaMask ? 1 : 0);
+	shader->setFloat("alphaCutoff", alphaMask.alphaCutoff);
 
 	for (const auto& slot : material->getTextureSlots())
 	{

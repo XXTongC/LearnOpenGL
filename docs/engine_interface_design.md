@@ -564,6 +564,8 @@ public:
 354. 下一步建议继续私有化 `GrassInstanceMaterial` 的 surface/wind/cloud 字段，或先为 PBRMaterial 建立完整 runtime setter/slot DTO 后再处理 PBR 字段封装。
 355. Grass Surface Runtime State Encapsulation 已完成第一版：新增 `GrassSurfaceInput` / `GrassSurfaceRuntimeState`，`GrassInstanceMaterial` 的 diffuse/specular/opacity/cloud/shininess 字段下沉为 `private`；renderer 通过 `surfaceState()` 读取，legacy grass field 与 instanced loader 通过 setter 写入。
 356. 下一步建议转入 `PBRMaterial`，先建立完整 texture/surface/IBL/alpha/channel runtime setter/slot DTO，再分批私有化 PBR 的公开字段。
+357. PBR Material Runtime State API 已完成第一版：新增 PBR surface/texture/channel/alpha/IBL input 与 runtime state DTO，`PBRMaterial` 暴露 grouped setter、单项 setter 和只读 state API；profile、renderer binder/pass 与 PBR stats 已迁入 API。
+358. 下一步建议迁移 scene setup、importer、engine world probe 和 verification scene writer 到 `PBRMaterial` setter/API，然后按 surface、texture slot、channel、alpha、IBL 分批私有化 PBR 公开字段。
 
 ## 约束
 

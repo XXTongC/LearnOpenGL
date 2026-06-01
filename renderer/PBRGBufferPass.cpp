@@ -115,7 +115,7 @@ PBRGBufferPassStats PBRGBufferPass::render(
 			continue;
 		}
 		PBRSurfaceResourceBinder::bind(shader, material);
-		shader->setInt("useIBL", material->mUseIBL ? 1 : 0);
+		shader->setInt("useIBL", material->iblState().useIbl ? 1 : 0);
 		for (const auto& slot : material->getIblFloatUniformSlots())
 		{
 			shader->setFloat(slot.uniformName, slot.value ? *slot.value : 0.0f);

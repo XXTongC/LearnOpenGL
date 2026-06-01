@@ -81,4 +81,84 @@ namespace GLframework
 		int* aoMapChannel{ nullptr };
 		bool* useIbl{ nullptr };
 	};
+
+	struct PBRSurfaceInput
+	{
+		glm::vec3 albedo{ 1.0f, 1.0f, 1.0f };
+		glm::vec3 emissiveColor{ 0.0f, 0.0f, 0.0f };
+		float metallic{ 0.0f };
+		float roughness{ 0.5f };
+		float ao{ 1.0f };
+		float emissiveIntensity{ 0.0f };
+	};
+
+	struct PBRSurfaceRuntimeState
+	{
+		glm::vec3 albedo{ 1.0f, 1.0f, 1.0f };
+		glm::vec3 emissiveColor{ 0.0f, 0.0f, 0.0f };
+		float metallic{ 0.0f };
+		float roughness{ 0.5f };
+		float ao{ 1.0f };
+		float emissiveIntensity{ 0.0f };
+	};
+
+	struct PBRTextureInput
+	{
+		std::shared_ptr<Texture> albedoMap{ nullptr };
+		std::shared_ptr<Texture> metallicMap{ nullptr };
+		std::shared_ptr<Texture> roughnessMap{ nullptr };
+		std::shared_ptr<Texture> aoMap{ nullptr };
+		std::shared_ptr<Texture> normalMap{ nullptr };
+		std::shared_ptr<Texture> emissiveMap{ nullptr };
+	};
+
+	struct PBRTextureRuntimeState
+	{
+		const std::shared_ptr<Texture>* albedoMap{ nullptr };
+		const std::shared_ptr<Texture>* metallicMap{ nullptr };
+		const std::shared_ptr<Texture>* roughnessMap{ nullptr };
+		const std::shared_ptr<Texture>* aoMap{ nullptr };
+		const std::shared_ptr<Texture>* normalMap{ nullptr };
+		const std::shared_ptr<Texture>* emissiveMap{ nullptr };
+	};
+
+	struct PBRTextureChannelInput
+	{
+		int metallicMapChannel{ 0 };
+		int roughnessMapChannel{ 0 };
+		int aoMapChannel{ 0 };
+	};
+
+	struct PBRTextureChannelRuntimeState
+	{
+		int metallicMapChannel{ 0 };
+		int roughnessMapChannel{ 0 };
+		int aoMapChannel{ 0 };
+	};
+
+	struct PBRAlphaMaskInput
+	{
+		bool useAlphaMask{ false };
+		float alphaCutoff{ 0.5f };
+	};
+
+	struct PBRAlphaMaskRuntimeState
+	{
+		bool useAlphaMask{ false };
+		float alphaCutoff{ 0.5f };
+	};
+
+	struct PBRIblInput
+	{
+		bool useIbl{ false };
+		float diffuseStrength{ 1.0f };
+		float specularStrength{ 1.0f };
+	};
+
+	struct PBRIblRuntimeState
+	{
+		bool useIbl{ false };
+		float diffuseStrength{ 1.0f };
+		float specularStrength{ 1.0f };
+	};
 }

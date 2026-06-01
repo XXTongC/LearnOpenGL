@@ -62,6 +62,32 @@ namespace GLframework
 	{
 	public:
 		PBRMaterial();
+		void setSurface(PBRSurfaceInput surface);
+		void setTextures(PBRTextureInput textures);
+		void setTextureChannels(PBRTextureChannelInput channels);
+		void setAlphaMask(PBRAlphaMaskInput alphaMask);
+		void setIbl(PBRIblInput ibl);
+		void setAlbedo(glm::vec3 albedo);
+		void setEmissiveColor(glm::vec3 emissiveColor);
+		void setMetallic(float metallic);
+		void setRoughness(float roughness);
+		void setAo(float ao);
+		void setEmissiveIntensity(float emissiveIntensity);
+		void setAlbedoMap(std::shared_ptr<Texture> texture);
+		void setMetallicMap(std::shared_ptr<Texture> texture);
+		void setRoughnessMap(std::shared_ptr<Texture> texture);
+		void setAoMap(std::shared_ptr<Texture> texture);
+		void setNormalMap(std::shared_ptr<Texture> texture);
+		void setEmissiveMap(std::shared_ptr<Texture> texture);
+		void setUseAlphaMask(bool useAlphaMask);
+		void setAlphaCutoff(float alphaCutoff);
+		void setUseIbl(bool useIbl);
+		void setIblStrengths(float diffuseStrength, float specularStrength);
+		PBRSurfaceRuntimeState surfaceState() const;
+		PBRTextureRuntimeState textureState() const;
+		PBRTextureChannelRuntimeState textureChannelState() const;
+		PBRAlphaMaskRuntimeState alphaMaskState() const;
+		PBRIblRuntimeState iblState() const;
 		std::array<PBRTextureSlot, 6> getTextureSlots();
 		std::array<PBRConstTextureSlot, 6> getTextureSlots() const;
 		std::array<PBRVec3UniformSlot, 2> getVec3UniformSlots();

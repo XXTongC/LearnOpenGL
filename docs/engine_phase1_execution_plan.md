@@ -409,10 +409,11 @@ passed
 - Screen Material Input Texture Encapsulation 已接入：`ScreenMaterial` 的 screen/bloom/depth-stencil 输入纹理字段已下沉为 private，scene setup / resize 同步通过 `setInputTextures(...)` 写入，post-process composite 与 inspector 通过 `inputTextures()` DTO 只读访问。
 - Phong Surface Runtime State Encapsulation 已接入：`PhongMaterial`、`PhongPointShadowMaterial` 与 `PhongCSMShadowMaterial` 的 diffuse/specular/shininess 字段已下沉为 private，renderer 通过 `surfaceState()` 读取，setup/import/legacy 路径通过 setter 或 `setSurface(...)` 写入。
 - Grass Surface Runtime State Encapsulation 已接入：`GrassInstanceMaterial` 的 diffuse/specular/opacity/cloud/shininess 字段已下沉为 private，renderer 通过 `surfaceState()` 读取，legacy grass field 与 instanced loader 通过 setter 写入。
+- PBR Material Runtime State API 已接入：`PBRMaterial` 新增 surface/texture/channel/alpha/IBL input 与 runtime state DTO，profile、renderer binder/pass 和 PBR stats 已迁入 setter/state API；public fields 尚未私有化，作为后续 private-field migration 的桥接层。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Grass Surface Runtime State Encapsulation 已接入后，GrassInstanceMaterial 的 surface 字段不再公开暴露；renderer 走 `surfaceState()` 只读 DTO，legacy grass field 和 instanced loader 走 setter。
+当前最新修正：PBR Material Runtime State API 已接入后，PBRMaterial 的 profile、renderer binder/pass 和 prepared-scene stats 可通过明确 setter/state DTO 访问 surface、texture、channel、alpha mask 与 IBL 状态；字段尚未私有化。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步建议转入 `PBRMaterial`，先建立完整 texture/surface/IBL/alpha/channel runtime setter/slot DTO，再分批私有化 PBR 的公开字段；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步建议迁移 scene setup、importer、engine world probe 和 verification scene writer 到 `PBRMaterial` setter/API，然后按 surface、texture slot、channel、alpha、IBL 分批私有化公开字段；当前不建议继续扩张 PBR pass。
