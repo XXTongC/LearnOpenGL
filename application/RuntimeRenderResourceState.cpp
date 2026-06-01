@@ -34,11 +34,6 @@ const glm::vec3& GL_RUNTIME::RuntimeRenderResourceState::clearColor() const
 	return mClearColor;
 }
 
-void GL_RUNTIME::RuntimeRenderResourceState::syncClearColorToRenderer() const
-{
-	mRenderer->setClearColor(mClearColor);
-}
-
 std::shared_ptr<GLframework::Renderer>& GL_RUNTIME::RuntimeRenderResourceState::renderer()
 {
 	return mRenderer;
@@ -47,26 +42,6 @@ std::shared_ptr<GLframework::Renderer>& GL_RUNTIME::RuntimeRenderResourceState::
 const std::shared_ptr<GLframework::Renderer>& GL_RUNTIME::RuntimeRenderResourceState::renderer() const
 {
 	return mRenderer;
-}
-
-GLframework::RendererFramePassProfile* GL_RUNTIME::RuntimeRenderResourceState::rendererFramePassProfile()
-{
-	if (!mRenderer)
-	{
-		return nullptr;
-	}
-
-	return &mRenderer->getFramePassProfile();
-}
-
-const GLframework::RendererFramePassProfile* GL_RUNTIME::RuntimeRenderResourceState::rendererFramePassProfile() const
-{
-	if (!mRenderer)
-	{
-		return nullptr;
-	}
-
-	return &mRenderer->getFramePassProfile();
 }
 
 std::shared_ptr<GLframework::Scene>& GL_RUNTIME::RuntimeRenderResourceState::sceneOffScreen()

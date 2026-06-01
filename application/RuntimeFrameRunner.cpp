@@ -9,6 +9,7 @@
 #include "RuntimeLegacyExperimentLifecycle.h"
 #include "RuntimeFrameRunnerTypes.h"
 #include "RuntimeRendererFrameBridgeAdapter.h"
+#include "RuntimeRendererStateResourceAdapter.h"
 
 namespace GL_RUNTIME
 {
@@ -30,7 +31,7 @@ namespace GL_RUNTIME
 	)
 	{
 		context.cameraLights.cameracontrol->update();
-		context.renderResources.syncClearColorToRenderer();
+		RuntimeRendererStateResourceAdapter::syncClearColorToRenderer(context.renderResources);
 		RuntimeLegacyExperimentLifecycle::update(context, legacyExperiments);
 		if (config.engine)
 		{

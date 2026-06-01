@@ -2,6 +2,7 @@
 
 #include "AppRuntimeContext.h"
 #include "RuntimeFramePipelineProfile.h"
+#include "RuntimeRendererStateResourceAdapter.h"
 #include "../renderer/EnvironmentProfile.h"
 #include "../renderer/PostProcessSettings.h"
 #include "../renderer/RendererFramePassProfile.h"
@@ -56,7 +57,9 @@ namespace
 
 	void loadRendererFramePassProfile(GLframework::AppRuntimeContext& context)
 	{
-		auto* rendererFramePassProfile = context.renderResources.rendererFramePassProfile();
+		auto* rendererFramePassProfile = GL_RUNTIME::RuntimeRendererStateResourceAdapter::rendererFramePassProfile(
+			context.renderResources
+		);
 		if (!rendererFramePassProfile)
 		{
 			return;

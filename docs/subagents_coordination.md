@@ -1920,6 +1920,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `application/RuntimeEngineWorldVerificationResourceAdapter.h`, `application/RuntimeEngineWorldVerificationResourceAdapter.cpp`, `application/RuntimeEngineWorldVerification.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime probe scene resource adapter cleanup is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `application/RuntimeProbeSceneResourceAdapter.h`, `application/RuntimeProbeSceneResourceAdapter.cpp`, `application/RuntimePBRSceneProbeVerification.cpp`, `application/RuntimeImportedAssetVerification.cpp`, `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime renderer state resource adapter cleanup is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `application/RuntimeRendererStateResourceAdapter.h`, `application/RuntimeRendererStateResourceAdapter.cpp`, `application/RuntimeFrameRunner.cpp`, `application/RuntimePBRPassProfileVerification.cpp`, `application/RuntimeProfileLoader.cpp`, `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

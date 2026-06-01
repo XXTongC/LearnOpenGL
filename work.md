@@ -9820,3 +9820,28 @@ Subagent 审查：
 
 - 这是 verification probe scene 的 resource adapter cleanup，不改变 PBR transparent/emissive/material IBL/alpha mask/texture set/showcase/imported asset probe 的材质、位置、scene stats、asset import、scene package 或 Engine World import/export 语义，也不改变 runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步应继续审计非 adapter 调用方里剩余的窄 render resource state 方法，例如 frame runner clear color sync 与 renderer frame pass profile access；当前仍不建议继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Renderer State Resource Adapter Cleanup
+
+本轮继续处理 probe scene adapter 之后剩余的窄 render resource state public helper。`RuntimeFrameRunner.cpp` 原本为了每帧同步 clear color 直接调用 `RuntimeRenderResourceState::syncClearColorToRenderer()`；`RuntimePBRPassProfileVerification.cpp` 与 `RuntimeProfileLoader.cpp` 原本为了配置 renderer frame pass profile 直接调用 `RuntimeRenderResourceState::rendererFramePassProfile()`。这些 API 虽然比直接暴露 renderer owner 更窄，但仍把 renderer state/profile 操作留在 render resource state public surface 上。本轮把它们迁入专用 renderer state resource adapter。
+
+新增与修改：
+
+- 新增 `RuntimeRendererStateResourceAdapter.h/.cpp`，提供 `syncClearColorToRenderer(...)` 与 `rendererFramePassProfile(...)`。
+- `RuntimeRendererStateResourceAdapter.cpp` 内部集中读取 renderer owner，并集中执行 clear color 同步和 renderer frame pass profile 取得。
+- `RuntimeFrameRunner.cpp` 改为通过 adapter 同步 clear color，不再直接调用 render resource state helper。
+- `RuntimePBRPassProfileVerification.cpp` 与 `RuntimeProfileLoader.cpp` 改为通过 adapter 取得 renderer frame pass profile，不再直接调用 render resource state helper。
+- `RuntimeRenderResourceState.h/.cpp` 删除无剩余调用者的 `syncClearColorToRenderer()`、`rendererFramePassProfile()` 和残留 `RendererFramePassProfile` 前置声明。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 adapter 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认旧 helper 名称只存在于 `RuntimeRendererStateResourceAdapter` 和调用 adapter 的模块中，不再作为 `RuntimeRenderResourceState` public API。
+- 静态检查确认 `RuntimeFrameRunner.cpp`、`RuntimePBRPassProfileVerification.cpp` 与 `RuntimeProfileLoader.cpp` 不再直接调用 `context.renderResources.syncClearColorToRenderer()` 或 `rendererFramePassProfile()`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `RuntimeRendererStateResourceAdapter.cpp`、frame runner、profile verification、profile loader 和 render resource state。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 renderer state/profile 的 resource adapter cleanup，不改变 clear color 来源、renderer frame pass profile 默认/加载/verification 配置语义、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步应在 full verification 后重新审计 application 层剩余 `readOnlyView()` / direct render resource accessor；如果剩余 direct access 只存在于 adapter implementation，则 render resource decoupling 可以阶段性收束，转入更高层 Engine runtime ownership 或 editor/gameplay boundary。

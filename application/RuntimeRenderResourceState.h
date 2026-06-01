@@ -14,7 +14,6 @@ namespace GLframework
 	class PhongCSMShadowMaterial;
 	class PostProcessPass;
 	class Renderer;
-	struct RendererFramePassProfile;
 	class Scene;
 	class ScreenMaterial;
 }
@@ -37,11 +36,8 @@ namespace GL_RUNTIME
 
 		glm::vec3& clearColor();
 		const glm::vec3& clearColor() const;
-		void syncClearColorToRenderer() const;
 		std::shared_ptr<GLframework::Renderer>& renderer();
 		const std::shared_ptr<GLframework::Renderer>& renderer() const;
-		GLframework::RendererFramePassProfile* rendererFramePassProfile();
-		const GLframework::RendererFramePassProfile* rendererFramePassProfile() const;
 		std::shared_ptr<GLframework::Scene>& sceneOffScreen();
 		const std::shared_ptr<GLframework::Scene>& sceneOffScreen() const;
 		std::shared_ptr<GLframework::Scene>& sceneInScreen();

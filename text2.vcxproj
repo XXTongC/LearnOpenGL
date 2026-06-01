@@ -218,6 +218,7 @@
     <ClCompile Include="application\RuntimeRendererBackendFactory.cpp" />
     <ClCompile Include="application\RuntimeRendererBackendResourceAdapter.cpp" />
     <ClCompile Include="application\RuntimeRendererFrameBridgeAdapter.cpp" />
+    <ClCompile Include="application\RuntimeRendererStateResourceAdapter.cpp" />
     <ClCompile Include="application\RuntimeGuiHost.cpp" />
     <ClCompile Include="application\RuntimeInputController.cpp" />
     <ClCompile Include="application\RuntimePBRLightCameraRigVerification.cpp" />
@@ -574,6 +575,7 @@
     <ClInclude Include="application\RuntimeRendererBackendKeys.h" />
     <ClInclude Include="application\RuntimeRendererBackendResourceAdapter.h" />
     <ClInclude Include="application\RuntimeRendererFrameBridgeAdapter.h" />
+    <ClInclude Include="application\RuntimeRendererStateResourceAdapter.h" />
     <ClInclude Include="application\RuntimeGuiHost.h" />
     <ClInclude Include="application\RuntimeGuiHostTypes.h" />
     <ClInclude Include="application\RuntimeInputController.h" />

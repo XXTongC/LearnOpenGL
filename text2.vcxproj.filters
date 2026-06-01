@@ -561,6 +561,9 @@
     <ClCompile Include="application\RuntimeRendererFrameBridgeAdapter.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeRendererStateResourceAdapter.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeGuiHost.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -1332,6 +1335,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeRendererFrameBridgeAdapter.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeRendererStateResourceAdapter.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeGuiHost.h">

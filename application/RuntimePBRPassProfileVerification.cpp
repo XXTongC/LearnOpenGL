@@ -3,6 +3,7 @@
 #include <string>
 
 #include "AppRuntimeContext.h"
+#include "RuntimeRendererStateResourceAdapter.h"
 #include "RuntimeVerificationConfig.h"
 #include "../renderer/RendererFramePassProfile.h"
 
@@ -13,7 +14,9 @@ namespace GL_RUNTIME
 		const RuntimeVerificationConfig& verification
 	)
 	{
-		auto* rendererPassProfile = context.renderResources.rendererFramePassProfile();
+		auto* rendererPassProfile = RuntimeRendererStateResourceAdapter::rendererFramePassProfile(
+			context.renderResources
+		);
 		if (!rendererPassProfile)
 		{
 			return;
