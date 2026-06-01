@@ -37,11 +37,13 @@ namespace GL_RUNTIME
 		GLFWwindow* window
 	)
 	{
-		return {
-			shellConfig.enableGui,
-			window,
-			&shellConfig.editorOrbitAngle
-		};
+		RuntimeEditorLifecycleConfig config{};
+		config.enableGui = shellConfig.enableGui;
+		config.window = window;
+		config.editorOrbitAngle = &shellConfig.editorOrbitAngle;
+		config.editorUiModulePolicy.includeCoreEditorUi = shellConfig.enableCoreEditorUiModule;
+		config.editorUiModulePolicy.includeSampleEditorUi = shellConfig.enableSampleEditorUiModule;
+		return config;
 	}
 
 	RuntimeGraphicsLifecycleConfig RuntimeApplicationConfigPolicy::makeGraphicsLifecycleConfig(

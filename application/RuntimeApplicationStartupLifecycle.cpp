@@ -34,7 +34,7 @@ namespace GL_RUNTIME
 			return false;
 		}
 
-		RuntimeApplicationEditorStartupLifecycle::initializeEditor(config, window);
+		RuntimeApplicationEditorStartupLifecycle::initializeEditor(state, config, window);
 		RuntimeApplicationFrameStartupLifecycle::resetFrameLifecycle(state);
 		return true;
 	}

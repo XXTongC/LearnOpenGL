@@ -10944,3 +10944,28 @@ Subagent 审查：
 
 - 这是 Runtime Editor UI Module State Injection slice，不改变默认 module 组合、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议把 `RuntimeEditorLifecycleState` 构造 UI registries 时使用的默认 policy 继续参数化，让 `RuntimeEditorLifecycleConfig`、profile/config 或 command-line 可以控制 sample/default/plugin module 的启用状态。
+
+### 2026-06-01 Runtime Editor UI Module Config Policy
+
+本轮把 Editor UI module policy 从 runtime editor state 的内部默认值继续上提到 runtime editor lifecycle config。目标是让 application shell config 先具备控制 default/sample editor UI module 启用状态的字段，再由 config policy 映射到 `RuntimeEditorLifecycleConfig`，最终在 editor startup 阶段配置 `RuntimeEditorLifecycleState`。
+
+新增与修改：
+
+- `RuntimeApplicationShellConfig` 新增 `enableCoreEditorUiModule` 与 `enableSampleEditorUiModule`，默认都为 `true`，保持现有 UI 行为不变。
+- `RuntimeEditorLifecycleConfig` 新增 `EditorUiModuleCompositionPolicy editorUiModulePolicy`。
+- `RuntimeApplicationConfigPolicy::makeEditorLifecycleConfig(...)` 将 shell config 中的两个 module 开关映射到 `editorUiModulePolicy`。
+- `RuntimeEditorLifecycleState` 新增 `configureEditorUiModules(...)`，只在 policy 变化时重建 registries，避免每帧重复构建。
+- `RuntimeEditorLifecycle::initialize(...)` 改为接收 `RuntimeEditorLifecycleState&`，在 GUI 初始化前按 config policy 配置 state。
+- `RuntimeApplicationEditorStartupLifecycle::initializeEditor(...)` 与 `RuntimeApplicationStartupLifecycle` 更新为把 application state 传入 editor startup 阶段。
+
+已完成验证：
+
+- 静态检查确认旧 `RuntimeEditorLifecycle::initialize(config)` 调用已清除，editor startup 阶段会传入 state，shell config 开关会进入 `RuntimeEditorLifecycleConfig.editorUiModulePolicy`。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `RuntimeApplicationConfigPolicy.cpp`、`RuntimeApplicationEditorStartupLifecycle.cpp`、`RuntimeApplicationStartupLifecycle.cpp`、`RuntimeEditorLifecycle.cpp` 与 `RuntimeEditorLifecycleState.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime Editor UI Module Config Policy slice，不改变默认 module 组合、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议把 `RuntimeApplicationShellConfig` 的 module 开关接入 verification args、profile/config 文件或命令行参数，形成可外部控制的 editor UI module enable/disable 路径。

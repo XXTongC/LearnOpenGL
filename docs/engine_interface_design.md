@@ -612,6 +612,8 @@ public:
 402. 下一步建议把 `EditorUiModuleCompositionPolicy` 的来源继续上提到 editor/application composition 层，或接入 profile/config/command-line，让 sample/default/plugin module 启用状态可由组合根决定。
 403. Runtime Editor UI Module State Injection 已完成第一版：`RuntimeEditorLifecycleState` 持有默认构建的 `EditorUiModuleRegistries`，`RuntimeEditorPanelCoordinator` 将其注入 `DebugControllerContext` 与 `EditorPanelContext`；Debug/Profile/Selection panel 优先使用 context 注入 registries。
 404. 下一步建议把 `RuntimeEditorLifecycleState` 构造 UI registries 时使用的默认 policy 参数化，并接入 `RuntimeEditorLifecycleConfig`、profile/config 或 command-line，让 sample/default/plugin module 启用状态由组合根决定。
+405. Runtime Editor UI Module Config Policy 已完成第一版：`RuntimeApplicationShellConfig` 新增 `enableCoreEditorUiModule` 与 `enableSampleEditorUiModule`，`RuntimeEditorLifecycleConfig` 携带 `EditorUiModuleCompositionPolicy`，editor startup 阶段按 config policy 配置 `RuntimeEditorLifecycleState`。
+406. 下一步建议把 `RuntimeApplicationShellConfig` 的 module 开关接入 verification args、profile/config 文件或命令行参数，形成外部可控的 editor UI module enable/disable 路径。
 
 ## 约束
 

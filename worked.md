@@ -8290,3 +8290,19 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过，MSBuild 编译了 editor lifecycle、coordinator、Debug/Profile/Selection panel 等相关路径；5 个 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改默认 module 组合、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百五十七轮 Runtime Editor UI Module Config Policy：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `e645aab Inject editor UI module registries through runtime state`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续把 UI module policy 从 runtime editor state 内部默认值上提到 editor lifecycle config。
+  - 更新 [RuntimeApplicationConfig.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationConfig.h)，`RuntimeApplicationShellConfig` 新增 `enableCoreEditorUiModule` 与 `enableSampleEditorUiModule`，默认保持启用。
+  - 更新 [RuntimeEditorLifecycleConfig.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycleConfig.h)，新增 `EditorUiModuleCompositionPolicy editorUiModulePolicy`。
+  - 更新 [RuntimeApplicationConfigPolicy.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationConfigPolicy.cpp)，把 shell config 的 module 开关映射到 editor lifecycle config。
+  - 更新 [RuntimeEditorLifecycleState.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycleState.h) 与 [RuntimeEditorLifecycleState.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycleState.cpp)，新增 `configureEditorUiModules(...)`，仅在 policy 变化时重建 registries。
+  - 更新 [RuntimeEditorLifecycle.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycle.h) 与 [RuntimeEditorLifecycle.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycle.cpp)，初始化阶段接收 editor state 并按 config policy 配置 UI registries。
+  - 更新 [RuntimeApplicationEditorStartupLifecycle.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationEditorStartupLifecycle.h)、[RuntimeApplicationEditorStartupLifecycle.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationEditorStartupLifecycle.cpp) 与 [RuntimeApplicationStartupLifecycle.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationStartupLifecycle.cpp)，editor startup 阶段传入 application state。
+  - 已执行静态检查：确认旧 `RuntimeEditorLifecycle::initialize(config)` 调用已清除，shell config 开关会进入 `RuntimeEditorLifecycleConfig.editorUiModulePolicy`。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过，MSBuild 编译了 application config policy、startup lifecycle、editor lifecycle state 等相关路径；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改默认 module 组合、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

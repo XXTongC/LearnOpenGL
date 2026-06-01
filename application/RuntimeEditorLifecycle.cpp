@@ -9,8 +9,13 @@
 
 namespace GL_RUNTIME
 {
-	void RuntimeEditorLifecycle::initialize(const RuntimeEditorLifecycleConfig& config)
+	void RuntimeEditorLifecycle::initialize(
+		RuntimeEditorLifecycleState& state,
+		const RuntimeEditorLifecycleConfig& config
+	)
 	{
+		state.configureEditorUiModules(config.editorUiModulePolicy);
+
 		if (!config.enableGui)
 		{
 			return;

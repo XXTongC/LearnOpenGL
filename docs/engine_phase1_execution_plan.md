@@ -433,10 +433,11 @@ passed
 - Sample Editor UI Module 已接入：新增 `SampleEditorUiModule`，通过 `EditorUiModuleList` 注册 `sample-editor-ui-module` Debug Controller section，验证外部 module 可不修改 panel 代码扩展 UI。
 - Editor UI Module Composition Policy 已接入：新增 `EditorUiModuleComposition`，默认 module list 由 `EditorUiModuleCompositionPolicy` 生成，registry 不再直接依赖 core provider 或 sample module。
 - Runtime Editor UI Module State Injection 已接入：`RuntimeEditorLifecycleState` 持有默认构建的 `EditorUiModuleRegistries`，coordinator 将其注入 Debug/Profile/Selection panel context，panel 不再只依赖静态默认 registries。
+- Runtime Editor UI Module Config Policy 已接入：`RuntimeApplicationShellConfig` 新增 core/sample editor UI module 开关，`RuntimeEditorLifecycleConfig` 携带 `EditorUiModuleCompositionPolicy`，editor startup 阶段按 config policy 配置 state registries。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Runtime Editor UI Module State Injection 已接入后，默认 UI registries 由 `RuntimeEditorLifecycleState` 拥有并通过 coordinator 注入 panel context；Debug/Profile/Selection panel 优先使用注入 registries，静态默认仅作为兼容 fallback。
+当前最新修正：Runtime Editor UI Module Config Policy 已接入后，default/sample editor UI module 的启用状态已经从 state 内部默认值上提到 `RuntimeApplicationShellConfig -> RuntimeEditorLifecycleConfig -> RuntimeEditorLifecycleState` 的配置链路，默认仍全部启用。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议把 `RuntimeEditorLifecycleState` 构造 UI registries 时使用的默认 policy 继续参数化，让 `RuntimeEditorLifecycleConfig`、profile/config 或 command-line 可以控制 sample/default/plugin module 的启用状态；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议把 `RuntimeApplicationShellConfig` 的 module 开关接入 verification args、profile/config 文件或命令行参数，形成可外部控制的 editor UI module enable/disable 路径；当前不建议继续扩张 PBR pass。

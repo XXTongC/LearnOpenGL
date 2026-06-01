@@ -18,6 +18,8 @@ namespace GL_RUNTIME
 		int legacyGrassColumns{ 30 };
 		float editorOrbitAngle{ 0.0f };
 		bool enableGui{ true };
+		bool enableCoreEditorUiModule{ true };
+		bool enableSampleEditorUiModule{ true };
 		std::string rendererBackendKey{};
 		RuntimeFrameClockConfig frameClock{};
 		RuntimeVerificationConfig verification{};

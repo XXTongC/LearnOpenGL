@@ -14,7 +14,10 @@ namespace GL_RUNTIME
 	class RuntimeEditorLifecycle
 	{
 	public:
-		static void initialize(const RuntimeEditorLifecycleConfig& config);
+		static void initialize(
+			RuntimeEditorLifecycleState& state,
+			const RuntimeEditorLifecycleConfig& config
+		);
 
 		static RuntimeFrameCallbacks makeFrameCallbacks(
 			GLframework::AppRuntimeContext& context,
