@@ -1,12 +1,11 @@
 #include "DebugSceneProfileControlSections.h"
 
-#include <cassert>
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "DebugControllerContext.h"
 #include "DebugProfileControlSectionRegistry.h"
+#include "DebugSectionRegistration.h"
 #include "../../materials/pbrMaterial/PBRMaterialProfile.h"
 #include "../../renderer/EnvironmentProfile.h"
 #include "../../renderer/EnvironmentProfileConfig.h"
@@ -25,15 +24,6 @@ namespace
 	constexpr int kPBRPreviewOrder = 100;
 	constexpr int kPBRExperimentOrder = 200;
 	constexpr int kEnvironmentIblOrder = 300;
-
-	void registerDefaultProfileSection(
-		GL_EDITOR::DebugProfileControlSectionRegistry& registry,
-		GL_EDITOR::DebugProfileControlSection section
-	)
-	{
-		const bool registered = registry.registerSection(std::move(section));
-		assert(registered && registry.lastRegistrationFailure().empty());
-	}
 
 	void drawEnvironmentControls(
 		const std::shared_ptr<GLframework::Renderer>& renderer,
@@ -267,7 +257,7 @@ namespace
 
 void GL_EDITOR::registerDefaultDebugSceneProfileControlSections(DebugProfileControlSectionRegistry& registry)
 {
-	registerDefaultProfileSection(registry, {
+	registerRequiredDebugSection(registry, {
 		"pbr-preview",
 		kPBRPreviewOrder,
 		[](const DebugControllerContext& context)
@@ -276,7 +266,7 @@ void GL_EDITOR::registerDefaultDebugSceneProfileControlSections(DebugProfileCont
 		}
 	});
 
-	registerDefaultProfileSection(registry, {
+	registerRequiredDebugSection(registry, {
 		"pbr-experiment",
 		kPBRExperimentOrder,
 		[](const DebugControllerContext& context)
@@ -285,7 +275,7 @@ void GL_EDITOR::registerDefaultDebugSceneProfileControlSections(DebugProfileCont
 		}
 	});
 
-	registerDefaultProfileSection(registry, {
+	registerRequiredDebugSection(registry, {
 		"environment-ibl",
 		kEnvironmentIblOrder,
 		[](const DebugControllerContext& context)

@@ -10777,3 +10777,27 @@ Subagent 审查：
 
 - 这是 Debug Scene Profile Control Provider Extraction slice，不改变 scene/profile UI 顺序、配置 key、save/reload 行为、PBR experiment preset apply/copy 行为、IBL precompute 行为、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续推进可组合 UI provider 边界：可以把 pipeline/scene provider 共用的注册 assert helper 抽成小工具，或转入 Debug Controller section provider 的外部注册入口。
+
+### 2026-06-01 Debug Section Registration Helper Extraction
+
+本轮继续收束 Debug section provider 的重复注册逻辑，把 Debug Controller、pipeline profile provider、scene profile provider 中重复的 `registerSection(...) + assert(...)` helper 抽成通用小工具。目标是让每个 provider 只声明 section 内容，注册失败诊断统一由 registry/helper 处理。
+
+新增与修改：
+
+- 新增 `tools/editor/DebugSectionRegistration.h`，提供 `registerRequiredDebugSection(...)`，统一执行 section 注册并在 Debug 构建下断言 `lastRegistrationFailure()` 为空。
+- `KeyedSectionRegistry` 新增 `SectionType` 与 `ContextType` alias，供通用 helper 在接收花括号初始化的 section 时使用具体 registry section 类型。
+- `DebugControllerSections.cpp`、`DebugPipelineProfileControlSections.cpp` 与 `DebugSceneProfileControlSections.cpp` 删除各自本地注册 helper，统一调用 `registerRequiredDebugSection(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 helper header。
+
+已完成验证：
+
+- 静态检查确认旧的本地 `registerDefaultSection(...)` / `registerDefaultProfileSection(...)` helper 已移除，三个 provider 均使用 `registerRequiredDebugSection(...)`。
+- 第一次 focused verification 暴露 C++ 模板推导问题：helper 最初使用独立 `Section` 模板参数，无法从 `{ ... }` 推导花括号初始化 section；已改为 `typename Registry::SectionType` 并在 `KeyedSectionRegistry` 暴露 alias。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译通过并执行 5 个 focused mode。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Debug Section Registration Helper Extraction slice，不改变 Debug Controller UI section 顺序、pipeline/scene profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议转入 Debug Controller section provider 的外部注册入口，或开始设计真正的 editor plugin/module registration boundary，让默认 UI provider 不再只能在 factory 内静态组合。

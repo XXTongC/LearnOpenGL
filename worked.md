@@ -8151,6 +8151,21 @@
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Debug Controller UI section 顺序、profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
 
+- 启动第五百五十轮 Debug Section Registration Helper Extraction：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `566a9e9 Extract debug scene profile control provider`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续收束可组合 UI provider 边界，本轮选择把 Debug Controller / pipeline profile / scene profile provider 共用的注册断言逻辑抽成小工具。
+  - 新增 [DebugSectionRegistration.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugSectionRegistration.h)，提供 `registerRequiredDebugSection(...)`，统一执行 section 注册并断言 `lastRegistrationFailure()` 为空。
+  - 更新 [KeyedSectionRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\KeyedSectionRegistry.h)，新增 `SectionType` 与 `ContextType` alias，供通用 registration helper 消费具体 registry section 类型。
+  - 更新 [DebugControllerSections.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerSections.cpp)、[DebugPipelineProfileControlSections.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugPipelineProfileControlSections.cpp) 与 [DebugSceneProfileControlSections.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugSceneProfileControlSections.cpp)，删除各自本地注册 helper，统一调用 `registerRequiredDebugSection(...)`。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 helper header。
+  - 中间 focused verification 发现 C++ 模板推导问题：helper 使用独立 `Section` 模板参数时，无法从 `{ ... }` 推导花括号初始化 section；已修正为接收 `typename Registry::SectionType`。
+  - 已执行静态检查：确认旧的本地注册 helper 已移除，三个 provider 均使用 `registerRequiredDebugSection(...)`，`KeyedSectionRegistry` 暴露 `SectionType`。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：修正模板推导问题后，`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 Debug Controller UI section 顺序、pipeline/scene profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
 - 启动第五百四十九轮 Debug Scene Profile Control Provider Extraction：
   - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
   - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `566a9e9 Extract debug pipeline profile control provider`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。

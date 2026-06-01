@@ -1998,6 +1998,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `tools/editor/DebugPipelineProfileControlSections.h`, `tools/editor/DebugPipelineProfileControlSections.cpp`, `tools/editor/DebugProfileControlSections.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Debug scene profile control provider extraction is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `tools/editor/DebugSceneProfileControlSections.h`, `tools/editor/DebugSceneProfileControlSections.cpp`, `tools/editor/DebugProfileControlSections.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Debug section registration helper extraction is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `tools/editor/DebugSectionRegistration.h`, `tools/editor/KeyedSectionRegistry.h`, `tools/editor/DebugControllerSections.cpp`, `tools/editor/DebugPipelineProfileControlSections.cpp`, `tools/editor/DebugSceneProfileControlSections.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

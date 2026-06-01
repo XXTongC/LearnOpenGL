@@ -465,8 +465,9 @@ flowchart TD
 - Keyed Section Ordering and Diagnostics 已完成第一版：`KeyedSectionRegistry` 支持按 `section.order` 稳定插入，记录最近一次注册失败原因，并提供 `sectionCount()`；默认 Debug Controller/Profile section factory 均显式声明 order 并在 Debug 构建下 assert 注册结果。
 - Debug Pipeline Profile Control Provider Extraction 已完成第一版：新增 `DebugPipelineProfileControlSections` provider；Post Process、Runtime Frame Pipeline、Renderer Frame Pass Plan 三个 pipeline profile section 的绘制与注册从 `DebugProfileControlSections.cpp` 迁出。
 - Debug Scene Profile Control Provider Extraction 已完成第一版：新增 `DebugSceneProfileControlSections` provider；PBR Preview、PBR Experiment Preset、Environment / IBL 三个 scene profile section 的绘制与注册从 `DebugProfileControlSections.cpp` 迁出。
+- Debug Section Registration Helper Extraction 已完成第一版：新增 `DebugSectionRegistration.h`；Debug Controller、pipeline profile provider 与 scene profile provider 共用 `registerRequiredDebugSection(...)`，注册失败断言与 diagnostics 检查集中到 helper。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Debug Scene Profile Control Provider Extraction 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议把 pipeline/scene provider 共用的注册 assert helper 抽成小工具，或转入 Debug Controller section provider 的外部注册入口；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Debug Section Registration Helper Extraction 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议转入 Debug Controller section provider 的外部注册入口，或开始设计 editor plugin/module registration boundary；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Debug Scene Profile Control Provider Extraction 已接入后，`DebugProfileControlSections.cpp` 不再承载具体 UI helper，只负责组合 pipeline/scene provider 并返回默认 registry。
+当前最新修正：Debug Section Registration Helper Extraction 已接入后，三个 Debug section provider 不再各自复制注册断言逻辑，`KeyedSectionRegistry` 暴露 `SectionType` / `ContextType` 作为通用 helper 的稳定类型边界。

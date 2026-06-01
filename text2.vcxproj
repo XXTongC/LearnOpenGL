@@ -1023,6 +1023,7 @@
     <ClInclude Include="tools\editor\DebugProfileControlSections.h" />
     <ClInclude Include="tools\editor\DebugProfileControlsPanel.h" />
     <ClInclude Include="tools\editor\DebugSceneProfileControlSections.h" />
+    <ClInclude Include="tools\editor\DebugSectionRegistration.h" />
     <ClInclude Include="tools\editor\EngineDiagnosticsContext.h" />
     <ClInclude Include="tools\editor\EngineDiagnosticsPanel.h" />
     <ClInclude Include="tools\editor\EditorPanelContext.h" />

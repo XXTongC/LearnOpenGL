@@ -1,12 +1,10 @@
 #include "DebugControllerSections.h"
 
-#include <cassert>
-#include <utility>
-
 #include "DebugControllerContext.h"
 #include "DebugControllerSectionRegistry.h"
 #include "DebugLegacyControlsPanel.h"
 #include "DebugProfileControlsPanel.h"
+#include "DebugSectionRegistration.h"
 #include "EngineDiagnosticsContext.h"
 #include "EngineDiagnosticsPanel.h"
 #include "RendererFrameStatsPanel.h"
@@ -19,20 +17,11 @@ namespace
 	constexpr int kEngineDiagnosticsOrder = 400;
 	constexpr int kSceneProfileControlsOrder = 500;
 
-	void registerDefaultSection(
-		GL_EDITOR::DebugControllerSectionRegistry& registry,
-		GL_EDITOR::DebugControllerSection section
-	)
-	{
-		const bool registered = registry.registerSection(std::move(section));
-		assert(registered && registry.lastRegistrationFailure().empty());
-	}
-
 	GL_EDITOR::DebugControllerSectionRegistry makeDefaultDebugControllerSectionRegistry()
 	{
 		GL_EDITOR::DebugControllerSectionRegistry registry{};
 
-		registerDefaultSection(registry, {
+		GL_EDITOR::registerRequiredDebugSection(registry, {
 			"legacy-controls",
 			kLegacyControlsOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
@@ -41,7 +30,7 @@ namespace
 			}
 		});
 
-		registerDefaultSection(registry, {
+		GL_EDITOR::registerRequiredDebugSection(registry, {
 			"pipeline-profile-controls",
 			kPipelineProfileControlsOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
@@ -50,7 +39,7 @@ namespace
 			}
 		});
 
-		registerDefaultSection(registry, {
+		GL_EDITOR::registerRequiredDebugSection(registry, {
 			"renderer-frame-stats",
 			kRendererFrameStatsOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
@@ -59,7 +48,7 @@ namespace
 			}
 		});
 
-		registerDefaultSection(registry, {
+		GL_EDITOR::registerRequiredDebugSection(registry, {
 			"engine-diagnostics",
 			kEngineDiagnosticsOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
@@ -73,7 +62,7 @@ namespace
 			}
 		});
 
-		registerDefaultSection(registry, {
+		GL_EDITOR::registerRequiredDebugSection(registry, {
 			"scene-profile-controls",
 			kSceneProfileControlsOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)

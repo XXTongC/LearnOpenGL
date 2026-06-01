@@ -1,12 +1,11 @@
 #include "DebugPipelineProfileControlSections.h"
 
-#include <cassert>
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "DebugControllerContext.h"
 #include "DebugProfileControlSectionRegistry.h"
+#include "DebugSectionRegistration.h"
 #include "../../application/RuntimeFramePipelineProfile.h"
 #include "../../application/RuntimeFramePipelineProfileConfig.h"
 #include "../../renderer/PostProcessSettings.h"
@@ -22,15 +21,6 @@ namespace
 	constexpr int kPostProcessOrder = 100;
 	constexpr int kRuntimeFramePipelineOrder = 200;
 	constexpr int kRendererFramePassOrder = 300;
-
-	void registerDefaultProfileSection(
-		GL_EDITOR::DebugProfileControlSectionRegistry& registry,
-		GL_EDITOR::DebugProfileControlSection section
-	)
-	{
-		const bool registered = registry.registerSection(std::move(section));
-		assert(registered && registry.lastRegistrationFailure().empty());
-	}
 
 	void drawPostProcessControls(
 		GLframework::PostProcessSettings* settings,
@@ -169,7 +159,7 @@ namespace
 
 void GL_EDITOR::registerDefaultDebugPipelineProfileControlSections(DebugProfileControlSectionRegistry& registry)
 {
-	registerDefaultProfileSection(registry, {
+	registerRequiredDebugSection(registry, {
 		"post-process",
 		kPostProcessOrder,
 		[](const DebugControllerContext& context)
@@ -178,7 +168,7 @@ void GL_EDITOR::registerDefaultDebugPipelineProfileControlSections(DebugProfileC
 		}
 	});
 
-	registerDefaultProfileSection(registry, {
+	registerRequiredDebugSection(registry, {
 		"runtime-frame-pipeline",
 		kRuntimeFramePipelineOrder,
 		[](const DebugControllerContext& context)
@@ -187,7 +177,7 @@ void GL_EDITOR::registerDefaultDebugPipelineProfileControlSections(DebugProfileC
 		}
 	});
 
-	registerDefaultProfileSection(registry, {
+	registerRequiredDebugSection(registry, {
 		"renderer-frame-pass",
 		kRendererFramePassOrder,
 		[](const DebugControllerContext& context)

@@ -598,6 +598,8 @@ public:
 388. 下一步建议对 scene profile controls 做同类 provider extraction，把 PBR Preview、PBR Experiment 和 Environment / IBL 从 `DebugProfileControlSections.cpp` 迁出。
 389. Debug Scene Profile Control Provider Extraction 已完成第一版：新增 `DebugSceneProfileControlSections` provider，PBR Preview、PBR Experiment Preset、Environment / IBL 三个 scene profile section 的绘制与注册从 `DebugProfileControlSections.cpp` 迁出。
 390. 下一步建议继续推进可组合 UI provider 边界：可以把 pipeline/scene provider 共用的注册 assert helper 抽成小工具，或转入 Debug Controller section provider 的外部注册入口。
+391. Debug Section Registration Helper Extraction 已完成第一版：新增 `DebugSectionRegistration.h`，Debug Controller、pipeline profile provider 与 scene profile provider 共用 `registerRequiredDebugSection(...)`，注册失败断言与 `lastRegistrationFailure()` 检查不再散落在各 provider 文件中。
+392. 下一步建议转入 Debug Controller section provider 的外部注册入口，或开始设计 editor plugin/module registration boundary，让默认 UI provider 从静态 factory 组合进一步走向可扩展模块注册。
 
 ## 约束
 

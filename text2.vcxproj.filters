@@ -3011,6 +3011,9 @@
     <ClInclude Include="tools\editor\DebugSceneProfileControlSections.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
+    <ClInclude Include="tools\editor\DebugSectionRegistration.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
     <ClInclude Include="tools\editor\EngineDiagnosticsContext.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>

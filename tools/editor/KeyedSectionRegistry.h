@@ -12,6 +12,9 @@ namespace GL_EDITOR
 	class KeyedSectionRegistry
 	{
 	public:
+		using SectionType = Section;
+		using ContextType = Context;
+
 		bool registerSection(Section section)
 		{
 			mLastRegistrationFailure.clear();
