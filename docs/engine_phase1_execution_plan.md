@@ -402,10 +402,11 @@ passed
 - Runtime Selection Inspector Provider Factory Extraction 已接入：新增 `SelectionInspectorProviders` 集中默认 provider 注册和绘制 helper，`SelectionInspectorPanel.cpp` 收敛为薄 panel shell。
 - Runtime ActorComponent Property Provider Registry 已接入：新增 `ActorComponentPropertyProviderRegistry` 与默认 `ActorComponentPropertyProviders`，Component 基础字段与 SceneComponent / adapter 专属字段拆成 registry 构建边界。
 - Runtime Actor Property Provider Registry 已接入：新增 `ActorPropertyProviderRegistry` 与默认 `ActorPropertyProviders`，Actor 基础字段与 Root SceneComponent section 拆成 registry 构建边界。
+- Runtime Material Property Provider Registry 已接入：新增 `MaterialPropertyProviderRegistry` 与默认 `MaterialPropertyProviders`，`MaterialInspector` 通过默认 provider registry 构建 Material 属性；默认兼容 provider 仍委托现有 `Material::visitEditableProperties(...)`。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Runtime Actor Property Provider Registry 已接入后，`EngineWorldInspector` 不再直接构建 Actor 的 Root SceneComponent section，而是通过默认 Actor property provider registry 追加 Actor 扩展 section。
+当前最新修正：Runtime Material Property Provider Registry 已接入后，`MaterialInspector` 不再直接调用 `Material::visitEditableProperties(...)`，而是通过默认 Material property provider registry 追加 Material 属性；当前默认 provider 保持原行为兼容。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步优先把 Material inspector 接入 provider registry，当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步优先评估 Material property DTO/accessor 或逐步把具体 Material 类型字段迁出 runtime `visitEditableProperties(...)`，当前不建议继续扩张 PBR pass。

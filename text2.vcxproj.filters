@@ -999,6 +999,12 @@
     <ClCompile Include="tools\inspector\MaterialInspector.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\inspector\MaterialPropertyProviderRegistry.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\inspector\MaterialPropertyProviders.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\inspector\PropertyInspector.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -2949,6 +2955,12 @@
       <Filter>include\GLframework\tools\inspector</Filter>
     </ClInclude>
     <ClInclude Include="tools\inspector\MaterialInspector.h">
+      <Filter>include\GLframework\tools\inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\inspector\MaterialPropertyProviderRegistry.h">
+      <Filter>include\GLframework\tools\inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\inspector\MaterialPropertyProviders.h">
       <Filter>include\GLframework\tools\inspector</Filter>
     </ClInclude>
     <ClInclude Include="tools\inspector\PropertyInspector.h">

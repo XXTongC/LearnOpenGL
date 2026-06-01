@@ -4,6 +4,7 @@
 
 #include "../../framework/texture.h"
 #include "../../materials/material.h"
+#include "MaterialPropertyProviders.h"
 #include "PropertyInspector.h"
 
 namespace GL_EDITOR
@@ -48,7 +49,8 @@ namespace GL_EDITOR
 	bool drawMaterialInspector(GLframework::Material& material)
 	{
 		PropertyBuilder builder;
-		material.visitEditableProperties(builder);
+		MaterialPropertyProviderContext providerContext{ material };
+		getDefaultMaterialPropertyProviderRegistry().buildFirst(builder, providerContext);
 		return drawProperties(builder);
 	}
 }

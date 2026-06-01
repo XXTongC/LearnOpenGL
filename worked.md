@@ -7831,3 +7831,17 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了新增 Actor provider 文件和 `EngineWorldInspector.cpp`，五条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Actor inspector 字段、字段顺序、Component inspector、SceneComponent transform edit、snapshot action、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百二十六轮 Runtime Material Property Provider Registry：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `dd10b74 Add actor property providers`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把下一步聚焦到 Material inspector provider boundary，先保留现有 material `visitEditableProperties(...)` 行为作为兼容 provider。
+  - 新增 [MaterialPropertyProviderRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialPropertyProviderRegistry.h) 与 [MaterialPropertyProviderRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialPropertyProviderRegistry.cpp)，提供 Material property provider 注册和 first-match 构建能力。
+  - 新增 [MaterialPropertyProviders.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialPropertyProviders.h) 与 [MaterialPropertyProviders.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialPropertyProviders.cpp)，集中默认兼容 provider `legacy-visit-editable-properties`。
+  - 更新 [MaterialInspector.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialInspector.cpp)，改为通过默认 Material property provider registry 构建 UI schema，不再在 inspector facade 中直接调用 `material.visitEditableProperties(builder)`。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 Material provider registry/factory 源文件和头文件。
+  - 已执行静态检查：确认直接 `visitEditableProperties(builder)` 调用只保留在兼容 provider 中，`MaterialInspector.cpp` 已改为 registry 调用。
+  - 已执行静态检查：确认新增 Material property provider 文件已注册到 Visual Studio 工程。
+  - 已执行 focused verification：第一次使用错误 mode 名 `pbr-texture-set`，脚本按预期报 unknown mode；修正为 `texture-set` 后执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了 `MaterialInspector.cpp` 与新增 Material provider 文件，五条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 Material 字段、字段顺序、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

@@ -357,6 +357,8 @@
     <ClCompile Include="tools\inspector\AssetInspector.cpp" />
     <ClCompile Include="tools\inspector\EngineWorldInspector.cpp" />
     <ClCompile Include="tools\inspector\MaterialInspector.cpp" />
+    <ClCompile Include="tools\inspector\MaterialPropertyProviderRegistry.cpp" />
+    <ClCompile Include="tools\inspector\MaterialPropertyProviders.cpp" />
     <ClCompile Include="tools\inspector\PropertyInspector.cpp" />
     <ClCompile Include="tools\inspector\SceneObjectInspector.cpp" />
     <ClCompile Include="tools\inspector\SelectionInspectorPanel.cpp" />
@@ -1006,6 +1008,8 @@
     <ClInclude Include="tools\inspector\AssetInspector.h" />
     <ClInclude Include="tools\inspector\EngineWorldInspector.h" />
     <ClInclude Include="tools\inspector\MaterialInspector.h" />
+    <ClInclude Include="tools\inspector\MaterialPropertyProviderRegistry.h" />
+    <ClInclude Include="tools\inspector\MaterialPropertyProviders.h" />
     <ClInclude Include="tools\inspector\PropertyInspector.h" />
     <ClInclude Include="tools\inspector\PropertySchema.h" />
     <ClInclude Include="tools\inspector\SceneObjectInspector.h" />

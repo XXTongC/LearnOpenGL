@@ -441,8 +441,9 @@ flowchart TD
 - Runtime Selection Inspector Provider Factory Extraction 已完成第一版：新增 `SelectionInspectorProviders` 集中默认 provider 注册和绘制 helper，`SelectionInspectorPanel.cpp` 收敛为薄 panel shell。
 - Runtime ActorComponent Property Provider Registry 已完成第一版：新增 `ActorComponentPropertyProviderRegistry` 与默认 `ActorComponentPropertyProviders`，Component 基础字段与 SceneComponent / adapter 专属字段拆成 registry 构建边界。
 - Runtime Actor Property Provider Registry 已完成第一版：新增 `ActorPropertyProviderRegistry` 与默认 `ActorPropertyProviders`，Actor 基础字段与 Root SceneComponent section 拆成 registry 构建边界。
+- Runtime Material Property Provider Registry 已完成第一版：新增 `MaterialPropertyProviderRegistry` 与默认 `MaterialPropertyProviders`，`MaterialInspector` 通过默认 provider registry 构建 Material 属性；默认兼容 provider 仍委托现有 `Material::visitEditableProperties(...)`。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime Actor Property Provider Registry 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先推进 Material inspector provider，当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime Material Property Provider Registry 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先评估 Material property DTO/accessor 或把具体 Material 类型字段逐步迁出 runtime `visitEditableProperties(...)`，当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Actor Property Provider Registry 已接入后，`EngineWorldInspector` 不再直接构建 Actor 的 Root SceneComponent section，而是通过默认 Actor property provider registry 追加 Actor 扩展 section。
+当前最新修正：Runtime Material Property Provider Registry 已接入后，`MaterialInspector` 不再直接调用 `Material::visitEditableProperties(...)`，而是通过默认 Material property provider registry 追加 Material 属性；默认兼容 provider 保持原 Material UI 行为。

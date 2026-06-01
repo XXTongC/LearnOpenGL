@@ -10181,3 +10181,28 @@ Subagent 审查：
 
 - 这是 Actor property provider registry first slice，不改变 Actor inspector 字段、字段顺序、Component inspector、SceneComponent transform edit、snapshot action、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步更适合处理 Material inspector provider boundary：先保留现有 material `visitEditableProperties(...)` 作为兼容 provider，再逐步评估是否能把部分 material 字段从 runtime material 类迁出。
+
+### 2026-06-01 Runtime Material Property Provider Registry
+
+本轮继续推进系统化 UI/inspector 的 provider 边界，但不改动 Material 的实际字段定义。当前 `MaterialInspector.cpp` 过去直接调用 `material.visitEditableProperties(builder)`，这意味着 editor inspector 入口仍直接绑定到 runtime material 自身的 schema 生成函数。本轮先引入兼容 provider registry，把调用点从 inspector facade 移到默认 provider，为后续逐步迁出 material 类型专属字段留下扩展点。
+
+新增与修改：
+
+- 新增 `tools/inspector/MaterialPropertyProviderRegistry.h/.cpp`，提供 `MaterialPropertyProviderContext`、`MaterialPropertyProvider` 和 `MaterialPropertyProviderRegistry`，支持按顺序查找第一个可构建 Material 属性的 provider。
+- 新增 `tools/inspector/MaterialPropertyProviders.h/.cpp`，注册默认兼容 provider `legacy-visit-editable-properties`。
+- `MaterialInspector.cpp` 改为通过 `getDefaultMaterialPropertyProviderRegistry().buildFirst(...)` 构建属性，不再直接调用 `material.visitEditableProperties(builder)`。
+- 默认兼容 provider 内部仍委托现有 `Material::visitEditableProperties(...)`，因此当前 Material UI 字段、字段顺序和修改行为保持不变。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 Material provider registry/factory 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `MaterialInspector.cpp` 不再直接调用 `material.visitEditableProperties(builder)`，直接调用点只保留在兼容 provider 中。
+- 静态检查确认 `MaterialPropertyProviderRegistry` / `MaterialPropertyProviders` 文件已注册到 Visual Studio 工程。
+- focused verification 第一次命令写成了错误 mode 名 `pbr-texture-set`，verification 脚本按预期拒绝未知 mode；修正为 `texture-set` 后通过。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `MaterialInspector.cpp` 和新增 Material provider 文件。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Material property provider registry compatibility layer，不改变 material runtime 类、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract。
+- 下一步可以选择继续把具体 Material 类型字段从 `visitEditableProperties(...)` 逐步迁入 provider 模块，或先设计 Material property DTO/accessor 边界，避免 editor schema 继续由 runtime material 类直接声明。

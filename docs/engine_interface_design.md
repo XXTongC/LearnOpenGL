@@ -550,6 +550,8 @@ public:
 340. 下一步建议继续把 Material inspector 或 Actor property schema 迁入类似 provider registry，让系统化 UI 扩展点覆盖更多运行时类型。
 341. Runtime Actor Property Provider Registry 已完成第一版：新增 `ActorPropertyProviderRegistry` 与默认 `ActorPropertyProviders`，Actor 基础字段继续由 `EngineWorldInspector` 生成，Root SceneComponent section 改由 provider 追加。
 342. 下一步建议继续把 Material inspector 接入 provider registry，先保留现有 material `visitEditableProperties(...)` 作为兼容 provider，再评估逐步迁出 material runtime 类中的 editor schema 依赖。
+343. Runtime Material Property Provider Registry 已完成第一版：新增 `MaterialPropertyProviderRegistry` 与默认 `MaterialPropertyProviders`，`MaterialInspector` 改为通过默认 provider registry 构建 Material 属性；默认兼容 provider `legacy-visit-editable-properties` 仍委托现有 `Material::visitEditableProperties(...)`，保持 Material UI 行为不变。
+344. 下一步建议逐步把具体 Material 类型字段从 runtime `visitEditableProperties(...)` 迁入 provider 模块，或先补一层 Material property DTO/accessor 边界，避免 editor schema 长期由 runtime material 类直接声明。
 
 ## 约束
 
