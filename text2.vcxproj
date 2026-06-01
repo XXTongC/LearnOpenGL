@@ -214,6 +214,7 @@
     <ClCompile Include="application\RuntimeRendererBackendAttachmentLifecycle.cpp" />
     <ClCompile Include="application\RuntimeRendererBackendCatalog.cpp" />
     <ClCompile Include="application\RuntimeRendererBackendFactory.cpp" />
+    <ClCompile Include="application\RuntimeRendererBackendResourceAdapter.cpp" />
     <ClCompile Include="application\RuntimeRendererFrameBridgeAdapter.cpp" />
     <ClCompile Include="application\RuntimeGuiHost.cpp" />
     <ClCompile Include="application\RuntimeInputController.cpp" />
@@ -565,6 +566,7 @@
     <ClInclude Include="application\RuntimeRendererBackendCatalog.h" />
     <ClInclude Include="application\RuntimeRendererBackendFactory.h" />
     <ClInclude Include="application\RuntimeRendererBackendKeys.h" />
+    <ClInclude Include="application\RuntimeRendererBackendResourceAdapter.h" />
     <ClInclude Include="application\RuntimeRendererFrameBridgeAdapter.h" />
     <ClInclude Include="application\RuntimeGuiHost.h" />
     <ClInclude Include="application\RuntimeGuiHostTypes.h" />

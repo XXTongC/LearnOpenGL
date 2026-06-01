@@ -549,6 +549,9 @@
     <ClCompile Include="application\RuntimeRendererBackendFactory.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeRendererBackendResourceAdapter.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeRendererFrameBridgeAdapter.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -1305,6 +1308,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeRendererBackendKeys.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeRendererBackendResourceAdapter.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeRendererFrameBridgeAdapter.h">

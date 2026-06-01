@@ -12,6 +12,7 @@
 #include "../tools/Logger/LogManager.h"
 #include "AppRuntimeContext.h"
 #include "RuntimeEngineVerificationReport.h"
+#include "RuntimeRendererBackendResourceAdapter.h"
 #include "RuntimeRendererBackendVerificationReport.h"
 
 namespace
@@ -47,8 +48,11 @@ namespace GL_RUNTIME
 		}
 
 		const auto& rendererSubsystemStats = rendererSubsystem->getFrameBridgeStats();
-		const auto renderResources = context.renderResources.readOnlyView();
-		const bool runtimeRendererAttached = rendererSubsystem->getRenderer() == renderResources.renderer().get();
+		const bool runtimeRendererAttached =
+			RuntimeRendererBackendResourceAdapter::isRuntimeRendererAttached(
+				*rendererSubsystem,
+				context.renderResources
+			);
 		const bool runtimeContextRendererSubsystemAttached = context.engineAttachments.rendererSubsystem == rendererSubsystem;
 		reportLine(formatRuntimeRendererSubsystemStats(
 			rendererSubsystemStats,

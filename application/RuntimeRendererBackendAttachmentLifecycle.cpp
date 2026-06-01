@@ -5,6 +5,7 @@
 #include "AppRuntimeContext.h"
 #include "RuntimeRendererBackendCatalog.h"
 #include "RuntimeRendererBackendFactory.h"
+#include "RuntimeRendererBackendResourceAdapter.h"
 #include "../engine/RendererBackend.h"
 #include "../engine/RendererSubsystem.h"
 
@@ -16,8 +17,10 @@ namespace GL_RUNTIME
 		std::string_view rendererBackendKey
 	)
 	{
-		const auto renderResources = context.renderResources.readOnlyView();
-		rendererSubsystem.setRenderer(renderResources.renderer().get());
+		RuntimeRendererBackendResourceAdapter::attachRuntimeRenderer(
+			rendererSubsystem,
+			context.renderResources
+		);
 
 		const auto selection = RuntimeRendererBackendCatalog::resolveBackendSelection(rendererBackendKey);
 		auto rendererBackend = RuntimeRendererBackendFactory::createBackend(context, selection);

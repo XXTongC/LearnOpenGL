@@ -2,6 +2,7 @@
 
 #include "AppRuntimeContext.h"
 #include "RuntimeEngineLifecycle.h"
+#include "RuntimeRendererBackendResourceAdapter.h"
 #include "../tools/Logger/LogManager.h"
 
 namespace GL_RUNTIME
@@ -12,8 +13,7 @@ namespace GL_RUNTIME
 		std::string_view rendererBackendKey
 	)
 	{
-		const auto renderResources = context.renderResources.readOnlyView();
-		if (!renderResources.renderer())
+		if (!RuntimeRendererBackendResourceAdapter::hasRuntimeRenderer(context.renderResources))
 		{
 			LogError("Runtime content preparation failed: scene prepare did not create a renderer");
 			return false;

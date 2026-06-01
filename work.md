@@ -9691,3 +9691,28 @@ Subagent 审查：
 
 - 这是 window resize lifecycle 的 render resource adapter cleanup，不改变 GLFW callback 绑定、viewport resize、camera aspect sync、frame render target resize、post-process input texture sync、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步应继续审计 remaining direct access 中的 read-only / mutation 小边界，例如是否可以把 renderer backend attachment/report 进一步从 `RuntimeRenderResourceView` 迁到更窄 adapter，或转向其他 application state ownership 边界；当前仍不建议继续扩张 PBR pass。
+
+### 2026-06-01 Runtime Renderer Backend Resource Adapter Cleanup
+
+本轮继续处理 remaining direct access 中的 read-only / mutation 小边界。`RuntimeContentRendererBackendLifecycle.cpp`、`RuntimeRendererBackendAttachmentLifecycle.cpp` 与 `RuntimeVerificationReport.cpp` 原本只为了检查或绑定 runtime renderer 指针而创建 `RuntimeRenderResourceView`，这让 renderer backend attachment/report 路径仍暴露过宽的 render resource view。正确做法是为 renderer backend attachment/report 提供更窄 adapter，只暴露是否存在 renderer、把 renderer 附着到 `RendererSubsystem`、以及验证当前 renderer 是否已附着。
+
+新增与修改：
+
+- 新增 `RuntimeRendererBackendResourceAdapter.h/.cpp`，提供 `hasRuntimeRenderer(...)`、`attachRuntimeRenderer(...)` 与 `isRuntimeRendererAttached(...)`。
+- `RuntimeRendererBackendResourceAdapter.cpp` 内部集中读取 `RuntimeRenderResourceState::renderer()`，并集中调用 `RendererSubsystem::setRenderer(...)` / `getRenderer()`。
+- `RuntimeContentRendererBackendLifecycle.cpp` 不再通过 `readOnlyView()` 只为检查 renderer 是否存在，改为调用 `RuntimeRendererBackendResourceAdapter::hasRuntimeRenderer(...)`。
+- `RuntimeRendererBackendAttachmentLifecycle.cpp` 不再通过 `readOnlyView()` 取 renderer 指针后直接 `setRenderer(...)`，改为调用 `RuntimeRendererBackendResourceAdapter::attachRuntimeRenderer(...)`。
+- `RuntimeVerificationReport.cpp` 不再通过 `readOnlyView()` 取 renderer 指针做 attachment comparison，改为调用 `RuntimeRendererBackendResourceAdapter::isRuntimeRendererAttached(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 adapter 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeContentRendererBackendLifecycle.cpp`、`RuntimeRendererBackendAttachmentLifecycle.cpp` 与 `RuntimeVerificationReport.cpp` 中不再出现 `readOnlyView()`、`renderResources.renderer()` 或 `RuntimeRenderResourceView`。
+- 静态检查确认 renderer backend attachment/report 的 direct renderer pointer access 已集中到 `RuntimeRendererBackendResourceAdapter.cpp`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop,engine-world-minimal-scene -DiscardCaptures` 已通过；MSBuild 编译了新增 `RuntimeRendererBackendResourceAdapter.cpp` 和三个调用方。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 renderer backend attachment/report 的 render resource adapter cleanup，不改变 renderer backend selection、`RendererSubsystem` attachment 语义、verification report 字段、frame bridge、runtime frame pipeline 或 PBR pass。
+- 下一步应继续审计 remaining direct access 中的 PBR stats、Engine World verification、frame bridge readiness 等只读观察路径，判断是否需要进一步拆成更窄 readiness/report snapshot；当前仍不建议继续扩张 PBR pass。

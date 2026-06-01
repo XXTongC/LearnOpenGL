@@ -1910,6 +1910,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `application/RuntimeSceneSetupResourceAdapter.h`, `application/RuntimeSceneSetupResourceAdapter.cpp`, `application/RuntimeSceneSetupContextFactory.cpp`, `application/RuntimeLegacyExperimentLifecycle.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime window resize resource adapter cleanup is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `application/RuntimeWindowRenderResourceAdapter.h`, `application/RuntimeWindowRenderResourceAdapter.cpp`, `application/RuntimeWindowLifecycle.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime renderer backend resource adapter cleanup is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `application/RuntimeRendererBackendResourceAdapter.h`, `application/RuntimeRendererBackendResourceAdapter.cpp`, `application/RuntimeContentRendererBackendLifecycle.cpp`, `application/RuntimeRendererBackendAttachmentLifecycle.cpp`, `application/RuntimeVerificationReport.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 
