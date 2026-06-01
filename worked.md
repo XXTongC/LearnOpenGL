@@ -7733,3 +7733,17 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了新增 `AssetInspector.cpp` 与更新后的 `EditorPanels.cpp`，四条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 asset browser 展示、asset selection、asset registry 统计、imported asset 判断语义、asset property 字段、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百一十九轮 Runtime Selection Inspector Panel Extraction：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `c2df5a8 Extract asset inspector schema`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把下一步聚焦到 `EditorPanels.cpp` 内部 selection inspector panel implementation 的迁出，目标是让 `EditorPanels.cpp` 继续收敛为 hierarchy / asset browser / selection click shell。
+  - 新增 [SelectionInspectorPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SelectionInspectorPanel.cpp)，承载 `drawSelectionInspectorPanel(...)`、selection target dispatch、Light / Shadow / Camera / Actor / Component / Asset inspector render helper，以及 edit transaction summary、Create Empty Actor、Save/Apply Transform Snapshot action。
+  - 更新 [EditorPanels.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorPanels.cpp)，删除 selection inspector helper 和 inspector dispatch，只保留 object hierarchy、light hierarchy、engine world hierarchy、asset browser tree 与 selection 点击编排。
+  - 更新 [SceneObjectInspector.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SceneObjectInspector.h) 与 [SceneObjectInspector.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SceneObjectInspector.cpp)，新增 `getObjectDisplayName(...)` 与 `getObjectTypeName(...)`，让 hierarchy 和 selection inspector 共享 Object display/type helper。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 `SelectionInspectorPanel.cpp`，保持 VS 工程分类同步。
+  - 已执行静态检查：确认 `EditorPanels.cpp` 不再残留 `renderLightInspector`、`renderShadowInspector`、`renderCameraInspector`、`renderActorInspector`、`renderComponentInspector`、`renderAssetInspector`、`renderEditTransactionSummary` 或 `drawSelectionInspectorPanel` 实现。
+  - 已执行静态检查：确认 `EditorPanels.cpp` 不再直接引用 `MaterialInspector`、`PropertyInspector`、`EditorWorldActions`、`SceneTransformSnapshot`、`mesh/mesh` 或 direct `drawProperties` / schema builder 调用。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了新增 `SelectionInspectorPanel.cpp`、更新后的 `SceneObjectInspector.cpp` 与 `EditorPanels.cpp`，四条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 selection kind、对象/灯光/阴影/相机/Actor/Component/Asset inspector 字段、transaction summary、snapshot action、asset browser 展示、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

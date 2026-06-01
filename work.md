@@ -10016,3 +10016,26 @@ Subagent 审查：
 
 - 这是 Asset inspector schema extraction，不改变 asset browser 展示、asset selection、asset registry 统计、imported asset 判断语义、asset property 字段、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步可开始推进类型/组件 property provider 注册机制，或继续拆分 `EditorPanels.cpp` 的 asset browser / hierarchy tree display helper，让 panel 更接近纯 selection/action shell。
+
+### 2026-06-01 Runtime Selection Inspector Panel Extraction
+
+本轮继续压缩 `EditorPanels.cpp`。前几轮已把 Light / Shadow / Camera、legacy Object transform、Actor / Component 和 Asset 的属性声明迁入独立 inspector facade，但 selection inspector 的目标分发、Light/Shadow/Camera/Actor/Component/Asset 的实际 render helper、transaction summary 与 snapshot action 仍集中在 `EditorPanels.cpp`。这些逻辑属于 selection inspector panel 自身，不应和 hierarchy / asset browser tree 编排混在同一个 implementation 文件中。
+
+新增与修改：
+
+- 新增 `tools/inspector/SelectionInspectorPanel.cpp`，承载 `drawSelectionInspectorPanel(...)`、selection target dispatch、Light / Shadow / Camera / Actor / Component / Asset inspector render helper，以及 edit transaction summary / create actor / transform snapshot action。
+- `EditorPanels.cpp` 删除 selection inspector helper 与 inspector dispatch，只保留 object hierarchy、light hierarchy、engine world hierarchy、asset browser tree 和 selection 点击编排。
+- `SceneObjectInspector.h/.cpp` 新增 `getObjectDisplayName(...)` 与 `getObjectTypeName(...)`，让 hierarchy 和 selection inspector 共享 Object 显示名/type name 规则，避免 display helper 继续私有散落在 panel implementation 中。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 `SelectionInspectorPanel.cpp`，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `EditorPanels.cpp` 不再残留 `renderLightInspector`、`renderShadowInspector`、`renderCameraInspector`、`renderActorInspector`、`renderComponentInspector`、`renderAssetInspector`、`renderEditTransactionSummary` 或 `drawSelectionInspectorPanel` 实现。
+- 静态检查确认 `EditorPanels.cpp` 不再直接引用 `MaterialInspector`、`PropertyInspector`、`EditorWorldActions`、`SceneTransformSnapshot`、`mesh/mesh` 或 direct `drawProperties` / schema builder 调用。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `SelectionInspectorPanel.cpp`、更新后的 `SceneObjectInspector.cpp` 与 `EditorPanels.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 selection inspector panel implementation extraction，不改变 selection kind、对象/灯光/阴影/相机/Actor/Component/Asset inspector 字段、transaction summary、snapshot action、asset browser 展示、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步可以继续拆分 hierarchy tree / asset browser tree display helper，或开始推进类型/组件 property provider 注册机制，让系统化 UI 从 facade schema 走向可注册的 inspector provider。

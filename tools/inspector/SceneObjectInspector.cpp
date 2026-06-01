@@ -19,6 +19,19 @@ namespace
 	{
 		return value < 1 ? 1 : value;
 	}
+
+	std::string objectTypeNameFromEnum(GLframework::ObjectType type)
+	{
+		switch (type)
+		{
+		case GLframework::ObjectType::Object: return "Object";
+		case GLframework::ObjectType::Mesh: return "Mesh";
+		case GLframework::ObjectType::Scene: return "Scene";
+		case GLframework::ObjectType::InstancedMesh: return "InstancedMesh";
+		case GLframework::ObjectType::Light: return "Light";
+		default: return "Unknown";
+		}
+	}
 }
 
 namespace GL_EDITOR
@@ -28,6 +41,22 @@ namespace GL_EDITOR
 		if (dynamic_cast<PerspectiveCamera*>(camera)) return "PerspectiveCamera";
 		if (dynamic_cast<OrthographicCamera*>(camera)) return "OrthographicCamera";
 		return "Camera";
+	}
+
+	std::string getObjectDisplayName(const std::shared_ptr<GLframework::Object>& object)
+	{
+		if (!object) return "Null";
+
+		const std::string explicitName = object->getName();
+		if (!explicitName.empty()) return explicitName;
+
+		return objectTypeNameFromEnum(object->getType());
+	}
+
+	std::string getObjectTypeName(const std::shared_ptr<GLframework::Object>& object)
+	{
+		if (!object) return "Null";
+		return objectTypeNameFromEnum(object->getType());
 	}
 
 	std::string getShadowTypeName(const std::shared_ptr<GLframework::Shadow>& shadow)

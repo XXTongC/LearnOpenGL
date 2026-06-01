@@ -536,6 +536,8 @@ public:
 326. 下一步建议继续把 Asset inspector schema 从 `EditorPanels.cpp` 迁出，或推进类型/组件 property provider 注册机制，让 selection panel 进一步收敛为目标分发与 action 编排。
 327. Runtime Asset Inspector Schema Extraction 已完成第一版：新增 `AssetInspector` 集中 AssetDescriptor display name、imported-source 判断和 read-only property schema；`EditorPanels.cpp` 不再直写 Asset inspector 的 `PropertyBuilder`。
 328. 下一步建议推进类型/组件 property provider 注册机制，或继续拆分 asset browser / hierarchy tree display helper，让 editor panels 更接近纯 selection/action shell。
+329. Runtime Selection Inspector Panel Extraction 已完成第一版：新增 `SelectionInspectorPanel.cpp` 承载 selection target dispatch、Light / Shadow / Camera / Actor / Component / Asset inspector render helper 与 edit transaction summary；`EditorPanels.cpp` 进一步收敛为 hierarchy / asset browser / selection click shell。
+330. 下一步建议继续拆分 hierarchy tree / asset browser tree display helper，或开始推进类型/组件 property provider 注册机制，让系统化 UI 从 facade schema 走向可注册的 inspector provider。
 
 ## 约束
 

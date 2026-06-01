@@ -355,6 +355,7 @@
     <ClCompile Include="tools\inspector\MaterialInspector.cpp" />
     <ClCompile Include="tools\inspector\PropertyInspector.cpp" />
     <ClCompile Include="tools\inspector\SceneObjectInspector.cpp" />
+    <ClCompile Include="tools\inspector\SelectionInspectorPanel.cpp" />
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp" />
     <ClCompile Include="tools\editor\EngineDiagnosticsPanel.cpp" />
     <ClCompile Include="tools\editor\EditorPanels.cpp" />
