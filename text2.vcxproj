@@ -239,6 +239,7 @@
     <ClCompile Include="application\RuntimeProfileLoader.cpp" />
     <ClCompile Include="application\RuntimeSceneSetupContextFactory.cpp" />
     <ClCompile Include="application\RuntimeSceneSetupPipelineLifecycle.cpp" />
+    <ClCompile Include="application\RuntimeSceneSetupResourceAdapter.cpp" />
     <ClCompile Include="application\RuntimeSceneSetupReport.cpp" />
     <ClCompile Include="application\RuntimeViewport.cpp" />
     <ClCompile Include="application\RuntimeWindowLifecycle.cpp" />
@@ -592,6 +593,7 @@
     <ClInclude Include="application\RuntimeScenePrepareConfig.h" />
     <ClInclude Include="application\RuntimeSceneSetupContextFactory.h" />
     <ClInclude Include="application\RuntimeSceneSetupPipelineLifecycle.h" />
+    <ClInclude Include="application\RuntimeSceneSetupResourceAdapter.h" />
     <ClInclude Include="application\RuntimeSceneSetupReport.h" />
     <ClInclude Include="application\RuntimeViewport.h" />
     <ClInclude Include="application\RuntimeWindowLifecycle.h" />

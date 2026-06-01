@@ -2,6 +2,7 @@
 
 #include "AppRuntimeContext.h"
 #include "RuntimeScenePrepareConfig.h"
+#include "RuntimeSceneSetupResourceAdapter.h"
 #include "../tools/legacyExperiments/LegacyExperimentRunner.h"
 
 namespace GL_RUNTIME
@@ -10,16 +11,10 @@ namespace GL_RUNTIME
 		GLframework::AppRuntimeContext& context
 	)
 	{
-		return {
-			context.renderResources.renderer(),
-			context.renderResources.sceneOffScreen(),
-			context.renderResources.grassMaterial(),
-			context.renderResources.skyBoxMesh(),
-			context.renderResources.movePlane(),
-			context.renderResources.csmShadowMaterial(),
-			context.cameraLights.dirLight,
-			context.cameraLights.pointLights
-		};
+		return RuntimeSceneSetupResourceAdapter::makeLegacyExperimentContext(
+			context.renderResources,
+			context.cameraLights
+		);
 	}
 
 	void RuntimeLegacyExperimentLifecycle::prepare(

@@ -419,8 +419,9 @@ flowchart TD
 - Engine diagnostics unified context 已完成第一版：runtime context 暴露非拥有 Engine 指针，Engine diagnostics panel 可同时观察 Engine runtime、World、AssetSubsystem 和 RendererSubsystem 基础状态，verification 断言 context Engine 指针附着正确。
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 - Runtime Editor Render Resource Adapter Cleanup 已完成第一版：新增 `RuntimeEditorRenderResourceAdapter` 集中 editor panel/debug controller 对 renderer/text object/offscreen scene/inscreen scene/default selection scene 的访问，`RuntimeEditorPanelCoordinator` 不再直接访问 render resource owner。
+- Runtime Scene Setup Resource Adapter Cleanup 已完成第一版：新增 `RuntimeSceneSetupResourceAdapter` 集中 scene setup 与 legacy experiment DTO 构造对 renderer/scene/frame-target/Bloom/screen/legacy mesh-material 资源的访问，`RuntimeSceneSetupContextFactory` 与 `RuntimeLegacyExperimentLifecycle` 不再直接访问 render resource owner。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Editor Render Resource Adapter Cleanup 后，下一步可继续处理 scene setup / legacy setup 注入路径中的 direct renderer/scene owner 访问点，当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Scene Setup Resource Adapter Cleanup 后，下一步应重新审计全局 remaining direct render resource access，区分允许集中访问的 adapter implementation 和仍需收口的 lifecycle/wiring path，当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Editor Render Resource Adapter Cleanup 已接入后，editor panel/debug controller 对 renderer/text object/offscreen scene/inscreen scene/default selection scene 的访问已集中到 `RuntimeEditorRenderResourceAdapter`，`RuntimeEditorPanelCoordinator` 不再直接访问 render resource owner。
+当前最新修正：Runtime Scene Setup Resource Adapter Cleanup 已接入后，scene setup 与 legacy experiment DTO 构造对 renderer/scene/frame-target/Bloom/screen/legacy mesh-material 资源的访问已集中到 `RuntimeSceneSetupResourceAdapter`，`RuntimeSceneSetupContextFactory` 与 `RuntimeLegacyExperimentLifecycle` 不再直接访问 render resource owner。

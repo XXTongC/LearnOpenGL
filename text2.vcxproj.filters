@@ -624,6 +624,9 @@
     <ClCompile Include="application\RuntimeSceneSetupPipelineLifecycle.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeSceneSetupResourceAdapter.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeSceneSetupReport.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -1386,6 +1389,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeSceneSetupPipelineLifecycle.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeSceneSetupResourceAdapter.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeSceneSetupReport.h">

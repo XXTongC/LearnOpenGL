@@ -515,7 +515,8 @@ public:
 305. Runtime Engine World Verification ReadOnly Resource Cleanup 已完成第一版：Engine World verification 的 prepared scene stats 与 scene package round-trip resolver 创建改为通过 `RuntimeRenderResourceView` 读取 render resources，不再直接访问 mutable renderer/scene owner。
 306. Runtime Frame Render Resource Adapter Cleanup 已完成第一版：新增 `RuntimeFrameRenderResourceAdapter` 集中 runtime frame pass execution 对 renderer/scene/frame-target/post-process 资源的访问，`RuntimeFramePasses` 不再直接访问 render resource owner。
 307. Runtime Editor Render Resource Adapter Cleanup 已完成第一版：新增 `RuntimeEditorRenderResourceAdapter` 集中 editor panel/debug controller 对 renderer/text object/offscreen scene/inscreen scene/default selection scene 的访问，`RuntimeEditorPanelCoordinator` 不再直接访问 render resource owner。
-308. 下一步建议继续处理 scene setup / legacy setup 注入路径中的 direct renderer/scene owner 访问点；当前仍不建议继续扩张 PBR pass。
+308. Runtime Scene Setup Resource Adapter Cleanup 已完成第一版：新增 `RuntimeSceneSetupResourceAdapter` 集中 scene setup 与 legacy experiment DTO 构造对 renderer/scene/frame-target/Bloom/screen/legacy mesh-material 资源的访问，`RuntimeSceneSetupContextFactory` 与 `RuntimeLegacyExperimentLifecycle` 不再直接访问 render resource owner。
+309. 下一步建议重新审计全局 remaining direct render resource access，区分允许集中访问的 adapter implementation 和仍需收口的 lifecycle/wiring path；当前仍不建议继续扩张 PBR pass。
 
 ## 约束
 

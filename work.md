@@ -9642,3 +9642,27 @@ Subagent 审查：
 
 - 这是 editor panel wiring 的 render resource adapter cleanup，不改变 hierarchy、asset browser、selection inspector、debug controller panel、Engine World edit transaction、renderer backend contract、runtime frame pipeline 或 PBR pass。
 - 下一步应继续处理 `RuntimeSceneSetupContextFactory.cpp` 与 `RuntimeLegacyExperimentLifecycle.cpp` 的 setup/legacy 注入路径；这些路径仍是 resource injection，不应套 read-only view，应继续按职责拆 setup DTO 或 legacy adapter。
+
+### 2026-06-01 Runtime Scene Setup Resource Adapter Cleanup
+
+本轮继续处理上一轮留下的 setup / legacy 注入路径，不扩张 PBR 功能。`RuntimeSceneSetupContextFactory.cpp` 和 `RuntimeLegacyExperimentLifecycle.cpp` 原本直接展开 `RuntimeRenderResourceState` 的 renderer、scene、frame targets、Bloom、screen quad、scene mesh/material 等 accessor，只是为了填充 `GL_SCENE::SetupContext` 和 legacy experiment `RuntimeContext`。这些路径不是只读观察，也不是渲染执行；它们是 resource injection boundary，本轮新增专用 adapter 统一构造 setup/legacy DTO。
+
+新增与修改：
+
+- 新增 `RuntimeSceneSetupResourceAdapter.h/.cpp`，提供 `makeSceneSetupContext(...)` 与 `makeLegacyExperimentContext(...)`。
+- `RuntimeSceneSetupResourceAdapter.cpp` 内部集中读取 `RuntimeRenderResourceState` 的 renderer、offscreen/inscreen scene、frame render targets、Bloom、screen quad、skybox mesh、text mesh、screen material、grass material、move plane 与 CSM shadow material。
+- `RuntimeSceneSetupContextFactory.cpp` 改为委托 `RuntimeSceneSetupResourceAdapter::makeSceneSetupContext(...)`，不再直接展开 render resource owner。
+- `RuntimeLegacyExperimentLifecycle.cpp` 改为委托 `RuntimeSceneSetupResourceAdapter::makeLegacyExperimentContext(...)`，不再直接展开 render resource owner。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 adapter 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeSceneSetupContextFactory.cpp` 与 `RuntimeLegacyExperimentLifecycle.cpp` 中不再出现 `context.renderResources.renderer()` / `sceneOffScreen()` / `sceneInScreen()` / `frameRenderTargets()` / `bloom()` / `screenQuad()` / scene mesh/material accessor。
+- 静态检查确认 setup/legacy DTO direct resource access 已集中到 `RuntimeSceneSetupResourceAdapter.cpp`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `RuntimeSceneSetupResourceAdapter.cpp` 和两个调用方。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 scene setup / legacy experiment resource injection boundary cleanup，不改变 default scene preparation、PBR preview setup、imported asset verification、Engine World minimal scene setup、legacy experiment enable/update 行为、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步应重新审计全局 remaining direct render resource access，把“允许集中访问的 adapter implementation”与“仍需收口的 application lifecycle/wiring path”区分开；当前仍不建议继续扩张 PBR pass。

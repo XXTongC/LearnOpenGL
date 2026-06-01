@@ -2,6 +2,7 @@
 
 #include "AppRuntimeContext.h"
 #include "RuntimeScenePrepareConfig.h"
+#include "RuntimeSceneSetupResourceAdapter.h"
 #include "../tools/sceneSetup/SceneSetup.h"
 
 namespace GL_RUNTIME
@@ -12,29 +13,13 @@ namespace GL_RUNTIME
 		const RuntimeScenePrepareConfig& config
 	)
 	{
-		return {
-			context.renderResources.renderer(),
-			context.renderResources.sceneOffScreen(),
-			context.renderResources.sceneInScreen(),
-			context.renderResources.frameRenderTargets(),
-			context.renderResources.bloom(),
-			context.renderResources.screenQuad(),
-			context.renderResources.skyBoxMesh(),
-			context.renderResources.textD(),
-			context.renderResources.screenMaterial(),
-			context.cameraLights.ambientLight,
-			context.cameraLights.dirLight,
-			context.cameraLights.spotLight,
-			context.cameraLights.pointLights,
-			config.width,
-			config.height,
-			config.texturePath,
-			context.profiles.environmentProfile(),
-			context.profiles.pbrPreviewProfile(),
-			context.profiles.pbrLightRigProfile(),
-			&engine,
-			context.engineAttachments.engineWorld,
-			context.engineAttachments.engineWorldEditable
-		};
+		return RuntimeSceneSetupResourceAdapter::makeSceneSetupContext(
+			context.renderResources,
+			context.cameraLights,
+			context.profiles,
+			context.engineAttachments,
+			engine,
+			config
+		);
 	}
 }
