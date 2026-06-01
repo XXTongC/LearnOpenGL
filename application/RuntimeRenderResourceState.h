@@ -32,7 +32,6 @@ namespace GL_RUNTIME
 		std::shared_ptr<GLframework::Renderer> renderer{ nullptr };
 		std::shared_ptr<GLframework::Scene> sceneOffScreen{ nullptr };
 		std::shared_ptr<GLframework::Scene> sceneInScreen{ nullptr };
-		std::shared_ptr<GLframework::Mesh> meshPointLight{ nullptr };
 		glm::vec3 clearColor{};
 
 		GLframework::FrameRenderTargets& frameRenderTargets();

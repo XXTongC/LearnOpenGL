@@ -9336,3 +9336,25 @@ Subagent 审查：
 
 - 这是 Runtime render resource scene mesh/material owner boundary cleanup，不改变默认场景创建、skybox/back wall 创建、legacy experiment enable/update、editor debug panel、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 remaining runtime render resource shared_ptr owner 收敛，优先审计 `meshPointLight` 是否可删除或私有化；`renderer` / `sceneOffScreen` / `sceneInScreen` 访问面较大，应作为单独设计切片处理。
+
+### 2026-06-01 Runtime Render Resource Dead Point Light Mesh Owner Removal
+
+本轮继续 remaining runtime render resource owner cleanup，不扩张 PBR 功能。审计确认：`meshPointLight` 只存在于 `RuntimeRenderResourceState.h` 的公开字段中，源码没有任何读写使用点；这不是需要 accessor 私有化的 live owner，而是已经死亡的历史点光源 mesh owner。
+
+新增与修改：
+
+- `RuntimeRenderResourceState.h` 删除公开字段 `meshPointLight`。
+- 不新增 replacement accessor，因为没有任何 runtime、scene setup、legacy experiment、editor 或 renderer backend 使用该 owner。
+- 保留 `Renderer`、`sceneOffScreen`、`sceneInScreen` 和 `clearColor` 现状；这些仍是高访问面或值型状态，应作为单独设计切片处理。
+
+已完成验证：
+
+- 静态检查确认源码中 `meshPointLight` / `renderResources.meshPointLight` / `.meshPointLight` 使用点已清零。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 重新编译受 `RuntimeRenderResourceState.h` 影响的 runtime 使用点。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime render resource dead owner removal，不改变点光源、默认场景、legacy experiment、editor UI、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议单独设计高访问面的 `renderer` / `sceneOffScreen` / `sceneInScreen` owner boundary；不要把这三者和小字段 cleanup 混在同一轮里做。
