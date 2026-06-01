@@ -55,42 +55,47 @@ namespace
 	)
 	{
 		auto material = std::make_shared<GLframework::PBRMaterial>();
-		material->mAlbedo = { 0.85f, 0.85f, 0.85f };
-		material->mMetallic = 0.0f;
-		material->mRoughness = 0.5f;
-		material->mAo = 1.0f;
-		material->mUseIBL = true;
+		material->setSurface({
+			{ 0.85f, 0.85f, 0.85f },
+			{ 0.0f, 0.0f, 0.0f },
+			0.0f,
+			0.5f,
+			1.0f,
+			0.0f
+		});
+		material->setIbl({ true, 1.0f, 1.0f });
 
 		if (descriptor.objectName.find("Matte") != std::string::npos)
 		{
-			material->mAlbedo = { 0.92f, 0.38f, 0.18f };
-			material->mMetallic = 0.0f;
-			material->mRoughness = 0.72f;
+			material->setAlbedo({ 0.92f, 0.38f, 0.18f });
+			material->setMetallic(0.0f);
+			material->setRoughness(0.72f);
 		}
 		else if (descriptor.objectName.find("Metallic") != std::string::npos)
 		{
-			material->mAlbedo = { 1.0f, 0.78f, 0.28f };
-			material->mMetallic = 1.0f;
-			material->mRoughness = 0.22f;
-			material->mIblSpecularStrength = 1.25f;
+			material->setAlbedo({ 1.0f, 0.78f, 0.28f });
+			material->setMetallic(1.0f);
+			material->setRoughness(0.22f);
+			material->setIblStrengths(1.0f, 1.25f);
 		}
 		else if (descriptor.objectName.find("Gloss") != std::string::npos)
 		{
-			material->mAlbedo = { 0.16f, 0.62f, 1.0f };
-			material->mMetallic = 0.0f;
-			material->mRoughness = 0.16f;
-			material->mIblSpecularStrength = 1.3f;
+			material->setAlbedo({ 0.16f, 0.62f, 1.0f });
+			material->setMetallic(0.0f);
+			material->setRoughness(0.16f);
+			material->setIblStrengths(1.0f, 1.3f);
 		}
 		else if (descriptor.objectName.find("Emissive") != std::string::npos)
 		{
-			material->mAlbedo = { 0.02f, 0.02f, 0.02f };
-			material->mMetallic = 0.0f;
-			material->mRoughness = 0.95f;
-			material->mUseIBL = false;
-			material->mIblDiffuseStrength = 0.0f;
-			material->mIblSpecularStrength = 0.0f;
-			material->mEmissiveColor = { 0.25f, 0.95f, 0.8f };
-			material->mEmissiveIntensity = 2.4f;
+			material->setSurface({
+				{ 0.02f, 0.02f, 0.02f },
+				{ 0.25f, 0.95f, 0.8f },
+				0.0f,
+				0.95f,
+				1.0f,
+				2.4f
+			});
+			material->setIbl({ false, 0.0f, 0.0f });
 		}
 
 		return material;

@@ -449,8 +449,9 @@ flowchart TD
 - Phong Surface Runtime State Encapsulation 已完成第一版：`PhongMaterial`、`PhongPointShadowMaterial` 与 `PhongCSMShadowMaterial` 的 diffuse/specular/shininess 字段已下沉为 private，renderer 通过 `surfaceState()` 读取，setup/import/legacy 路径通过 setter 或 `setSurface(...)` 写入。
 - Grass Surface Runtime State Encapsulation 已完成第一版：`GrassInstanceMaterial` 的 diffuse/specular/opacity/cloud/shininess 字段已下沉为 private，renderer 通过 `surfaceState()` 读取，legacy grass field 与 instanced loader 通过 setter 写入。
 - PBR Material Runtime State API 已完成第一版：`PBRMaterial` 新增 surface/texture/channel/alpha/IBL input 与 runtime state DTO，profile、renderer binder/pass 和 PBR stats 已迁入 setter/state API；public fields 尚未私有化。
+- PBR Material Private Field Encapsulation 已完成第一版：scene setup、Assimp PBR importer、engine world scene setup/package resolver 与 PBR verification probes 已迁入 `PBRMaterial` setter/API；PBR texture、surface、channel、alpha mask 与 IBL 字段已下沉为 private。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 PBR Material Runtime State API 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议迁移 scene setup、importer、engine world probe 和 verification scene writer 到 `PBRMaterial` setter/API，再按 surface、texture slot、channel、alpha、IBL 分批私有化 PBR 公开字段；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 PBR Material Private Field Encapsulation 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议继续收束 Material/profile 边界，优先拆分 `PBRMaterialProfile` config schema 对 editor `PropertyBuilder` 的依赖，或让 PBR profile/config 通过独立 provider/schema adapter 生成配置 UI；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：PBR Material Runtime State API 已接入后，PBRMaterial 的 profile、renderer binder/pass 和 prepared-scene stats 可通过明确 setter/state DTO 访问 surface、texture、channel、alpha mask 与 IBL 状态；字段尚未私有化。
+当前最新修正：PBR Material Private Field Encapsulation 已接入后，PBRMaterial 的 PBR 字段不再公开暴露；外部 scene/import/probe writer、renderer binder/pass 和 stats 路径均通过 setter/state/slot API 访问。

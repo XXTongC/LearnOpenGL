@@ -566,6 +566,8 @@ public:
 356. 下一步建议转入 `PBRMaterial`，先建立完整 texture/surface/IBL/alpha/channel runtime setter/slot DTO，再分批私有化 PBR 的公开字段。
 357. PBR Material Runtime State API 已完成第一版：新增 PBR surface/texture/channel/alpha/IBL input 与 runtime state DTO，`PBRMaterial` 暴露 grouped setter、单项 setter 和只读 state API；profile、renderer binder/pass 与 PBR stats 已迁入 API。
 358. 下一步建议迁移 scene setup、importer、engine world probe 和 verification scene writer 到 `PBRMaterial` setter/API，然后按 surface、texture slot、channel、alpha、IBL 分批私有化 PBR 公开字段。
+359. PBR Material Private Field Encapsulation 已完成第一版：scene setup、Assimp PBR importer、engine world scene setup/package resolver 与 PBR verification probes 已迁入 `PBRMaterial` setter/API；PBR texture、surface、channel、alpha mask 与 IBL 字段已下沉为 `private`。
+360. 下一步建议继续收束 Material/profile 边界，优先拆分 `PBRMaterialProfile` config schema 对 editor `PropertyBuilder` 的依赖，或让 PBR profile/config 通过独立 provider/schema adapter 生成配置 UI。
 
 ## 约束
 

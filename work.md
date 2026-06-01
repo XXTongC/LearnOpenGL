@@ -10384,3 +10384,29 @@ Subagent 审查：
 
 - 这是 PBR material runtime state API bridge，不改变 PBR inspector 字段、profile 参数语义、texture channel 规则、alpha mask 行为、IBL 开关、shadow/depth/GBuffer/forward 绑定语义、runtime frame pipeline 或 renderer backend contract。
 - 本轮没有把 `PBRMaterial` 公开字段下沉为 private。下一步应迁移 scene setup、importer、engine world probe 和 verification scene writer 到 setter/API，再按 surface、texture slot、channel、alpha、IBL 分批私有化。
+
+### 2026-06-01 PBR Material Private Field Encapsulation
+
+本轮继续上一轮 `PBRMaterial` runtime state API bridge，把剩余 scene/import/probe writer 迁移到 API，并完成 PBR material 字段私有化。重点不是扩展 PBR 功能，而是让 PBR 材质的数据布局不再被 application / tools / renderer 直接读写，为后续 Material provider 与 runtime material 边界继续收窄做准备。
+
+新增与修改：
+
+- `SceneSetup.cpp` 的 PBR preview material 覆盖 metallic / roughness / normal map 改为调用 `setMetallic(...)`、`setRoughness(...)`、`setNormalMap(...)`。
+- `WorldDrivenSceneSetup.cpp` 的 engine world probe/minimal scene PBR material 创建改为通过 `setSurface(...)`、`setIbl(...)`、`setEmissiveColor(...)`、`setEmissiveIntensity(...)` 写入。
+- `AssimpMaterialImporter.cpp` 的 PBR import 改为先收集 `PBRSurfaceInput`、`PBRTextureInput`、`PBRTextureChannelInput`、`PBRAlphaMaskInput` 与 `PBRIblInput`，再通过 grouped setter 写入材质。
+- `RuntimeEngineWorldVerificationResourceAdapter.cpp` 的 scene package resolver PBR 材质恢复改为通过 PBR setter/API 写入。
+- `RuntimePBRSceneProbeVerification.cpp` 的 transparent / emissive / material IBL / alpha mask / texture set / showcase probes 改为通过 PBR setter/API 写入 surface、textures、alpha mask 与 IBL。
+- `PBRMaterial` 的 PBR texture、surface、channel、alpha mask 与 IBL 字段已下沉为 `private`。
+- `PBRMaterial.cpp` 删除匿名命名空间里依赖 public field pointer-to-member 的 metadata arrays，slot 构造改为在 `PBRMaterial` 成员函数内部直接返回，保持 inspector/provider 与 renderer slot API 不变。
+
+已完成验证：
+
+- 静态检查确认外部 `application` / `tools` / `renderer` 路径不再直接读写 `PBRMaterial` 的 PBR 字段；剩余字段名只出现在 `PBRMaterial` 自身内部和无关的 GBuffer render target 命名中。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：第一次命令使用了错误 mode 名 `pbr-showcase-spheres`，脚本在构建前拒绝；随后使用 `showcase-spheres` 重跑通过。最终命令为 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,engine-world-scene-package,showcase-spheres,renderer-backend-registry-noop -DiscardCaptures`，构建和 7 个 focused verification mode 全部通过。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBR material private-field encapsulation slice，不改变 PBR inspector 字段、texture slot metadata、Assimp PBR import 语义、verification probe 材质参数、engine world scene package resolver 行为、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续沿系统化 UI/inspector 方向收束 Material boundary：可以优先拆分 `PBRMaterialProfile` config schema 对 editor `PropertyBuilder` 的依赖，或让 PBR profile/config 也使用独立 provider/schema adapter。

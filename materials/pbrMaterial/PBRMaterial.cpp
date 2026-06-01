@@ -32,98 +32,6 @@ namespace
 		builder.addConfigFloat("iblSpecularStrength", "IBL Specular Strength", &profile.iblSpecularStrength, 0.0f, 5.0f);
 	}
 
-	struct PBRTextureSlotMetadata
-	{
-		const char* label{ "" };
-		const char* samplerUniform{ "" };
-		const char* useFlagUniform{ "" };
-		std::shared_ptr<Texture> PBRMaterial::* texture{ nullptr };
-	};
-
-	struct PBRVec3UniformMetadata
-	{
-		const char* label{ "" };
-		const char* uniformName{ "" };
-		glm::vec3 PBRMaterial::* value{ nullptr };
-	};
-
-	struct PBRFloatUniformMetadata
-	{
-		const char* label{ "" };
-		const char* uniformName{ "" };
-		float PBRMaterial::* value{ nullptr };
-		float minValue{ 0.0f };
-		float maxValue{ 1.0f };
-	};
-
-	constexpr std::array<PBRTextureSlotMetadata, 6> pbrTextureSlotMetadata{
-		PBRTextureSlotMetadata{ "Albedo Map", "albedoMap", "useAlbedoMap", &PBRMaterial::mAlbedoMap },
-		PBRTextureSlotMetadata{ "Metallic Map", "metallicMap", "useMetallicMap", &PBRMaterial::mMetallicMap },
-		PBRTextureSlotMetadata{ "Roughness Map", "roughnessMap", "useRoughnessMap", &PBRMaterial::mRoughnessMap },
-		PBRTextureSlotMetadata{ "AO Map", "aoMap", "useAoMap", &PBRMaterial::mAoMap },
-		PBRTextureSlotMetadata{ "Normal Map", "normalMap", "useNormalMap", &PBRMaterial::mNormalMap },
-		PBRTextureSlotMetadata{ "Emissive Map", "emissiveMap", "useEmissiveMap", &PBRMaterial::mEmissiveMap },
-	};
-
-	constexpr std::array<PBRVec3UniformMetadata, 2> pbrVec3UniformMetadata{
-		PBRVec3UniformMetadata{ "Albedo", "pbrAlbedo", &PBRMaterial::mAlbedo },
-		PBRVec3UniformMetadata{ "Emissive Color", "pbrEmissiveColor", &PBRMaterial::mEmissiveColor },
-	};
-
-	constexpr std::array<PBRFloatUniformMetadata, 4> pbrSurfaceFloatUniformMetadata{
-		PBRFloatUniformMetadata{ "Metallic", "pbrMetallic", &PBRMaterial::mMetallic, 0.0f, 1.0f },
-		PBRFloatUniformMetadata{ "Roughness", "pbrRoughness", &PBRMaterial::mRoughness, 0.04f, 1.0f },
-		PBRFloatUniformMetadata{ "AO", "pbrAo", &PBRMaterial::mAo, 0.0f, 1.0f },
-		PBRFloatUniformMetadata{ "Emissive Intensity", "pbrEmissiveIntensity", &PBRMaterial::mEmissiveIntensity, 0.0f, 20.0f },
-	};
-
-	constexpr std::array<PBRFloatUniformMetadata, 2> pbrIblFloatUniformMetadata{
-		PBRFloatUniformMetadata{ "IBL Diffuse Strength", "iblDiffuseStrength", &PBRMaterial::mIblDiffuseStrength, 0.0f, 5.0f },
-		PBRFloatUniformMetadata{ "IBL Specular Strength", "iblSpecularStrength", &PBRMaterial::mIblSpecularStrength, 0.0f, 5.0f },
-	};
-
-	template <std::size_t SlotCount>
-	std::array<PBRFloatUniformSlot, SlotCount> makeFloatUniformSlots(
-		PBRMaterial& material,
-		const std::array<PBRFloatUniformMetadata, SlotCount>& metadataList
-	)
-	{
-		std::array<PBRFloatUniformSlot, SlotCount> slots{};
-		for (std::size_t index = 0; index < metadataList.size(); ++index)
-		{
-			const auto& metadata = metadataList[index];
-			slots[index] = PBRFloatUniformSlot{
-				metadata.label,
-				metadata.uniformName,
-				&(material.*metadata.value),
-				metadata.minValue,
-				metadata.maxValue
-			};
-		}
-		return slots;
-	}
-
-	template <std::size_t SlotCount>
-	std::array<PBRConstFloatUniformSlot, SlotCount> makeFloatUniformSlots(
-		const PBRMaterial& material,
-		const std::array<PBRFloatUniformMetadata, SlotCount>& metadataList
-	)
-	{
-		std::array<PBRConstFloatUniformSlot, SlotCount> slots{};
-		for (std::size_t index = 0; index < metadataList.size(); ++index)
-		{
-			const auto& metadata = metadataList[index];
-			slots[index] = PBRConstFloatUniformSlot{
-				metadata.label,
-				metadata.uniformName,
-				&(material.*metadata.value),
-				metadata.minValue,
-				metadata.maxValue
-			};
-		}
-		return slots;
-	}
-
 }
 
 void PBRMaterialProfile::applyTo(PBRMaterial& material) const
@@ -374,84 +282,78 @@ PBRIblRuntimeState PBRMaterial::iblState() const
 
 std::array<PBRTextureSlot, 6> PBRMaterial::getTextureSlots()
 {
-	std::array<PBRTextureSlot, 6> slots{};
-	for (std::size_t index = 0; index < pbrTextureSlotMetadata.size(); ++index)
-	{
-		const auto& metadata = pbrTextureSlotMetadata[index];
-		slots[index] = PBRTextureSlot{
-			metadata.label,
-			metadata.samplerUniform,
-			metadata.useFlagUniform,
-			&(this->*metadata.texture)
-		};
-	}
-	return slots;
+	return std::array<PBRTextureSlot, 6>{
+		PBRTextureSlot{ "Albedo Map", "albedoMap", "useAlbedoMap", &mAlbedoMap },
+		PBRTextureSlot{ "Metallic Map", "metallicMap", "useMetallicMap", &mMetallicMap },
+		PBRTextureSlot{ "Roughness Map", "roughnessMap", "useRoughnessMap", &mRoughnessMap },
+		PBRTextureSlot{ "AO Map", "aoMap", "useAoMap", &mAoMap },
+		PBRTextureSlot{ "Normal Map", "normalMap", "useNormalMap", &mNormalMap },
+		PBRTextureSlot{ "Emissive Map", "emissiveMap", "useEmissiveMap", &mEmissiveMap },
+	};
 }
 
 std::array<PBRConstTextureSlot, 6> PBRMaterial::getTextureSlots() const
 {
-	std::array<PBRConstTextureSlot, 6> slots{};
-	for (std::size_t index = 0; index < pbrTextureSlotMetadata.size(); ++index)
-	{
-		const auto& metadata = pbrTextureSlotMetadata[index];
-		slots[index] = PBRConstTextureSlot{
-			metadata.label,
-			metadata.samplerUniform,
-			metadata.useFlagUniform,
-			&(this->*metadata.texture)
-		};
-	}
-	return slots;
+	return std::array<PBRConstTextureSlot, 6>{
+		PBRConstTextureSlot{ "Albedo Map", "albedoMap", "useAlbedoMap", &mAlbedoMap },
+		PBRConstTextureSlot{ "Metallic Map", "metallicMap", "useMetallicMap", &mMetallicMap },
+		PBRConstTextureSlot{ "Roughness Map", "roughnessMap", "useRoughnessMap", &mRoughnessMap },
+		PBRConstTextureSlot{ "AO Map", "aoMap", "useAoMap", &mAoMap },
+		PBRConstTextureSlot{ "Normal Map", "normalMap", "useNormalMap", &mNormalMap },
+		PBRConstTextureSlot{ "Emissive Map", "emissiveMap", "useEmissiveMap", &mEmissiveMap },
+	};
 }
 
 std::array<PBRVec3UniformSlot, 2> PBRMaterial::getVec3UniformSlots()
 {
-	std::array<PBRVec3UniformSlot, 2> slots{};
-	for (std::size_t index = 0; index < pbrVec3UniformMetadata.size(); ++index)
-	{
-		const auto& metadata = pbrVec3UniformMetadata[index];
-		slots[index] = PBRVec3UniformSlot{
-			metadata.label,
-			metadata.uniformName,
-			&(this->*metadata.value)
-		};
-	}
-	return slots;
+	return std::array<PBRVec3UniformSlot, 2>{
+		PBRVec3UniformSlot{ "Albedo", "pbrAlbedo", &mAlbedo },
+		PBRVec3UniformSlot{ "Emissive Color", "pbrEmissiveColor", &mEmissiveColor },
+	};
 }
 
 std::array<PBRConstVec3UniformSlot, 2> PBRMaterial::getVec3UniformSlots() const
 {
-	std::array<PBRConstVec3UniformSlot, 2> slots{};
-	for (std::size_t index = 0; index < pbrVec3UniformMetadata.size(); ++index)
-	{
-		const auto& metadata = pbrVec3UniformMetadata[index];
-		slots[index] = PBRConstVec3UniformSlot{
-			metadata.label,
-			metadata.uniformName,
-			&(this->*metadata.value)
-		};
-	}
-	return slots;
+	return std::array<PBRConstVec3UniformSlot, 2>{
+		PBRConstVec3UniformSlot{ "Albedo", "pbrAlbedo", &mAlbedo },
+		PBRConstVec3UniformSlot{ "Emissive Color", "pbrEmissiveColor", &mEmissiveColor },
+	};
 }
 
 std::array<PBRFloatUniformSlot, 4> PBRMaterial::getSurfaceFloatUniformSlots()
 {
-	return makeFloatUniformSlots(*this, pbrSurfaceFloatUniformMetadata);
+	return std::array<PBRFloatUniformSlot, 4>{
+		PBRFloatUniformSlot{ "Metallic", "pbrMetallic", &mMetallic, 0.0f, 1.0f },
+		PBRFloatUniformSlot{ "Roughness", "pbrRoughness", &mRoughness, 0.04f, 1.0f },
+		PBRFloatUniformSlot{ "AO", "pbrAo", &mAo, 0.0f, 1.0f },
+		PBRFloatUniformSlot{ "Emissive Intensity", "pbrEmissiveIntensity", &mEmissiveIntensity, 0.0f, 20.0f },
+	};
 }
 
 std::array<PBRConstFloatUniformSlot, 4> PBRMaterial::getSurfaceFloatUniformSlots() const
 {
-	return makeFloatUniformSlots(*this, pbrSurfaceFloatUniformMetadata);
+	return std::array<PBRConstFloatUniformSlot, 4>{
+		PBRConstFloatUniformSlot{ "Metallic", "pbrMetallic", &mMetallic, 0.0f, 1.0f },
+		PBRConstFloatUniformSlot{ "Roughness", "pbrRoughness", &mRoughness, 0.04f, 1.0f },
+		PBRConstFloatUniformSlot{ "AO", "pbrAo", &mAo, 0.0f, 1.0f },
+		PBRConstFloatUniformSlot{ "Emissive Intensity", "pbrEmissiveIntensity", &mEmissiveIntensity, 0.0f, 20.0f },
+	};
 }
 
 std::array<PBRFloatUniformSlot, 2> PBRMaterial::getIblFloatUniformSlots()
 {
-	return makeFloatUniformSlots(*this, pbrIblFloatUniformMetadata);
+	return std::array<PBRFloatUniformSlot, 2>{
+		PBRFloatUniformSlot{ "IBL Diffuse Strength", "iblDiffuseStrength", &mIblDiffuseStrength, 0.0f, 5.0f },
+		PBRFloatUniformSlot{ "IBL Specular Strength", "iblSpecularStrength", &mIblSpecularStrength, 0.0f, 5.0f },
+	};
 }
 
 std::array<PBRConstFloatUniformSlot, 2> PBRMaterial::getIblFloatUniformSlots() const
 {
-	return makeFloatUniformSlots(*this, pbrIblFloatUniformMetadata);
+	return std::array<PBRConstFloatUniformSlot, 2>{
+		PBRConstFloatUniformSlot{ "IBL Diffuse Strength", "iblDiffuseStrength", &mIblDiffuseStrength, 0.0f, 5.0f },
+		PBRConstFloatUniformSlot{ "IBL Specular Strength", "iblSpecularStrength", &mIblSpecularStrength, 0.0f, 5.0f },
+	};
 }
 
 PBRMaterialEditControls PBRMaterial::editControls()

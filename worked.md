@@ -7951,3 +7951,20 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；五条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 PBR inspector 字段、profile 参数语义、texture channel 规则、alpha mask 行为、IBL 开关、shadow/depth/GBuffer/forward 绑定语义、runtime frame pipeline 或 renderer backend contract；`PBRMaterial` public fields 尚未私有化，下一轮应迁移 scene/import/probe writer 后再分批 private。
+
+- 启动第五百三十四轮 PBR Material Private Field Encapsulation：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `6798e40 Add PBR material runtime state API`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续 `PBRMaterial` private-field migration，本轮目标是迁移 scene setup、importer、engine world probe/package resolver 和 verification scene writer 到 setter/API，然后把 PBR 字段下沉为 private。
+  - 更新 [SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，PBR preview material 覆盖 metallic / roughness / normal map 改为调用 `setMetallic(...)`、`setRoughness(...)`、`setNormalMap(...)`。
+  - 更新 [WorldDrivenSceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\WorldDrivenSceneSetup.cpp)，engine world probe/minimal scene PBR material 创建改为通过 `setSurface(...)`、`setIbl(...)`、`setEmissiveColor(...)` 与 `setEmissiveIntensity(...)` 写入。
+  - 更新 [AssimpMaterialImporter.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\AssimpMaterialImporter.cpp)，PBR import 改为先收集 `PBRSurfaceInput`、`PBRTextureInput`、`PBRTextureChannelInput`、`PBRAlphaMaskInput` 与 `PBRIblInput`，再通过 grouped setter 写入。
+  - 更新 [RuntimeEngineWorldVerificationResourceAdapter.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEngineWorldVerificationResourceAdapter.cpp)，scene package resolver PBR material 恢复改为通过 setter/API 写入。
+  - 更新 [RuntimePBRSceneProbeVerification.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimePBRSceneProbeVerification.cpp)，transparent / emissive / material IBL / alpha mask / texture set / showcase probes 改为通过 PBR setter/API 写入 surface、textures、alpha mask 与 IBL。
+  - 更新 [PBRMaterial.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.h) 与 [PBRMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.cpp)，将 PBR texture、surface、channel、alpha mask 与 IBL 字段下沉为 `private`，并把 texture/uniform slot 构造改为成员函数内部直接返回，避免匿名命名空间依赖 public field pointer-to-member。
+  - 已执行静态检查：确认外部 `application` / `tools` / `renderer` 路径不再直接读写 `PBRMaterial` 的 PBR 字段；剩余字段名只在 `PBRMaterial` 自身内部和无关 GBuffer render target 命名中出现。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - focused verification 第一次使用错误 mode 名 `pbr-showcase-spheres`，脚本在构建前拒绝；随后使用正确 mode `showcase-spheres` 重跑。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,engine-world-scene-package,showcase-spheres,renderer-backend-registry-noop -DiscardCaptures`，构建通过；7 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 PBR inspector 字段、texture slot metadata、Assimp PBR import 语义、verification probe 材质参数、engine world scene package resolver 行为、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

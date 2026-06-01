@@ -98,7 +98,7 @@ namespace GLframework
 		std::array<PBRConstFloatUniformSlot, 2> getIblFloatUniformSlots() const;
 		PBRMaterialEditControls editControls();
 
-	public:
+	private:
 		std::shared_ptr<Texture> mAlbedoMap{ nullptr };
 		std::shared_ptr<Texture> mMetallicMap{ nullptr };
 		std::shared_ptr<Texture> mRoughnessMap{ nullptr };

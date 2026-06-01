@@ -46,13 +46,15 @@ namespace
 	)
 	{
 		auto material = std::make_shared<GLframework::PBRMaterial>();
-		material->mAlbedo = albedo;
-		material->mMetallic = std::clamp(metallic, 0.0f, 1.0f);
-		material->mRoughness = std::clamp(roughness, 0.04f, 1.0f);
-		material->mAo = 1.0f;
-		material->mUseIBL = true;
-		material->mIblDiffuseStrength = iblDiffuseStrength;
-		material->mIblSpecularStrength = iblSpecularStrength;
+		material->setSurface({
+			albedo,
+			{ 0.0f, 0.0f, 0.0f },
+			std::clamp(metallic, 0.0f, 1.0f),
+			std::clamp(roughness, 0.04f, 1.0f),
+			1.0f,
+			0.0f
+		});
+		material->setIbl({ true, iblDiffuseStrength, iblSpecularStrength });
 		return material;
 	}
 
@@ -317,9 +319,9 @@ GL_SCENE::WorldDrivenMinimalSceneStats GL_SCENE::addEngineWorldMinimalScene(
 		stats
 	);
 	auto emissiveMaterial = createPbrMaterial({ 0.02f, 0.02f, 0.02f }, 0.0f, 0.95f, 0.0f, 0.0f);
-	emissiveMaterial->mUseIBL = false;
-	emissiveMaterial->mEmissiveColor = { 0.25f, 0.95f, 0.8f };
-	emissiveMaterial->mEmissiveIntensity = 2.4f;
+	emissiveMaterial->setIbl({ false, 0.0f, 0.0f });
+	emissiveMaterial->setEmissiveColor({ 0.25f, 0.95f, 0.8f });
+	emissiveMaterial->setEmissiveIntensity(2.4f);
 	addMinimalMeshActor(
 		*level,
 		*rootComponent,

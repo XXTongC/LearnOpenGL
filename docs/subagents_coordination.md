@@ -1966,6 +1966,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `materials/MaterialEditControls.h`, `materials/grassInstanceMaterial/grassInstanceMaterial.h`, `materials/grassInstanceMaterial/grassInstanceMaterial.cpp`, `renderer/MaterialBinder.cpp`, `tools/legacyExperiments/LegacyExperimentRunner.cpp`, `application/assimpInstanceLoader.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the PBR material runtime state API bridge is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `materials/MaterialEditControls.h`, `materials/pbrMaterial/PBRMaterial.h`, `materials/pbrMaterial/PBRMaterial.cpp`, `renderer/PBRSurfaceResourceBinder.cpp`, `renderer/PBRAlphaShadowBinder.cpp`, `renderer/PBRDepthPrepass.cpp`, `renderer/PBRIBLResourceBinder.cpp`, `renderer/PBRGBufferPass.cpp`, `application/RuntimePBRStatsResourceAdapter.cpp`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the PBR material private field encapsulation is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `materials/pbrMaterial/PBRMaterial.h`, `materials/pbrMaterial/PBRMaterial.cpp`, `application/AssimpMaterialImporter.cpp`, `application/RuntimeEngineWorldVerificationResourceAdapter.cpp`, `application/RuntimePBRSceneProbeVerification.cpp`, `tools/sceneSetup/SceneSetup.cpp`, `tools/sceneSetup/WorldDrivenSceneSetup.cpp`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

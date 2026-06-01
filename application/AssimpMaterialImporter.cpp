@@ -180,21 +180,26 @@ namespace
 	)
 	{
 		auto pbrMaterial = std::make_shared<PBRMaterial>();
-		pbrMaterial->mUseIBL = options.enablePbrIbl;
-		pbrMaterial->mAlphaCutoff = options.defaultAlphaCutoff;
+		PBRSurfaceInput surface{};
+		PBRTextureChannelInput channels{};
+		PBRAlphaMaskInput alphaMask{};
+		PBRIblInput ibl{};
+		PBRTextureInput textures{};
+		ibl.useIbl = options.enablePbrIbl;
+		alphaMask.alphaCutoff = options.defaultAlphaCutoff;
 
 		aiColor4D baseColor{};
 		if (getColor4(material, AI_MATKEY_BASE_COLOR, baseColor))
 		{
-			pbrMaterial->mAlbedo = toVec3(baseColor);
+			surface.albedo = toVec3(baseColor);
 			pbrMaterial->setOpacity(std::clamp(baseColor.a, 0.0f, 1.0f));
 		}
 		else
 		{
-			glm::vec3 diffuseColor{ pbrMaterial->mAlbedo };
+			glm::vec3 diffuseColor{ surface.albedo };
 			if (getColor3(material, AI_MATKEY_COLOR_DIFFUSE, diffuseColor))
 			{
-				pbrMaterial->mAlbedo = diffuseColor;
+				surface.albedo = diffuseColor;
 			}
 		}
 
@@ -209,19 +214,19 @@ namespace
 			pbrMaterial->setDepthWrite(false);
 		}
 
-		getFloat(material, AI_MATKEY_METALLIC_FACTOR, pbrMaterial->mMetallic);
-		getFloat(material, AI_MATKEY_ROUGHNESS_FACTOR, pbrMaterial->mRoughness);
+		getFloat(material, AI_MATKEY_METALLIC_FACTOR, surface.metallic);
+		getFloat(material, AI_MATKEY_ROUGHNESS_FACTOR, surface.roughness);
 
-		glm::vec3 emissiveColor{ pbrMaterial->mEmissiveColor };
+		glm::vec3 emissiveColor{ surface.emissiveColor };
 		if (getColor3(material, AI_MATKEY_COLOR_EMISSIVE, emissiveColor))
 		{
-			pbrMaterial->mEmissiveColor = emissiveColor;
-			if (glm::length(emissiveColor) > 0.0001f && pbrMaterial->mEmissiveIntensity <= 0.0f)
+			surface.emissiveColor = emissiveColor;
+			if (glm::length(emissiveColor) > 0.0001f && surface.emissiveIntensity <= 0.0f)
 			{
-				pbrMaterial->mEmissiveIntensity = 1.0f;
+				surface.emissiveIntensity = 1.0f;
 			}
 		}
-		getFloat(material, AI_MATKEY_EMISSIVE_INTENSITY, pbrMaterial->mEmissiveIntensity);
+		getFloat(material, AI_MATKEY_EMISSIVE_INTENSITY, surface.emissiveIntensity);
 
 		const auto albedo = loadFirstTexture(
 			material,
@@ -231,7 +236,7 @@ namespace
 			0,
 			true
 		);
-		pbrMaterial->mAlbedoMap = albedo.texture;
+		textures.albedoMap = albedo.texture;
 
 		auto metallic = loadFirstTexture(
 			material,
@@ -249,12 +254,12 @@ namespace
 			2,
 			false
 		);
-		pbrMaterial->mMetallicMap = metallic.texture;
-		pbrMaterial->mRoughnessMap = roughness.texture;
+		textures.metallicMap = metallic.texture;
+		textures.roughnessMap = roughness.texture;
 		if (metallic.texture && roughness.texture && metallic.sourceKey == roughness.sourceKey)
 		{
-			pbrMaterial->mMetallicMapChannel = 2;
-			pbrMaterial->mRoughnessMapChannel = 1;
+			channels.metallicMapChannel = 2;
+			channels.roughnessMapChannel = 1;
 		}
 
 		const auto ao = loadFirstTexture(
@@ -265,7 +270,7 @@ namespace
 			3,
 			false
 		);
-		pbrMaterial->mAoMap = ao.texture;
+		textures.aoMap = ao.texture;
 
 		const auto normal = loadFirstTexture(
 			material,
@@ -275,7 +280,7 @@ namespace
 			4,
 			false
 		);
-		pbrMaterial->mNormalMap = normal.texture;
+		textures.normalMap = normal.texture;
 
 		const auto emissive = loadFirstTexture(
 			material,
@@ -285,11 +290,17 @@ namespace
 			5,
 			true
 		);
-		pbrMaterial->mEmissiveMap = emissive.texture;
-		if (pbrMaterial->mEmissiveMap && pbrMaterial->mEmissiveIntensity <= 0.0f)
+		textures.emissiveMap = emissive.texture;
+		if (textures.emissiveMap && surface.emissiveIntensity <= 0.0f)
 		{
-			pbrMaterial->mEmissiveIntensity = 1.0f;
+			surface.emissiveIntensity = 1.0f;
 		}
+
+		pbrMaterial->setSurface(surface);
+		pbrMaterial->setTextures(textures);
+		pbrMaterial->setTextureChannels(channels);
+		pbrMaterial->setAlphaMask(alphaMask);
+		pbrMaterial->setIbl(ibl);
 
 		int blendFunc{ 0 };
 		if (getInt(material, AI_MATKEY_BLEND_FUNC, blendFunc))

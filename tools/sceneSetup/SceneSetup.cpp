@@ -127,9 +127,9 @@ namespace
 	{
 		auto pbrMat = std::make_shared<GLframework::PBRMaterial>();
 		profile.material.applyTo(*pbrMat);
-		pbrMat->mMetallic = metallic;
-		pbrMat->mRoughness = roughness;
-		pbrMat->mNormalMap = normalMap;
+		pbrMat->setMetallic(metallic);
+		pbrMat->setRoughness(roughness);
+		pbrMat->setNormalMap(normalMap);
 		return pbrMat;
 	}
 

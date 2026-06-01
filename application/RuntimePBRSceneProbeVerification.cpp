@@ -23,13 +23,15 @@ namespace
 	)
 	{
 		auto material = std::make_shared<GLframework::PBRMaterial>();
-		material->mAlbedo = albedo;
-		material->mMetallic = metallic;
-		material->mRoughness = roughness;
-		material->mAo = 1.0f;
-		material->mUseIBL = true;
-		material->mIblDiffuseStrength = 1.15f;
-		material->mIblSpecularStrength = 1.25f;
+		material->setSurface({
+			albedo,
+			{ 0.0f, 0.0f, 0.0f },
+			metallic,
+			roughness,
+			1.0f,
+			0.0f
+		});
+		material->setIbl({ true, 1.15f, 1.25f });
 		return material;
 	}
 
@@ -64,35 +66,37 @@ namespace
 		);
 
 		auto earth = createPbrShowcaseMaterial({ 1.0f, 1.0f, 1.0f }, 0.0f, 0.52f);
-		earth->mAlbedoMap = GLframework::Texture::createTexture("Texture/solar system/2k_earth_daymap.jpg", 0);
+		earth->setAlbedoMap(GLframework::Texture::createTexture("Texture/solar system/2k_earth_daymap.jpg", 0));
 		addPbrShowcaseSphere(context, sphereGeometry, earth, "Earth Albedo IBL", { -2.65f, 1.05f, 2.05f });
 
 		auto mars = createPbrShowcaseMaterial({ 1.0f, 0.82f, 0.68f }, 0.0f, 0.68f);
-		mars->mAlbedoMap = GLframework::Texture::createTexture("Texture/solar system/2k_mars.jpg", 0);
+		mars->setAlbedoMap(GLframework::Texture::createTexture("Texture/solar system/2k_mars.jpg", 0));
 		addPbrShowcaseSphere(context, sphereGeometry, mars, "Mars Rough Dielectric", { -1.55f, 1.05f, 1.98f });
 
 		auto brushedTextureSet = createPbrShowcaseMaterial({ 1.0f, 1.0f, 1.0f }, 0.0f, 0.48f);
-		brushedTextureSet->mAlbedoMap = GLframework::Texture::createTexture("fbx/bag/diffuse.jpg", 0);
-		brushedTextureSet->mMetallicMap = loadLinearTexture("fbx/bag/specular.jpg", 1);
-		brushedTextureSet->mRoughnessMap = loadLinearTexture("fbx/bag/roughness.jpg", 2);
-		brushedTextureSet->mAoMap = loadLinearTexture("fbx/bag/ao.jpg", 3);
-		brushedTextureSet->mNormalMap = loadLinearTexture("fbx/bag/normal.png", 4);
+		brushedTextureSet->setTextures({
+			GLframework::Texture::createTexture("fbx/bag/diffuse.jpg", 0),
+			loadLinearTexture("fbx/bag/specular.jpg", 1),
+			loadLinearTexture("fbx/bag/roughness.jpg", 2),
+			loadLinearTexture("fbx/bag/ao.jpg", 3),
+			loadLinearTexture("fbx/bag/normal.png", 4),
+			nullptr
+		});
 		addPbrShowcaseSphere(context, sphereGeometry, brushedTextureSet, "Texture Set Normal Roughness AO", { -0.35f, 1.05f, 1.9f });
 
 		auto gold = createPbrShowcaseMaterial({ 1.0f, 0.78f, 0.28f }, 1.0f, 0.18f);
 		addPbrShowcaseSphere(context, sphereGeometry, gold, "Gold Metallic Low Roughness", { 0.85f, 1.05f, 1.9f });
 
 		auto ceramic = createPbrShowcaseMaterial({ 0.12f, 0.72f, 1.0f }, 0.0f, 0.16f);
-		ceramic->mNormalMap = loadLinearTexture("Texture/normal/normal_map.png", 4);
+		ceramic->setNormalMap(loadLinearTexture("Texture/normal/normal_map.png", 4));
 		addPbrShowcaseSphere(context, sphereGeometry, ceramic, "Glossy Normal Map", { 1.95f, 1.05f, 1.98f });
 
 		auto emissiveSun = createPbrShowcaseMaterial({ 1.0f, 1.0f, 1.0f }, 0.0f, 0.9f);
 		auto sunTexture = GLframework::Texture::createTexture("Texture/solar system/2k_sun.jpg", 0);
-		emissiveSun->mAlbedoMap = sunTexture;
-		emissiveSun->mEmissiveMap = sunTexture;
-		emissiveSun->mEmissiveColor = { 1.0f, 0.52f, 0.16f };
-		emissiveSun->mEmissiveIntensity = 2.4f;
-		emissiveSun->mUseIBL = false;
+		emissiveSun->setTextures({ sunTexture, nullptr, nullptr, nullptr, nullptr, sunTexture });
+		emissiveSun->setEmissiveColor({ 1.0f, 0.52f, 0.16f });
+		emissiveSun->setEmissiveIntensity(2.4f);
+		emissiveSun->setUseIbl(false);
 		addPbrShowcaseSphere(context, sphereGeometry, emissiveSun, "Emissive Bloom", { 2.95f, 1.05f, 2.12f });
 	}
 }
@@ -120,13 +124,15 @@ namespace GL_RUNTIME
 		if (probes.enablePbrTransparentFallbackPass)
 		{
 			auto material = std::make_shared<GLframework::PBRMaterial>();
-			material->mAlbedo = { 0.15f, 0.85f, 1.0f };
-			material->mMetallic = 0.0f;
-			material->mRoughness = 0.18f;
-			material->mAo = 1.0f;
-			material->mUseIBL = true;
-			material->mIblDiffuseStrength = 1.0f;
-			material->mIblSpecularStrength = 1.0f;
+			material->setSurface({
+				{ 0.15f, 0.85f, 1.0f },
+				{ 0.0f, 0.0f, 0.0f },
+				0.0f,
+				0.18f,
+				1.0f,
+				0.0f
+			});
+			material->setIbl({ true, 1.0f, 1.0f });
 			material->setColorBlendState(true);
 			material->setOpacity(0.45f);
 			material->setDepthWrite(false);
@@ -146,13 +152,15 @@ namespace GL_RUNTIME
 		if (probes.enablePbrEmissiveProbe)
 		{
 			auto material = std::make_shared<GLframework::PBRMaterial>();
-			material->mAlbedo = { 0.0f, 0.0f, 0.0f };
-			material->mMetallic = 0.0f;
-			material->mRoughness = 1.0f;
-			material->mAo = 1.0f;
-			material->mEmissiveColor = { 0.0f, 0.85f, 1.0f };
-			material->mEmissiveIntensity = 3.5f;
-			material->mUseIBL = false;
+			material->setSurface({
+				{ 0.0f, 0.0f, 0.0f },
+				{ 0.0f, 0.85f, 1.0f },
+				0.0f,
+				1.0f,
+				1.0f,
+				3.5f
+			});
+			material->setUseIbl(false);
 
 			auto geometry = RuntimeProbeSceneResourceAdapter::createPbrSphereGeometry(
 				context.renderResources,
@@ -169,13 +177,15 @@ namespace GL_RUNTIME
 		if (probes.enablePbrMaterialIblProbe)
 		{
 			auto material = std::make_shared<GLframework::PBRMaterial>();
-			material->mAlbedo = { 0.95f, 0.78f, 0.22f };
-			material->mMetallic = 0.0f;
-			material->mRoughness = 0.35f;
-			material->mAo = 1.0f;
-			material->mUseIBL = true;
-			material->mIblDiffuseStrength = 4.0f;
-			material->mIblSpecularStrength = 4.0f;
+			material->setSurface({
+				{ 0.95f, 0.78f, 0.22f },
+				{ 0.0f, 0.0f, 0.0f },
+				0.0f,
+				0.35f,
+				1.0f,
+				0.0f
+			});
+			material->setIbl({ true, 4.0f, 4.0f });
 
 			auto geometry = RuntimeProbeSceneResourceAdapter::createPbrSphereGeometry(
 				context.renderResources,
@@ -192,16 +202,17 @@ namespace GL_RUNTIME
 		if (probes.enablePbrAlphaMaskProbe)
 		{
 			auto material = std::make_shared<GLframework::PBRMaterial>();
-			material->mAlbedo = { 1.0f, 1.0f, 1.0f };
-			material->mAlbedoMap = GLframework::Texture::createTexture("Texture/window.png", 0);
-			material->mMetallic = 0.0f;
-			material->mRoughness = 0.45f;
-			material->mAo = 1.0f;
-			material->mUseAlphaMask = true;
-			material->mAlphaCutoff = 0.5f;
-			material->mUseIBL = true;
-			material->mIblDiffuseStrength = 1.0f;
-			material->mIblSpecularStrength = 1.0f;
+			material->setSurface({
+				{ 1.0f, 1.0f, 1.0f },
+				{ 0.0f, 0.0f, 0.0f },
+				0.0f,
+				0.45f,
+				1.0f,
+				0.0f
+			});
+			material->setAlbedoMap(GLframework::Texture::createTexture("Texture/window.png", 0));
+			material->setAlphaMask({ true, 0.5f });
+			material->setIbl({ true, 1.0f, 1.0f });
 
 			auto geometry = RuntimeProbeSceneResourceAdapter::createPbrPlaneGeometry(
 				context.renderResources,
@@ -217,18 +228,23 @@ namespace GL_RUNTIME
 		if (probes.enablePbrTextureSetProbe)
 		{
 			auto material = std::make_shared<GLframework::PBRMaterial>();
-			material->mAlbedo = { 1.0f, 1.0f, 1.0f };
-			material->mAlbedoMap = GLframework::Texture::createTexture("fbx/bag/diffuse.jpg", 0);
-			material->mMetallic = 0.0f;
-			material->mMetallicMap = loadLinearTexture("fbx/bag/specular.jpg", 1);
-			material->mRoughness = 0.5f;
-			material->mRoughnessMap = loadLinearTexture("fbx/bag/roughness.jpg", 2);
-			material->mAo = 1.0f;
-			material->mAoMap = loadLinearTexture("fbx/bag/ao.jpg", 3);
-			material->mNormalMap = loadLinearTexture("fbx/bag/normal.png", 4);
-			material->mUseIBL = true;
-			material->mIblDiffuseStrength = 1.0f;
-			material->mIblSpecularStrength = 1.0f;
+			material->setSurface({
+				{ 1.0f, 1.0f, 1.0f },
+				{ 0.0f, 0.0f, 0.0f },
+				0.0f,
+				0.5f,
+				1.0f,
+				0.0f
+			});
+			material->setTextures({
+				GLframework::Texture::createTexture("fbx/bag/diffuse.jpg", 0),
+				loadLinearTexture("fbx/bag/specular.jpg", 1),
+				loadLinearTexture("fbx/bag/roughness.jpg", 2),
+				loadLinearTexture("fbx/bag/ao.jpg", 3),
+				loadLinearTexture("fbx/bag/normal.png", 4),
+				nullptr
+			});
+			material->setIbl({ true, 1.0f, 1.0f });
 
 			auto geometry = RuntimeProbeSceneResourceAdapter::createPbrPlaneGeometry(
 				context.renderResources,
