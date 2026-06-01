@@ -7790,3 +7790,16 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了 `SelectionInspectorPanel.cpp` 与新增 `SelectionInspectorProviderRegistry.cpp`，四条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 selection kind、Asset / Component / Actor / Shadow / Camera / Object inspector 字段、transaction summary、snapshot action、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百二十三轮 Runtime Selection Inspector Provider Factory Extraction：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `27768cf Add selection inspector provider registry`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把下一步聚焦到把 provider factory 从 `SelectionInspectorPanel.cpp` 外移，避免 panel implementation 继续持有具体 provider 注册和绘制 helper。
+  - 新增 [SelectionInspectorProviders.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SelectionInspectorProviders.h) 与 [SelectionInspectorProviders.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SelectionInspectorProviders.cpp)，集中承载默认 Asset / Component / Actor / Shadow / Camera / Object provider 注册顺序、匹配函数和绘制函数。
+  - 更新 [SelectionInspectorPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SelectionInspectorPanel.cpp)，使其只负责 ImGui inspector 窗口、`SelectionInspectorProviderContext` 构造和默认 registry 调用。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 provider factory 源文件和头文件。
+  - 已执行静态检查：确认 `SelectionInspectorProviders.cpp/.h` 已注册到 Visual Studio 工程。
+  - 已执行静态检查：确认 `SelectionInspectorPanel.cpp` 不再包含具体 inspector schema/provider helper 的实现。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了瘦身后的 `SelectionInspectorPanel.cpp` 与新增 `SelectionInspectorProviders.cpp`，四条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 selection kind、provider 注册顺序、Asset / Component / Actor / Shadow / Camera / Object inspector 字段、transaction summary、snapshot action、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

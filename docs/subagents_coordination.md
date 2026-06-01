@@ -1944,6 +1944,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `tools/editor/EditorPanelContext.h`, `tools/editor/EditorPanelFacades.h`, `tools/editor/EditorPanels.h`, `tools/editor/EditorPanels.cpp`, `tools/editor/HierarchyPanel.cpp`, `tools/editor/AssetBrowserPanel.cpp`, `tools/inspector/SelectionInspectorPanel.cpp`, `application/RuntimeEditorPanelCoordinator.cpp`, `application/RuntimeEditorRenderResourceAdapter.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime selection inspector provider registry is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `tools/inspector/SelectionInspectorProviderRegistry.h`, `tools/inspector/SelectionInspectorProviderRegistry.cpp`, `tools/inspector/SelectionInspectorPanel.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime selection inspector provider factory extraction is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `tools/inspector/SelectionInspectorProviders.h`, `tools/inspector/SelectionInspectorProviders.cpp`, `tools/inspector/SelectionInspectorPanel.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

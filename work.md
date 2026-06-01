@@ -10111,3 +10111,26 @@ Subagent 审查：
 
 - 这是 selection inspector provider registry first slice，不改变 selection kind、Asset / Component / Actor / Shadow / Camera / Object inspector 字段、transaction summary、snapshot action、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议把 provider 从 `SelectionInspectorPanel.cpp` 的默认注册继续外移到更独立的 provider factory，或者把 ActorComponent / Material 这类类型内部属性声明改造成可注册 property provider。
+
+### 2026-06-01 Runtime Selection Inspector Provider Factory Extraction
+
+本轮继续推进系统化 UI/inspector，但不扩张 PBR 渲染功能。上一轮已经把 selection inspector 的顶层目标分发改成 provider registry，本轮把默认 provider factory 与具体 provider 绘制函数继续从 `SelectionInspectorPanel.cpp` 外移，让 panel implementation 只保留 ImGui 窗口 shell、provider context 构造和 registry 调用。
+
+新增与修改：
+
+- 新增 `tools/inspector/SelectionInspectorProviders.h/.cpp`，集中承载默认 Asset / Component / Actor / Shadow / Camera / Object provider 注册顺序、匹配函数和绘制函数。
+- `SelectionInspectorPanel.cpp` 收敛为薄 panel shell，只 include editor context/selection 窄头、`SelectionInspectorProviders.h` 与 ImGui，不再直接依赖 Asset、Material、Light、Shadow、Camera、Actor、Component 或 World inspector implementation。
+- `SelectionInspectorProviderRegistry.h/.cpp` 保持不变，仍提供 provider 注册、匹配和 draw-first 执行边界。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 provider factory 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `SelectionInspectorProviders.cpp/.h` 已注册到 Visual Studio 工程。
+- 静态检查确认 `SelectionInspectorPanel.cpp` 不再包含具体 inspector schema/provider helper 的实现。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了瘦身后的 `SelectionInspectorPanel.cpp` 与新增 `SelectionInspectorProviders.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 provider factory extraction，不改变 selection kind、provider 注册顺序、Asset / Component / Actor / Shadow / Camera / Object inspector 字段、transaction summary、snapshot action、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议从“默认 provider 外移”进入更细的 property provider：优先把 ActorComponent 或 Material 的属性声明拆成可注册 provider，减少具体类型属性继续集中在 facade 中。

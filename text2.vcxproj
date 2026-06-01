@@ -356,6 +356,7 @@
     <ClCompile Include="tools\inspector\PropertyInspector.cpp" />
     <ClCompile Include="tools\inspector\SceneObjectInspector.cpp" />
     <ClCompile Include="tools\inspector\SelectionInspectorPanel.cpp" />
+    <ClCompile Include="tools\inspector\SelectionInspectorProviders.cpp" />
     <ClCompile Include="tools\inspector\SelectionInspectorProviderRegistry.cpp" />
     <ClCompile Include="tools\editor\AssetBrowserPanel.cpp" />
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp" />
@@ -1000,6 +1001,7 @@
     <ClInclude Include="tools\inspector\PropertyInspector.h" />
     <ClInclude Include="tools\inspector\PropertySchema.h" />
     <ClInclude Include="tools\inspector\SceneObjectInspector.h" />
+    <ClInclude Include="tools\inspector\SelectionInspectorProviders.h" />
     <ClInclude Include="tools\inspector\SelectionInspectorProviderRegistry.h" />
     <ClInclude Include="tools\Logger\Logger.h" />
     <ClInclude Include="tools\Logger\LogManager.h" />

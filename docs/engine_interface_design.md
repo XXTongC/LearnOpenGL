@@ -544,6 +544,8 @@ public:
 334. 下一步建议推进类型/组件 property provider 注册机制，把当前按目标类型手写 dispatch 的 inspector facade 进一步收敛为可注册 provider。
 335. Runtime Selection Inspector Provider Registry 已完成第一版：新增 `SelectionInspectorProviderRegistry`，selection inspector 的 Asset / Component / Actor / Shadow / Camera / Object 顶层目标分发改为默认 provider 注册与匹配。
 336. 下一步建议继续把 provider factory 从 `SelectionInspectorPanel.cpp` 外移，或把 ActorComponent / Material 内部属性声明推进为可注册 property provider。
+337. Runtime Selection Inspector Provider Factory Extraction 已完成第一版：新增 `SelectionInspectorProviders` 集中默认 provider 注册和绘制 helper，`SelectionInspectorPanel.cpp` 收敛为薄 panel shell。
+338. 下一步建议把 ActorComponent 或 Material 的内部属性声明拆成可注册 property provider，让 provider registry 不只负责目标分发，也开始承载类型属性扩展点。
 
 ## 约束
 
