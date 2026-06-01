@@ -9522,3 +9522,27 @@ Subagent 审查：
 
 - 这是 PBR scene probe 的 renderer/scene resource boundary cleanup，不改变 probe mesh/material 创建、PBR shader 选择、probe 添加时机、verification 判定标准、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步可继续处理 imported asset probe、engine world verification 或 frame pass 中剩余 direct renderer/scene owner 访问点；仍需按“只读 view vs 明确 mutation boundary”区分处理。
+
+### 2026-06-01 Runtime Render Resource Imported Asset Probe Scene Boundary Cleanup
+
+本轮继续处理剩余 direct renderer/scene owner 访问点，不扩张 PBR 功能。`RuntimeImportedAssetVerification` 同时承担 imported asset probe 加载、添加到 offscreen scene、导入 Engine World 和 scene package round-trip 验证；其中添加到 scene 是明确的 runtime resource mutation path。本轮只收口 scene mutation，不改变 asset loader API。
+
+新增与修改：
+
+- `RuntimeImportedAssetVerification.cpp` 的 readiness 判断改为使用 `context.renderResources.hasOffScreenSceneAndRenderer()`，不再直接读取 `sceneOffScreen()` 判断 scene 是否存在。
+- `RuntimeImportedAssetVerification.cpp` 添加 imported asset probe 时改为调用 `context.renderResources.addOffScreenSceneChild(importedAsset)`，不再直接调用 `sceneOffScreen()->addChild(...)`。
+- 移除 `RuntimeImportedAssetVerification.cpp` 对 `framework/scene.h` 的依赖，改为包含更精确的 `framework/object.h`，因为本文件仍需要设置 imported root object 的 name/transform。
+- 保留 `AssimpLoader::loadPBR(..., context.renderResources.renderer())`：当前 loader 需要 renderer 创建 mesh/material/shader 相关资源，后续应单独做 asset-loading adapter，不应把 loader 依赖硬塞进 `RuntimeRenderResourceState`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeImportedAssetVerification.cpp` 中不再直接调用 `context.renderResources.sceneOffScreen()`，也不再 include `framework/scene.h`。
+- 静态检查确认 `RuntimeImportedAssetVerification.cpp` 中剩余 direct `renderer()` 访问仅用于 `AssimpLoader::loadPBR`，作为后续 asset-loading adapter 任务保留。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes import,forward,renderer-backend-registry-noop -DiscardCaptures` 已通过；`import` mode 确认 `pbrImportedMeshes=1`，imported asset world import / scene package round-trip stats 仍正常。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 imported asset probe 的 scene resource boundary cleanup，不改变 FBX 路径、PBR material import mode、Engine World import、asset registry 或 scene package verification 语义。
+- 下一步更合理的继续方向是 asset-loading adapter 或 engine world verification/frame pass 中剩余 renderer/scene owner 访问点；当前仍不建议继续扩张 PBR pass。

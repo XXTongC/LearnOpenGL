@@ -12,7 +12,7 @@
 #include "../engine/PersistentIdPolicy.h"
 #include "../engine/ScenePackage.h"
 #include "../engine/World.h"
-#include "../framework/scene.h"
+#include "../framework/object.h"
 #include "../tools/Logger/LogManager.h"
 #include "AppRuntimeContext.h"
 
@@ -97,7 +97,7 @@ namespace GL_RUNTIME
 		const RuntimeVerificationConfig& verification
 	)
 	{
-		if (!verification.pbr.probes.enablePbrImportedAssetProbe || !context.renderResources.sceneOffScreen() || !context.renderResources.renderer())
+		if (!verification.pbr.probes.enablePbrImportedAssetProbe || !context.renderResources.hasOffScreenSceneAndRenderer())
 		{
 			return;
 		}
@@ -112,7 +112,7 @@ namespace GL_RUNTIME
 		importedAsset->setName("PBR Imported Asset Probe");
 		importedAsset->setPosition({ -2.4f, -1.1f, 1.8f });
 		importedAsset->setScale({ 0.65f, 0.65f, 0.65f });
-		context.renderResources.sceneOffScreen()->addChild(importedAsset);
+		context.renderResources.addOffScreenSceneChild(importedAsset);
 
 		if (!context.engineAttachments.engineWorld || !context.engineAttachments.engineWorld->getPersistentLevel())
 		{

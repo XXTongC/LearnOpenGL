@@ -510,7 +510,8 @@ public:
 300. Runtime Render Resource Renderer Pass Profile Access Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState` 新增 `rendererFramePassProfile()`，PBR pass profile verification 与 runtime profile loader 不再直接取得 renderer owner 写 frame pass profile。
 301. Runtime Render Resource Renderer Clear Color Sync Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState` 新增 `syncClearColorToRenderer()`，frame runner 不再直接取得 renderer owner 只为同步 clear color。
 302. Runtime Render Resource PBR Scene Probe Boundary Cleanup 已完成第一版：PBR scene probe verification 通过 `pbrMaterialShader()` 与 `addOffScreenSceneChild(...)` 取得 shader / 添加 probe，不再直接访问 renderer/scene owner。
-303. 下一步建议继续处理 imported asset probe、engine world verification 或 frame pass 中剩余 direct renderer/scene owner 访问点；当前仍不建议继续扩张 PBR pass。
+303. Runtime Render Resource Imported Asset Probe Scene Boundary Cleanup 已完成第一版：imported asset probe verification 通过 `hasOffScreenSceneAndRenderer()` 与 `addOffScreenSceneChild(...)` 判断 readiness / 添加 probe，不再直接访问 offscreen scene owner；`AssimpLoader::loadPBR` 的 renderer 依赖保留为后续 asset-loading adapter 任务。
+304. 下一步建议继续处理 asset-loading adapter、engine world verification 或 frame pass 中剩余 direct renderer/scene owner 访问点；当前仍不建议继续扩张 PBR pass。
 
 ## 约束
 

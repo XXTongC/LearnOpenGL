@@ -1896,6 +1896,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `application/RuntimeFrameRunner.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime render resource PBR scene probe boundary cleanup is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `application/RuntimePBRSceneProbeVerification.cpp`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime render resource imported asset probe scene boundary cleanup is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `application/RuntimeImportedAssetVerification.cpp`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 
