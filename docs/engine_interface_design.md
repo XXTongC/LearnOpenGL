@@ -614,6 +614,8 @@ public:
 404. 下一步建议把 `RuntimeEditorLifecycleState` 构造 UI registries 时使用的默认 policy 参数化，并接入 `RuntimeEditorLifecycleConfig`、profile/config 或 command-line，让 sample/default/plugin module 启用状态由组合根决定。
 405. Runtime Editor UI Module Config Policy 已完成第一版：`RuntimeApplicationShellConfig` 新增 `enableCoreEditorUiModule` 与 `enableSampleEditorUiModule`，`RuntimeEditorLifecycleConfig` 携带 `EditorUiModuleCompositionPolicy`，editor startup 阶段按 config policy 配置 `RuntimeEditorLifecycleState`。
 406. 下一步建议把 `RuntimeApplicationShellConfig` 的 module 开关接入 verification args、profile/config 文件或命令行参数，形成外部可控的 editor UI module enable/disable 路径。
+407. Runtime Editor UI Module CLI Policy 已完成第一版：`RuntimeVerificationArgs.cpp` 新增 core/sample editor UI module enable/disable CLI 开关，按 argv 顺序覆盖 `RuntimeApplicationShellConfig` 中的 module policy。
+408. 下一步建议把同一套 module policy 接入 profile/config 文件或 editor settings，并在 Debug Controller 增加当前 module 组合状态展示，避免只靠启动参数推断 UI 组合。
 
 ## 约束
 

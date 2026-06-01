@@ -8306,3 +8306,17 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过，MSBuild 编译了 application config policy、startup lifecycle、editor lifecycle state 等相关路径；5 个 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改默认 module 组合、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百五十八轮 Runtime Editor UI Module CLI Policy：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `0efea3d Route editor UI module policy through runtime config`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把 `RuntimeApplicationShellConfig` 的 Editor UI module 开关接入命令行参数，形成第一条外部可控路径。
+  - 更新 [RuntimeVerificationArgs.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeVerificationArgs.cpp)，新增 `applyEditorUiModuleArguments(...)`。
+  - 新增 `--enable-core-editor-ui-module`、`--disable-core-editor-ui-module`、`--enable-sample-editor-ui-module` 与 `--disable-sample-editor-ui-module` 四个 CLI 开关，分别写入 shell config 的 core/sample module enable 字段。
+  - 新 CLI 开关按 argv 顺序应用；如果同一 module 同时出现 enable/disable，最后出现的参数生效。
+  - 已执行静态检查：确认四个新 CLI 参数只写入 shell config module 开关，后续仍通过 config policy 和 editor lifecycle state 配置 UI registries。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过，MSBuild 编译了 `RuntimeVerificationArgs.cpp`；5 个 focused verification mode 全部通过。
+  - 已执行直接 CLI 共存检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 退出码为 0，确认新参数可和 verification mode 共存。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改默认 module 启用状态、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

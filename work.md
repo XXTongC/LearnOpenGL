@@ -10969,3 +10969,28 @@ Subagent 审查：
 
 - 这是 Runtime Editor UI Module Config Policy slice，不改变默认 module 组合、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议把 `RuntimeApplicationShellConfig` 的 module 开关接入 verification args、profile/config 文件或命令行参数，形成可外部控制的 editor UI module enable/disable 路径。
+
+### 2026-06-01 Runtime Editor UI Module CLI Policy
+
+本轮把上一轮加入 `RuntimeApplicationShellConfig` 的 Editor UI module 开关接入命令行参数。目标是形成第一条外部可控路径：运行时可以通过 CLI 选择是否启用 core editor UI module 或 sample editor UI module，而不需要再次修改 panel、registry 或 lifecycle 代码。
+
+新增与修改：
+
+- `RuntimeVerificationArgs.cpp` 新增 `applyEditorUiModuleArguments(...)`，集中解析 Editor UI module CLI 开关。
+- 新增 `--enable-core-editor-ui-module` 与 `--disable-core-editor-ui-module`，写入 `RuntimeApplicationShellConfig::enableCoreEditorUiModule`。
+- 新增 `--enable-sample-editor-ui-module` 与 `--disable-sample-editor-ui-module`，写入 `RuntimeApplicationShellConfig::enableSampleEditorUiModule`。
+- CLI 解析按 argv 顺序执行；如果同一 module 同时出现 enable/disable，最后出现的参数生效。
+- `makeShellConfigFromArguments(...)` 在 verification/showcase profile 应用后执行 module CLI 覆盖，因此这些开关可以和现有 verification mode 共存。
+
+已完成验证：
+
+- 静态检查确认四个新 CLI 参数只写入 shell config 的 module 开关，后续仍通过 `RuntimeApplicationConfigPolicy -> RuntimeEditorLifecycleConfig -> RuntimeEditorLifecycleState` 配置 UI registries。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `RuntimeVerificationArgs.cpp`。
+- 直接 CLI 共存检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 已通过，确认新参数可以和 verification mode 同时出现。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime Editor UI Module CLI Policy slice，不改变默认 module 启用状态、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议把相同的 module policy 继续接入 profile/config 文件或 editor settings，并增加可视化的 module 状态反馈，而不是继续在 PBR pass 上扩张。

@@ -2014,6 +2014,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `application/RuntimeEditorLifecycle.cpp`, `application/RuntimeEditorLifecycleState.h`, `application/RuntimeEditorLifecycleState.cpp`, `application/RuntimeEditorPanelCoordinator.h`, `application/RuntimeEditorPanelCoordinator.cpp`, `tools/editor/DebugControllerContext.h`, `tools/editor/DebugControllerPanel.cpp`, `tools/editor/DebugProfileControlsPanel.cpp`, `tools/editor/EditorPanelContext.h`, `tools/inspector/SelectionInspectorPanel.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime Editor UI module config policy slice is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `application/RuntimeApplicationConfig.h`, `application/RuntimeApplicationConfigPolicy.cpp`, `application/RuntimeApplicationEditorStartupLifecycle.h`, `application/RuntimeApplicationEditorStartupLifecycle.cpp`, `application/RuntimeApplicationStartupLifecycle.cpp`, `application/RuntimeEditorLifecycleConfig.h`, `application/RuntimeEditorLifecycle.h`, `application/RuntimeEditorLifecycle.cpp`, `application/RuntimeEditorLifecycleState.h`, `application/RuntimeEditorLifecycleState.cpp`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime Editor UI module CLI policy slice is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `application/RuntimeVerificationArgs.cpp`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

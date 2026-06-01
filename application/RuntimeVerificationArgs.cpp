@@ -205,6 +205,30 @@ namespace
 		return foundRuntimeVerificationMode;
 	}
 
+	void applyEditorUiModuleArguments(GL_RUNTIME::RuntimeApplicationShellConfig& config, int argc, char** argv)
+	{
+		for (int index = 1; index < argc; ++index)
+		{
+			const std::string argument = argv[index];
+			if (argument == "--enable-core-editor-ui-module")
+			{
+				config.enableCoreEditorUiModule = true;
+			}
+			else if (argument == "--disable-core-editor-ui-module")
+			{
+				config.enableCoreEditorUiModule = false;
+			}
+			else if (argument == "--enable-sample-editor-ui-module")
+			{
+				config.enableSampleEditorUiModule = true;
+			}
+			else if (argument == "--disable-sample-editor-ui-module")
+			{
+				config.enableSampleEditorUiModule = false;
+			}
+		}
+	}
+
 	void applyInteractivePbrShowcaseMode(GL_RUNTIME::RuntimeApplicationShellConfig& config)
 	{
 		applyRuntimeVerificationDefaults(config);
@@ -229,5 +253,6 @@ GL_RUNTIME::RuntimeApplicationShellConfig GL_RUNTIME::makeShellConfigFromArgumen
 	{
 		applyInteractivePbrShowcaseMode(config);
 	}
+	applyEditorUiModuleArguments(config, argc, argv);
 	return config;
 }
