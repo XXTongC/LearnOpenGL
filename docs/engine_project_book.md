@@ -353,6 +353,7 @@ flowchart TD
 - Runtime Render Resource Dead Point Light Mesh Owner Removal 已完成第一版：`RuntimeRenderResourceState.h` 删除无源码使用点的 `meshPointLight` 公开 owner 字段；未新增 replacement accessor。
 - Runtime Render Resource Renderer/Scene Owner Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再公开暴露 `renderer`、`sceneOffScreen`、`sceneInScreen` shared_ptr owners，三者由 private 成员持有；frame pass、scene setup、legacy experiment、editor context、renderer backend readiness 和 verification/report 路径通过访问器取得引用。
 - Runtime Render Resource Clear Color State Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再公开暴露 `clearColor` 值型字段，clear color 由 private `mClearColor` 持有；frame runner 通过访问器把当前 clear color 同步到 renderer。
+- Runtime Render Resource ReadOnly View Facade Cleanup 已完成第一版：新增 `RuntimeRenderResourceView` 与 `readOnlyView()`，renderer backend readiness、renderer backend attachment 和 verification report 的只读路径先迁到 read-only facade。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已完成第一版：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已完成第一版：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已完成第一版：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -411,6 +412,6 @@ flowchart TD
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Render Resource Clear Color State Boundary Cleanup 后，`RuntimeRenderResourceState` 不再直接公开数据字段；下一步更适合设计 read-only runtime resource facade，或转向其他 runtime/application state 的依赖边界，当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Render Resource ReadOnly View Facade Cleanup 后，下一步可继续把更多只读 consumer 迁到 `RuntimeRenderResourceView`，或转向其他 runtime/application state 的依赖边界，当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Render Resource Clear Color State Boundary Cleanup 已接入后，`RuntimeRenderResourceState.h` 已移除最后一个直接公开的数据字段 `clearColor`，改由 private `mClearColor` 和 accessor 暴露；不改变 renderer backend、scene setup、frame pass 或 PBR pass。
+当前最新修正：Runtime Render Resource ReadOnly View Facade Cleanup 已接入后，`RuntimeRenderResourceState` 具备 `readOnlyView()`；renderer backend readiness、renderer backend attachment 和 verification report 的只读路径已先通过 `RuntimeRenderResourceView` 读取资源 owner。

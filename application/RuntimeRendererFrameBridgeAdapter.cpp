@@ -54,40 +54,46 @@ namespace
 		return key;
 	}
 
-	bool isSceneColorReady(const GLframework::AppRuntimeContext& context)
+	bool isSceneColorReady(
+		const GL_RUNTIME::RuntimeRenderResourceView& renderResources,
+		const GLframework::AppRuntimeContext& context
+	)
 	{
-		return context.renderResources.renderer() != nullptr
-			&& context.renderResources.sceneOffScreen() != nullptr
+		return renderResources.renderer() != nullptr
+			&& renderResources.sceneOffScreen() != nullptr
 			&& context.cameraLights.camera != nullptr
-			&& context.renderResources.frameRenderTargets().isInitialized()
-			&& context.renderResources.frameRenderTargets().getSceneFbo() != 0;
+			&& renderResources.frameRenderTargets().isInitialized()
+			&& renderResources.frameRenderTargets().getSceneFbo() != 0;
 	}
 
-	bool isSceneResolveReady(const GLframework::AppRuntimeContext& context)
+	bool isSceneResolveReady(const GL_RUNTIME::RuntimeRenderResourceView& renderResources)
 	{
-		return context.renderResources.frameRenderTargets().getMultisample() != nullptr
-			&& context.renderResources.frameRenderTargets().getResolved() != nullptr;
+		return renderResources.frameRenderTargets().getMultisample() != nullptr
+			&& renderResources.frameRenderTargets().getResolved() != nullptr;
 	}
 
-	bool isBloomReady(const GLframework::AppRuntimeContext& context)
+	bool isBloomReady(
+		const GL_RUNTIME::RuntimeRenderResourceView& renderResources,
+		const GLframework::PostProcessSettings& postProcessSettings
+	)
 	{
-		if (!context.profiles.postProcessSettings().bloomEnabled)
+		if (!postProcessSettings.bloomEnabled)
 		{
 			return true;
 		}
 
-		return context.renderResources.bloom() != nullptr
-			&& context.renderResources.frameRenderTargets().getResolved() != nullptr
-			&& context.renderResources.frameRenderTargets().getBloomBright() != nullptr
-			&& context.renderResources.frameRenderTargets().getBloomPing() != nullptr
-			&& context.renderResources.frameRenderTargets().getBloomPong() != nullptr;
+		return renderResources.bloom() != nullptr
+			&& renderResources.frameRenderTargets().getResolved() != nullptr
+			&& renderResources.frameRenderTargets().getBloomBright() != nullptr
+			&& renderResources.frameRenderTargets().getBloomPing() != nullptr
+			&& renderResources.frameRenderTargets().getBloomPong() != nullptr;
 	}
 
-	bool isScreenCompositeReady(const GLframework::AppRuntimeContext& context)
+	bool isScreenCompositeReady(const GL_RUNTIME::RuntimeRenderResourceView& renderResources)
 	{
-		return context.renderResources.renderer() != nullptr
-			&& context.renderResources.screenQuad() != nullptr
-			&& context.renderResources.frameRenderTargets().isInitialized();
+		return renderResources.renderer() != nullptr
+			&& renderResources.screenQuad() != nullptr
+			&& renderResources.frameRenderTargets().isInitialized();
 	}
 
 	bool isFramePassReady(
@@ -95,16 +101,17 @@ namespace
 		const GLframework::AppRuntimeContext& context
 	)
 	{
+		const auto renderResources = context.renderResources.readOnlyView();
 		switch (pass.id)
 		{
 		case GL_RUNTIME::RuntimeFramePassId::SceneColor:
-			return isSceneColorReady(context);
+			return isSceneColorReady(renderResources, context);
 		case GL_RUNTIME::RuntimeFramePassId::SceneResolve:
-			return isSceneResolveReady(context);
+			return isSceneResolveReady(renderResources);
 		case GL_RUNTIME::RuntimeFramePassId::Bloom:
-			return isBloomReady(context);
+			return isBloomReady(renderResources, context.profiles.postProcessSettings());
 		case GL_RUNTIME::RuntimeFramePassId::ScreenComposite:
-			return isScreenCompositeReady(context);
+			return isScreenCompositeReady(renderResources);
 		default:
 			return false;
 		}

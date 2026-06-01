@@ -17,6 +17,11 @@ GL_RUNTIME::RuntimeRenderResourceState& GL_RUNTIME::RuntimeRenderResourceState::
 	RuntimeRenderResourceState&&
 ) noexcept = default;
 
+GL_RUNTIME::RuntimeRenderResourceView GL_RUNTIME::RuntimeRenderResourceState::readOnlyView() const
+{
+	return RuntimeRenderResourceView(*this);
+}
+
 glm::vec3& GL_RUNTIME::RuntimeRenderResourceState::clearColor()
 {
 	return mClearColor;
@@ -155,4 +160,79 @@ std::shared_ptr<GLframework::PhongCSMShadowMaterial>& GL_RUNTIME::RuntimeRenderR
 const std::shared_ptr<GLframework::PhongCSMShadowMaterial>& GL_RUNTIME::RuntimeRenderResourceState::csmShadowMaterial() const
 {
 	return mCsmShadowMaterial;
+}
+
+GL_RUNTIME::RuntimeRenderResourceView::RuntimeRenderResourceView(const RuntimeRenderResourceState& state)
+	: mState(&state)
+{
+}
+
+const glm::vec3& GL_RUNTIME::RuntimeRenderResourceView::clearColor() const
+{
+	return mState->clearColor();
+}
+
+const std::shared_ptr<GLframework::Renderer>& GL_RUNTIME::RuntimeRenderResourceView::renderer() const
+{
+	return mState->renderer();
+}
+
+const std::shared_ptr<GLframework::Scene>& GL_RUNTIME::RuntimeRenderResourceView::sceneOffScreen() const
+{
+	return mState->sceneOffScreen();
+}
+
+const std::shared_ptr<GLframework::Scene>& GL_RUNTIME::RuntimeRenderResourceView::sceneInScreen() const
+{
+	return mState->sceneInScreen();
+}
+
+const GLframework::FrameRenderTargets& GL_RUNTIME::RuntimeRenderResourceView::frameRenderTargets() const
+{
+	return mState->frameRenderTargets();
+}
+
+const GLframework::PostProcessPass& GL_RUNTIME::RuntimeRenderResourceView::postProcessPass() const
+{
+	return mState->postProcessPass();
+}
+
+const std::shared_ptr<GLframework::Bloom>& GL_RUNTIME::RuntimeRenderResourceView::bloom() const
+{
+	return mState->bloom();
+}
+
+const std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceView::screenQuad() const
+{
+	return mState->screenQuad();
+}
+
+const std::shared_ptr<GLframework::ScreenMaterial>& GL_RUNTIME::RuntimeRenderResourceView::screenMaterial() const
+{
+	return mState->screenMaterial();
+}
+
+const std::shared_ptr<GLframework::GrassInstanceMaterial>& GL_RUNTIME::RuntimeRenderResourceView::grassMaterial() const
+{
+	return mState->grassMaterial();
+}
+
+const std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceView::skyBoxMesh() const
+{
+	return mState->skyBoxMesh();
+}
+
+const std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceView::movePlane() const
+{
+	return mState->movePlane();
+}
+
+const std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceView::textD() const
+{
+	return mState->textD();
+}
+
+const std::shared_ptr<GLframework::PhongCSMShadowMaterial>& GL_RUNTIME::RuntimeRenderResourceView::csmShadowMaterial() const
+{
+	return mState->csmShadowMaterial();
 }

@@ -9407,3 +9407,29 @@ Subagent 审查：
 
 - 这是 Runtime render resource clear color state boundary cleanup，不改变 renderer 创建/附着、OpenGL startup clear color、runtime frame pipeline、renderer backend contract、scene setup 或 PBR pass。
 - `RuntimeRenderResourceState` 现在不再直接公开数据字段；下一步更适合设计只读 runtime resource facade，或转向其他 runtime/application state 的依赖边界，而不是继续扩张 PBR pass。
+
+### 2026-06-01 Runtime Render Resource ReadOnly View Facade Cleanup
+
+本轮继续 Engine runtime ownership 的只读边界收敛，不扩张 PBR 功能。`RuntimeRenderResourceState` 已经不再直接公开数据字段，但只读 consumer 仍直接调用 mutable state 的 accessor；本轮先加入轻量 `RuntimeRenderResourceView`，并把 renderer backend readiness / attachment report 这类只读路径迁到 read-only facade，避免这些路径继续依赖可写 owner accessor。
+
+新增与修改：
+
+- `RuntimeRenderResourceState.h` 新增 `RuntimeRenderResourceView`，通过 `RuntimeRenderResourceState::readOnlyView()` 创建。
+- `RuntimeRenderResourceView` 暴露 clear color、renderer、scene、frame render targets、post-process pass、Bloom、screen quad/material 和 legacy mesh/material 的 const 访问接口。
+- `RuntimeRenderResourceState.cpp` 集中实现 read-only view 的构造和访问转发。
+- `RuntimeRendererFrameBridgeAdapter.cpp` 的 scene color / resolve / bloom / screen composite readiness helper 改为接收 `RuntimeRenderResourceView`，不再直接从 `context.renderResources` 读取可写 accessor。
+- `RuntimeContentRendererBackendLifecycle.cpp` 和 `RuntimeRendererBackendAttachmentLifecycle.cpp` 在只读检查 / renderer pointer attachment 处使用 `readOnlyView()`。
+- `RuntimeVerificationReport.cpp` 在 renderer subsystem attachment 对比处使用 `readOnlyView()`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeRenderResourceView` / `readOnlyView()` 已接入目标只读路径。
+- 静态检查确认本轮迁移的 backend readiness / report / attachment 文件中不再直接调用 `context.renderResources.renderer()`、`sceneOffScreen()`、`screenQuad()`、`bloom()` 或 `frameRenderTargets()`。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 重新编译 `RuntimeRenderResourceState.cpp`、`RuntimeRendererFrameBridgeAdapter.cpp`、`RuntimeRendererBackendAttachmentLifecycle.cpp`、`RuntimeVerificationReport.cpp` 和相关 runtime 文件。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime render resource read-only facade 的第一版，不改变资源创建、资源替换、scene setup、frame pass 执行、renderer backend contract 或 PBR pass。
+- 下一步可继续把更多只读 consumer 迁到 `RuntimeRenderResourceView`，或转向其他 runtime/application state 依赖边界；当前仍不建议继续扩张 PBR pass。
