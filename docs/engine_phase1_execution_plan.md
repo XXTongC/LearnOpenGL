@@ -432,10 +432,11 @@ passed
 - Editor UI Module Registration List 已接入：`EditorUiModuleRegistry` 新增 `EditorUiModule` / `EditorUiModuleList`，支持按外部 module list 构建 UI registries；默认列表当前包含 `core-editor-ui`。
 - Sample Editor UI Module 已接入：新增 `SampleEditorUiModule`，通过 `EditorUiModuleList` 注册 `sample-editor-ui-module` Debug Controller section，验证外部 module 可不修改 panel 代码扩展 UI。
 - Editor UI Module Composition Policy 已接入：新增 `EditorUiModuleComposition`，默认 module list 由 `EditorUiModuleCompositionPolicy` 生成，registry 不再直接依赖 core provider 或 sample module。
+- Runtime Editor UI Module State Injection 已接入：`RuntimeEditorLifecycleState` 持有默认构建的 `EditorUiModuleRegistries`，coordinator 将其注入 Debug/Profile/Selection panel context，panel 不再只依赖静态默认 registries。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Editor UI Module Composition Policy 已接入后，默认 UI 仍由 `core-editor-ui` 与 `sample-editor-ui` 组成，但 module list 由 `EditorUiModuleCompositionPolicy` 生成，`EditorUiModuleRegistry.cpp` 不再硬编码具体 module 组合。
+当前最新修正：Runtime Editor UI Module State Injection 已接入后，默认 UI registries 由 `RuntimeEditorLifecycleState` 拥有并通过 coordinator 注入 panel context；Debug/Profile/Selection panel 优先使用注入 registries，静态默认仅作为兼容 fallback。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议把 `EditorUiModuleCompositionPolicy` 的来源继续上提到 editor/application composition 层，或让 profile/config/command-line 控制 sample/default/plugin module 的启用状态；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议把 `RuntimeEditorLifecycleState` 构造 UI registries 时使用的默认 policy 继续参数化，让 `RuntimeEditorLifecycleConfig`、profile/config 或 command-line 可以控制 sample/default/plugin module 的启用状态；当前不建议继续扩张 PBR pass。

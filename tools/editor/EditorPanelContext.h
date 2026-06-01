@@ -22,6 +22,7 @@ namespace GLframework
 namespace GL_EDITOR
 {
 	class EditTransactionLog;
+	struct EditorUiModuleRegistries;
 
 	struct EditorPanelContext
 	{
@@ -35,5 +36,6 @@ namespace GL_EDITOR
 		const GLengine::AssetRegistry* assetRegistry{ nullptr };
 		bool engineWorldEditable{ false };
 		EditTransactionLog* editTransactions{ nullptr };
+		const EditorUiModuleRegistries* editorUiModules{ nullptr };
 	};
 }

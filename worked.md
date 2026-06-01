@@ -8275,3 +8275,18 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过，MSBuild 编译了 `EditorUiModuleComposition.cpp` 与 `EditorUiModuleRegistry.cpp`；5 个 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改默认 module 启用状态、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百五十六轮 Runtime Editor UI Module State Injection：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `64e17d9 Extract editor UI module composition policy`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续把 `EditorUiModuleCompositionPolicy` 来源向 editor/application lifecycle 推进，本轮先让 runtime editor lifecycle state 拥有并注入 UI registries。
+  - 更新 [RuntimeEditorLifecycleState.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycleState.h) 与 [RuntimeEditorLifecycleState.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycleState.cpp)，state 内部新增 `EditorUiModuleRegistries`，并暴露 `editorUiModules()` 只读访问器。
+  - 更新 [RuntimeEditorPanelCoordinator.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorPanelCoordinator.h) 与 [RuntimeEditorPanelCoordinator.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorPanelCoordinator.cpp)，`drawPanels(...)`、`makeDebugControllerContext(...)` 与 `makeEditorPanelContext(...)` 新增 registries 参数并注入 context。
+  - 更新 [RuntimeEditorLifecycle.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycle.cpp)，render UI callback 调用 coordinator 时传入 `state.editorUiModules()`。
+  - 更新 [DebugControllerContext.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerContext.h) 与 [EditorPanelContext.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorPanelContext.h)，新增 `editorUiModules` 指针。
+  - 更新 [DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)、[DebugProfileControlsPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugProfileControlsPanel.cpp) 与 [SelectionInspectorPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SelectionInspectorPanel.cpp)，优先使用 context 注入 registries，保留静态默认作为兼容 fallback。
+  - 已执行静态检查：确认 runtime editor lifecycle state 持有 UI registries，coordinator 注入 debug/editor context，三条 panel 路径均优先读取 `context.editorUiModules`。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过，MSBuild 编译了 editor lifecycle、coordinator、Debug/Profile/Selection panel 等相关路径；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改默认 module 组合、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

@@ -41,6 +41,7 @@ namespace GL_RUNTIME
 						context,
 						state.selection(),
 						state.editTransactions(),
+						state.editorUiModules(),
 						config.editorOrbitAngle
 					);
 				}

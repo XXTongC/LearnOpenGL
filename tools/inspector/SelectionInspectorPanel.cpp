@@ -9,7 +9,8 @@ void GL_EDITOR::drawSelectionInspectorPanel(const EditorPanelContext& context, S
 	ImGui::Begin("inspector");
 
 	SelectionInspectorProviderContext providerContext{ context, selection };
-	if (!defaultEditorUiModuleRegistries().selectionInspectors.drawFirst(providerContext))
+	const auto& editorUiModules = context.editorUiModules ? *context.editorUiModules : defaultEditorUiModuleRegistries();
+	if (!editorUiModules.selectionInspectors.drawFirst(providerContext))
 	{
 		ImGui::TextUnformatted("No target selected.");
 	}

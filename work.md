@@ -10920,3 +10920,27 @@ Subagent 审查：
 
 - 这是 Editor UI Module Composition Policy slice，不改变默认 module 启用状态、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议把 `EditorUiModuleCompositionPolicy` 的来源继续上提到 editor/application composition 层，或让 profile/config/command-line 控制 sample/default/plugin module 的启用状态。
+
+### 2026-06-01 Runtime Editor UI Module State Injection
+
+本轮把 Editor UI module registries 的消费路径从 panel 内部静态默认读取推进到 runtime editor lifecycle state 注入。目标是让 application/editor lifecycle 拥有一次构建好的 UI registries，并通过 context 传给 Debug Controller、Debug Profile Controls 与 Selection Inspector，后续 policy/config 接管 module 组合时不需要改 panel。
+
+新增与修改：
+
+- `RuntimeEditorLifecycleState` 新增 `EditorUiModuleRegistries` 持有字段，并在 state 构造时通过 `buildDefaultEditorUiModuleRegistries()` 构建一次默认 UI registries。
+- `RuntimeEditorLifecycleState` 新增 `editorUiModules()` 只读访问器。
+- `RuntimeEditorPanelCoordinator::drawPanels(...)`、`makeDebugControllerContext(...)` 与 `makeEditorPanelContext(...)` 新增 `EditorUiModuleRegistries` 参数，并把指针写入 `DebugControllerContext` / `EditorPanelContext`。
+- `DebugControllerContext` 与 `EditorPanelContext` 新增 `const EditorUiModuleRegistries* editorUiModules` 字段。
+- `DebugControllerPanel.cpp`、`DebugProfileControlsPanel.cpp` 与 `SelectionInspectorPanel.cpp` 优先使用 context 注入的 registries；若 context 未注入，则保留 `defaultEditorUiModuleRegistries()` 作为兼容 fallback。
+
+已完成验证：
+
+- 静态检查确认 runtime editor lifecycle state 现在持有 UI registries，coordinator 正常注入 debug/editor context，三条 panel 路径均优先读取 `context.editorUiModules`。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `RuntimeEditorLifecycle.cpp`、`RuntimeEditorLifecycleState.cpp`、`RuntimeEditorPanelCoordinator.cpp`、`DebugControllerPanel.cpp`、`DebugProfileControlsPanel.cpp`、`SelectionInspectorPanel.cpp` 等相关路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime Editor UI Module State Injection slice，不改变默认 module 组合、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议把 `RuntimeEditorLifecycleState` 构造 UI registries 时使用的默认 policy 继续参数化，让 `RuntimeEditorLifecycleConfig`、profile/config 或 command-line 可以控制 sample/default/plugin module 的启用状态。

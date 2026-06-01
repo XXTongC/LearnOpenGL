@@ -12,6 +12,7 @@ namespace GL_RUNTIME
 {
 	GL_EDITOR::DebugControllerContext RuntimeEditorPanelCoordinator::makeDebugControllerContext(
 		GLframework::AppRuntimeContext& context,
+		const GL_EDITOR::EditorUiModuleRegistries& editorUiModules,
 		float* orbitAngle
 	)
 	{
@@ -38,13 +39,15 @@ namespace GL_RUNTIME
 		editorContext.engine = context.engineAttachments.engine;
 		editorContext.engineWorld = context.engineAttachments.engineWorld;
 		editorContext.assetSubsystem = context.engineAttachments.assetSubsystem;
+		editorContext.editorUiModules = &editorUiModules;
 		RuntimeEditorRenderResourceAdapter::applyDebugControllerResources(context.renderResources, editorContext);
 		return editorContext;
 	}
 
 	GL_EDITOR::EditorPanelContext RuntimeEditorPanelCoordinator::makeEditorPanelContext(
 		GLframework::AppRuntimeContext& context,
-		GL_EDITOR::EditTransactionLog& editTransactions
+		GL_EDITOR::EditTransactionLog& editTransactions,
+		const GL_EDITOR::EditorUiModuleRegistries& editorUiModules
 	)
 	{
 		GL_EDITOR::EditorPanelContext editorContext{};
@@ -57,6 +60,7 @@ namespace GL_RUNTIME
 		editorContext.assetRegistry = context.engineAttachments.assetSubsystem ? &context.engineAttachments.assetSubsystem->getRegistry() : nullptr;
 		editorContext.engineWorldEditable = context.engineAttachments.engineWorldEditable;
 		editorContext.editTransactions = &editTransactions;
+		editorContext.editorUiModules = &editorUiModules;
 		return editorContext;
 	}
 
@@ -64,11 +68,12 @@ namespace GL_RUNTIME
 		GLframework::AppRuntimeContext& context,
 		GL_EDITOR::SelectionContext& selection,
 		GL_EDITOR::EditTransactionLog& editTransactions,
+		const GL_EDITOR::EditorUiModuleRegistries& editorUiModules,
 		float* orbitAngle
 	)
 	{
-		GL_EDITOR::drawDebugControllerPanel(makeDebugControllerContext(context, orbitAngle));
-		const auto editorContext = makeEditorPanelContext(context, editTransactions);
+		GL_EDITOR::drawDebugControllerPanel(makeDebugControllerContext(context, editorUiModules, orbitAngle));
+		const auto editorContext = makeEditorPanelContext(context, editTransactions, editorUiModules);
 		RuntimeEditorRenderResourceAdapter::ensureDefaultSelection(context.renderResources, selection);
 		GL_EDITOR::drawHierarchyPanel(editorContext, selection);
 		GL_EDITOR::drawAssetBrowserPanel(editorContext, selection);

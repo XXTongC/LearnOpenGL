@@ -5,6 +5,7 @@
 namespace GL_EDITOR
 {
 	class EditTransactionLog;
+	struct EditorUiModuleRegistries;
 	struct SelectionContext;
 }
 
@@ -24,6 +25,8 @@ namespace GL_RUNTIME
 
 		GL_EDITOR::EditTransactionLog& editTransactions();
 		const GL_EDITOR::EditTransactionLog& editTransactions() const;
+
+		const GL_EDITOR::EditorUiModuleRegistries& editorUiModules() const;
 
 	private:
 		struct Impl;

@@ -471,8 +471,9 @@ flowchart TD
 - Editor UI Module Registration List 已完成第一版：`EditorUiModuleRegistry` 新增 `EditorUiModule` / `EditorUiModuleList`，支持按外部 module list 构建 UI registries；默认列表当前包含 `core-editor-ui`。
 - Sample Editor UI Module 已完成第一版：新增 `SampleEditorUiModule`，通过 `EditorUiModuleList` 注册 `sample-editor-ui-module` Debug Controller section，验证独立 module 可不修改 panel 代码扩展 UI。
 - Editor UI Module Composition Policy 已完成第一版：新增 `EditorUiModuleComposition`，默认 module list 由 `EditorUiModuleCompositionPolicy` 生成，registry 不再直接依赖 core provider 或 sample module。
+- Runtime Editor UI Module State Injection 已完成第一版：`RuntimeEditorLifecycleState` 持有默认构建的 `EditorUiModuleRegistries`，coordinator 将其注入 Debug/Profile/Selection panel context，panel 不再只依赖静态默认 registries。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Editor UI Module Composition Policy 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议把 `EditorUiModuleCompositionPolicy` 来源上提到 editor/application composition 层或接入 profile/config/command-line；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Runtime Editor UI Module State Injection 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议把 `RuntimeEditorLifecycleState` 构造 UI registries 时使用的默认 policy 参数化并接入 `RuntimeEditorLifecycleConfig`、profile/config 或 command-line；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Editor UI Module Composition Policy 已接入后，默认 UI 仍由 `core-editor-ui` 与 `sample-editor-ui` 组成，但 module list 由 `EditorUiModuleCompositionPolicy` 生成，`EditorUiModuleRegistry.cpp` 不再硬编码具体 module 组合。
+当前最新修正：Runtime Editor UI Module State Injection 已接入后，默认 UI registries 由 `RuntimeEditorLifecycleState` 拥有并通过 coordinator 注入 panel context；Debug/Profile/Selection panel 优先使用注入 registries，静态默认仅作为兼容 fallback。

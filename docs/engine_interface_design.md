@@ -610,6 +610,8 @@ public:
 400. 下一步建议把 module list 的选择权从静态默认列表上提到 editor/application composition 层，或增加 module enable/disable policy，让 sample/default/plugin module 组合不再长期依赖修改 `EditorUiModuleRegistry.cpp`。
 401. Editor UI Module Composition Policy 已完成第一版：新增 `EditorUiModuleComposition` 与 `EditorUiModuleCompositionPolicy`，默认 module list 由 policy 生成；`EditorUiModuleRegistry.cpp` 不再直接依赖 core provider 或 sample module。
 402. 下一步建议把 `EditorUiModuleCompositionPolicy` 的来源继续上提到 editor/application composition 层，或接入 profile/config/command-line，让 sample/default/plugin module 启用状态可由组合根决定。
+403. Runtime Editor UI Module State Injection 已完成第一版：`RuntimeEditorLifecycleState` 持有默认构建的 `EditorUiModuleRegistries`，`RuntimeEditorPanelCoordinator` 将其注入 `DebugControllerContext` 与 `EditorPanelContext`；Debug/Profile/Selection panel 优先使用 context 注入 registries。
+404. 下一步建议把 `RuntimeEditorLifecycleState` 构造 UI registries 时使用的默认 policy 参数化，并接入 `RuntimeEditorLifecycleConfig`、profile/config 或 command-line，让 sample/default/plugin module 启用状态由组合根决定。
 
 ## 约束
 

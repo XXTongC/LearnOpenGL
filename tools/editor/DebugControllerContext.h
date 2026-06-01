@@ -40,6 +40,8 @@ namespace GL_SCENE
 
 namespace GL_EDITOR
 {
+	struct EditorUiModuleRegistries;
+
 	struct DebugControllerContext
 	{
 		std::shared_ptr<GLframework::DirectionalLight>* directionalLight{ nullptr };
@@ -66,5 +68,6 @@ namespace GL_EDITOR
 		const GLengine::Engine* engine{ nullptr };
 		const GLengine::World* engineWorld{ nullptr };
 		const GLengine::AssetSubsystem* assetSubsystem{ nullptr };
+		const EditorUiModuleRegistries* editorUiModules{ nullptr };
 	};
 }

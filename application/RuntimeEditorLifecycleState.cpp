@@ -1,6 +1,7 @@
 #include "RuntimeEditorLifecycleState.h"
 
 #include "../tools/editor/EditorSelectionState.h"
+#include "../tools/editor/EditorUiModuleRegistry.h"
 
 namespace GL_RUNTIME
 {
@@ -8,6 +9,7 @@ namespace GL_RUNTIME
 	{
 		GL_EDITOR::SelectionContext selection{};
 		GL_EDITOR::EditTransactionLog editTransactions{};
+		GL_EDITOR::EditorUiModuleRegistries editorUiModules{ GL_EDITOR::buildDefaultEditorUiModuleRegistries() };
 	};
 
 	RuntimeEditorLifecycleState::RuntimeEditorLifecycleState()
@@ -35,5 +37,10 @@ namespace GL_RUNTIME
 	const GL_EDITOR::EditTransactionLog& RuntimeEditorLifecycleState::editTransactions() const
 	{
 		return mImpl->editTransactions;
+	}
+
+	const GL_EDITOR::EditorUiModuleRegistries& RuntimeEditorLifecycleState::editorUiModules() const
+	{
+		return mImpl->editorUiModules;
 	}
 }

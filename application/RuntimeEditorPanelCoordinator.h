@@ -9,6 +9,7 @@ namespace GL_EDITOR
 {
 	struct DebugControllerContext;
 	struct EditorPanelContext;
+	struct EditorUiModuleRegistries;
 	class EditTransactionLog;
 	struct SelectionContext;
 }
@@ -20,18 +21,21 @@ namespace GL_RUNTIME
 	public:
 		static GL_EDITOR::DebugControllerContext makeDebugControllerContext(
 			GLframework::AppRuntimeContext& context,
+			const GL_EDITOR::EditorUiModuleRegistries& editorUiModules,
 			float* orbitAngle
 		);
 
 		static GL_EDITOR::EditorPanelContext makeEditorPanelContext(
 			GLframework::AppRuntimeContext& context,
-			GL_EDITOR::EditTransactionLog& editTransactions
+			GL_EDITOR::EditTransactionLog& editTransactions,
+			const GL_EDITOR::EditorUiModuleRegistries& editorUiModules
 		);
 
 		static void drawPanels(
 			GLframework::AppRuntimeContext& context,
 			GL_EDITOR::SelectionContext& selection,
 			GL_EDITOR::EditTransactionLog& editTransactions,
+			const GL_EDITOR::EditorUiModuleRegistries& editorUiModules,
 			float* orbitAngle
 		);
 	};
