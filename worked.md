@@ -7921,3 +7921,18 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了相关 material、MaterialBinder、Assimp importer、legacy experiment 和 scene setup 路径，五条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Phong inspector 字段、默认材质贴图来源、Assimp legacy Phong import 行为、Phong forward lighting shader uniform、shadow resource binding、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百三十二轮 Grass Surface Runtime State Encapsulation：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `906d168 Encapsulate phong surface state`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续推进 DTO 覆盖字段私有化，并选择 `GrassInstanceMaterial` 的 surface texture / shininess 公开字段作为本轮 slice；wind/cloud scalar 与 color 字段已是 private，因此本轮不扩大到 PBR。
+  - 更新 [MaterialEditControls.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\MaterialEditControls.h)，新增 `GrassSurfaceInput` 与 `GrassSurfaceRuntimeState`。
+  - 更新 [grassInstanceMaterial.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\grassInstanceMaterial\grassInstanceMaterial.h) 与 [grassInstanceMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\grassInstanceMaterial\grassInstanceMaterial.cpp)，新增 `setSurface(...)`、`setDiffuseTexture(...)`、`setSpecularMaskTexture(...)`、`setOpacityMaskTexture(...)`、`setCloudMaskTexture(...)`、`setShininess(...)` 和 `surfaceState()`，并将 `mDiffuse`、`mSpecularMask`、`mOpacityMask`、`mCloudMask`、`mShiness` 下沉为 `private`。
+  - 更新 [MaterialBinder.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\MaterialBinder.cpp)，Grass instance material 绑定路径改为通过 `surfaceState()` 读取 texture 和 shininess。
+  - 更新 [LegacyExperimentRunner.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\legacyExperiments\LegacyExperimentRunner.cpp)，grass field 实验材质贴图注入改为 `setDiffuseTexture(...)` / `setOpacityMaskTexture(...)` / `setCloudMaskTexture(...)`。
+  - 更新 [assimpInstanceLoader.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\assimpInstanceLoader.cpp)，instanced grass material diffuse/specular 导入改为调用 setter，不再直接写 public 字段。
+  - 已执行静态检查：确认 `GrassInstanceMaterial` 的 surface 字段只在自身 header/implementation 中出现，外部相关路径已经改为 setter 或 `surfaceState()`。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了 `assimpInstanceLoader.cpp`、`grassInstanceMaterial.cpp`、`MaterialBinder.cpp`、`MaterialPropertyProviders.cpp`、`LegacyExperimentRunner.cpp` 等相关路径，五条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 Grass inspector 字段、实例化草模型导入行为、历史 grass field 实验材质贴图来源、Grass shader sampler/uniform 绑定、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

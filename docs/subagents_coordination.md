@@ -1962,6 +1962,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `materials/screenMaterial.h`, `materials/screenMaterial.cpp`, `renderer/PostProcessPass.cpp`, `tools/sceneSetup/SceneSetup.cpp`, `application/RuntimeViewport.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Phong surface runtime state encapsulation is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `materials/MaterialEditControls.h`, `materials/phongMaterial.h`, `materials/phongMaterial.cpp`, `materials/phongPointShadowMaterial/phongPointShadowMaterial.h`, `materials/phongPointShadowMaterial/phongPointShadowMaterial.cpp`, `materials/phongCSMShadowMaterial/phongCSMShadowMaterial.h`, `materials/phongCSMShadowMaterial/phongCSMShadowMaterial.cpp`, `renderer/MaterialBinder.cpp`, `tools/sceneSetup/SceneSetup.cpp`, `tools/legacyExperiments/LegacyExperimentRunner.cpp`, `application/AssimpMaterialImporter.cpp`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Grass surface runtime state encapsulation is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `materials/MaterialEditControls.h`, `materials/grassInstanceMaterial/grassInstanceMaterial.h`, `materials/grassInstanceMaterial/grassInstanceMaterial.cpp`, `renderer/MaterialBinder.cpp`, `tools/legacyExperiments/LegacyExperimentRunner.cpp`, `application/assimpInstanceLoader.cpp`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

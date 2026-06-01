@@ -218,7 +218,7 @@ std::shared_ptr<InstancedMesh> processInstanceMesh(
 		}
 	}
 	auto material = std::make_shared<GrassInstanceMaterial>();
-	//material->mDiffuse = std::make_shared<Texture>("Texture/box.png", 0);
+	//material->setDiffuseTexture(std::make_shared<Texture>("Texture/box.png", 0));
 	//material->setDepthWrite(false);
 
 	if (aimesh->mMaterialIndex >= 0)
@@ -232,23 +232,23 @@ std::shared_ptr<InstancedMesh> processInstanceMesh(
 		if (texture == nullptr)
 		{
 
-			material->mDiffuse = Texture::createTexture("Texture/defaultTexture.jpg", 0);
+			material->setDiffuseTexture(Texture::createTexture("Texture/defaultTexture.jpg", 0));
 
 		}
 		else {
 			texture->setUnit(unit++);
-			material->mDiffuse = texture;
+			material->setDiffuseTexture(texture);
 		}
 		// 2. load specular
 		auto specularMask = processTexture(aiMat, aiTextureType_SPECULAR, scene, rootPath,instanceCount);
 		if (specularMask == nullptr)
 		{
-			material->mSpecularMask = Texture::createTexture("Texture/defaultTexture.jpg", 1);
+			material->setSpecularMaskTexture(Texture::createTexture("Texture/defaultTexture.jpg", 1));
 		}
 		else
 		{
 			specularMask->setUnit(unit++);
-			material->mSpecularMask = specularMask;
+			material->setSpecularMaskTexture(specularMask);
 		}
 	}
 

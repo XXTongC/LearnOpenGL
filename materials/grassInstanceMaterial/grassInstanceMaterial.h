@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <utility>
+
 #include "../material.h"
 #include "../MaterialEditControls.h"
 #include "../../framework/texture.h"
@@ -31,7 +33,14 @@ namespace GLframework
 		void setCloudSpeed(float value);
 		void seCloudWhiteColor(glm::vec3 value);
 		void setCloudBlackColor(glm::vec3 value);
+		void setSurface(GrassSurfaceInput surface);
+		void setDiffuseTexture(std::shared_ptr<Texture> diffuse);
+		void setSpecularMaskTexture(std::shared_ptr<Texture> specularMask);
+		void setOpacityMaskTexture(std::shared_ptr<Texture> opacityMask);
+		void setCloudMaskTexture(std::shared_ptr<Texture> cloudMask);
+		void setShininess(float shininess);
 
+		GrassSurfaceRuntimeState surfaceState() const;
 		GrassMaterialEditControls editControls();
 		float getUVScale() const;
 		float getBrightness() const;
@@ -56,13 +65,13 @@ namespace GLframework
 		glm::vec3* Control_CloudBlackColor();
 
 
-	public:
+	private:
 		std::shared_ptr<Texture> mDiffuse{ nullptr };
 		std::shared_ptr<Texture> mSpecularMask{ nullptr };
 		std::shared_ptr<Texture> mOpacityMask{ nullptr };
 		std::shared_ptr<Texture> mCloudMask{ nullptr };
 		float mShiness{ 10.0f };
-	private:
+
 		//grass texture attribute
 		float mUVScale{ 1.0f };
 		float mBrightness{ 1.0f };

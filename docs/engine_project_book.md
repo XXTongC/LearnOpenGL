@@ -447,8 +447,9 @@ flowchart TD
 - Runtime Material Edit Controls DTO 已完成第一版：新增 `MaterialEditControls.h` 聚合 Phong / Grass / Screen / PBR provider 所需编辑入口，Material provider 消费 DTO 而不是零散单字段 accessors。
 - Screen Material Input Texture Encapsulation 已完成第一版：`ScreenMaterial` 的 post-process 输入纹理字段已下沉为 private，scene setup / resize 同步通过 `setInputTextures(...)` 写入，post-process composite 与 inspector 通过 `inputTextures()` DTO 只读访问。
 - Phong Surface Runtime State Encapsulation 已完成第一版：`PhongMaterial`、`PhongPointShadowMaterial` 与 `PhongCSMShadowMaterial` 的 diffuse/specular/shininess 字段已下沉为 private，renderer 通过 `surfaceState()` 读取，setup/import/legacy 路径通过 setter 或 `setSurface(...)` 写入。
+- Grass Surface Runtime State Encapsulation 已完成第一版：`GrassInstanceMaterial` 的 diffuse/specular/opacity/cloud/shininess 字段已下沉为 private，renderer 通过 `surfaceState()` 读取，legacy grass field 与 instanced loader 通过 setter 写入。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Phong Surface Runtime State Encapsulation 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先处理 `GrassInstanceMaterial` 的 surface/wind/cloud 字段封装，或先为 PBRMaterial 增加完整 runtime setter/slot DTO 后再私有化公开字段；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Grass Surface Runtime State Encapsulation 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议转入 `PBRMaterial`，先建立完整 texture/surface/IBL/alpha/channel runtime setter/slot DTO，再分批私有化 PBR 公开字段；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Phong Surface Runtime State Encapsulation 已接入后，三类 Phong runtime material 的 surface 字段不再公开暴露；renderer 走 `surfaceState()` 只读 DTO，setup/import/legacy 走 setter 或 `setSurface(...)`。
+当前最新修正：Grass Surface Runtime State Encapsulation 已接入后，GrassInstanceMaterial 的 surface 字段不再公开暴露；renderer 走 `surfaceState()` 只读 DTO，legacy grass field 和 instanced loader 走 setter。

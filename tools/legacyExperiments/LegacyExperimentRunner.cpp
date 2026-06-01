@@ -145,9 +145,9 @@ namespace GL_EXPERIMENTS
 
 		mImpl->grassFieldEnabled = true;
 		context.grassMaterial = std::make_shared<GLframework::GrassInstanceMaterial>();
-		context.grassMaterial->mDiffuse = std::make_shared<GLframework::Texture>("fbx/textures/GRASS.PNG", 0);
-		context.grassMaterial->mOpacityMask = std::make_shared<GLframework::Texture>("fbx/textures/grassMask.png", 2);
-		context.grassMaterial->mCloudMask = std::make_shared<GLframework::Texture>("Texture/CLOUD.PNG", 3);
+		context.grassMaterial->setDiffuseTexture(std::make_shared<GLframework::Texture>("fbx/textures/GRASS.PNG", 0));
+		context.grassMaterial->setOpacityMaskTexture(std::make_shared<GLframework::Texture>("fbx/textures/grassMask.png", 2));
+		context.grassMaterial->setCloudMaskTexture(std::make_shared<GLframework::Texture>("Texture/CLOUD.PNG", 3));
 
 		auto house = GL_APPLICATION::AssimpLoader::load("fbx/house.fbx", context.renderer);
 		house->setScale(glm::vec3(0.5f));

@@ -47,6 +47,24 @@ namespace GLframework
 		const std::shared_ptr<Texture>* cloudMaskTexture{ nullptr };
 	};
 
+	struct GrassSurfaceInput
+	{
+		std::shared_ptr<Texture> diffuseTexture{ nullptr };
+		std::shared_ptr<Texture> specularMaskTexture{ nullptr };
+		std::shared_ptr<Texture> opacityMaskTexture{ nullptr };
+		std::shared_ptr<Texture> cloudMaskTexture{ nullptr };
+		float shininess{ 10.0f };
+	};
+
+	struct GrassSurfaceRuntimeState
+	{
+		const std::shared_ptr<Texture>* diffuseTexture{ nullptr };
+		const std::shared_ptr<Texture>* specularMaskTexture{ nullptr };
+		const std::shared_ptr<Texture>* opacityMaskTexture{ nullptr };
+		const std::shared_ptr<Texture>* cloudMaskTexture{ nullptr };
+		float shininess{ 10.0f };
+	};
+
 	struct ScreenMaterialInputTextures
 	{
 		const std::shared_ptr<Texture>* screenTexture{ nullptr };

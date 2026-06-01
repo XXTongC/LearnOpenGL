@@ -562,6 +562,8 @@ public:
 352. 下一步建议继续按低风险 slice 私有化 Phong/Grass 的 surface texture 与 shininess 字段，或先为 PBRMaterial 增加完整 runtime setter/slot DTO 后再处理其大批公开字段。
 353. Phong Surface Runtime State Encapsulation 已完成第一版：新增 `PhongSurfaceInput` / `PhongSurfaceRuntimeState`，`PhongMaterial`、`PhongPointShadowMaterial` 和 `PhongCSMShadowMaterial` 的 diffuse/specular/shininess 字段下沉为 `private`；renderer 通过 `surfaceState()` 读取，setup/import/legacy 路径通过 setter 或 `setSurface(...)` 写入。
 354. 下一步建议继续私有化 `GrassInstanceMaterial` 的 surface/wind/cloud 字段，或先为 PBRMaterial 建立完整 runtime setter/slot DTO 后再处理 PBR 字段封装。
+355. Grass Surface Runtime State Encapsulation 已完成第一版：新增 `GrassSurfaceInput` / `GrassSurfaceRuntimeState`，`GrassInstanceMaterial` 的 diffuse/specular/opacity/cloud/shininess 字段下沉为 `private`；renderer 通过 `surfaceState()` 读取，legacy grass field 与 instanced loader 通过 setter 写入。
+356. 下一步建议转入 `PBRMaterial`，先建立完整 texture/surface/IBL/alpha/channel runtime setter/slot DTO，再分批私有化 PBR 的公开字段。
 
 ## 约束
 

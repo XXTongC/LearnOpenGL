@@ -10333,3 +10333,28 @@ Subagent 审查：
 
 - 这是 Phong surface runtime state encapsulation first slice，不改变 Phong inspector 字段、默认材质贴图来源、Assimp legacy Phong import 行为、Phong forward lighting shader uniform、shadow resource binding、runtime frame pipeline 或 renderer backend contract。
 - 下一步可以继续处理 `GrassInstanceMaterial` 的 surface/wind/cloud 字段封装，或者先为 `PBRMaterial` 建立更完整的 runtime setter/slot DTO 后再私有化 PBR 字段。
+
+### 2026-06-01 Grass Surface Runtime State Encapsulation
+
+本轮继续上一轮 Phong surface 字段私有化后的同类工作，处理 `GrassInstanceMaterial` 的 surface texture / shininess 字段。Grass 的 wind/cloud scalar 与 color 字段此前已经是 private 并通过 getter/setter 或 edit controls 暴露，因此本轮只收敛仍公开的 diffuse/specular/opacity/cloud texture 和 shininess。
+
+新增与修改：
+
+- `MaterialEditControls.h` 新增 `GrassSurfaceInput` 与 `GrassSurfaceRuntimeState`，分别用于完整 surface 写入和 renderer 只读绑定。
+- `GrassInstanceMaterial` 新增 `setSurface(...)`、`setDiffuseTexture(...)`、`setSpecularMaskTexture(...)`、`setOpacityMaskTexture(...)`、`setCloudMaskTexture(...)`、`setShininess(...)` 和 `surfaceState()`。
+- `GrassInstanceMaterial` 的 `mDiffuse`、`mSpecularMask`、`mOpacityMask`、`mCloudMask`、`mShiness` 已下沉为 `private`；editor/provider 继续通过 `editControls()` 构建现有 inspector 字段。
+- `MaterialBinder.cpp` 新增本地 `setGrassSurface(...)` helper，Grass instance material 绑定路径改为通过 `surfaceState()` 读取 texture 和 shininess。
+- `LegacyExperimentRunner.cpp` 的 grass field 实验材质注入改为 `setDiffuseTexture(...)` / `setOpacityMaskTexture(...)` / `setCloudMaskTexture(...)`。
+- `assimpInstanceLoader.cpp` 的 instanced grass material diffuse/specular 导入改为调用 setter，不再直接写 public 字段。
+
+已完成验证：
+
+- 静态检查确认 `GrassInstanceMaterial` 的 surface 字段只在自身 header/implementation 中出现；外部相关路径已经改为 setter 或 `surfaceState()`。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `assimpInstanceLoader.cpp`、`grassInstanceMaterial.cpp`、`MaterialBinder.cpp`、`MaterialPropertyProviders.cpp`、`LegacyExperimentRunner.cpp` 等相关路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Grass surface runtime state encapsulation first slice，不改变 Grass inspector 字段、实例化草模型导入行为、历史 grass field 实验材质贴图来源、Grass shader sampler/uniform 绑定、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议转入 `PBRMaterial`，先为 PBR texture/surface/IBL/alpha/channel 字段建立完整 runtime setter/slot DTO，再分批私有化 PBR 的公开字段。

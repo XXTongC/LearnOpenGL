@@ -70,6 +70,15 @@ namespace
 		shader->setFloat("shiness", surface.shininess);
 	}
 
+	void setGrassSurface(const std::shared_ptr<Shader>& shader, const GrassSurfaceRuntimeState& surface)
+	{
+		bindTexture(shader, "samplerGrass", *surface.diffuseTexture);
+		bindTexture(shader, "MaskSampler", *surface.specularMaskTexture);
+		bindTexture(shader, "opacityMask", *surface.opacityMaskTexture);
+		bindTexture(shader, "cloudMask", *surface.cloudMaskTexture);
+		shader->setFloat("shiness", surface.shininess);
+	}
+
 	void setInstanceMatrixUniforms(const std::shared_ptr<Shader>& shader, const std::shared_ptr<InstancedMesh>& mesh)
 	{
 		if (mesh->getMatricesUpdateState())
@@ -249,14 +258,10 @@ namespace
 		shader->setFloat("cloudUVScale", grassMat->getCloudUVScale());
 		shader->setFloat("cloudSpeed", grassMat->getCloudSpeed());
 		shader->setFloat("cloudLerp", grassMat->getCloudLerp());
-		bindTexture(shader, "samplerGrass", grassMat->mDiffuse);
-		bindTexture(shader, "MaskSampler", grassMat->mSpecularMask);
-		bindTexture(shader, "opacityMask", grassMat->mOpacityMask);
-		bindTexture(shader, "cloudMask", grassMat->mCloudMask);
+		setGrassSurface(shader, grassMat->surfaceState());
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
 		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
-		shader->setFloat("shiness", grassMat->mShiness);
 		setInstanceMatrixUniforms(shader, instancedMesh);
 	}
 

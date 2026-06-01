@@ -1,5 +1,7 @@
 #include "grassInstanceMaterial.h"
 
+#include <utility>
+
 using namespace GLframework;
 
 GrassInstanceMaterial::GrassInstanceMaterial()
@@ -11,6 +13,51 @@ GrassInstanceMaterial::GrassInstanceMaterial()
 
 GrassInstanceMaterial::~GrassInstanceMaterial()
 {
+}
+
+void GrassInstanceMaterial::setSurface(GrassSurfaceInput surface)
+{
+	mDiffuse = std::move(surface.diffuseTexture);
+	mSpecularMask = std::move(surface.specularMaskTexture);
+	mOpacityMask = std::move(surface.opacityMaskTexture);
+	mCloudMask = std::move(surface.cloudMaskTexture);
+	mShiness = surface.shininess;
+}
+
+void GrassInstanceMaterial::setDiffuseTexture(std::shared_ptr<Texture> diffuse)
+{
+	mDiffuse = std::move(diffuse);
+}
+
+void GrassInstanceMaterial::setSpecularMaskTexture(std::shared_ptr<Texture> specularMask)
+{
+	mSpecularMask = std::move(specularMask);
+}
+
+void GrassInstanceMaterial::setOpacityMaskTexture(std::shared_ptr<Texture> opacityMask)
+{
+	mOpacityMask = std::move(opacityMask);
+}
+
+void GrassInstanceMaterial::setCloudMaskTexture(std::shared_ptr<Texture> cloudMask)
+{
+	mCloudMask = std::move(cloudMask);
+}
+
+void GrassInstanceMaterial::setShininess(float shininess)
+{
+	mShiness = shininess;
+}
+
+GrassSurfaceRuntimeState GrassInstanceMaterial::surfaceState() const
+{
+	return GrassSurfaceRuntimeState{
+		&mDiffuse,
+		&mSpecularMask,
+		&mOpacityMask,
+		&mCloudMask,
+		mShiness
+	};
 }
 
 GrassMaterialEditControls GrassInstanceMaterial::editControls()
