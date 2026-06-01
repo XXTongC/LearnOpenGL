@@ -10460,3 +10460,28 @@ Subagent 审查：
 
 - 这是 Post Process settings config schema adapter slice，不改变 `config/postprocess_settings.local.ini` 默认路径、HDR exposure/tone mapping 语义、Bloom enable/threshold/intensity/iteration 字段、PBR experiment preset 的 `postprocess.*` key、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续处理剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile/settings 对象，例如 EnvironmentProfile、RendererFramePassProfile、PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile。
+
+### 2026-06-01 Environment Profile Config Schema Adapter
+
+本轮继续 profile/config schema adapter 化，处理 `EnvironmentProfile`。目标是让 environment runtime/profile header 不再暴露 editor `PropertyBuilder` 类型，同时保持 HDR/procedural environment 配置 key、DebugControllerPanel 环境控制和 PBR experiment preset 的 `environment.*` 子配置语义不变。
+
+新增与修改：
+
+- 新增 `renderer/EnvironmentProfileConfig.h/.cpp`，提供 `buildEnvironmentProfileConfigSchema(...)`，集中生成 Environment profile 的 `PropertyBuilder` schema。
+- `EnvironmentProfile.h` 删除 `GL_EDITOR::PropertyBuilder` forward declaration 和 `visitEditableProperties(...)`，现在只保留 environment 数据、source 判断、texture loader 和 storage API。
+- `EnvironmentProfile.cpp` 删除 schema 构造实现与 `tools/inspector/PropertySchema.h` 直接 include，storage load/save 改为通过 `buildEnvironmentProfileConfigSchema(...)` 生成配置 schema。
+- `DebugControllerPanel.cpp` 的 Environment / IBL 控制面板改为调用 `buildEnvironmentProfileConfigSchema(...)`，保持现有 UI 字段和 precompute 行为不变。
+- `PBRExperimentProfile.cpp` 的 environment 子配置 load/save 改为调用 `buildEnvironmentProfileConfigSchema(...)`，保持 `environment.*` 配置 key 不变。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `EnvironmentProfileConfig.cpp` 和 `EnvironmentProfileConfig.h`。
+
+已完成验证：
+
+- 静态检查确认 `EnvironmentProfile::visitEditableProperties`、`loadedEnvironmentProfile.visitEditableProperties(...)` 和 `environmentSnapshot.visitEditableProperties(...)` 不再存在。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `EnvironmentProfile.cpp`、`EnvironmentProfileConfig.cpp`、`renderer.cpp`、`DebugControllerPanel.cpp`、`PBRExperimentProfile.cpp` 和 `SceneSetup.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Environment profile config schema adapter slice，不改变 `config/environment_profile.local.ini` 默认路径、HDR texture unit、procedural environment 参数、IBL precompute 条件、PBR experiment preset 的 `environment.*` key、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续处理剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile/settings 对象，例如 RendererFramePassProfile、PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile。

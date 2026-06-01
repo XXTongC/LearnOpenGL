@@ -290,6 +290,7 @@
     <ClCompile Include="materials\pbrMaterial\PBRMaterialProfileConfig.cpp" />
     <ClCompile Include="light\pointLight.cpp" />
     <ClCompile Include="renderer\EnvironmentProfile.cpp" />
+    <ClCompile Include="renderer\EnvironmentProfileConfig.cpp" />
     <ClCompile Include="renderer\DepthPrepassBinder.cpp" />
     <ClCompile Include="renderer\EnvironmentRenderTargets.cpp" />
     <ClCompile Include="renderer\DirectionalShadowRenderPass.cpp" />
@@ -463,6 +464,7 @@
     <ClInclude Include="materials\pbrMaterial\PBRMaterialProfileConfig.h" />
     <ClInclude Include="light\pointLight.h" />
     <ClInclude Include="renderer\EnvironmentProfile.h" />
+    <ClInclude Include="renderer\EnvironmentProfileConfig.h" />
     <ClInclude Include="renderer\DepthPrepassBinder.h" />
     <ClInclude Include="renderer\EnvironmentRenderTargets.h" />
     <ClInclude Include="renderer\DirectionalShadowRenderPass.h" />

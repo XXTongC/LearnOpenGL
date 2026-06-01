@@ -6,6 +6,7 @@
 #include "../config/ProfileConfigIO.h"
 #include "../config/ProfileConfigParser.h"
 #include "../../renderer/EnvironmentProfile.h"
+#include "../../renderer/EnvironmentProfileConfig.h"
 #include "../../renderer/PostProcessSettings.h"
 #include "../../renderer/PostProcessSettingsConfig.h"
 #include "PBRCameraRigProfile.h"
@@ -56,7 +57,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	auto loadedCameraRigProfile = cameraRigProfile;
 
 	GL_EDITOR::PropertyBuilder environmentBuilder{};
-	loadedEnvironmentProfile.visitEditableProperties(environmentBuilder);
+	GLframework::buildEnvironmentProfileConfigSchema(environmentBuilder, loadedEnvironmentProfile);
 	GL_EDITOR::PropertyBuilder postProcessBuilder{};
 	GLframework::buildPostProcessSettingsConfigSchema(postProcessBuilder, loadedPostProcessSettings);
 	GL_EDITOR::PropertyBuilder pbrPreviewBuilder{};
@@ -172,7 +173,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 	auto cameraRigSnapshot = cameraRigProfile;
 
 	GL_EDITOR::PropertyBuilder environmentBuilder{};
-	environmentSnapshot.visitEditableProperties(environmentBuilder);
+	GLframework::buildEnvironmentProfileConfigSchema(environmentBuilder, environmentSnapshot);
 	GL_EDITOR::PropertyBuilder postProcessBuilder{};
 	GLframework::buildPostProcessSettingsConfigSchema(postProcessBuilder, postProcessSnapshot);
 	GL_EDITOR::PropertyBuilder pbrPreviewBuilder{};

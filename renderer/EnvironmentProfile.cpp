@@ -5,20 +5,15 @@
 #include <iostream>
 #include <vector>
 
+#include "EnvironmentProfileConfig.h"
 #include "framework/texture.h"
 #include "stb_image.h"
 #include "tools/config/ProfileConfigIO.h"
-#include "tools/inspector/PropertySchema.h"
 
 using namespace GLframework;
 
 namespace
 {
-	int toEditableInt(unsigned int value)
-	{
-		return static_cast<int>(value);
-	}
-
 	unsigned int getFormatForChannelCount(int channels)
 	{
 		if (channels == 1)
@@ -95,44 +90,6 @@ bool EnvironmentProfile::hasHdrSource() const
 bool EnvironmentProfile::hasEnvironmentSource() const
 {
 	return useProceduralEnvironment || hasHdrSource();
-}
-
-void EnvironmentProfile::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
-{
-	builder.addSection("Environment Source");
-	builder.addConfigString("hdrEquirectangularPath", "HDR Path", &hdrEquirectangularPath);
-	builder.addConfigInt(
-		"hdrTextureUnit",
-		"HDR Texture Unit",
-		[this]() { return toEditableInt(hdrTextureUnit); },
-		[this](int value) { hdrTextureUnit = value < 0 ? 0u : static_cast<unsigned int>(value); },
-		0,
-		31
-	);
-	builder.addConfigBool("useProceduralEnvironment", "Use Procedural Environment", &useProceduralEnvironment);
-	builder.addConfigBool("precomputeOnPrepare", "Precompute On Prepare", &precomputeOnPrepare);
-
-	builder.addSection("Procedural Environment");
-	builder.addText("Mode", "Generated at precompute time when Use Procedural Environment is enabled.");
-	builder.addConfigInt(
-		"proceduralWidth",
-		"Procedural Width",
-		[this]() { return toEditableInt(proceduralWidth); },
-		[this](int value) { proceduralWidth = value < 0 ? 0u : static_cast<unsigned int>(value); },
-		64,
-		2048
-	);
-	builder.addConfigInt(
-		"proceduralHeight",
-		"Procedural Height",
-		[this]() { return toEditableInt(proceduralHeight); },
-		[this](int value) { proceduralHeight = value < 0 ? 0u : static_cast<unsigned int>(value); },
-		32,
-		1024
-	);
-	builder.addConfigFloat("proceduralSkyIntensity", "Procedural Sky Intensity", &proceduralSkyIntensity, 0.0f, 10.0f);
-	builder.addConfigFloat("proceduralGroundIntensity", "Procedural Ground Intensity", &proceduralGroundIntensity, 0.0f, 2.0f);
-	builder.addConfigFloat("proceduralSunIntensity", "Procedural Sun Intensity", &proceduralSunIntensity, 0.0f, 20.0f);
 }
 
 std::shared_ptr<Texture> EnvironmentTextureLoader::loadEquirectangular(const EnvironmentProfile& profile)
@@ -268,7 +225,7 @@ bool EnvironmentProfileStorage::loadFromFile(const std::string& path, Environmen
 {
 	EnvironmentProfile loadedProfile = profile;
 	GL_EDITOR::PropertyBuilder builder{};
-	loadedProfile.visitEditableProperties(builder);
+	buildEnvironmentProfileConfigSchema(builder, loadedProfile);
 	const bool loaded = GL_CONFIG::loadPropertyConfig(path, builder);
 	if (!loaded)
 	{
@@ -283,7 +240,7 @@ bool EnvironmentProfileStorage::saveToFile(const std::string& path, const Enviro
 {
 	EnvironmentProfile snapshot = profile;
 	GL_EDITOR::PropertyBuilder builder{};
-	snapshot.visitEditableProperties(builder);
+	buildEnvironmentProfileConfigSchema(builder, snapshot);
 	return GL_CONFIG::savePropertyConfig(
 		path,
 		"# Local environment profile for PBR / IBL experiments",

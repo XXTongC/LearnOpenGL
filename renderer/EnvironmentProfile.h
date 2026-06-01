@@ -3,11 +3,6 @@
 #include <memory>
 #include <string>
 
-namespace GL_EDITOR
-{
-	class PropertyBuilder;
-}
-
 namespace GLframework
 {
 	class Texture;
@@ -26,7 +21,6 @@ namespace GLframework
 
 		bool hasHdrSource() const;
 		bool hasEnvironmentSource() const;
-		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder);
 	};
 
 	class EnvironmentTextureLoader

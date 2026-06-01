@@ -413,10 +413,11 @@ passed
 - PBR Material Private Field Encapsulation 已接入：scene setup、Assimp PBR importer、engine world scene setup/package resolver 与 PBR verification probes 已迁入 `PBRMaterial` setter/API；PBR texture、surface、channel、alpha mask 与 IBL 字段已下沉为 private。
 - PBR Material Profile Config Schema Adapter 已接入：新增 `PBRMaterialProfileConfig` schema adapter 与独立 `PBRMaterialProfile.cpp`；`PBRMaterialProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，`PBRMaterial.cpp` 不再承载 profile storage 或 editor/config schema。
 - Post Process Settings Config Schema Adapter 已接入：新增 `PostProcessSettingsConfig` schema adapter；`PostProcessSettings.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，DebugControllerPanel 与 PBR experiment preset 的 `postprocess.*` 子配置改为通过 adapter 构建 schema。
+- Environment Profile Config Schema Adapter 已接入：新增 `EnvironmentProfileConfig` schema adapter；`EnvironmentProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，DebugControllerPanel 与 PBR experiment preset 的 `environment.*` 子配置改为通过 adapter 构建 schema。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Post Process Settings Config Schema Adapter 已接入后，PostProcessSettings header 不再暴露 editor `PropertyBuilder`，HDR / Bloom 配置 schema 集中到 `PostProcessSettingsConfig`；postprocess settings 默认路径、DebugControllerPanel save/load 行为与 PBR experiment preset 的 `postprocess.*` key 保持不变。
+当前最新修正：Environment Profile Config Schema Adapter 已接入后，EnvironmentProfile header 不再暴露 editor `PropertyBuilder`，HDR / procedural environment 配置 schema 集中到 `EnvironmentProfileConfig`；environment profile 默认路径、DebugControllerPanel save/load/precompute 行为与 PBR experiment preset 的 `environment.*` key 保持不变。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步建议继续处理剩余直接在 runtime/profile 类型中暴露 `visitEditableProperties(PropertyBuilder&)` 的配置对象，例如 EnvironmentProfile、RendererFramePassProfile、PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步建议继续处理剩余直接在 runtime/profile 类型中暴露 `visitEditableProperties(PropertyBuilder&)` 的配置对象，例如 RendererFramePassProfile、PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile；当前不建议继续扩张 PBR pass。

@@ -572,6 +572,8 @@ public:
 362. 下一步建议继续处理仍直接在 runtime/profile 类型中暴露 `visitEditableProperties(PropertyBuilder&)` 的配置对象，例如 EnvironmentProfile、PostProcessSettings、RendererFramePassProfile 或 PBRPreviewProfile。
 363. Post Process Settings Config Schema Adapter 已完成第一版：新增 `PostProcessSettingsConfig` schema adapter，`PostProcessSettings.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，DebugControllerPanel 和 PBR experiment preset 的 postprocess 子配置改为通过 adapter 构建 schema。
 364. 下一步建议继续处理剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile/settings 对象，例如 EnvironmentProfile、RendererFramePassProfile、PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile。
+365. Environment Profile Config Schema Adapter 已完成第一版：新增 `EnvironmentProfileConfig` schema adapter，`EnvironmentProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，DebugControllerPanel 和 PBR experiment preset 的 environment 子配置改为通过 adapter 构建 schema。
+366. 下一步建议继续处理剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile/settings 对象，例如 RendererFramePassProfile、PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile。
 
 ## 约束
 

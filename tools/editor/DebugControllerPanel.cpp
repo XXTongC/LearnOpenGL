@@ -9,6 +9,7 @@
 #include "../../application/RuntimeFramePipelineProfile.h"
 #include "../../renderer/EnvironmentRenderTargets.h"
 #include "../../renderer/EnvironmentProfile.h"
+#include "../../renderer/EnvironmentProfileConfig.h"
 #include "../../light/directionalLight.h"
 #include "../../light/pointLight.h"
 #include "../../light/shadow/shadow.h"
@@ -47,7 +48,7 @@ namespace
 			ImGui::TextWrapped("Profile File: %s", configPath.c_str());
 
 			GL_EDITOR::PropertyBuilder builder{};
-			profile->visitEditableProperties(builder);
+			GLframework::buildEnvironmentProfileConfigSchema(builder, *profile);
 			GL_EDITOR::drawProperties(builder);
 
 			const bool ready = renderer && renderer->getEnvironmentRenderTargets().hasPrecomputedEnvironment();
