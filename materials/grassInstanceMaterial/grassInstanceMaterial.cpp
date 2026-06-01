@@ -13,9 +13,24 @@ GrassInstanceMaterial::~GrassInstanceMaterial()
 {
 }
 
-float* GrassInstanceMaterial::shininessControl()
+GrassMaterialEditControls GrassInstanceMaterial::editControls()
 {
-	return &mShiness;
+	return GrassMaterialEditControls{
+		&mShiness,
+		&mUVScale,
+		&mBrightness,
+		&mWindScale,
+		&mPhaseScale,
+		&mWindDirection,
+		&mCloudLerp,
+		&mCloudUVScale,
+		&mCloudSpeed,
+		&mCloudWhiteColor,
+		&mCloudBlackColor,
+		&mDiffuse,
+		&mOpacityMask,
+		&mCloudMask
+	};
 }
 
 float GrassInstanceMaterial::getBrightness() const
@@ -166,19 +181,4 @@ void GrassInstanceMaterial::setCloudLerp(float value)
 float GrassInstanceMaterial::getCloudLerp() const
 {
 	return mCloudLerp;
-}
-
-const std::shared_ptr<Texture>& GrassInstanceMaterial::diffuseTexture() const
-{
-	return mDiffuse;
-}
-
-const std::shared_ptr<Texture>& GrassInstanceMaterial::opacityMaskTexture() const
-{
-	return mOpacityMask;
-}
-
-const std::shared_ptr<Texture>& GrassInstanceMaterial::cloudMaskTexture() const
-{
-	return mCloudMask;
 }

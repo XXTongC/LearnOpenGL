@@ -280,32 +280,14 @@ std::array<PBRConstFloatUniformSlot, 2> PBRMaterial::getIblFloatUniformSlots() c
 	return makeFloatUniformSlots(*this, pbrIblFloatUniformMetadata);
 }
 
-bool* PBRMaterial::useAlphaMaskControl()
+PBRMaterialEditControls PBRMaterial::editControls()
 {
-	return &mUseAlphaMask;
-}
-
-float* PBRMaterial::alphaCutoffControl()
-{
-	return &mAlphaCutoff;
-}
-
-int* PBRMaterial::metallicMapChannelControl()
-{
-	return &mMetallicMapChannel;
-}
-
-int* PBRMaterial::roughnessMapChannelControl()
-{
-	return &mRoughnessMapChannel;
-}
-
-int* PBRMaterial::aoMapChannelControl()
-{
-	return &mAoMapChannel;
-}
-
-bool* PBRMaterial::useIblControl()
-{
-	return &mUseIBL;
+	return PBRMaterialEditControls{
+		&mUseAlphaMask,
+		&mAlphaCutoff,
+		&mMetallicMapChannel,
+		&mRoughnessMapChannel,
+		&mAoMapChannel,
+		&mUseIBL
+	};
 }

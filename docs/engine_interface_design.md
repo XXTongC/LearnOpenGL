@@ -556,6 +556,8 @@ public:
 346. 下一步建议继续把 Material provider 当前直接访问的 public material fields 收敛为 Material property DTO/accessor，或先拆分 `PBRMaterialProfile` config schema 与 editor `PropertyBuilder` 的边界。
 347. Runtime Material Editable Accessor Boundary 已完成第一版：Phong / Grass / Screen / PBR provider 所需字段新增明确 edit accessors，`MaterialPropertyProviders.cpp` 不再直接访问这些 provider 所需 public material fields。
 348. 下一步建议把本轮新增的零散 accessors 聚合为 Material property DTO，或逐步把 provider 已覆盖的 material public fields 下沉为 private，继续收缩 runtime material 数据布局暴露面。
+349. Runtime Material Edit Controls DTO 已完成第一版：新增 `MaterialEditControls.h`，用 `PhongSurfaceEditControls`、`GrassMaterialEditControls`、`ScreenMaterialInputTextures` 和 `PBRMaterialEditControls` 聚合 provider 所需编辑入口；Material provider 不再调用上一轮一项字段一个函数的零散 accessors。
+350. 下一步建议把 DTO 已覆盖的 material fields 逐步下沉为 private，或拆分 `PBRMaterialProfile` 配置 schema 与 editor `PropertyBuilder` 的依赖边界。
 
 ## 约束
 

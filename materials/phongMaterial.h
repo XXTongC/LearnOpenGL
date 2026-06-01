@@ -1,6 +1,7 @@
 #pragma once
 
 #include "material.h"
+#include "MaterialEditControls.h"
 #include "texture.h"
 namespace GLframework
 {
@@ -15,9 +16,7 @@ namespace GLframework
 			setMaterialType(MaterialType::PhongMaterial);
 		}
 		~PhongMaterial();
-		float* shininessControl();
-		const std::shared_ptr<Texture>& diffuseTexture() const;
-		const std::shared_ptr<Texture>& specularMaskTexture() const;
+		PhongSurfaceEditControls surfaceEditControls();
 		
 
 	public:

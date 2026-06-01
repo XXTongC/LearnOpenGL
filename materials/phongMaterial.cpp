@@ -14,17 +14,11 @@ PhongMaterial::~PhongMaterial()
 	
 }
 
-float* PhongMaterial::shininessControl()
+PhongSurfaceEditControls PhongMaterial::surfaceEditControls()
 {
-	return &mShiness;
-}
-
-const std::shared_ptr<Texture>& PhongMaterial::diffuseTexture() const
-{
-	return mDiffuse;
-}
-
-const std::shared_ptr<Texture>& PhongMaterial::specularMaskTexture() const
-{
-	return mSpecularMask;
+	return PhongSurfaceEditControls{
+		&mShiness,
+		&mDiffuse,
+		&mSpecularMask
+	};
 }

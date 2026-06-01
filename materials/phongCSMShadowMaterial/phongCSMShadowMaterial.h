@@ -1,5 +1,6 @@
 #pragma once
 #include "../material.h"
+#include "../MaterialEditControls.h"
 #include "../../framework/texture.h"
 
 namespace GLframework
@@ -15,9 +16,7 @@ namespace GLframework
 		}
 
 		~PhongCSMShadowMaterial() override{}
-		float* shininessControl();
-		const std::shared_ptr<Texture>& diffuseTexture() const;
-		const std::shared_ptr<Texture>& specularMaskTexture() const;
+		PhongSurfaceEditControls surfaceEditControls();
 
 
 	public:

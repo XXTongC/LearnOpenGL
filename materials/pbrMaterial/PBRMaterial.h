@@ -3,6 +3,7 @@
 #include <array>
 #include <memory>
 
+#include "../MaterialEditControls.h"
 #include "PBRMaterialProfile.h"
 #include "../material.h"
 #include "../../framework/texture.h"
@@ -69,12 +70,7 @@ namespace GLframework
 		std::array<PBRConstFloatUniformSlot, 4> getSurfaceFloatUniformSlots() const;
 		std::array<PBRFloatUniformSlot, 2> getIblFloatUniformSlots();
 		std::array<PBRConstFloatUniformSlot, 2> getIblFloatUniformSlots() const;
-		bool* useAlphaMaskControl();
-		float* alphaCutoffControl();
-		int* metallicMapChannelControl();
-		int* roughnessMapChannelControl();
-		int* aoMapChannelControl();
-		bool* useIblControl();
+		PBRMaterialEditControls editControls();
 
 	public:
 		std::shared_ptr<Texture> mAlbedoMap{ nullptr };

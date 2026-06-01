@@ -444,8 +444,9 @@ flowchart TD
 - Runtime Material Property Provider Registry 已完成第一版：新增 `MaterialPropertyProviderRegistry` 与默认 `MaterialPropertyProviders`，`MaterialInspector` 通过默认 provider registry 构建 Material 属性；默认兼容 provider 仍委托现有 `Material::visitEditableProperties(...)`。
 - Runtime Material Property Provider Schema Extraction 已完成第一版：Material inspector schema 由 `render-state` provider 与具体 Material 类型 provider 叠加构建；runtime material 类不再声明或实现 inspector `visitEditableProperties(...)` override。
 - Runtime Material Editable Accessor Boundary 已完成第一版：Phong / Grass / Screen / PBR material 新增 provider 所需 edit accessors，Material provider 不再直接访问这些字段名。
+- Runtime Material Edit Controls DTO 已完成第一版：新增 `MaterialEditControls.h` 聚合 Phong / Grass / Screen / PBR provider 所需编辑入口，Material provider 消费 DTO 而不是零散单字段 accessors。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime Material Editable Accessor Boundary 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先把零散 Material accessors 聚合为 property DTO 或把 provider 覆盖字段逐步私有化；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime Material Edit Controls DTO 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先把 DTO 覆盖字段逐步私有化，或拆分 `PBRMaterialProfile` 配置 schema 与 editor `PropertyBuilder` 的依赖边界；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Material Editable Accessor Boundary 已接入后，Material provider 通过 explicit edit accessors 构建 Phong / Grass / Screen / PBR 字段，不再直接依赖本轮覆盖的 runtime material public field names。
+当前最新修正：Runtime Material Edit Controls DTO 已接入后，Material provider 通过 `MaterialEditControls.h` 中的 DTO 构建 Phong / Grass / Screen / PBR 字段，不再依赖零散单字段 accessors。

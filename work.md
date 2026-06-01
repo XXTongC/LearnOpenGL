@@ -10256,3 +10256,29 @@ Subagent 审查：
 
 - 这是 Material editable accessor boundary first slice，不改变 Material inspector 字段、字段顺序、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续把这些 accessor 聚合成明确的 Material property DTO，或逐步把相关 public fields 下沉为 private，先从 provider 已覆盖的 Phong / Grass / Screen / PBR material 类型开始。
+
+### 2026-06-01 Runtime Material Edit Controls DTO
+
+本轮继续收敛上一轮新增的零散 editable accessor。上一轮为了让 provider 不直接访问 public fields，引入了一批一项字段一个函数的访问器；这种方式虽然降低了字段名耦合，但会让 runtime material public API 快速膨胀。本轮新增轻量 DTO，把 provider 所需编辑入口聚合为明确的 material edit controls。
+
+新增与修改：
+
+- 新增 `materials/MaterialEditControls.h`，定义 `PhongSurfaceEditControls`、`GrassMaterialEditControls`、`ScreenMaterialInputTextures` 和 `PBRMaterialEditControls`。
+- `PhongMaterial`、`PhongCSMShadowMaterial`、`PhongPointShadowMaterial` 将单独的 shininess/texture accessors 收敛为 `surfaceEditControls()`。
+- `GrassInstanceMaterial` 将 shininess、surface texture、wind/cloud scalar/color pointers 聚合为 `editControls()`。
+- `ScreenMaterial` 将 screen/bloom/depth-stencil texture getters 收敛为 `inputTextures()`。
+- `PBRMaterial` 将 alpha mask、alpha cutoff、metallic/roughness/AO channel、IBL bool 控制入口收敛为 `editControls()`。
+- `MaterialPropertyProviders.cpp` 改为消费上述 DTO；旧的 `shininessControl()`、`diffuseTexture()`、`specularMaskTexture()`、`screenTexture()`、`useAlphaMaskControl()` 等单字段 accessor 名称已从 `materials` / provider 路径移除。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 `MaterialEditControls.h`。
+
+已完成验证：
+
+- 静态检查确认旧的单字段 accessor 名称不再存在于 `materials` / `tools\inspector` 路径。
+- 静态检查确认 `MaterialEditControls.h` 已注册到 Visual Studio 工程和 filters。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译并链接了新增 DTO 涉及的材质和 provider 路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Material edit controls DTO first slice，不改变 Material inspector 字段、字段顺序、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议可以开始把 DTO 覆盖的字段逐步下沉为 private，或者继续处理 `PBRMaterialProfile` 配置 schema 仍直接依赖 editor `PropertyBuilder` 的边界。

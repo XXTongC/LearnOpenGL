@@ -7876,3 +7876,19 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了受影响材质和 provider 文件，五条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Material inspector 字段、字段顺序、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百二十九轮 Runtime Material Edit Controls DTO：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `3b5207e Add material editable accessors`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把下一步聚焦到把零散 Material editable accessors 聚合成明确 DTO。
+  - 新增 [MaterialEditControls.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\MaterialEditControls.h)，定义 `PhongSurfaceEditControls`、`GrassMaterialEditControls`、`ScreenMaterialInputTextures` 和 `PBRMaterialEditControls`。
+  - 更新 Phong / CSM Shadow / Point Shadow material，单字段 shininess/texture accessors 收敛为 `surfaceEditControls()`。
+  - 更新 [grassInstanceMaterial.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\grassInstanceMaterial\grassInstanceMaterial.h) 与 [grassInstanceMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\grassInstanceMaterial\grassInstanceMaterial.cpp)，把 surface/wind/cloud edit pointers 聚合为 `editControls()`。
+  - 更新 [screenMaterial.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\screenMaterial.h) 与 [screenMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\screenMaterial.cpp)，把 post-process texture references 聚合为 `inputTextures()`。
+  - 更新 [PBRMaterial.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.h) 与 [PBRMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.cpp)，把 alpha/channel/IBL edit pointers 聚合为 `editControls()`。
+  - 更新 [MaterialPropertyProviders.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\MaterialPropertyProviders.cpp)，provider 改为消费 DTO，不再调用上一轮单字段 accessors。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 `MaterialEditControls.h`。
+  - 已执行静态检查：确认旧的单字段 accessor 名称不再存在于 `materials` / `tools\inspector` 路径。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；五条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 Material inspector 字段、字段顺序、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

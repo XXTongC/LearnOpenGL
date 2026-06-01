@@ -93,10 +93,11 @@ namespace
 	template <typename TMaterial>
 	void buildPhongSurfaceProperties(GL_EDITOR::PropertyBuilder& builder, TMaterial& material)
 	{
+		const auto controls = material.surfaceEditControls();
 		builder.addSection("Surface");
-		builder.addFloat("Shininess", material.shininessControl(), 0.0f, 256.0f, "%.1f");
-		addTextureText(builder, "Diffuse", &material.diffuseTexture());
-		addTextureText(builder, "Specular Mask", &material.specularMaskTexture());
+		builder.addFloat("Shininess", controls.shininess, 0.0f, 256.0f, "%.1f");
+		addTextureText(builder, "Diffuse", controls.diffuseTexture);
+		addTextureText(builder, "Specular Mask", controls.specularMaskTexture);
 	}
 
 	template <typename TMaterial>
@@ -130,6 +131,7 @@ namespace
 			return;
 		}
 
+		const auto controls = material->editControls();
 		builder.addSection("PBR Surface");
 		const auto vec3UniformSlots = material->getVec3UniformSlots();
 		const auto surfaceFloatUniformSlots = material->getSurfaceFloatUniformSlots();
@@ -141,16 +143,16 @@ namespace
 		addPbrFloatUniformProperty(builder, surfaceFloatUniformSlots[3]);
 
 		builder.addSection("PBR Alpha Mask");
-		builder.addBool("Use Alpha Mask", material->useAlphaMaskControl());
-		builder.addFloat("Alpha Cutoff", material->alphaCutoffControl(), 0.0f, 1.0f);
+		builder.addBool("Use Alpha Mask", controls.useAlphaMask);
+		builder.addFloat("Alpha Cutoff", controls.alphaCutoff, 0.0f, 1.0f);
 
 		builder.addSection("PBR Texture Channels");
-		builder.addInt("Metallic Map Channel", material->metallicMapChannelControl(), 0, 3);
-		builder.addInt("Roughness Map Channel", material->roughnessMapChannelControl(), 0, 3);
-		builder.addInt("AO Map Channel", material->aoMapChannelControl(), 0, 3);
+		builder.addInt("Metallic Map Channel", controls.metallicMapChannel, 0, 3);
+		builder.addInt("Roughness Map Channel", controls.roughnessMapChannel, 0, 3);
+		builder.addInt("AO Map Channel", controls.aoMapChannel, 0, 3);
 
 		builder.addSection("PBR IBL");
-		builder.addBool("Use IBL", material->useIblControl());
+		builder.addBool("Use IBL", controls.useIbl);
 		for (const auto& slot : material->getIblFloatUniformSlots())
 		{
 			addPbrFloatUniformProperty(builder, slot);
@@ -174,35 +176,36 @@ namespace
 			return;
 		}
 
+		const auto controls = material->editControls();
 		builder.addSection("Surface");
-		builder.addFloat("Shininess", material->shininessControl(), 0.0f, 256.0f, "%.1f");
-		builder.addFloat("UV Scale", material->Control_UVScale(), 0.0f, 100.0f);
-		builder.addFloat("Brightness", material->Control_Brightness(), 0.0f, 8.0f);
-		addTextureText(builder, "Diffuse", &material->diffuseTexture());
-		addTextureText(builder, "Opacity Mask", &material->opacityMaskTexture());
-		addTextureText(builder, "Cloud Mask", &material->cloudMaskTexture());
+		builder.addFloat("Shininess", controls.shininess, 0.0f, 256.0f, "%.1f");
+		builder.addFloat("UV Scale", controls.uvScale, 0.0f, 100.0f);
+		builder.addFloat("Brightness", controls.brightness, 0.0f, 8.0f);
+		addTextureText(builder, "Diffuse", controls.diffuseTexture);
+		addTextureText(builder, "Opacity Mask", controls.opacityMaskTexture);
+		addTextureText(builder, "Cloud Mask", controls.cloudMaskTexture);
 
 		builder.addSection("Wind");
-		builder.addFloat("Wind Scale", material->Control_WindScale(), -0.12f, 0.12f, "%.4f");
-		builder.addFloat("Phase Scale", material->Control_PhaseScale(), 0.0f, 10.0f);
+		builder.addFloat("Wind Scale", controls.windScale, -0.12f, 0.12f, "%.4f");
+		builder.addFloat("Phase Scale", controls.phaseScale, 0.0f, 10.0f);
 		builder.addVec3(
 			"Wind Direction",
-			[material]() { return *material->Control_WindDirection(); },
+			[controls]() { return *controls.windDirection; },
 			[material](glm::vec3 value) { material->setWindDirection(value); }
 		);
 
 		builder.addSection("Cloud");
-		builder.addFloat("Cloud Lerp", material->Control_CloudLerp(), 0.0f, 1.0f);
-		builder.addFloat("Cloud UV Scale", material->Control_CloudUVScale(), 0.0f, 100.0f);
-		builder.addFloat("Cloud Speed", material->Control_CloudSpeed(), 0.0f, 3.0f);
+		builder.addFloat("Cloud Lerp", controls.cloudLerp, 0.0f, 1.0f);
+		builder.addFloat("Cloud UV Scale", controls.cloudUvScale, 0.0f, 100.0f);
+		builder.addFloat("Cloud Speed", controls.cloudSpeed, 0.0f, 3.0f);
 		builder.addColor3(
 			"Cloud White Color",
-			[material]() { return *material->Control_CloudWhiteColor(); },
+			[controls]() { return *controls.cloudWhiteColor; },
 			[material](glm::vec3 value) { material->seCloudWhiteColor(value); }
 		);
 		builder.addColor3(
 			"Cloud Black Color",
-			[material]() { return *material->Control_CloudBlackColor(); },
+			[controls]() { return *controls.cloudBlackColor; },
 			[material](glm::vec3 value) { material->setCloudBlackColor(value); }
 		);
 	}
@@ -218,10 +221,11 @@ namespace
 			return;
 		}
 
+		const auto textures = material->inputTextures();
 		builder.addSection("Post Process Inputs");
-		addTextureText(builder, "Screen Texture", &material->screenTexture());
-		addTextureText(builder, "Bloom Texture", &material->bloomTexture());
-		addTextureText(builder, "Depth Stencil Texture", &material->depthStencilTexture());
+		addTextureText(builder, "Screen Texture", textures.screenTexture);
+		addTextureText(builder, "Bloom Texture", textures.bloomTexture);
+		addTextureText(builder, "Depth Stencil Texture", textures.depthStencilTexture);
 	}
 
 	GL_EDITOR::MaterialPropertyProviderRegistry buildDefaultMaterialPropertyProviderRegistry()

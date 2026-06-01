@@ -437,6 +437,7 @@
     <ClInclude Include="light\shadow\pointLightShadow\pointLightShadow.h" />
     <ClInclude Include="light\shadow\shadow.h" />
     <ClInclude Include="materials\MaterialTypes.h" />
+    <ClInclude Include="materials\MaterialEditControls.h" />
     <ClInclude Include="materials\material.h" />
     <ClInclude Include="materials\phongCSMShadowMaterial\phongCSMShadowMaterial.h" />
     <ClInclude Include="materials\phongNormalMaterial\phongNormalMaterial.h" />
