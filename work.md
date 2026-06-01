@@ -9311,3 +9311,28 @@ Subagent 审查：
 
 - 这是 Runtime render resource screen material owner boundary cleanup，不改变 screen material 创建、post-process input texture binding、resize texture sync、screen composite pass、frame pass order、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 remaining runtime render resource shared_ptr owner 收敛，优先审计 legacy-only resources 或访问面仍可控的 scene/editor selection owner；仍不建议扩张 PBR pass。
+
+### 2026-06-01 Runtime Render Resource Scene Mesh/Material Owner Boundary Cleanup
+
+本轮继续 remaining runtime render resource shared_ptr owner 收敛，不扩张 PBR 功能。审计确认：`renderer` / `sceneOffScreen` / `sceneInScreen` 仍是高访问面主 owner，不适合在本轮直接改；`grassMaterial`、`skyBoxMesh`、`movePlane`、`textD`、`csmShadowMaterial` 的真实访问集中在 scene setup、legacy experiment context 和 editor debug panel 注入，适合合并为一个低风险 scene mesh/material owner cleanup。
+
+新增与修改：
+
+- `RuntimeRenderResourceState.h` 移除公开字段 `grassMaterial`、`skyBoxMesh`、`movePlane`、`textD`、`csmShadowMaterial`，改为 private `mGrassMaterial`、`mSkyBoxMesh`、`mMovePlane`、`mTextD`、`mCsmShadowMaterial`。
+- `RuntimeRenderResourceState` 新增对应 accessor / const accessor，返回 shared pointer 引用以保持 scene setup assignment、legacy experiment enable/update 和 debug panel context 注入契约。
+- `RuntimeRenderResourceState.cpp` 集中提供这些 scene mesh/material owner 访问器 implementation。
+- `RuntimeSceneSetupContextFactory.cpp` 通过访问器向 `SetupContext` 传递 `skyBoxMesh` 和 `textD` owner 引用，保持默认 scene setup 创建 skybox/back wall 的原行为。
+- `RuntimeLegacyExperimentLifecycle.cpp` 通过访问器向 `LegacyExperimentRunner` 传递 `grassMaterial`、`skyBoxMesh`、`movePlane` 和 `csmShadowMaterial` owner 引用，保持历史实验重启函数的原有资源写入语义。
+- `RuntimeEditorPanelCoordinator.cpp` 通过访问器向 debug controller context 传递 `textD`，保持 UI 调试入口不变。
+
+已完成验证：
+
+- 静态检查确认旧字段式 `context.renderResources.grassMaterial` / `skyBoxMesh` / `movePlane` / `textD` / `csmShadowMaterial` 访问已清零，剩余访问均为 accessor。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeRenderResourceState.cpp`、`RuntimeSceneSetupContextFactory.cpp`、`RuntimeEditorPanelCoordinator.cpp`、`RuntimeLegacyExperimentLifecycle.cpp` 和相关 runtime 使用点。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime render resource scene mesh/material owner boundary cleanup，不改变默认场景创建、skybox/back wall 创建、legacy experiment enable/update、editor debug panel、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 remaining runtime render resource shared_ptr owner 收敛，优先审计 `meshPointLight` 是否可删除或私有化；`renderer` / `sceneOffScreen` / `sceneInScreen` 访问面较大，应作为单独设计切片处理。

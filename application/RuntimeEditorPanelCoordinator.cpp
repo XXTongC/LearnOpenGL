@@ -19,7 +19,7 @@ namespace GL_RUNTIME
 			&context.cameraLights.ambientLight,
 			&context.cameraLights.spotLight,
 			&context.cameraLights.pointLights,
-			context.renderResources.textD,
+			context.renderResources.textD(),
 			&context.profiles.framePipelineProfile(),
 			&context.profiles.framePipelineProfilePath,
 			&context.profiles.rendererFramePassProfilePath,

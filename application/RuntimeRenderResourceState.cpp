@@ -66,3 +66,53 @@ const std::shared_ptr<GLframework::ScreenMaterial>& GL_RUNTIME::RuntimeRenderRes
 {
 	return mScreenMaterial;
 }
+
+std::shared_ptr<GLframework::GrassInstanceMaterial>& GL_RUNTIME::RuntimeRenderResourceState::grassMaterial()
+{
+	return mGrassMaterial;
+}
+
+const std::shared_ptr<GLframework::GrassInstanceMaterial>& GL_RUNTIME::RuntimeRenderResourceState::grassMaterial() const
+{
+	return mGrassMaterial;
+}
+
+std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceState::skyBoxMesh()
+{
+	return mSkyBoxMesh;
+}
+
+const std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceState::skyBoxMesh() const
+{
+	return mSkyBoxMesh;
+}
+
+std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceState::movePlane()
+{
+	return mMovePlane;
+}
+
+const std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceState::movePlane() const
+{
+	return mMovePlane;
+}
+
+std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceState::textD()
+{
+	return mTextD;
+}
+
+const std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceState::textD() const
+{
+	return mTextD;
+}
+
+std::shared_ptr<GLframework::PhongCSMShadowMaterial>& GL_RUNTIME::RuntimeRenderResourceState::csmShadowMaterial()
+{
+	return mCsmShadowMaterial;
+}
+
+const std::shared_ptr<GLframework::PhongCSMShadowMaterial>& GL_RUNTIME::RuntimeRenderResourceState::csmShadowMaterial() const
+{
+	return mCsmShadowMaterial;
+}

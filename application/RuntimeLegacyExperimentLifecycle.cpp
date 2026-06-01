@@ -13,10 +13,10 @@ namespace GL_RUNTIME
 		return {
 			context.renderResources.renderer,
 			context.renderResources.sceneOffScreen,
-			context.renderResources.grassMaterial,
-			context.renderResources.skyBoxMesh,
-			context.renderResources.movePlane,
-			context.renderResources.csmShadowMaterial,
+			context.renderResources.grassMaterial(),
+			context.renderResources.skyBoxMesh(),
+			context.renderResources.movePlane(),
+			context.renderResources.csmShadowMaterial(),
 			context.cameraLights.dirLight,
 			context.cameraLights.pointLights
 		};

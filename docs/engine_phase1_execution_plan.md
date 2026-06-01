@@ -310,6 +310,7 @@ passed
 - Runtime Render Resource Bloom Owner Boundary Cleanup 已接入：`RuntimeRenderResourceState.h` 不再公开暴露 Bloom shared_ptr owner，Bloom owner 由 private `mBloom` 持有；scene setup 注入、Bloom frame pass 和 backend readiness 通过访问器取得引用。
 - Runtime Render Resource Screen Quad Owner Boundary Cleanup 已接入：`RuntimeRenderResourceState.h` 不再公开暴露 screen quad shared_ptr owner，screen quad owner 由 private `mScreenQuad` 持有；scene setup 注入、screen composite pass 和 backend readiness 通过访问器取得引用。
 - Runtime Render Resource Screen Material Owner Boundary Cleanup 已接入：`RuntimeRenderResourceState.h` 不再公开暴露 screen material shared_ptr owner，screen material owner 由 private `mScreenMaterial` 持有；scene setup 注入和 resize 后 post-process input texture sync 通过访问器取得引用。
+- Runtime Render Resource Scene Mesh/Material Owner Boundary Cleanup 已接入：`RuntimeRenderResourceState.h` 不再公开暴露 scene/legacy mesh/material shared_ptr owners，`grassMaterial`、`skyBoxMesh`、`movePlane`、`textD`、`csmShadowMaterial` owner 由 private 成员持有；scene setup、legacy experiment 和 editor debug panel 注入通过访问器取得引用。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -370,6 +371,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Runtime Render Resource Screen Material Owner Boundary Cleanup 已接入后，`RuntimeRenderResourceState.h` 不再公开暴露 screen material shared_ptr owner，screen material 初始化和 resize texture sync 路径通过访问器取得引用；下一步继续 remaining runtime render resource shared_ptr owner 收敛，但不扩张 PBR pass。
+当前最新修正：Runtime Render Resource Scene Mesh/Material Owner Boundary Cleanup 已接入后，`RuntimeRenderResourceState.h` 不再公开暴露 `grassMaterial`、`skyBoxMesh`、`movePlane`、`textD`、`csmShadowMaterial` owner，scene setup、legacy experiment 和 editor debug panel 注入通过访问器取得引用；下一步继续 remaining runtime render resource shared_ptr owner 收敛，但不扩张 PBR pass。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime render resource screen material owner cleanup 后，下一步优先继续 remaining runtime render resource shared_ptr owner 收敛，或继续 application composition root / runtime context state 依赖边界收敛；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime render resource scene mesh/material owner cleanup 后，下一步优先审计 `meshPointLight` 是否可删除或私有化；`renderer` / `sceneOffScreen` / `sceneInScreen` 访问面较大，应作为单独设计切片处理；当前不建议继续扩张 PBR pass。
