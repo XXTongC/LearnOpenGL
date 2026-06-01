@@ -4,11 +4,6 @@
 
 #include "../../third_party/glm/glm.hpp"
 
-namespace GL_EDITOR
-{
-	class PropertyBuilder;
-}
-
 namespace GLframework
 {
 	class PBRMaterial;
@@ -29,7 +24,6 @@ namespace GLframework
 
 		void applyTo(PBRMaterial& material) const;
 		void copyFrom(const PBRMaterial& material);
-		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder);
 	};
 
 	class PBRMaterialProfileStorage

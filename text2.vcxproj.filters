@@ -699,6 +699,12 @@
     <ClCompile Include="materials\pbrMaterial\PBRMaterial.cpp">
       <Filter>cppfile\GLframework\material\pbrMaterial</Filter>
     </ClCompile>
+    <ClCompile Include="materials\pbrMaterial\PBRMaterialProfile.cpp">
+      <Filter>cppfile\GLframework\material\pbrMaterial</Filter>
+    </ClCompile>
+    <ClCompile Include="materials\pbrMaterial\PBRMaterialProfileConfig.cpp">
+      <Filter>cppfile\GLframework\material\pbrMaterial</Filter>
+    </ClCompile>
     <ClCompile Include="light\light.cpp">
       <Filter>cppfile\GLframework\light</Filter>
     </ClCompile>
@@ -1551,6 +1557,9 @@
       <Filter>include\GLframework\material\pbrMaterial</Filter>
     </ClInclude>
     <ClInclude Include="materials\pbrMaterial\PBRMaterialProfile.h">
+      <Filter>include\GLframework\material\pbrMaterial</Filter>
+    </ClInclude>
+    <ClInclude Include="materials\pbrMaterial\PBRMaterialProfileConfig.h">
       <Filter>include\GLframework\material\pbrMaterial</Filter>
     </ClInclude>
     <ClInclude Include="light\light.h">

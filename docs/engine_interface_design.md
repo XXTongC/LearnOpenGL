@@ -568,6 +568,8 @@ public:
 358. 下一步建议迁移 scene setup、importer、engine world probe 和 verification scene writer 到 `PBRMaterial` setter/API，然后按 surface、texture slot、channel、alpha、IBL 分批私有化 PBR 公开字段。
 359. PBR Material Private Field Encapsulation 已完成第一版：scene setup、Assimp PBR importer、engine world scene setup/package resolver 与 PBR verification probes 已迁入 `PBRMaterial` setter/API；PBR texture、surface、channel、alpha mask 与 IBL 字段已下沉为 `private`。
 360. 下一步建议继续收束 Material/profile 边界，优先拆分 `PBRMaterialProfile` config schema 对 editor `PropertyBuilder` 的依赖，或让 PBR profile/config 通过独立 provider/schema adapter 生成配置 UI。
+361. PBR Material Profile Config Schema Adapter 已完成第一版：新增 `PBRMaterialProfileConfig` schema adapter 与 `PBRMaterialProfile.cpp`，`PBRMaterialProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，`PBRMaterial.cpp` 不再承载 profile storage 或 editor/config schema。
+362. 下一步建议继续处理仍直接在 runtime/profile 类型中暴露 `visitEditableProperties(PropertyBuilder&)` 的配置对象，例如 EnvironmentProfile、PostProcessSettings、RendererFramePassProfile 或 PBRPreviewProfile。
 
 ## 约束
 

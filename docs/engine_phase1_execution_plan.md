@@ -411,10 +411,11 @@ passed
 - Grass Surface Runtime State Encapsulation 已接入：`GrassInstanceMaterial` 的 diffuse/specular/opacity/cloud/shininess 字段已下沉为 private，renderer 通过 `surfaceState()` 读取，legacy grass field 与 instanced loader 通过 setter 写入。
 - PBR Material Runtime State API 已接入：`PBRMaterial` 新增 surface/texture/channel/alpha/IBL input 与 runtime state DTO，profile、renderer binder/pass 和 PBR stats 已迁入 setter/state API；public fields 尚未私有化，作为后续 private-field migration 的桥接层。
 - PBR Material Private Field Encapsulation 已接入：scene setup、Assimp PBR importer、engine world scene setup/package resolver 与 PBR verification probes 已迁入 `PBRMaterial` setter/API；PBR texture、surface、channel、alpha mask 与 IBL 字段已下沉为 private。
+- PBR Material Profile Config Schema Adapter 已接入：新增 `PBRMaterialProfileConfig` schema adapter 与独立 `PBRMaterialProfile.cpp`；`PBRMaterialProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，`PBRMaterial.cpp` 不再承载 profile storage 或 editor/config schema。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：PBR Material Private Field Encapsulation 已接入后，PBRMaterial 的 PBR 字段不再公开暴露；外部 scene/import/probe writer、renderer binder/pass 和 stats 路径均通过 setter/state/slot API 访问。
+当前最新修正：PBR Material Profile Config Schema Adapter 已接入后，PBRMaterialProfile header 不再暴露 editor `PropertyBuilder`，runtime PBRMaterial implementation 不再承载 profile storage 或 config schema；PBR profile config key 与 preview material preset 行为保持不变。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步建议继续收束 Material/profile 边界，优先拆分 `PBRMaterialProfile` config schema 对 editor `PropertyBuilder` 的依赖，或让 PBR profile/config 通过独立 provider/schema adapter 生成配置 UI；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步建议继续处理仍直接在 runtime/profile 类型中暴露 `visitEditableProperties(PropertyBuilder&)` 的配置对象，例如 EnvironmentProfile、PostProcessSettings、RendererFramePassProfile 或 PBRPreviewProfile；当前不建议继续扩张 PBR pass。

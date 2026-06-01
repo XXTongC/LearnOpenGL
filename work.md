@@ -10410,3 +10410,28 @@ Subagent 审查：
 
 - 这是 PBR material private-field encapsulation slice，不改变 PBR inspector 字段、texture slot metadata、Assimp PBR import 语义、verification probe 材质参数、engine world scene package resolver 行为、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续沿系统化 UI/inspector 方向收束 Material boundary：可以优先拆分 `PBRMaterialProfile` config schema 对 editor `PropertyBuilder` 的依赖，或让 PBR profile/config 也使用独立 provider/schema adapter。
+
+### 2026-06-01 PBR Material Profile Config Schema Adapter
+
+本轮继续上一轮 PBR private-field 封装后的 profile/config 边界收束。此前 `PBRMaterialProfile` 自身仍声明 `visitEditableProperties(PropertyBuilder&)`，并且 `PBRMaterial.cpp` 同时承载 runtime material、profile apply/copy、profile storage 和 editor/config schema。这会让 runtime material implementation 间接依赖 editor property schema 与 config IO，不利于继续把 Material runtime 和 editor/config 系统分离。
+
+新增与修改：
+
+- 新增 `PBRMaterialProfileConfig.h/.cpp`，提供 `buildPBRMaterialProfileConfigSchema(...)`，集中生成 PBR profile 的 `PropertyBuilder` schema。
+- 新增 `PBRMaterialProfile.cpp`，承载 `PBRMaterialProfile::applyTo(...)`、`copyFrom(...)` 与 `PBRMaterialProfileStorage` load/save/defaultPath。
+- `PBRMaterialProfile.h` 删除 `PropertyBuilder` forward declaration 和 `visitEditableProperties(...)`，现在只暴露纯 profile 数据、runtime material 转换和 storage API。
+- `PBRMaterial.cpp` 删除 profile/config/storage 实现与 `ProfileConfigIO` / `PropertySchema` include，收敛为纯 runtime `PBRMaterial` 实现。
+- `PBRPreviewProfile.cpp` 嵌入 material profile schema 时改为调用 `buildPBRMaterialProfileConfigSchema(...)`，保持 PBR preview config key 与 UI 字段不变。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `PBRMaterialProfile.cpp`、`PBRMaterialProfileConfig.cpp` 和 `PBRMaterialProfileConfig.h`。
+
+已完成验证：
+
+- 静态检查确认 `PBRMaterialProfile::visitEditableProperties` 与 `material.visitEditableProperties(builder)` 不再存在；`PBRMaterial.cpp` 不再 include `ProfileConfigIO` / `PropertySchema`。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,showcase-spheres,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 profile/config adapter、runtime profile loader、preview profile、debug controller、PBR material 与 renderer 相关路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBR material profile config schema adapter slice，不改变 PBR profile config key、preview material preset 字段、DebugControllerPanel save/load 行为、PBRMaterial runtime API、PBR inspector 字段、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续沿同一方向处理其他仍直接把 `visitEditableProperties(PropertyBuilder&)` 放在 runtime/profile 类型里的配置对象，例如 EnvironmentProfile、PostProcessSettings、RendererFramePassProfile 或 PBRPreviewProfile 的 config schema adapter。

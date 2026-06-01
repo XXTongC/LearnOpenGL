@@ -7968,3 +7968,19 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,engine-world-scene-package,showcase-spheres,renderer-backend-registry-noop -DiscardCaptures`，构建通过；7 个 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 PBR inspector 字段、texture slot metadata、Assimp PBR import 语义、verification probe 材质参数、engine world scene package resolver 行为、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百三十五轮 PBR Material Profile Config Schema Adapter：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `c155825 Encapsulate PBR material fields`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续 Material/profile boundary cleanup，本轮选择拆分 `PBRMaterialProfile` config schema 对 editor `PropertyBuilder` 的依赖。
+  - 新增 [PBRMaterialProfileConfig.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterialProfileConfig.h) 与 [PBRMaterialProfileConfig.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterialProfileConfig.cpp)，提供 `buildPBRMaterialProfileConfigSchema(...)` 统一生成 PBR profile config schema。
+  - 新增 [PBRMaterialProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterialProfile.cpp)，承载 `PBRMaterialProfile::applyTo(...)`、`copyFrom(...)` 与 `PBRMaterialProfileStorage` load/save/defaultPath。
+  - 更新 [PBRMaterialProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterialProfile.h)，删除 `PropertyBuilder` forward declaration 和 `visitEditableProperties(...)`，profile header 只暴露纯 profile 数据、runtime material 转换和 storage API。
+  - 更新 [PBRMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\pbrMaterial\PBRMaterial.cpp)，删除 profile/config/storage 实现和 `ProfileConfigIO` / `PropertySchema` include，使 runtime material implementation 不再承载 editor/config schema。
+  - 更新 [PBRPreviewProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRPreviewProfile.cpp)，嵌入 material profile schema 时改为调用 `buildPBRMaterialProfileConfigSchema(...)`。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 profile/config adapter 源文件和头文件。
+  - 已执行静态检查：确认 `PBRMaterialProfile::visitEditableProperties` 与 `material.visitEditableProperties(builder)` 不再存在；`PBRMaterial.cpp` 不再 include `ProfileConfigIO` / `PropertySchema`。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,showcase-spheres,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`，构建通过；6 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 PBR profile config key、preview material preset 字段、DebugControllerPanel save/load 行为、PBRMaterial runtime API、PBR inspector 字段、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

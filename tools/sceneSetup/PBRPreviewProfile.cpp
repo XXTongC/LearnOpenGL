@@ -1,5 +1,6 @@
 #include "PBRPreviewProfile.h"
 
+#include "../../materials/pbrMaterial/PBRMaterialProfileConfig.h"
 #include "../config/ProfileConfigIO.h"
 #include "../inspector/PropertySchema.h"
 
@@ -57,7 +58,7 @@ void GL_SCENE::PBRPreviewProfile::visitEditableProperties(GL_EDITOR::PropertyBui
 	builder.addSection("Material Preset");
 	builder.addConfigString("materialProfilePath", "Material Profile Path", &materialProfilePath);
 
-	material.visitEditableProperties(builder);
+	GLframework::buildPBRMaterialProfileConfigSchema(builder, material);
 
 	builder.addSection("Textures");
 	builder.addConfigString("normalMapPath", "Normal Map Path", &normalMapPath);

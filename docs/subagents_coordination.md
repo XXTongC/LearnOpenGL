@@ -1968,6 +1968,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `materials/MaterialEditControls.h`, `materials/pbrMaterial/PBRMaterial.h`, `materials/pbrMaterial/PBRMaterial.cpp`, `renderer/PBRSurfaceResourceBinder.cpp`, `renderer/PBRAlphaShadowBinder.cpp`, `renderer/PBRDepthPrepass.cpp`, `renderer/PBRIBLResourceBinder.cpp`, `renderer/PBRGBufferPass.cpp`, `application/RuntimePBRStatsResourceAdapter.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the PBR material private field encapsulation is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `materials/pbrMaterial/PBRMaterial.h`, `materials/pbrMaterial/PBRMaterial.cpp`, `application/AssimpMaterialImporter.cpp`, `application/RuntimeEngineWorldVerificationResourceAdapter.cpp`, `application/RuntimePBRSceneProbeVerification.cpp`, `tools/sceneSetup/SceneSetup.cpp`, `tools/sceneSetup/WorldDrivenSceneSetup.cpp`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the PBR material profile config schema adapter is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `materials/pbrMaterial/PBRMaterial.cpp`, `materials/pbrMaterial/PBRMaterialProfile.h`, `materials/pbrMaterial/PBRMaterialProfile.cpp`, `materials/pbrMaterial/PBRMaterialProfileConfig.h`, `materials/pbrMaterial/PBRMaterialProfileConfig.cpp`, `tools/sceneSetup/PBRPreviewProfile.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

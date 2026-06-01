@@ -286,6 +286,8 @@
     <ClCompile Include="materials\phongInstanceMaterial.cpp" />
     <ClCompile Include="materials\phongMaterial.cpp" />
     <ClCompile Include="materials\pbrMaterial\PBRMaterial.cpp" />
+    <ClCompile Include="materials\pbrMaterial\PBRMaterialProfile.cpp" />
+    <ClCompile Include="materials\pbrMaterial\PBRMaterialProfileConfig.cpp" />
     <ClCompile Include="light\pointLight.cpp" />
     <ClCompile Include="renderer\EnvironmentProfile.cpp" />
     <ClCompile Include="renderer\DepthPrepassBinder.cpp" />
@@ -457,6 +459,7 @@
     <ClInclude Include="materials\phongMaterial.h" />
     <ClInclude Include="materials\pbrMaterial\PBRMaterial.h" />
     <ClInclude Include="materials\pbrMaterial\PBRMaterialProfile.h" />
+    <ClInclude Include="materials\pbrMaterial\PBRMaterialProfileConfig.h" />
     <ClInclude Include="light\pointLight.h" />
     <ClInclude Include="renderer\EnvironmentProfile.h" />
     <ClInclude Include="renderer\DepthPrepassBinder.h" />
