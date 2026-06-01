@@ -1976,6 +1976,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `renderer/EnvironmentProfile.h`, `renderer/EnvironmentProfile.cpp`, `renderer/EnvironmentProfileConfig.h`, `renderer/EnvironmentProfileConfig.cpp`, `tools/editor/DebugControllerPanel.cpp`, `tools/sceneSetup/PBRExperimentProfile.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Renderer frame pass profile config schema adapter is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `renderer/RendererFramePassProfile.h`, `renderer/RendererFramePassProfile.cpp`, `renderer/RendererFramePassProfileConfig.h`, `renderer/RendererFramePassProfileConfig.cpp`, `tools/editor/DebugControllerPanel.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the PBR preview profile config schema adapter is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `tools/sceneSetup/PBRPreviewProfile.h`, `tools/sceneSetup/PBRPreviewProfile.cpp`, `tools/sceneSetup/PBRPreviewProfileConfig.h`, `tools/sceneSetup/PBRPreviewProfileConfig.cpp`, `tools/sceneSetup/PBRExperimentProfile.cpp`, `tools/editor/DebugControllerPanel.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

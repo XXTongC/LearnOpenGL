@@ -382,6 +382,7 @@
     <ClCompile Include="tools\sceneSetup\PBRCameraRigProfile.cpp" />
     <ClCompile Include="tools\sceneSetup\PBRExperimentProfile.cpp" />
     <ClCompile Include="tools\sceneSetup\PBRLightRigProfile.cpp" />
+    <ClCompile Include="tools\sceneSetup\PBRPreviewProfileConfig.cpp" />
     <ClCompile Include="tools\sceneSetup\PBRPreviewProfile.cpp" />
     <ClCompile Include="tools\sceneSetup\SceneSetup.cpp" />
     <ClCompile Include="tools\sceneSetup\SceneSetupPipeline.cpp" />
@@ -1031,6 +1032,7 @@
     <ClInclude Include="tools\sceneSetup\PBRCameraRigProfile.h" />
     <ClInclude Include="tools\sceneSetup\PBRExperimentProfile.h" />
     <ClInclude Include="tools\sceneSetup\PBRLightRigProfile.h" />
+    <ClInclude Include="tools\sceneSetup\PBRPreviewProfileConfig.h" />
     <ClInclude Include="tools\sceneSetup\PBRPreviewProfile.h" />
     <ClInclude Include="tools\sceneSetup\SceneSetup.h" />
     <ClInclude Include="tools\sceneSetup\SceneSetupPipeline.h" />

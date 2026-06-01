@@ -10509,3 +10509,28 @@ Subagent 审查：
 
 - 这是 Renderer frame pass profile config schema adapter slice，不改变 `config/renderer_frame_pass.local.ini` 默认路径、pass order key、renderer GPU timing 开关、PBR deferred/tiled/clustered/GBuffer/IBL debug 配置、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续处理剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile/settings 对象，例如 PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile。
+
+### 2026-06-01 PBR Preview Profile Config Schema Adapter
+
+本轮继续 profile/config schema adapter 化，处理 `PBRPreviewProfile`。目标是让 PBR preview profile header 不再暴露 editor `PropertyBuilder` 类型，同时保持 PBR preview profile 独立配置、PBR experiment preset 的 `pbrPreview.*` 子配置、DebugControllerPanel 的 save/reload 行为和 material profile 嵌套 schema 不变。
+
+新增与修改：
+
+- 新增 `tools/sceneSetup/PBRPreviewProfileConfig.h/.cpp`，提供 `buildPBRPreviewProfileConfigSchema(...)`，集中生成 PBR Preview、Geometry、Material Grid、Material Preset、PBR Surface / IBL 和 Textures 的 `PropertyBuilder` schema。
+- `PBRPreviewProfile.h` 删除 `GL_EDITOR::PropertyBuilder` forward declaration 和 `visitEditableProperties(...)`，现在只保留 preview 数据、material profile、normal map 设置和 storage API。
+- `PBRPreviewProfile.cpp` 删除 schema 构造实现与 material profile config / PropertySchema 直接 include，storage load/save 改为通过 `buildPBRPreviewProfileConfigSchema(...)` 生成配置 schema。
+- `PBRExperimentProfile.cpp` 的 `pbrPreview.*` 子配置 load/save 改为调用 `buildPBRPreviewProfileConfigSchema(...)`，保持 experiment preset key 不变。
+- `DebugControllerPanel.cpp` 的 PBR Preview Profile 控制面板改为调用 `buildPBRPreviewProfileConfigSchema(...)`，保持现有 UI 字段、material preset save/reload 和 profile save/reload 行为不变。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `PBRPreviewProfileConfig.cpp` 和 `PBRPreviewProfileConfig.h`。
+
+已完成验证：
+
+- 静态检查确认 `PBRPreviewProfile::visitEditableProperties`、`loadedPBRPreviewProfile.visitEditableProperties(...)` 和 `pbrPreviewSnapshot.visitEditableProperties(...)` 不再存在；当前相关源码只保留 `buildPBRPreviewProfileConfigSchema(...)` adapter 入口。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `PBRPreviewProfile.cpp`、`PBRPreviewProfileConfig.cpp`、`PBRExperimentProfile.cpp`、`DebugControllerPanel.cpp`、runtime profile loader 和 scene setup 相关路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBR preview profile config schema adapter slice，不改变 `config/pbr_preview.local.ini` 默认路径、preview geometry/grid key、material profile path、normal map key、PBR experiment preset 的 `pbrPreview.*` key、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续处理剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile/settings 对象，例如 PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile。

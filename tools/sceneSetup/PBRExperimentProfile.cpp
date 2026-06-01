@@ -12,6 +12,7 @@
 #include "PBRCameraRigProfile.h"
 #include "PBRLightRigProfile.h"
 #include "PBRPreviewProfile.h"
+#include "PBRPreviewProfileConfig.h"
 
 namespace
 {
@@ -61,7 +62,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	GL_EDITOR::PropertyBuilder postProcessBuilder{};
 	GLframework::buildPostProcessSettingsConfigSchema(postProcessBuilder, loadedPostProcessSettings);
 	GL_EDITOR::PropertyBuilder pbrPreviewBuilder{};
-	loadedPBRPreviewProfile.visitEditableProperties(pbrPreviewBuilder);
+	buildPBRPreviewProfileConfigSchema(pbrPreviewBuilder, loadedPBRPreviewProfile);
 	GL_EDITOR::PropertyBuilder lightRigBuilder{};
 	loadedLightRigProfile.visitEditableProperties(lightRigBuilder);
 	GL_EDITOR::PropertyBuilder cameraRigBuilder{};
@@ -177,7 +178,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 	GL_EDITOR::PropertyBuilder postProcessBuilder{};
 	GLframework::buildPostProcessSettingsConfigSchema(postProcessBuilder, postProcessSnapshot);
 	GL_EDITOR::PropertyBuilder pbrPreviewBuilder{};
-	pbrPreviewSnapshot.visitEditableProperties(pbrPreviewBuilder);
+	buildPBRPreviewProfileConfigSchema(pbrPreviewBuilder, pbrPreviewSnapshot);
 	GL_EDITOR::PropertyBuilder lightRigBuilder{};
 	lightRigSnapshot.visitEditableProperties(lightRigBuilder);
 	GL_EDITOR::PropertyBuilder cameraRigBuilder{};

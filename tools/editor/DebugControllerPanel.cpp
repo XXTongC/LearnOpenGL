@@ -26,6 +26,7 @@
 #include "../sceneSetup/PBRExperimentProfile.h"
 #include "../sceneSetup/PBRLightRigProfile.h"
 #include "../sceneSetup/PBRPreviewProfile.h"
+#include "../sceneSetup/PBRPreviewProfileConfig.h"
 
 namespace
 {
@@ -355,7 +356,7 @@ namespace
 			ImGui::TextWrapped("Geometry and grid edits are applied when the preview scene is prepared. Save the profile and restart/reprepare to rebuild preview objects.");
 
 			GL_EDITOR::PropertyBuilder builder{};
-			profile->visitEditableProperties(builder);
+			GL_SCENE::buildPBRPreviewProfileConfigSchema(builder, *profile);
 			GL_EDITOR::drawProperties(builder);
 
 			if (ImGui::Button("Save PBR Preview Profile"))
