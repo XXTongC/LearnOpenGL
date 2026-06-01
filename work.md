@@ -10994,3 +10994,29 @@ Subagent 审查：
 
 - 这是 Runtime Editor UI Module CLI Policy slice，不改变默认 module 启用状态、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议把相同的 module policy 继续接入 profile/config 文件或 editor settings，并增加可视化的 module 状态反馈，而不是继续在 PBR pass 上扩张。
+
+### 2026-06-01 Editor UI Module Diagnostics Section
+
+本轮补上 Editor UI module 组合的可观察性。上一轮已经能通过 CLI 改变 core/sample module policy，但 Debug UI 内部还不能直接看到当前实际注册了哪些 module、各 registry 有多少 section/provider。这个切片让 module registry 在构建时保存 active module key，并在 Debug Controller 中增加一个轻量诊断 section。
+
+新增与修改：
+
+- `EditorUiModuleRegistries` 新增 `activeModuleKeys`，`registerEditorUiModules(...)` 在成功调用 module register callback 后记录 module key。
+- 新增 `EditorUiModuleDiagnosticsSection.h/.cpp`，注册 Debug Controller section `editor-ui-modules`。
+- `Editor UI Modules` 诊断 section 会显示 active module keys、Debug Controller section 数量、pipeline profile section 数量、scene profile section 数量和 selection inspector provider 数量。
+- `SelectionInspectorProviderRegistry` 新增 `providerCount()`，用于诊断面板读取 provider 数量。
+- core editor UI module 现在注册默认 Debug Controller sections 后追加 module diagnostics section；sample module 仍保持独立，不需要修改 panel 代码。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 diagnostics section 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认新增 diagnostics section、`activeModuleKeys`、`providerCount()` 和 VS 工程注册均可检索。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `EditorUiModuleComposition.cpp`、`EditorUiModuleDiagnosticsSection.cpp`、`EditorUiModuleRegistry.cpp` 与 `SelectionInspectorProviderRegistry.cpp`。
+- 直接 CLI 空 module 组合检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 已通过，确认禁用 core/sample module 时 verification 路径不崩溃。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Editor UI Module Diagnostics Section slice，只增加可观察性和 registry metadata，不改变默认 module policy、现有 section 业务逻辑、selection inspector 匹配逻辑、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议把 module policy 接入 profile/config 文件或 editor settings；有了 diagnostics section 后，后续切换可以直接在 UI 中观察 active module list 与 registry 规模变化。

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <functional>
 #include <string>
 #include <vector>
@@ -31,6 +32,7 @@ namespace GL_EDITOR
 		bool registerProvider(SelectionInspectorProvider provider);
 		const SelectionInspectorProvider* findProvider(const SelectionInspectorProviderContext& context) const;
 		bool drawFirst(SelectionInspectorProviderContext& context) const;
+		std::size_t providerCount() const;
 
 	private:
 		std::vector<SelectionInspectorProvider> mProviders{};

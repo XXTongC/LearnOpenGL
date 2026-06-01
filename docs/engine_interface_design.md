@@ -616,6 +616,8 @@ public:
 406. 下一步建议把 `RuntimeApplicationShellConfig` 的 module 开关接入 verification args、profile/config 文件或命令行参数，形成外部可控的 editor UI module enable/disable 路径。
 407. Runtime Editor UI Module CLI Policy 已完成第一版：`RuntimeVerificationArgs.cpp` 新增 core/sample editor UI module enable/disable CLI 开关，按 argv 顺序覆盖 `RuntimeApplicationShellConfig` 中的 module policy。
 408. 下一步建议把同一套 module policy 接入 profile/config 文件或 editor settings，并在 Debug Controller 增加当前 module 组合状态展示，避免只靠启动参数推断 UI 组合。
+409. Editor UI Module Diagnostics Section 已完成第一版：`EditorUiModuleRegistries` 新增 active module key metadata，Debug Controller 新增 `Editor UI Modules` section 展示 active modules、Debug/Profile section 数量和 Selection Inspector provider 数量。
+410. 下一步建议把 module policy 接入 profile/config 文件或 editor settings，并复用该 diagnostics section 观察切换结果；不要继续把 PBR pass 扩张当作当前主线。
 
 ## 约束
 

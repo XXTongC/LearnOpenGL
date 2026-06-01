@@ -8320,3 +8320,20 @@
   - 已执行直接 CLI 共存检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 退出码为 0，确认新参数可和 verification mode 共存。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改默认 module 启用状态、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百五十九轮 Editor UI Module Diagnostics Section：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `5a20e63 Add editor UI module CLI switches`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档为 Editor UI module 组合补充可观察性，让后续 profile/config/CLI 切换可以在 Debug Controller 中看到 active module list 和 registry 规模。
+  - 更新 [EditorUiModuleRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleRegistry.h) 与 [EditorUiModuleRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleRegistry.cpp)，新增 `activeModuleKeys` 并在 module callback 成功调用后记录 module key。
+  - 新增 [EditorUiModuleDiagnosticsSection.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleDiagnosticsSection.h) 与 [EditorUiModuleDiagnosticsSection.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleDiagnosticsSection.cpp)，注册 `editor-ui-modules` Debug Controller section。
+  - 更新 [EditorUiModuleComposition.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleComposition.cpp)，core editor UI module 现在追加注册 module diagnostics section。
+  - 更新 [SelectionInspectorProviderRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SelectionInspectorProviderRegistry.h) 与 [SelectionInspectorProviderRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SelectionInspectorProviderRegistry.cpp)，新增 `providerCount()` 供 diagnostics section 显示 provider 数量。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 diagnostics section 源文件和头文件。
+  - 中间 focused build 发现 `DebugControllerSectionRegistry` 是 alias，不能在 diagnostics header 中以前置 `struct` 声明表达；已修正为 diagnostics header 直接 include `DebugControllerSectionRegistry.h`。
+  - 已执行静态检查：确认新增 diagnostics section、`activeModuleKeys`、`providerCount()` 和 VS 工程注册均可检索。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：修正 alias 前置声明后，`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过；5 个 focused verification mode 全部通过。
+  - 已执行直接 CLI 空 module 组合检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 退出码为 0，确认禁用 core/sample module 时 verification 路径不崩溃。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮只增加 Editor UI module 可观察性和 registry metadata，不修改默认 module policy、现有 section 业务逻辑、selection inspector 匹配逻辑、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

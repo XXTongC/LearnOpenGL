@@ -12,6 +12,7 @@ namespace GL_EDITOR
 {
 	struct EditorUiModuleRegistries
 	{
+		std::vector<std::string> activeModuleKeys{};
 		DebugControllerSectionRegistry debugControllerSections{};
 		DebugProfileControlSectionRegistry pipelineProfileControls{};
 		DebugProfileControlSectionRegistry sceneProfileControls{};

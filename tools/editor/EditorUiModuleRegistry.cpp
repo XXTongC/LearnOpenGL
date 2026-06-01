@@ -13,6 +13,7 @@ void GL_EDITOR::registerEditorUiModules(EditorUiModuleRegistries& registries, co
 		}
 
 		module.registerModule(registries);
+		registries.activeModuleKeys.push_back(module.key);
 	}
 }
 

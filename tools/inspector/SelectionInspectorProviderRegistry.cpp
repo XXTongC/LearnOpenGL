@@ -47,4 +47,9 @@ namespace GL_EDITOR
 		provider->draw(context);
 		return true;
 	}
+
+	std::size_t SelectionInspectorProviderRegistry::providerCount() const
+	{
+		return mProviders.size();
+	}
 }
