@@ -192,6 +192,7 @@
     <ClCompile Include="application\RuntimeEditorLifecycle.cpp" />
     <ClCompile Include="application\RuntimeEditorLifecycleState.cpp" />
     <ClCompile Include="application\RuntimeEditorPanelCoordinator.cpp" />
+    <ClCompile Include="application\RuntimeEditorRenderResourceAdapter.cpp" />
     <ClCompile Include="application\RuntimeEngineLifecycle.cpp" />
     <ClCompile Include="application\RuntimeEngineWorldVerification.cpp" />
     <ClCompile Include="application\RuntimeImportedAssetVerification.cpp" />
@@ -529,6 +530,7 @@
     <ClInclude Include="application\RuntimeEditorLifecycleConfig.h" />
     <ClInclude Include="application\RuntimeEditorLifecycleState.h" />
     <ClInclude Include="application\RuntimeEditorPanelCoordinator.h" />
+    <ClInclude Include="application\RuntimeEditorRenderResourceAdapter.h" />
     <ClInclude Include="application\RuntimeEngineLifecycle.h" />
     <ClInclude Include="application\RuntimeEngineAttachmentState.h" />
     <ClInclude Include="application\RuntimeEngineLifecycleCleanupRefs.h" />

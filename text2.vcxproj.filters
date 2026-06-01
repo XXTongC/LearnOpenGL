@@ -483,6 +483,9 @@
     <ClCompile Include="application\RuntimeEditorPanelCoordinator.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeEditorRenderResourceAdapter.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeEngineLifecycle.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -1197,6 +1200,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeEditorPanelCoordinator.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeEditorRenderResourceAdapter.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeEngineLifecycle.h">

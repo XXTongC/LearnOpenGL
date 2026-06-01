@@ -1,8 +1,8 @@
 #include "RuntimeEditorPanelCoordinator.h"
 
 #include "AppRuntimeContext.h"
+#include "RuntimeEditorRenderResourceAdapter.h"
 #include "../engine/AssetSubsystem.h"
-#include "../framework/scene.h"
 #include "../tools/editor/DebugControllerContext.h"
 #include "../tools/editor/DebugControllerPanel.h"
 #include "../tools/editor/EditorPanels.h"
@@ -14,32 +14,31 @@ namespace GL_RUNTIME
 		float* orbitAngle
 	)
 	{
-		return {
-			&context.cameraLights.dirLight,
-			&context.cameraLights.ambientLight,
-			&context.cameraLights.spotLight,
-			&context.cameraLights.pointLights,
-			context.renderResources.textD(),
-			&context.profiles.framePipelineProfile(),
-			&context.profiles.framePipelineProfilePath,
-			&context.profiles.rendererFramePassProfilePath,
-			&context.profiles.postProcessSettings(),
-			&context.profiles.postProcessSettingsPath,
-			context.renderResources.renderer(),
-			context.engineAttachments.rendererSubsystem,
-			&context.profiles.environmentProfile(),
-			&context.profiles.environmentProfilePath,
-			&context.profiles.pbrPreviewProfile(),
-			&context.profiles.pbrPreviewProfilePath,
-			&context.profiles.pbrExperimentProfilePath,
-			&context.profiles.pbrLightRigProfile(),
-			&context.profiles.pbrCameraRigProfile(),
-			context.cameraLights.camera,
-			orbitAngle,
-			context.engineAttachments.engine,
-			context.engineAttachments.engineWorld,
-			context.engineAttachments.assetSubsystem
-		};
+		GL_EDITOR::DebugControllerContext editorContext{};
+		editorContext.directionalLight = &context.cameraLights.dirLight;
+		editorContext.ambientLight = &context.cameraLights.ambientLight;
+		editorContext.spotLight = &context.cameraLights.spotLight;
+		editorContext.pointLights = &context.cameraLights.pointLights;
+		editorContext.framePipelineProfile = &context.profiles.framePipelineProfile();
+		editorContext.framePipelineProfilePath = &context.profiles.framePipelineProfilePath;
+		editorContext.rendererFramePassProfilePath = &context.profiles.rendererFramePassProfilePath;
+		editorContext.postProcessSettings = &context.profiles.postProcessSettings();
+		editorContext.postProcessSettingsPath = &context.profiles.postProcessSettingsPath;
+		editorContext.rendererSubsystem = context.engineAttachments.rendererSubsystem;
+		editorContext.environmentProfile = &context.profiles.environmentProfile();
+		editorContext.environmentProfilePath = &context.profiles.environmentProfilePath;
+		editorContext.pbrPreviewProfile = &context.profiles.pbrPreviewProfile();
+		editorContext.pbrPreviewProfilePath = &context.profiles.pbrPreviewProfilePath;
+		editorContext.pbrExperimentProfilePath = &context.profiles.pbrExperimentProfilePath;
+		editorContext.lightRigProfile = &context.profiles.pbrLightRigProfile();
+		editorContext.cameraRigProfile = &context.profiles.pbrCameraRigProfile();
+		editorContext.mainCamera = context.cameraLights.camera;
+		editorContext.orbitAngle = orbitAngle;
+		editorContext.engine = context.engineAttachments.engine;
+		editorContext.engineWorld = context.engineAttachments.engineWorld;
+		editorContext.assetSubsystem = context.engineAttachments.assetSubsystem;
+		RuntimeEditorRenderResourceAdapter::applyDebugControllerResources(context.renderResources, editorContext);
+		return editorContext;
 	}
 
 	GL_EDITOR::EditorPanelContext RuntimeEditorPanelCoordinator::makeEditorPanelContext(
@@ -48,8 +47,7 @@ namespace GL_RUNTIME
 	)
 	{
 		GL_EDITOR::EditorPanelContext editorContext{};
-		editorContext.sceneOffScreen = context.renderResources.sceneOffScreen();
-		editorContext.sceneInScreen = context.renderResources.sceneInScreen();
+		RuntimeEditorRenderResourceAdapter::applyEditorPanelResources(context.renderResources, editorContext);
 		editorContext.directionalLight = context.cameraLights.dirLight;
 		editorContext.spotLight = context.cameraLights.spotLight;
 		editorContext.pointLights = &context.cameraLights.pointLights;
@@ -70,7 +68,7 @@ namespace GL_RUNTIME
 	{
 		GL_EDITOR::drawDebugControllerPanel(makeDebugControllerContext(context, orbitAngle));
 		const auto editorContext = makeEditorPanelContext(context, editTransactions);
-		GL_EDITOR::ensureSelectionIsInitialized(selection, context.renderResources.sceneOffScreen());
+		RuntimeEditorRenderResourceAdapter::ensureDefaultSelection(context.renderResources, selection);
 		GL_EDITOR::drawHierarchyPanel(editorContext, selection);
 		GL_EDITOR::drawAssetBrowserPanel(editorContext, selection);
 		GL_EDITOR::drawSelectionInspectorPanel(editorContext, selection);

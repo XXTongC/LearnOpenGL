@@ -9617,3 +9617,28 @@ Subagent 审查：
 
 - 这是 runtime frame pass execution 的 adapter boundary cleanup，不改变 pass order、pass enabled policy、scene color render、MSAA resolve、Bloom、screen composite、renderer backend contract 或 PBR pass。
 - 下一步应处理剩余 editor/scene setup/legacy setup 注入路径中的 direct renderer/scene owner 访问；这些路径是 context wiring，不应直接套 read-only view，需要按职责继续拆 adapter 或 setup DTO。
+
+### 2026-06-01 Runtime Editor Render Resource Adapter Cleanup
+
+本轮继续处理 editor / scene setup / legacy setup wiring 中的 direct render resource owner access，先选择 editor panel coordinator 作为低风险切片。Editor inspector 会编辑 Object / Light / Camera / Shadow / Engine World component，因此这条路径不适合简单迁到 read-only view；正确做法是把 editor 需要的 renderer、text object、scene 和 default selection scene 暴露集中到一个 editor 专用 adapter implementation 中。
+
+新增与修改：
+
+- 新增 `RuntimeEditorRenderResourceAdapter.h/.cpp`，提供 `applyDebugControllerResources(...)`、`applyEditorPanelResources(...)` 与 `ensureDefaultSelection(...)`。
+- `RuntimeEditorRenderResourceAdapter.cpp` 内部集中读取 `RuntimeRenderResourceState` 的 `textD()`、`renderer()`、`sceneOffScreen()` 和 `sceneInScreen()`，并保留 `Scene` 到 `Object` default selection 的完整类型依赖。
+- `RuntimeEditorPanelCoordinator.cpp` 不再直接读取 renderer / scene / text render resources，也不再 include `framework/scene.h`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 adapter 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeEditorPanelCoordinator.cpp` 中不再出现 `context.renderResources.renderer()` / `sceneOffScreen()` / `sceneInScreen()` / `textD()` 或直接 default selection scene access。
+- 静态检查确认 editor render resource direct access 已集中到 `RuntimeEditorRenderResourceAdapter.cpp`。
+- 首次 focused verification 暴露 `Scene` 到 `Object` shared_ptr 转换需要完整 `Scene` 继承关系；已将 `framework/scene.h` 依赖下沉到 adapter implementation 后修复。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `RuntimeEditorRenderResourceAdapter.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 editor panel wiring 的 render resource adapter cleanup，不改变 hierarchy、asset browser、selection inspector、debug controller panel、Engine World edit transaction、renderer backend contract、runtime frame pipeline 或 PBR pass。
+- 下一步应继续处理 `RuntimeSceneSetupContextFactory.cpp` 与 `RuntimeLegacyExperimentLifecycle.cpp` 的 setup/legacy 注入路径；这些路径仍是 resource injection，不应套 read-only view，应继续按职责拆 setup DTO 或 legacy adapter。
