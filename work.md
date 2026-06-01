@@ -9967,3 +9967,28 @@ Subagent 审查：
 
 - 这是 legacy object transform selection inspector 的 schema cleanup，不改变 Position / Rotation / Scale 字段、控件语义、selection action、engine world editor create verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步可继续迁出 `EditorPanels.cpp` 中 Actor/Component schema builder，或开始把 schema builder 从“手写 C++ builder”推进到更系统化的类型/组件 property provider 注册机制。
+
+### 2026-06-01 Runtime Engine World Inspector Schema Extraction
+
+本轮继续推进系统化 UI/inspector。legacy object transform 已 schema 化后，`EditorPanels.cpp` 中还保留 Actor / Component 的 property schema builder、SceneComponent transform 写入、legacy object transform 同步、transaction record 与 undo helper。这些逻辑属于 Engine World 对象 inspector 的属性声明和编辑语义，不应继续和 panel 的 ImGui tree / button 编排混在一起。本轮将其迁出到独立 Engine World inspector facade。
+
+新增与修改：
+
+- 新增 `tools/inspector/EngineWorldInspector.h/.cpp`，提供 `buildActorPropertySchema(...)`、`buildComponentPropertySchema(...)`、`undoLatestSceneComponentVec3Edit(...)`、`getActorTypeName(...)`、`getComponentTypeName(...)` 与 `getEngineObjectDisplayName(...)`。
+- `EngineWorldInspector.cpp` 集中包含 Actor / Component / SceneComponent / ActorAdapters / mesh / light 的实现头，封装 SceneComponent relative transform 编辑、legacy Object transform 同步和 transform undo。
+- `EditorPanels.cpp` 删除 Actor / Component schema builder 与 transform edit helper，只调用 `EngineWorldInspector` facade；panel 继续保留 Components tree、Create Empty Actor、snapshot save/apply、selection 和 transaction summary 的 UI 编排职责。
+- `EditorPanels.cpp` 不再 include `ActorAdapters.h` 或 `SceneComponent.h`；只保留 `ActorComponent.h`，因为组件树显示仍需要 `ActorComponent -> EngineObject` 的继承关系用于 display name 转换。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 Engine World inspector 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 Actor / Component schema builder、SceneComponent transform edit helper 和 undo helper 已从 `EditorPanels.cpp` 迁出，只剩 facade 调用。
+- 静态检查确认 `EditorPanels.cpp` 不再 include `ActorAdapters.h` 或 `SceneComponent.h`，新增 `EngineWorldInspector.h/.cpp` 已注册到 `text2.vcxproj` / `.filters`。
+- focused verification 第一次暴露 `ActorComponent` 继承关系缺失导致的 display name 转换编译错误；已补回 `ActorComponent.h` 作为 panel 仍需的最小继承边界。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `EngineWorldInspector.cpp` 与更新后的 `EditorPanels.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine World Actor / Component inspector schema extraction，不改变 Actor/Component inspector 字段、SceneComponent transform 编辑语义、legacy Object transform 同步、transaction record/undo 行为、engine world editor create verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步可从“独立 schema facade”继续推进到类型/组件 property provider 注册机制，或先把 asset inspector schema 也从 `EditorPanels.cpp` 迁出，进一步压缩 selection panel 的属性声明职责。

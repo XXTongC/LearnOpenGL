@@ -1932,6 +1932,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `tools/inspector/SceneObjectInspector.h`, `tools/inspector/SceneObjectInspector.cpp`, `tools/inspector/PropertySchema.h`, `tools/inspector/PropertyInspector.cpp`, `tools/config/ProfileConfigIO.cpp`, `tools/editor/EditorPanels.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime legacy object transform inspector schema cleanup is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `tools/inspector/SceneObjectInspector.h`, `tools/inspector/SceneObjectInspector.cpp`, `tools/inspector/PropertySchema.h`, `tools/inspector/PropertyInspector.cpp`, `tools/config/ProfileConfigIO.cpp`, `tools/editor/EditorPanels.cpp`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime engine world inspector schema extraction is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `tools/inspector/EngineWorldInspector.h`, `tools/inspector/EngineWorldInspector.cpp`, `tools/editor/EditorPanels.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

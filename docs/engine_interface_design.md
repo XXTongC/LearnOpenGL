@@ -532,6 +532,8 @@ public:
 322. 下一步建议继续迁出 `EditorPanels.cpp` 中 legacy object transform inspector 或 Actor/Component schema builder，让 selection panel 进一步收敛为选中对象分发、schema 绘制和 selection action。
 323. Runtime Legacy Object Transform Inspector Schema Cleanup 已完成第一版：legacy object Position / Rotation / Scale 已迁入 `SceneObjectInspector::buildObjectTransformPropertySchema(...)`；`PropertySchema` 新增 `SliderVec3`，`EditorPanels.cpp` 不再直写 object transform 的 `InputFloat3` / `SliderFloat3` 控件。
 324. 下一步建议继续迁出 `EditorPanels.cpp` 中 Actor/Component schema builder，或推进类型/组件 property provider 注册机制，让 selection inspector 从“按类型手写 schema”继续向系统化 UI 生成过渡。
+325. Runtime Engine World Inspector Schema Extraction 已完成第一版：新增 `EngineWorldInspector` 集中 Actor / Component schema builder、SceneComponent transform edit、legacy Object transform sync、type/display name helper 与 undo helper；`EditorPanels.cpp` 只保留 Components tree、selection、transaction summary 和 snapshot action 编排。
+326. 下一步建议继续把 Asset inspector schema 从 `EditorPanels.cpp` 迁出，或推进类型/组件 property provider 注册机制，让 selection panel 进一步收敛为目标分发与 action 编排。
 
 ## 约束
 

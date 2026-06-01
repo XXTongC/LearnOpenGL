@@ -432,8 +432,9 @@ flowchart TD
 - Runtime Inspector Implementation Split 已完成第一版：`PropertyInspector.h` 与 `MaterialInspector.h` 不再作为 header-only implementation 传播 ImGui、完整 material/texture 或 `PropertyInspector.h` 间接依赖，property/material inspector 绘制实现迁入 `tools/inspector/*.cpp` 并注册到 VS 工程。
 - Runtime Scene Object Inspector Schema Cleanup 已完成第一版：新增 `SceneObjectInspector` 集中 Light / Shadow / Camera 的 property schema 与 type name 判断，`EditorPanels.cpp` 不再直接写这些 inspector 的 ImGui 控件；`PropertySchema` 新增 `InputFloat` / `InputInt` 以保留原输入框控件语义。
 - Runtime Legacy Object Transform Inspector Schema Cleanup 已完成第一版：legacy object Position / Rotation / Scale 已迁入 `SceneObjectInspector::buildObjectTransformPropertySchema(...)`，`PropertySchema` 新增 `SliderVec3`，`EditorPanels.cpp` 不再直写 object transform 的 `InputFloat3` / `SliderFloat3` 控件。
+- Runtime Engine World Inspector Schema Extraction 已完成第一版：新增 `EngineWorldInspector` 集中 Actor / Component schema builder、SceneComponent transform edit、legacy Object transform sync、type/display name helper 与 undo helper；`EditorPanels.cpp` 只保留 Components tree、selection、transaction summary 和 snapshot action 编排。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime Legacy Object Transform Inspector Schema Cleanup 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先迁出 Actor/Component schema builder 或推进 property provider 注册机制，当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime Engine World Inspector Schema Extraction 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先迁出 Asset inspector schema 或推进 property provider 注册机制，当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Legacy Object Transform Inspector Schema Cleanup 已接入后，legacy object Position / Rotation / Scale 已迁入 `SceneObjectInspector::buildObjectTransformPropertySchema(...)`，`EditorPanels.cpp` 不再直写 object transform 的 ImGui 控件；`PropertySchema` 新增 `SliderVec3` 以保留 Rotation 三轴 slider 语义。
+当前最新修正：Runtime Engine World Inspector Schema Extraction 已接入后，Actor / Component schema builder、SceneComponent transform edit、legacy Object transform sync 和 undo helper 已迁入 `EngineWorldInspector`，`EditorPanels.cpp` 进一步收敛为 Components tree、selection、transaction summary 和 snapshot action 编排。
