@@ -3,9 +3,11 @@
 #include "../editor/EditorPanelContext.h"
 #include "../editor/EditorSelectionState.h"
 
+#include <cassert>
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "../../engine/Actor.h"
 #include "../../engine/ActorComponent.h"
@@ -26,6 +28,16 @@
 
 namespace
 {
+	void registerDefaultProvider(
+		GL_EDITOR::SelectionInspectorProviderRegistry& registry,
+		GL_EDITOR::SelectionInspectorProvider provider
+	)
+	{
+		const bool registered = registry.registerProvider(std::move(provider));
+		(void)registered;
+		assert(registered);
+	}
+
 	void renderLightInspector(const std::shared_ptr<GLframework::Light>& light, GL_EDITOR::SelectionContext& selection)
 	{
 		const auto lightProperties = GL_EDITOR::buildLightPropertySchema(light);
@@ -403,14 +415,19 @@ namespace
 	GL_EDITOR::SelectionInspectorProviderRegistry buildDefaultSelectionInspectorProviderRegistry()
 	{
 		GL_EDITOR::SelectionInspectorProviderRegistry registry{};
-		registry.registerProvider({ "asset", hasSelectedAsset, drawSelectedAsset });
-		registry.registerProvider({ "component", hasSelectedComponent, drawSelectedComponent });
-		registry.registerProvider({ "actor", hasSelectedActor, drawSelectedActor });
-		registry.registerProvider({ "shadow", hasSelectedShadow, drawSelectedShadow });
-		registry.registerProvider({ "camera", hasSelectedCamera, drawSelectedCamera });
-		registry.registerProvider({ "object", hasSelectedObject, drawSelectedObject });
+		GL_EDITOR::registerDefaultSelectionInspectorProviders(registry);
 		return registry;
 	}
+}
+
+void GL_EDITOR::registerDefaultSelectionInspectorProviders(SelectionInspectorProviderRegistry& registry)
+{
+	registerDefaultProvider(registry, { "asset", hasSelectedAsset, drawSelectedAsset });
+	registerDefaultProvider(registry, { "component", hasSelectedComponent, drawSelectedComponent });
+	registerDefaultProvider(registry, { "actor", hasSelectedActor, drawSelectedActor });
+	registerDefaultProvider(registry, { "shadow", hasSelectedShadow, drawSelectedShadow });
+	registerDefaultProvider(registry, { "camera", hasSelectedCamera, drawSelectedCamera });
+	registerDefaultProvider(registry, { "object", hasSelectedObject, drawSelectedObject });
 }
 
 const GL_EDITOR::SelectionInspectorProviderRegistry& GL_EDITOR::getDefaultSelectionInspectorProviderRegistry()

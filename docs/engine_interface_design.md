@@ -602,6 +602,8 @@ public:
 392. 下一步建议转入 Debug Controller section provider 的外部注册入口，或开始设计 editor plugin/module registration boundary，让默认 UI provider 从静态 factory 组合进一步走向可扩展模块注册。
 393. Debug Controller Section Registration Entry 已完成第一版：`DebugControllerSections.h` 暴露 `registerDefaultDebugControllerSections(...)`，外部 registry 现在可以复用默认 Debug Controller section 注册，静态 `defaultDebugControllerSectionRegistry()` 仅作为默认组合的一种使用方式。
 394. 下一步建议开始设计 editor plugin/module registration boundary：增加一个更高层的 Editor UI module composer，统一接收 Debug Controller section provider、profile control provider 与 selection inspector provider 的注册。
+395. Editor UI Module Registry Composer 已完成第一版：新增 `EditorUiModuleRegistry` 聚合 Debug Controller sections、pipeline profile controls、scene profile controls 和 selection inspector providers；三条 panel 消费路径改为从 `defaultEditorUiModuleRegistries()` 读取默认 registry。
+396. 下一步建议把 composer 从“默认 registry 聚合”推进到“可注入 module registration list”：引入 `EditorUiModule` 描述对象，让外部模块声明自己注册哪些 Debug section / profile section / inspector provider。
 
 ## 约束
 

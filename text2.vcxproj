@@ -379,6 +379,7 @@
     <ClCompile Include="tools\editor\DebugProfileControlsPanel.cpp" />
     <ClCompile Include="tools\editor\DebugSceneProfileControlSections.cpp" />
     <ClCompile Include="tools\editor\EngineDiagnosticsPanel.cpp" />
+    <ClCompile Include="tools\editor\EditorUiModuleRegistry.cpp" />
     <ClCompile Include="tools\editor\EditorPanels.cpp" />
     <ClCompile Include="tools\editor\HierarchyPanel.cpp" />
     <ClCompile Include="tools\editor\RendererFrameStatsPanel.cpp" />
@@ -1030,6 +1031,7 @@
     <ClInclude Include="tools\editor\EditorPanelFacades.h" />
     <ClInclude Include="tools\editor\EditorPanels.h" />
     <ClInclude Include="tools\editor\EditorSelectionState.h" />
+    <ClInclude Include="tools\editor\EditorUiModuleRegistry.h" />
     <ClInclude Include="tools\editor\KeyedSectionRegistry.h" />
     <ClInclude Include="tools\editor\RendererFrameStatsPanel.h" />
     <ClInclude Include="tools\editor\SceneTransformSnapshot.h" />

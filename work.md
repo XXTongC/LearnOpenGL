@@ -10823,3 +10823,27 @@ Subagent 审查：
 
 - 这是 Debug Controller Section Registration Entry slice，不改变 Debug Controller UI section 顺序、section key/order、profile UI、配置 key、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议开始设计 editor plugin/module registration boundary：增加一个更高层的 Editor UI module composer，统一接收 Debug Controller section provider、profile control provider 与 selection inspector provider 的注册。
+
+### 2026-06-01 Editor UI Module Registry Composer
+
+本轮落地第一版 Editor UI module composer，把 Debug Controller section、Debug profile control section 与 Selection inspector provider 的默认 registry 统一聚合到一个入口。目标是让 editor UI 的默认模块组合不再分散在三个 panel singleton 调用点中，后续外部 module/plugin 可以围绕同一组 registry 进行追加和替换。
+
+新增与修改：
+
+- 新增 `tools/editor/EditorUiModuleRegistry.h/.cpp`，定义 `EditorUiModuleRegistries`，集中持有 `debugControllerSections`、`pipelineProfileControls`、`sceneProfileControls` 与 `selectionInspectors`。
+- 新增 `registerDefaultEditorUiModules(...)`、`buildDefaultEditorUiModuleRegistries()` 与 `defaultEditorUiModuleRegistries()`，统一调用 Debug Controller、pipeline profile、scene profile 和 selection inspector 的默认注册函数。
+- `SelectionInspectorProviders.h/.cpp` 新增 `registerDefaultSelectionInspectorProviders(...)`，selection inspector 默认 provider 注册不再只藏在静态 builder 内部；默认 provider 注册失败在 Debug 构建下 assert。
+- `DebugControllerPanel.cpp`、`DebugProfileControlsPanel.cpp` 与 `SelectionInspectorPanel.cpp` 改为从 `defaultEditorUiModuleRegistries()` 读取对应 registry。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 Editor UI module registry 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认三条 panel 消费路径均使用 `defaultEditorUiModuleRegistries()`，旧的 `defaultDebugControllerSectionRegistry()`、`defaultDebugPipelineProfileControlSectionRegistry()`、`defaultDebugSceneProfileControlSectionRegistry()` 与 `getDefaultSelectionInspectorProviderRegistry()` 仍保留为兼容入口。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `SelectionInspectorPanel.cpp`、`SelectionInspectorProviders.cpp`、`DebugControllerPanel.cpp`、`DebugProfileControlsPanel.cpp` 与 `EditorUiModuleRegistry.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Editor UI Module Registry Composer slice，不改变 Debug Controller UI section 顺序、profile section 顺序、selection inspector provider 优先级、配置 key、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议把 Editor UI module composer 从“默认 registry 聚合”继续推进到“可注入的 module registration list”，例如引入 `EditorUiModule` 描述对象，让外部模块声明自己要注册哪些 Debug section / profile section / inspector provider。
