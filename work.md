@@ -10754,3 +10754,26 @@ Subagent 审查：
 
 - 这是 Debug Pipeline Profile Control Provider Extraction slice，不改变 pipeline/profile UI 顺序、配置 key、save/reload 行为、Renderer Frame Pass reset 行为、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议对 scene profile controls 做同类 provider extraction，把 PBR Preview、PBR Experiment 和 Environment / IBL 从 `DebugProfileControlSections.cpp` 迁出。
+
+### 2026-06-01 Debug Scene Profile Control Provider Extraction
+
+本轮完成 Debug Profile Control section provider 化的另一半，把 scene profile controls 从默认 registry facade 文件中迁出。目标是让 `DebugProfileControlSections.cpp` 不再承载任何具体 UI helper，只负责组合 pipeline/scene provider 并返回默认 registry。
+
+新增与修改：
+
+- 新增 `tools/editor/DebugSceneProfileControlSections.h/.cpp`，提供 `registerDefaultDebugSceneProfileControlSections(...)`。
+- PBR Preview、PBR Experiment Preset、Environment / IBL 三个 scene section 的绘制 helper、order 常量和注册逻辑从 `DebugProfileControlSections.cpp` 迁入新 provider 文件。
+- `DebugProfileControlSections.cpp` 收敛为薄 registry facade，只调用 `registerDefaultDebugPipelineProfileControlSections(registry)` 与 `registerDefaultDebugSceneProfileControlSections(registry)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 scene provider 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `drawPBRPreviewControls(...)`、`drawPBRExperimentControls(...)` 与 `drawEnvironmentControls(...)` 只保留在 `DebugSceneProfileControlSections.cpp`，`DebugProfileControlSections.cpp` 只保留 registry facade。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `DebugProfileControlSections.cpp` 与 `DebugSceneProfileControlSections.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Debug Scene Profile Control Provider Extraction slice，不改变 scene/profile UI 顺序、配置 key、save/reload 行为、PBR experiment preset apply/copy 行为、IBL precompute 行为、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续推进可组合 UI provider 边界：可以把 pipeline/scene provider 共用的注册 assert helper 抽成小工具，或转入 Debug Controller section provider 的外部注册入口。

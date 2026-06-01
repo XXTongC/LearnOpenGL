@@ -425,10 +425,11 @@ passed
 - Keyed Section Registry Extraction 已接入：新增通用 `KeyedSectionRegistry<Section, Context>`；Debug Controller 与 Debug Profile Control 两套 section registry 复用同一套 key 校验、重复 key 拒绝和顺序绘制逻辑，重复 registry `.cpp` 已删除。
 - Keyed Section Ordering and Diagnostics 已接入：`KeyedSectionRegistry` 支持按 `section.order` 稳定插入，记录最近一次注册失败原因，并提供 `sectionCount()`；默认 Debug Controller/Profile section factory 均显式声明 order 并在 Debug 构建下 assert 注册结果。
 - Debug Pipeline Profile Control Provider Extraction 已接入：新增 `DebugPipelineProfileControlSections` provider；Post Process、Runtime Frame Pipeline、Renderer Frame Pass Plan 三个 pipeline profile section 的绘制与注册从 `DebugProfileControlSections.cpp` 迁出。
+- Debug Scene Profile Control Provider Extraction 已接入：新增 `DebugSceneProfileControlSections` provider；PBR Preview、PBR Experiment Preset、Environment / IBL 三个 scene profile section 的绘制与注册从 `DebugProfileControlSections.cpp` 迁出。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Debug Pipeline Profile Control Provider Extraction 已接入后，pipeline profile controls 的绘制 helper 与默认注册逻辑从 `DebugProfileControlSections.cpp` 迁入独立 provider；默认 facade 只负责组装 registry。
+当前最新修正：Debug Scene Profile Control Provider Extraction 已接入后，`DebugProfileControlSections.cpp` 不再承载具体 UI helper，只负责组合 pipeline/scene provider 并返回默认 registry。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议对 scene profile controls 做同类 provider extraction，把 PBR Preview、PBR Experiment 和 Environment / IBL 从 `DebugProfileControlSections.cpp` 迁出；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议把 pipeline/scene provider 共用的注册 assert helper 抽成小工具，或转入 Debug Controller section provider 的外部注册入口；当前不建议继续扩张 PBR pass。

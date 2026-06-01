@@ -8151,6 +8151,19 @@
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Debug Controller UI section 顺序、profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
 
+- 启动第五百四十九轮 Debug Scene Profile Control Provider Extraction：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `566a9e9 Extract debug pipeline profile control provider`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续对 scene profile controls 做同类 provider extraction。
+  - 新增 [DebugSceneProfileControlSections.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugSceneProfileControlSections.h) 与 [DebugSceneProfileControlSections.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugSceneProfileControlSections.cpp)，提供 `registerDefaultDebugSceneProfileControlSections(...)`。
+  - 更新 [DebugProfileControlSections.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugProfileControlSections.cpp)，PBR Preview、PBR Experiment Preset、Environment / IBL 三个 scene section 的绘制 helper、order 常量和注册逻辑迁出；该文件收敛为薄 registry facade。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 scene provider 源文件和头文件。
+  - 已执行静态检查：确认 scene 三个 draw helper 只保留在 `DebugSceneProfileControlSections.cpp`，`DebugProfileControlSections.cpp` 只调用 pipeline/scene provider 注册函数。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 scene/profile UI 顺序、配置 key、save/reload 行为、PBR experiment preset apply/copy 行为、IBL precompute 行为、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
 - 启动第五百四十八轮 Debug Pipeline Profile Control Provider Extraction：
   - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
   - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `292b4da Add section ordering diagnostics`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。

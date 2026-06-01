@@ -377,6 +377,7 @@
     <ClCompile Include="tools\editor\DebugPipelineProfileControlSections.cpp" />
     <ClCompile Include="tools\editor\DebugProfileControlSections.cpp" />
     <ClCompile Include="tools\editor\DebugProfileControlsPanel.cpp" />
+    <ClCompile Include="tools\editor\DebugSceneProfileControlSections.cpp" />
     <ClCompile Include="tools\editor\EngineDiagnosticsPanel.cpp" />
     <ClCompile Include="tools\editor\EditorPanels.cpp" />
     <ClCompile Include="tools\editor\HierarchyPanel.cpp" />
@@ -1021,6 +1022,7 @@
     <ClInclude Include="tools\editor\DebugProfileControlSectionRegistry.h" />
     <ClInclude Include="tools\editor\DebugProfileControlSections.h" />
     <ClInclude Include="tools\editor\DebugProfileControlsPanel.h" />
+    <ClInclude Include="tools\editor\DebugSceneProfileControlSections.h" />
     <ClInclude Include="tools\editor\EngineDiagnosticsContext.h" />
     <ClInclude Include="tools\editor\EngineDiagnosticsPanel.h" />
     <ClInclude Include="tools\editor\EditorPanelContext.h" />
