@@ -398,10 +398,11 @@ passed
 - Runtime Selection Inspector Panel Extraction 已接入：新增 `SelectionInspectorPanel.cpp` 承载 selection target dispatch、各类对象 inspector render helper 与 edit transaction summary；`EditorPanels.cpp` 进一步收敛为 hierarchy / asset browser / selection click shell。
 - Runtime Hierarchy and Asset Browser Panel Extraction 已接入：新增 `HierarchyPanel.cpp` 与 `AssetBrowserPanel.cpp` 承载两个 editor panel 的 tree/display helper；`EditorPanels.cpp` 只保留 selection state helper。
 - Runtime Editor Panel Header Boundary Split 已接入：新增 `EditorPanelContext.h` 与 `EditorPanelFacades.h`，`EditorPanels.h` 收敛为兼容聚合头；runtime coordinator、render resource adapter 与 panel implementation 改为按需 include 窄头。
+- Runtime Selection Inspector Provider Registry 已接入：新增 `SelectionInspectorProviderRegistry`，selection inspector 的 Asset / Component / Actor / Shadow / Camera / Object 顶层目标分发改为默认 provider 注册与匹配。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Runtime Editor Panel Header Boundary Split 已接入后，`EditorPanelContext`、panel draw facade 与 selection state API 已拆成窄头，`EditorPanels.h` 只作为兼容聚合头保留。
+当前最新修正：Runtime Selection Inspector Provider Registry 已接入后，selection inspector 的顶层目标分发已经从手写 if/return 改成默认 provider 注册与匹配。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步优先推进类型/组件 property provider 注册机制，当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步优先把 provider factory 从 `SelectionInspectorPanel.cpp` 外移，或把 ActorComponent / Material 属性声明推进为可注册 property provider，当前不建议继续扩张 PBR pass。

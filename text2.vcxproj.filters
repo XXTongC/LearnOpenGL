@@ -996,6 +996,9 @@
     <ClCompile Include="tools\inspector\SelectionInspectorPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\inspector\SelectionInspectorProviderRegistry.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\editor\AssetBrowserPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -2928,6 +2931,9 @@
       <Filter>include\GLframework\tools\inspector</Filter>
     </ClInclude>
     <ClInclude Include="tools\inspector\SceneObjectInspector.h">
+      <Filter>include\GLframework\tools\inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\inspector\SelectionInspectorProviderRegistry.h">
       <Filter>include\GLframework\tools\inspector</Filter>
     </ClInclude>
     <ClInclude Include="tools\ObjectPool\ObjectPool.h">

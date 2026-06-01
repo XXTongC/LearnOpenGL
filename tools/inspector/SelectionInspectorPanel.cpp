@@ -21,6 +21,7 @@
 #include "MaterialInspector.h"
 #include "PropertyInspector.h"
 #include "SceneObjectInspector.h"
+#include "SelectionInspectorProviderRegistry.h"
 #include "../../third_party/imgui/imgui.h"
 
 namespace
@@ -259,99 +260,173 @@ namespace
 			}
 		}
 	}
+
+	bool hasSelectedAsset(const GL_EDITOR::SelectionInspectorProviderContext& context)
+	{
+		return !GL_EDITOR::getSelectedAssetHandle(context.selection).empty();
+	}
+
+	void drawSelectedAsset(GL_EDITOR::SelectionInspectorProviderContext& context)
+	{
+		renderAssetInspector(
+			context.panelContext.assetRegistry,
+			GL_EDITOR::getSelectedAssetHandle(context.selection)
+		);
+	}
+
+	bool hasSelectedComponent(const GL_EDITOR::SelectionInspectorProviderContext& context)
+	{
+		return GL_EDITOR::getSelectedComponent(context.selection) != nullptr;
+	}
+
+	void drawSelectedComponent(GL_EDITOR::SelectionInspectorProviderContext& context)
+	{
+		auto* selectedComponent = GL_EDITOR::getSelectedComponent(context.selection);
+		if (!selectedComponent)
+		{
+			return;
+		}
+
+		renderComponentInspector(
+			*selectedComponent,
+			context.panelContext.engineWorldEditable,
+			context.panelContext.editTransactions
+		);
+		renderEditTransactionSummary(
+			context.panelContext.editTransactions,
+			context.panelContext.engineWorld,
+			context.panelContext.engineWorldEditable
+		);
+	}
+
+	bool hasSelectedActor(const GL_EDITOR::SelectionInspectorProviderContext& context)
+	{
+		return GL_EDITOR::getSelectedActor(context.selection) != nullptr;
+	}
+
+	void drawSelectedActor(GL_EDITOR::SelectionInspectorProviderContext& context)
+	{
+		auto* selectedActor = GL_EDITOR::getSelectedActor(context.selection);
+		if (!selectedActor)
+		{
+			return;
+		}
+
+		renderActorInspector(
+			*selectedActor,
+			context.panelContext.engineWorldEditable,
+			context.panelContext.editTransactions
+		);
+		renderEditTransactionSummary(
+			context.panelContext.editTransactions,
+			context.panelContext.engineWorld,
+			context.panelContext.engineWorldEditable
+		);
+	}
+
+	bool hasSelectedShadow(const GL_EDITOR::SelectionInspectorProviderContext& context)
+	{
+		return GL_EDITOR::getSelectedShadow(context.selection) != nullptr;
+	}
+
+	void drawSelectedShadow(GL_EDITOR::SelectionInspectorProviderContext& context)
+	{
+		auto selectedShadow = GL_EDITOR::getSelectedShadow(context.selection);
+		if (!selectedShadow)
+		{
+			return;
+		}
+
+		ImGui::Text("Name: %s", context.selection.label.c_str());
+		ImGui::Text("Type: %s", GL_EDITOR::getShadowTypeName(selectedShadow).c_str());
+		ImGui::Separator();
+		renderShadowInspector(selectedShadow, context.selection);
+	}
+
+	bool hasSelectedCamera(const GL_EDITOR::SelectionInspectorProviderContext& context)
+	{
+		return GL_EDITOR::getSelectedCamera(context.selection) != nullptr;
+	}
+
+	void drawSelectedCamera(GL_EDITOR::SelectionInspectorProviderContext& context)
+	{
+		auto* selectedCamera = GL_EDITOR::getSelectedCamera(context.selection);
+		if (!selectedCamera)
+		{
+			return;
+		}
+
+		ImGui::Text("Name: %s", context.selection.label.c_str());
+		ImGui::Text("Type: %s", GL_EDITOR::getCameraTypeName(selectedCamera).c_str());
+		ImGui::Separator();
+		renderCameraInspector(selectedCamera);
+	}
+
+	bool hasSelectedObject(const GL_EDITOR::SelectionInspectorProviderContext& context)
+	{
+		return GL_EDITOR::getSelectedObject(context.selection) != nullptr;
+	}
+
+	void drawSelectedObject(GL_EDITOR::SelectionInspectorProviderContext& context)
+	{
+		auto selectedObject = GL_EDITOR::getSelectedObject(context.selection);
+		if (!selectedObject)
+		{
+			return;
+		}
+
+		ImGui::Text("Name: %s", GL_EDITOR::getObjectDisplayName(selectedObject).c_str());
+		ImGui::Text("Type: %s", GL_EDITOR::getObjectTypeName(selectedObject).c_str());
+		ImGui::Text("Children: %d", static_cast<int>(selectedObject->getChildren().size()));
+		ImGui::Separator();
+
+		const auto transformProperties = GL_EDITOR::buildObjectTransformPropertySchema(selectedObject);
+		GL_EDITOR::drawProperties(transformProperties);
+
+		if (auto selectedLight = std::dynamic_pointer_cast<GLframework::Light>(selectedObject))
+		{
+			ImGui::Spacing();
+			ImGui::Separator();
+			renderLightInspector(selectedLight, context.selection);
+		}
+
+		auto selectedMesh = std::dynamic_pointer_cast<GLframework::Mesh>(selectedObject);
+		if (selectedMesh && selectedMesh->getMaterial())
+		{
+			ImGui::Spacing();
+			ImGui::Text("Material: %s", GL_EDITOR::getMaterialTypeName(selectedMesh->getMaterial()->getMaterialType()).c_str());
+			ImGui::Separator();
+			GL_EDITOR::drawMaterialInspector(*selectedMesh->getMaterial());
+		}
+	}
+
+	GL_EDITOR::SelectionInspectorProviderRegistry buildDefaultSelectionInspectorProviderRegistry()
+	{
+		GL_EDITOR::SelectionInspectorProviderRegistry registry{};
+		registry.registerProvider({ "asset", hasSelectedAsset, drawSelectedAsset });
+		registry.registerProvider({ "component", hasSelectedComponent, drawSelectedComponent });
+		registry.registerProvider({ "actor", hasSelectedActor, drawSelectedActor });
+		registry.registerProvider({ "shadow", hasSelectedShadow, drawSelectedShadow });
+		registry.registerProvider({ "camera", hasSelectedCamera, drawSelectedCamera });
+		registry.registerProvider({ "object", hasSelectedObject, drawSelectedObject });
+		return registry;
+	}
+
+	const GL_EDITOR::SelectionInspectorProviderRegistry& defaultSelectionInspectorProviderRegistry()
+	{
+		static const auto registry = buildDefaultSelectionInspectorProviderRegistry();
+		return registry;
+	}
 }
 
 void GL_EDITOR::drawSelectionInspectorPanel(const EditorPanelContext& context, SelectionContext& selection)
 {
 	ImGui::Begin("inspector");
 
-	auto selectedObject = getSelectedObject(selection);
-	auto selectedShadow = getSelectedShadow(selection);
-	auto selectedCamera = getSelectedCamera(selection);
-	auto selectedActor = getSelectedActor(selection);
-	auto selectedComponent = getSelectedComponent(selection);
-	const auto& selectedAssetHandle = getSelectedAssetHandle(selection);
-	if (!selectedObject
-		&& !selectedShadow
-		&& !selectedCamera
-		&& !selectedActor
-		&& !selectedComponent
-		&& selectedAssetHandle.empty())
+	SelectionInspectorProviderContext providerContext{ context, selection };
+	if (!defaultSelectionInspectorProviderRegistry().drawFirst(providerContext))
 	{
 		ImGui::TextUnformatted("No target selected.");
-		ImGui::End();
-		return;
 	}
-
-	if (!selectedAssetHandle.empty())
-	{
-		renderAssetInspector(context.assetRegistry, selectedAssetHandle);
-		ImGui::End();
-		return;
-	}
-
-	if (selectedComponent)
-	{
-		renderComponentInspector(*selectedComponent, context.engineWorldEditable, context.editTransactions);
-		renderEditTransactionSummary(context.editTransactions, context.engineWorld, context.engineWorldEditable);
-		ImGui::End();
-		return;
-	}
-
-	if (selectedActor)
-	{
-		renderActorInspector(*selectedActor, context.engineWorldEditable, context.editTransactions);
-		renderEditTransactionSummary(context.editTransactions, context.engineWorld, context.engineWorldEditable);
-		ImGui::End();
-		return;
-	}
-
-	if (selectedShadow)
-	{
-		ImGui::Text("Name: %s", selection.label.c_str());
-		ImGui::Text("Type: %s", GL_EDITOR::getShadowTypeName(selectedShadow).c_str());
-		ImGui::Separator();
-		renderShadowInspector(selectedShadow, selection);
-		ImGui::End();
-		return;
-	}
-
-	if (selectedCamera)
-	{
-		ImGui::Text(
-			"Name: %s",
-			selection.label.c_str()
-		);
-		ImGui::Text("Type: %s", GL_EDITOR::getCameraTypeName(selectedCamera).c_str());
-		ImGui::Separator();
-		renderCameraInspector(selectedCamera);
-		ImGui::End();
-		return;
-	}
-
-	ImGui::Text("Name: %s", GL_EDITOR::getObjectDisplayName(selectedObject).c_str());
-	ImGui::Text("Type: %s", GL_EDITOR::getObjectTypeName(selectedObject).c_str());
-	ImGui::Text("Children: %d", static_cast<int>(selectedObject->getChildren().size()));
-	ImGui::Separator();
-
-	const auto transformProperties = GL_EDITOR::buildObjectTransformPropertySchema(selectedObject);
-	GL_EDITOR::drawProperties(transformProperties);
-
-	if (auto selectedLight = std::dynamic_pointer_cast<GLframework::Light>(selectedObject))
-	{
-		ImGui::Spacing();
-		ImGui::Separator();
-		renderLightInspector(selectedLight, selection);
-	}
-
-	auto selectedMesh = std::dynamic_pointer_cast<GLframework::Mesh>(selectedObject);
-	if (selectedMesh && selectedMesh->getMaterial())
-	{
-		ImGui::Spacing();
-		ImGui::Text("Material: %s", GL_EDITOR::getMaterialTypeName(selectedMesh->getMaterial()->getMaterialType()).c_str());
-		ImGui::Separator();
-		GL_EDITOR::drawMaterialInspector(*selectedMesh->getMaterial());
-	}
-
 	ImGui::End();
 }

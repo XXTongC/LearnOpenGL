@@ -542,6 +542,8 @@ public:
 332. 下一步建议推进类型/组件 property provider 注册机制，或把 `EditorPanels.h` 继续拆为 panel context、selection API 与 panel facade 窄头，避免所有 editor panel implementation 共享宽 facade header。
 333. Runtime Editor Panel Header Boundary Split 已完成第一版：新增 `EditorPanelContext.h` 与 `EditorPanelFacades.h`，`EditorPanels.h` 收敛为兼容聚合头；runtime coordinator、render resource adapter 与 panel implementation 改为按需 include 窄头。
 334. 下一步建议推进类型/组件 property provider 注册机制，把当前按目标类型手写 dispatch 的 inspector facade 进一步收敛为可注册 provider。
+335. Runtime Selection Inspector Provider Registry 已完成第一版：新增 `SelectionInspectorProviderRegistry`，selection inspector 的 Asset / Component / Actor / Shadow / Camera / Object 顶层目标分发改为默认 provider 注册与匹配。
+336. 下一步建议继续把 provider factory 从 `SelectionInspectorPanel.cpp` 外移，或把 ActorComponent / Material 内部属性声明推进为可注册 property provider。
 
 ## 约束
 
