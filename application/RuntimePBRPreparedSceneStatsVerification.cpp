@@ -122,10 +122,11 @@ namespace GL_RUNTIME
 		const RuntimeVerificationConfig&
 	)
 	{
+		const auto renderResources = context.renderResources.readOnlyView();
 		PBRVerificationSceneStats stats{};
-		collectSceneStats(std::static_pointer_cast<GLframework::Object>(context.renderResources.sceneOffScreen()), stats);
-		const bool environmentReady = context.renderResources.renderer()
-			&& context.renderResources.renderer()->getEnvironmentRenderTargets().hasPrecomputedEnvironment();
+		collectSceneStats(std::static_pointer_cast<GLframework::Object>(renderResources.sceneOffScreen()), stats);
+		const bool environmentReady = renderResources.renderer()
+			&& renderResources.renderer()->getEnvironmentRenderTargets().hasPrecomputedEnvironment();
 
 		reportLine(
 			"PBR verification scene stats: objects=" + std::to_string(stats.objectCount)

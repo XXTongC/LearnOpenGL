@@ -9433,3 +9433,26 @@ Subagent 审查：
 
 - 这是 Runtime render resource read-only facade 的第一版，不改变资源创建、资源替换、scene setup、frame pass 执行、renderer backend contract 或 PBR pass。
 - 下一步可继续把更多只读 consumer 迁到 `RuntimeRenderResourceView`，或转向其他 runtime/application state 依赖边界；当前仍不建议继续扩张 PBR pass。
+
+### 2026-06-01 Runtime Render Resource ReadOnly View PBR Stats Consumer Cleanup
+
+本轮继续 read-only runtime resource facade 的 consumer 迁移，不扩张 PBR 功能。上一轮已经建立 `RuntimeRenderResourceView` 并覆盖 backend readiness / attachment / report 路径；本轮只处理 PBR verification 中两个纯观察型 stats collector，使它们通过 read-only view 读取 renderer 与 prepared scene，避免只读报告路径继续直接依赖 mutable `RuntimeRenderResourceState` accessor。
+
+新增与修改：
+
+- `RuntimePBRRendererStatsVerification.cpp` 在读取 `Renderer::getLastFrameStats()` 前创建 `context.renderResources.readOnlyView()`，通过 view 判断 renderer 是否存在并读取 last frame stats。
+- `RuntimePBRPreparedSceneStatsVerification.cpp` 通过 `readOnlyView()` 读取 `sceneOffScreen()` 并收集 prepared scene stats，同时通过 view 读取 renderer 的 environment render targets readiness。
+- 本轮迁移的两个文件仍只做 stats/report 读取，不创建资源、不替换资源、不修改 scene、不调整 pass config。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRRendererStatsVerification.cpp` 与 `RuntimePBRPreparedSceneStatsVerification.cpp` 中不再直接调用 `context.renderResources.renderer()` / `sceneOffScreen()`。
+- 静态检查确认两个文件只通过局部 `renderResources` read-only view 访问 renderer 与 scene。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 重新编译相关 runtime 文件。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime render resource read-only facade 的 PBR stats consumer cleanup，不改变 PBR renderer、prepared scene 构建、environment precompute、frame pass order、renderer backend contract 或 verification 判定标准。
+- 下一步可继续迁移其他只读 consumer 到 `RuntimeRenderResourceView`，或转向其他 runtime/application state 依赖边界；当前仍不建议继续扩张 PBR pass。

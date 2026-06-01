@@ -197,18 +197,14 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Runtime Render Resource ReadOnly View Facade Cleanup
+### Current Round: Runtime Render Resource ReadOnly View PBR Stats Consumer Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
-- `application/RuntimeRenderResourceState.h`
-- `application/RuntimeRenderResourceState.cpp`
-- `application/RuntimeContentRendererBackendLifecycle.cpp`
-- `application/RuntimeRendererBackendAttachmentLifecycle.cpp`
-- `application/RuntimeRendererFrameBridgeAdapter.cpp`
-- `application/RuntimeVerificationReport.cpp`
+- `application/RuntimePBRRendererStatsVerification.cpp`
+- `application/RuntimePBRPreparedSceneStatsVerification.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -219,7 +215,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Runtime render resource read-only view facade cleanup remains parent-reviewed.
+- Runtime render resource read-only view PBR stats consumer cleanup remains parent-reviewed.
 
 Rules for this round:
 
@@ -1891,6 +1887,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `application/RuntimeFrameRunner.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime render resource read-only view facade cleanup is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `application/RuntimeContentRendererBackendLifecycle.cpp`, `application/RuntimeRendererBackendAttachmentLifecycle.cpp`, `application/RuntimeRendererFrameBridgeAdapter.cpp`, `application/RuntimeVerificationReport.cpp`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime render resource read-only view PBR stats consumer cleanup is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `application/RuntimePBRRendererStatsVerification.cpp`, `application/RuntimePBRPreparedSceneStatsVerification.cpp`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 
