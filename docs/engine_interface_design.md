@@ -530,6 +530,8 @@ public:
 320. 下一步建议继续推进系统化 UI/inspector：优先把 `EditorPanels.cpp` 内部的 Light / Shadow / Camera inspector 直写 ImGui 逻辑迁入 property schema builder 或独立 inspector facade，让对象声明属性、UI 统一生成。
 321. Runtime Scene Object Inspector Schema Cleanup 已完成第一版：新增 `SceneObjectInspector` 集中 Light / Shadow / Camera 的 property schema 与 type name 判断，`EditorPanels.cpp` 不再直接写这些 inspector 的 ImGui 控件；`PropertySchema` 新增 `InputFloat` / `InputInt` 以保留原输入框控件语义。
 322. 下一步建议继续迁出 `EditorPanels.cpp` 中 legacy object transform inspector 或 Actor/Component schema builder，让 selection panel 进一步收敛为选中对象分发、schema 绘制和 selection action。
+323. Runtime Legacy Object Transform Inspector Schema Cleanup 已完成第一版：legacy object Position / Rotation / Scale 已迁入 `SceneObjectInspector::buildObjectTransformPropertySchema(...)`；`PropertySchema` 新增 `SliderVec3`，`EditorPanels.cpp` 不再直写 object transform 的 `InputFloat3` / `SliderFloat3` 控件。
+324. 下一步建议继续迁出 `EditorPanels.cpp` 中 Actor/Component schema builder，或推进类型/组件 property provider 注册机制，让 selection inspector 从“按类型手写 schema”继续向系统化 UI 生成过渡。
 
 ## 约束
 

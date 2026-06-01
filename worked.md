@@ -7690,3 +7690,18 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了新增 `SceneObjectInspector.cpp`、`PropertyInspector.cpp`、`EditorPanels.cpp`、profile config IO、material/profile schema implementation 和 editor panels，三条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 inspector 字段、控件类型、selection 按钮语义、engine world editor create verification、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百一十六轮 Runtime Legacy Object Transform Inspector Schema Cleanup：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `bbda012 Move scene object inspectors to property schemas`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把下一步聚焦到 `EditorPanels.cpp` 内部 legacy object transform inspector 的直写 ImGui 逻辑迁出，目标是让 Object transform 也声明为 `PropertyBuilder` schema，再由统一 property inspector 绘制。
+  - 更新 [PropertySchema.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\PropertySchema.h)，新增 `SliderVec3` property kind 与 `addSliderVec3(...)` helper，用于保留 Rotation 的三轴 slider 控件语义。
+  - 更新 [PropertyInspector.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\PropertyInspector.cpp)，新增 `SliderVec3` 绘制支持，内部使用 `ImGui::SliderFloat3(...)`。
+  - 更新 [ProfileConfigIO.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigIO.cpp)，把 `SliderVec3` 纳入 vec3 property load/save 兼容路径。
+  - 更新 [SceneObjectInspector.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SceneObjectInspector.h) 与 [SceneObjectInspector.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SceneObjectInspector.cpp)，新增 `buildObjectTransformPropertySchema(...)`，集中声明 Object Position、Rotation 与 Scale 的 getter/setter。
+  - 更新 [EditorPanels.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorPanels.cpp)，删除 legacy object transform 的直写 `InputFloat3` / `SliderFloat3` 控件，改为调用 `buildObjectTransformPropertySchema(...)` 并统一走 `drawProperties(...)`。
+  - 已执行静态检查：确认 `EditorPanels.cpp` 不再残留 `InputFloat3` / `SliderFloat3` 直写 transform 控件。
+  - 已执行静态检查：确认 `SliderVec3` 已接入 `PropertySchema`、`PropertyInspector`、`ProfileConfigIO` 与 `SceneObjectInspector`。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了 `PropertyInspector.cpp`、`SceneObjectInspector.cpp`、`EditorPanels.cpp`、profile config IO 和相关 profile/material schema implementation，三条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 Position / Rotation / Scale 字段、控件语义、selection action、engine world editor create verification、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

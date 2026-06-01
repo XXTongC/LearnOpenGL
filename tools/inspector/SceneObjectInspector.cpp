@@ -11,6 +11,7 @@
 #include "../../light/shadow/pointLightShadow/pointLightShadow.h"
 #include "../../light/shadow/shadow.h"
 #include "../../light/spotLight.h"
+#include "../../framework/object.h"
 
 namespace
 {
@@ -149,6 +150,48 @@ namespace GL_EDITOR
 				90.0f
 			);
 		}
+
+		return builder;
+	}
+
+	PropertyBuilder buildObjectTransformPropertySchema(const std::shared_ptr<GLframework::Object>& object)
+	{
+		PropertyBuilder builder{};
+		if (!object)
+		{
+			return builder;
+		}
+
+		builder.addSection("Transform");
+		builder.addVec3(
+			"Position",
+			[object]() { return object->getPosition(); },
+			[object](glm::vec3 value) { object->setPosition(value); }
+		);
+		builder.addSliderVec3(
+			"Rotation",
+			[object]()
+			{
+				return glm::vec3{
+					object->getAngleX(),
+					object->getAngleY(),
+					object->getAngleZ()
+				};
+			},
+			[object](glm::vec3 value)
+			{
+				object->setAngleX(value.x);
+				object->setAngleY(value.y);
+				object->setAngleZ(value.z);
+			},
+			-360.0f,
+			360.0f
+		);
+		builder.addVec3(
+			"Scale",
+			[object]() { return object->getScale(); },
+			[object](glm::vec3 value) { object->setScale(value); }
+		);
 
 		return builder;
 	}

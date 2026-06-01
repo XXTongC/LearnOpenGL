@@ -20,6 +20,7 @@ namespace GL_EDITOR
 		InputInt,
 		Bool,
 		Vec3,
+		SliderVec3,
 		Color3,
 		String,
 		Text,
@@ -317,6 +318,24 @@ namespace GL_EDITOR
 			PropertyDescriptor descriptor{};
 			descriptor.kind = PropertyKind::Vec3;
 			descriptor.label = std::move(label);
+			descriptor.getVec3 = getter;
+			descriptor.setVec3 = setter;
+			mProperties.push_back(std::move(descriptor));
+		}
+
+		void addSliderVec3(
+			std::string label,
+			const std::function<glm::vec3()>& getter,
+			const std::function<void(glm::vec3)>& setter,
+			float minValue,
+			float maxValue
+		)
+		{
+			PropertyDescriptor descriptor{};
+			descriptor.kind = PropertyKind::SliderVec3;
+			descriptor.label = std::move(label);
+			descriptor.minValue = minValue;
+			descriptor.maxValue = maxValue;
 			descriptor.getVec3 = getter;
 			descriptor.setVec3 = setter;
 			mProperties.push_back(std::move(descriptor));

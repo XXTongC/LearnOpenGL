@@ -1131,29 +1131,8 @@ void GL_EDITOR::drawSelectionInspectorPanel(const EditorPanelContext& context, S
 	ImGui::Text("Children: %d", static_cast<int>(selectedObject->getChildren().size()));
 	ImGui::Separator();
 
-	glm::vec3 position = selectedObject->getPosition();
-	if (ImGui::InputFloat3("Position", &position[0]))
-	{
-		selectedObject->setPosition(position);
-	}
-
-	glm::vec3 rotation = {
-		selectedObject->getAngleX(),
-		selectedObject->getAngleY(),
-		selectedObject->getAngleZ()
-	};
-	if (ImGui::SliderFloat3("Rotation", &rotation[0], -360.0f, 360.0f))
-	{
-		selectedObject->setAngleX(rotation.x);
-		selectedObject->setAngleY(rotation.y);
-		selectedObject->setAngleZ(rotation.z);
-	}
-
-	glm::vec3 scaleValue = selectedObject->getScale();
-	if (ImGui::InputFloat3("Scale", &scaleValue[0]))
-	{
-		selectedObject->setScale(scaleValue);
-	}
+	const auto transformProperties = GL_EDITOR::buildObjectTransformPropertySchema(selectedObject);
+	GL_EDITOR::drawProperties(transformProperties);
 
 	if (auto selectedLight = std::dynamic_pointer_cast<GLframework::Light>(selectedObject))
 	{

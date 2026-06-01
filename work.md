@@ -9943,3 +9943,27 @@ Subagent 审查：
 
 - 这是 Light / Shadow / Camera selection inspector 的 schema cleanup，不改变 inspector 字段、控件类型、selection 按钮语义、engine world editor create verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步可继续把 `EditorPanels.cpp` 中 legacy object transform inspector 或 Actor/Component schema builder 迁出 panel implementation，让 selection panel 进一步收敛为“选中对象分发 + schema 绘制 + selection action”。
+
+### 2026-06-01 Runtime Legacy Object Transform Inspector Schema Cleanup
+
+本轮继续推进系统化 UI/inspector。Light / Shadow / Camera 已经迁入 `SceneObjectInspector` 后，`EditorPanels.cpp` 中还剩 legacy object 的 Position / Rotation / Scale 直接使用 ImGui 控件并直接调用 `Object` transform setter。这样 selection panel 仍然知道 object transform 的具体读写细节。本轮将 legacy object transform 也迁入 scene object inspector schema，让 panel 只负责选中对象分发和 schema 绘制。
+
+新增与修改：
+
+- `PropertySchema.h` 新增 `SliderVec3` property kind 与 `addSliderVec3(...)` helper，用于保留 legacy object Rotation 原本的三轴 slider 语义。
+- `PropertyInspector.cpp` 新增 `SliderVec3` 绘制支持，内部使用 `ImGui::SliderFloat3(...)`。
+- `ProfileConfigIO.cpp` 将 `SliderVec3` 纳入 vec3 config load/save 兼容路径，避免后续 schema property 复用时丢失配置能力。
+- `SceneObjectInspector.h/.cpp` 新增 `buildObjectTransformPropertySchema(...)`，集中声明 Object Position、Rotation 与 Scale 的 getter/setter。
+- `EditorPanels.cpp` 删除 legacy object transform 的直写 `InputFloat3` / `SliderFloat3` 控件，改为调用 `buildObjectTransformPropertySchema(...)` 并统一走 `drawProperties(...)`。
+
+已完成验证：
+
+- 静态检查确认 `EditorPanels.cpp` 不再残留 `InputFloat3` / `SliderFloat3` 直写 transform 控件。
+- 静态检查确认 `SliderVec3` 已接入 `PropertySchema`、`PropertyInspector`、`ProfileConfigIO` 与 `SceneObjectInspector`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `PropertyInspector.cpp`、`SceneObjectInspector.cpp`、`EditorPanels.cpp`、profile config IO 和相关 profile/material schema implementation。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 legacy object transform selection inspector 的 schema cleanup，不改变 Position / Rotation / Scale 字段、控件语义、selection action、engine world editor create verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步可继续迁出 `EditorPanels.cpp` 中 Actor/Component schema builder，或开始把 schema builder 从“手写 C++ builder”推进到更系统化的类型/组件 property provider 注册机制。

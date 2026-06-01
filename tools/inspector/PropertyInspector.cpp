@@ -125,6 +125,29 @@ namespace GL_EDITOR
 				break;
 			}
 
+			case PropertyKind::SliderVec3:
+			{
+				glm::vec3 value = property.getVec3();
+				if (property.readOnly)
+				{
+					ImGui::Text(
+						"%s: %.3f, %.3f, %.3f",
+						property.label.c_str(),
+						value.x,
+						value.y,
+						value.z
+					);
+					break;
+				}
+				float buffer[3] = { value.x, value.y, value.z };
+				if (ImGui::SliderFloat3(property.label.c_str(), buffer, property.minValue, property.maxValue))
+				{
+					property.setVec3({ buffer[0], buffer[1], buffer[2] });
+					changed = true;
+				}
+				break;
+			}
+
 			case PropertyKind::Color3:
 			{
 				glm::vec3 value = property.getVec3();

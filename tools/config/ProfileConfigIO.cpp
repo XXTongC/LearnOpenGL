@@ -101,6 +101,7 @@ namespace
 			return true;
 
 		case GL_EDITOR::PropertyKind::Vec3:
+		case GL_EDITOR::PropertyKind::SliderVec3:
 		case GL_EDITOR::PropertyKind::Color3:
 			return applyVec3ComponentValue(property, value, configKeyIndex);
 
@@ -154,6 +155,7 @@ namespace
 			&& property.getVec3
 			&& (
 				property.kind == GL_EDITOR::PropertyKind::Vec3
+				|| property.kind == GL_EDITOR::PropertyKind::SliderVec3
 				|| property.kind == GL_EDITOR::PropertyKind::Color3
 			);
 	}
