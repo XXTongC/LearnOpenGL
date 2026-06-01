@@ -9479,3 +9479,25 @@ Subagent 审查：
 
 - 这是 renderer frame pass profile 写入口边界 cleanup，不改变 profile 文件格式、verification pass profile policy、renderer pass profile 默认值、frame pass order 语义、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步应继续区分只读 consumer 与真实 mutation path：只读路径优先迁到 `RuntimeRenderResourceView`，写路径则继续收敛为明确的小边界，而不是扩大 renderer owner 暴露面。
+
+### 2026-06-01 Runtime Render Resource Renderer Clear Color Sync Boundary Cleanup
+
+本轮继续按“只读路径走 view、写路径走明确小边界”的原则收敛 Engine runtime ownership，不扩张 PBR 功能。`RuntimeFrameRunner` 每帧需要把 runtime clear color 写入 renderer，这是合法 mutation path；本轮把该写入集中到 `RuntimeRenderResourceState`，让 frame runner 不再直接取得 renderer owner 只为同步 clear color。
+
+新增与修改：
+
+- `RuntimeRenderResourceState.h` 新增 `syncClearColorToRenderer()`，作为 renderer clear color 同步入口。
+- `RuntimeRenderResourceState.cpp` 在 implementation 中通过 renderer owner 执行 `Renderer::setClearColor(...)`，保持原有每帧同步语义。
+- `RuntimeFrameRunner.cpp` 改为调用 `context.renderResources.syncClearColorToRenderer()`，并移除对 `renderer.h` 的直接 include。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeFrameRunner.cpp` 中旧的 `context.renderResources.renderer()->setClearColor(context.renderResources.clearColor())` 已清零。
+- 静态检查确认 clear color 同步只通过 `syncClearColorToRenderer()` 进入 renderer implementation。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeFrameRunner.cpp`、`RuntimeRenderResourceState.cpp` 和相关 runtime 文件。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 renderer clear color 写入口边界 cleanup，不改变 clear color 默认值、每帧同步时机、runtime frame pipeline、renderer backend contract、scene setup 或 PBR pass。
+- 下一步可继续处理剩余 direct renderer/scene owner 访问点，优先选择语义明确的小 mutation boundary 或纯只读 consumer；仍不建议扩张 PBR pass。

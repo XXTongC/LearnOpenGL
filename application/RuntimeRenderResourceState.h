@@ -36,6 +36,7 @@ namespace GL_RUNTIME
 
 		glm::vec3& clearColor();
 		const glm::vec3& clearColor() const;
+		void syncClearColorToRenderer() const;
 		std::shared_ptr<GLframework::Renderer>& renderer();
 		const std::shared_ptr<GLframework::Renderer>& renderer() const;
 		GLframework::RendererFramePassProfile* rendererFramePassProfile();

@@ -5,7 +5,6 @@
 #include "../engine/Engine.h"
 #include "../engine/RendererBackendFrameTypes.h"
 #include "../engine/RendererSubsystem.h"
-#include "../renderer/renderer.h"
 #include "RuntimeFrameCallbacks.h"
 #include "RuntimeLegacyExperimentLifecycle.h"
 #include "RuntimeFrameRunnerTypes.h"
@@ -31,7 +30,7 @@ namespace GL_RUNTIME
 	)
 	{
 		context.cameraLights.cameracontrol->update();
-		context.renderResources.renderer()->setClearColor(context.renderResources.clearColor());
+		context.renderResources.syncClearColorToRenderer();
 		RuntimeLegacyExperimentLifecycle::update(context, legacyExperiments);
 		if (config.engine)
 		{

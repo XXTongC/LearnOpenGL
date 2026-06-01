@@ -317,6 +317,7 @@ passed
 - Runtime Render Resource ReadOnly View Facade Cleanup 已接入：新增 `RuntimeRenderResourceView` 与 `readOnlyView()`，renderer backend readiness、renderer backend attachment 和 verification report 的只读路径先迁到 read-only facade。
 - Runtime Render Resource ReadOnly View PBR Stats Consumer Cleanup 已接入：PBR renderer stats 与 prepared scene stats 两个只读 verification collector 改为通过 `RuntimeRenderResourceView` 读取 renderer / scene，不再直接依赖 mutable render resource accessor。
 - Runtime Render Resource Renderer Pass Profile Access Boundary Cleanup 已接入：`RuntimeRenderResourceState` 新增 `rendererFramePassProfile()`，PBR pass profile verification 与 runtime profile loader 不再直接取得 renderer owner 写 frame pass profile。
+- Runtime Render Resource Renderer Clear Color Sync Boundary Cleanup 已接入：`RuntimeRenderResourceState` 新增 `syncClearColorToRenderer()`，frame runner 不再直接取得 renderer owner 只为同步 clear color。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -377,6 +378,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Runtime Render Resource Renderer Pass Profile Access Boundary Cleanup 已接入后，PBR pass profile verification 与 runtime profile loader 已通过 `rendererFramePassProfile()` 写 renderer frame pass profile，不再直接取得 renderer owner。
+当前最新修正：Runtime Render Resource Renderer Clear Color Sync Boundary Cleanup 已接入后，frame runner 已通过 `syncClearColorToRenderer()` 同步 renderer clear color，不再直接取得 renderer owner。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 renderer pass profile access boundary cleanup 后，下一步应继续区分只读 consumer 与真实 mutation path：只读路径迁到 `RuntimeRenderResourceView`，写路径收敛为明确的小边界；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 renderer clear color sync boundary cleanup 后，下一步应继续处理剩余 direct renderer/scene owner 访问点，优先选择语义明确的小 mutation boundary 或纯只读 consumer；当前不建议继续扩张 PBR pass。
