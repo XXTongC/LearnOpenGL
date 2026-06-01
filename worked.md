@@ -7803,3 +7803,17 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了瘦身后的 `SelectionInspectorPanel.cpp` 与新增 `SelectionInspectorProviders.cpp`，四条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 selection kind、provider 注册顺序、Asset / Component / Actor / Shadow / Camera / Object inspector 字段、transaction summary、snapshot action、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百二十四轮 Runtime ActorComponent Property Provider Registry：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `9865ad2 Extract selection inspector providers`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把下一步聚焦到 ActorComponent property provider 注册机制，先把 Component 基础字段与 SceneComponent / adapter 类型专属属性拆开。
+  - 新增 [ActorComponentPropertyProviderRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\ActorComponentPropertyProviderRegistry.h) 与 [ActorComponentPropertyProviderRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\ActorComponentPropertyProviderRegistry.cpp)，提供 ActorComponent property provider 注册和按顺序构建所有匹配 provider 的能力。
+  - 新增 [ActorComponentPropertyProviders.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\ActorComponentPropertyProviders.h) 与 [ActorComponentPropertyProviders.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\ActorComponentPropertyProviders.cpp)，集中默认 SceneComponent / MeshComponent / LightComponent / CameraComponent / LegacyObjectComponent provider。
+  - 更新 [EngineWorldInspector.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\EngineWorldInspector.cpp)，保留 Actor/Component 基础字段和 type/display helper，组件专属属性、SceneComponent transform edit、legacy object transform sync 与 undo latest transform 实现迁入 provider 模块。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 provider registry/factory 源文件和头文件。
+  - 已执行静态检查：确认 `EngineWorldInspector.cpp` 已改为调用 `ActorComponentPropertyProviderRegistry`，组件专属 adapter section 和 SceneComponent transform edit helper 已迁入 `ActorComponentPropertyProviders.cpp`。
+  - 已执行静态检查：确认新增 ActorComponent property provider 文件已注册到 Visual Studio 工程。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了新增 provider 文件和瘦身后的 `EngineWorldInspector.cpp`，五条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 Actor / Component inspector 字段、字段顺序、SceneComponent transform edit、undo latest transform、snapshot action、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

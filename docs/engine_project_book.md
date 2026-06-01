@@ -439,8 +439,9 @@ flowchart TD
 - Runtime Editor Panel Header Boundary Split 已完成第一版：新增 `EditorPanelContext.h` 与 `EditorPanelFacades.h`，`EditorPanels.h` 收敛为兼容聚合头；runtime coordinator、render resource adapter 与 panel implementation 改为按需 include 窄头。
 - Runtime Selection Inspector Provider Registry 已完成第一版：新增 `SelectionInspectorProviderRegistry`，selection inspector 的 Asset / Component / Actor / Shadow / Camera / Object 顶层目标分发改为默认 provider 注册与匹配。
 - Runtime Selection Inspector Provider Factory Extraction 已完成第一版：新增 `SelectionInspectorProviders` 集中默认 provider 注册和绘制 helper，`SelectionInspectorPanel.cpp` 收敛为薄 panel shell。
+- Runtime ActorComponent Property Provider Registry 已完成第一版：新增 `ActorComponentPropertyProviderRegistry` 与默认 `ActorComponentPropertyProviders`，Component 基础字段与 SceneComponent / adapter 专属字段拆成 registry 构建边界。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime Selection Inspector Provider Factory Extraction 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先推进 ActorComponent / Material property provider，当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime ActorComponent Property Provider Registry 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先推进 Material inspector 或 Actor property schema provider，当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Selection Inspector Provider Factory Extraction 已接入后，默认 provider 注册和绘制 helper 已从 `SelectionInspectorPanel.cpp` 外移到 `SelectionInspectorProviders`，selection panel 只保留窗口 shell 和 registry 调用。
+当前最新修正：Runtime ActorComponent Property Provider Registry 已接入后，`EngineWorldInspector` 不再直接持有 SceneComponent / adapter 组件属性分支，而是通过默认 ActorComponent property provider registry 追加类型专属属性。

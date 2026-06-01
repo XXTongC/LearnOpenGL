@@ -10134,3 +10134,27 @@ Subagent 审查：
 
 - 这是 provider factory extraction，不改变 selection kind、provider 注册顺序、Asset / Component / Actor / Shadow / Camera / Object inspector 字段、transaction summary、snapshot action、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议从“默认 provider 外移”进入更细的 property provider：优先把 ActorComponent 或 Material 的属性声明拆成可注册 provider，减少具体类型属性继续集中在 facade 中。
+
+### 2026-06-01 Runtime ActorComponent Property Provider Registry
+
+本轮继续推进系统化 UI/inspector 的 property provider 方向。此前 `EngineWorldInspector::buildComponentPropertySchema(...)` 已经集中 ActorComponent inspector，但内部仍直接用 `dynamic_cast` 分支追加 SceneComponent、MeshComponent、LightComponent、CameraComponent 和 LegacyObjectComponent 的属性。这个结构会让每新增一种组件都继续修改同一个 facade。本轮引入 ActorComponent property provider registry，把“组件基础字段”和“组件类型专属字段”拆开。
+
+新增与修改：
+
+- 新增 `tools/inspector/ActorComponentPropertyProviderRegistry.h/.cpp`，提供 `ActorComponentPropertyProviderContext`、`ActorComponentPropertyProvider` 和 `ActorComponentPropertyProviderRegistry`，支持注册 provider 并按顺序构建所有匹配的组件属性。
+- 新增 `tools/inspector/ActorComponentPropertyProviders.h/.cpp`，集中默认 SceneComponent / MeshComponent / LightComponent / CameraComponent / LegacyObjectComponent property provider。
+- `EngineWorldInspector.cpp` 保留 Actor 和 Component 基础字段、display/type helper；组件专属属性、SceneComponent transform edit、legacy object transform sync 和 undo latest transform 实现迁入 component provider 模块。
+- `buildComponentPropertySchema(...)` 现在先生成通用 Component section，再通过 `getDefaultActorComponentPropertyProviderRegistry().buildMatching(...)` 追加类型专属属性。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 provider registry/factory 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `EngineWorldInspector.cpp` 已改为调用 `ActorComponentPropertyProviderRegistry`，组件专属 adapter section 和 SceneComponent transform edit helper 已迁入 `ActorComponentPropertyProviders.cpp`。
+- 静态检查确认新增 `ActorComponentPropertyProviderRegistry` / `ActorComponentPropertyProviders` 文件已注册到 Visual Studio 工程。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 provider 文件和瘦身后的 `EngineWorldInspector.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 ActorComponent property provider registry first slice，不改变 Actor / Component inspector 字段、字段顺序、SceneComponent transform edit、undo latest transform、snapshot action、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步可以继续把 Material inspector 的属性声明迁入类似 provider registry，或把 Actor property schema 也拆成可注册 provider。

@@ -546,6 +546,8 @@ public:
 336. 下一步建议继续把 provider factory 从 `SelectionInspectorPanel.cpp` 外移，或把 ActorComponent / Material 内部属性声明推进为可注册 property provider。
 337. Runtime Selection Inspector Provider Factory Extraction 已完成第一版：新增 `SelectionInspectorProviders` 集中默认 provider 注册和绘制 helper，`SelectionInspectorPanel.cpp` 收敛为薄 panel shell。
 338. 下一步建议把 ActorComponent 或 Material 的内部属性声明拆成可注册 property provider，让 provider registry 不只负责目标分发，也开始承载类型属性扩展点。
+339. Runtime ActorComponent Property Provider Registry 已完成第一版：新增 `ActorComponentPropertyProviderRegistry` 与默认 `ActorComponentPropertyProviders`，Component 基础字段继续由 `EngineWorldInspector` 生成，SceneComponent / MeshComponent / LightComponent / CameraComponent / LegacyObjectComponent 专属字段改由 provider 追加。
+340. 下一步建议继续把 Material inspector 或 Actor property schema 迁入类似 provider registry，让系统化 UI 扩展点覆盖更多运行时类型。
 
 ## 约束
 
