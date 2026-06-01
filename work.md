@@ -11099,3 +11099,28 @@ Subagent 审查：
 
 - 这是 Runtime Editor UI Module Reapply Boundary slice，让 module profile 可以在运行时安全请求 active registry rebuild；selection 与 edit transaction state 保持在 `RuntimeEditorLifecycleState` 的独立字段中，reapply 只替换 UI registries。
 - 下一步建议把 Editor UI module controls 从 diagnostics section 拆到独立 Editor Settings/Profile section，或增加更明确的 reapply diagnostics（例如 last applied policy / pending policy / active policy），避免 diagnostics section 同时承担状态展示、配置编辑和生命周期操作。
+
+### 2026-06-01 Editor UI Module Profile Controls Section Extraction
+
+本轮继续系统化 Editor UI module 边界，把上一轮暂时放在 diagnostics section 内的 profile controls 拆成独立 Debug Controller section。目标是让 diagnostics 只负责 active module / registry 状态展示，profile controls 单独负责配置编辑、保存、重载和 runtime apply。
+
+新增与修改：
+
+- 新增 `tools/editor/EditorUiModuleProfileControlsSection.h/.cpp`，注册 Debug Controller section `editor-ui-module-profile`。
+- 新 section 使用 `Editor UI Module Profile` 折叠标题，复用 `EditorUiModuleProfileConfig` schema 绘制 core/sample module policy，并保留 Save / Reload / Apply Profile To Active Modules 按钮。
+- `EditorUiModuleDiagnosticsSection.cpp` 删除 profile storage、schema、property inspector 和 reapply button 依赖，只保留 active modules、Debug/Profile section 数量和 Selection Inspector provider 数量展示。
+- `EditorUiModuleComposition.cpp` 的 core editor UI module 现在同时注册 diagnostics section 与 profile controls section。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 profile controls section 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `EditorUiModuleProfileControlsSection`、`registerEditorUiModuleProfileControlsSection(...)`、`editor-ui-module-profile` section key 和 VS 工程注册均可检索。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `EditorUiModuleComposition.cpp`、`EditorUiModuleDiagnosticsSection.cpp` 与 `EditorUiModuleProfileControlsSection.cpp`。
+- 直接 CLI 空 module 组合检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 已通过，确认 core/sample module 都禁用时 verification 路径仍不崩溃。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 verification mode 全部通过。
+
+结论：
+
+- 这是 Editor UI Module Profile Controls Section Extraction slice，降低 diagnostics section 职责并为后续独立 Editor Settings/Profile panel 留出更清晰的 provider 边界；不改变 module policy、profile 文件格式、runtime reapply 时机、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议给 `RuntimeEditorLifecycleState` 增加 active/pending/applied module policy diagnostics，或者把 profile controls section 进一步提升为更通用的 Editor Settings section registry。

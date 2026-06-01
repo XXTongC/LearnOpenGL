@@ -383,6 +383,7 @@
     <ClCompile Include="tools\editor\EditorUiModuleDiagnosticsSection.cpp" />
     <ClCompile Include="tools\editor\EditorUiModuleProfile.cpp" />
     <ClCompile Include="tools\editor\EditorUiModuleProfileConfig.cpp" />
+    <ClCompile Include="tools\editor\EditorUiModuleProfileControlsSection.cpp" />
     <ClCompile Include="tools\editor\EditorUiModuleRegistry.cpp" />
     <ClCompile Include="tools\editor\EditorPanels.cpp" />
     <ClCompile Include="tools\editor\HierarchyPanel.cpp" />
@@ -1040,6 +1041,7 @@
     <ClInclude Include="tools\editor\EditorUiModuleDiagnosticsSection.h" />
     <ClInclude Include="tools\editor\EditorUiModuleProfile.h" />
     <ClInclude Include="tools\editor\EditorUiModuleProfileConfig.h" />
+    <ClInclude Include="tools\editor\EditorUiModuleProfileControlsSection.h" />
     <ClInclude Include="tools\editor\EditorUiModuleRegistry.h" />
     <ClInclude Include="tools\editor\KeyedSectionRegistry.h" />
     <ClInclude Include="tools\editor\RendererFrameStatsPanel.h" />

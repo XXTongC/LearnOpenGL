@@ -1086,6 +1086,9 @@
     <ClCompile Include="tools\editor\EditorUiModuleProfileConfig.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\editor\EditorUiModuleProfileControlsSection.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\editor\EditorUiModuleRegistry.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -3060,6 +3063,9 @@
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\editor\EditorUiModuleProfileConfig.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\editor\EditorUiModuleProfileControlsSection.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\editor\EditorUiModuleRegistry.h">

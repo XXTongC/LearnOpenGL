@@ -8387,3 +8387,18 @@
   - 已执行直接 CLI 空 module 组合检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 退出码为 0，确认 core/sample module 都禁用时 verification 路径不崩溃。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 verification mode 全部通过。
   - 本轮让 Editor UI module profile 可以在运行时安全请求 active registry rebuild；selection 与 edit transaction state 保持独立，不随 registry rebuild 丢失；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百六十三轮 Editor UI Module Profile Controls Section Extraction：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `f6d86c1 Add editor UI module runtime reapply`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续拆分 Editor UI module profile controls，避免 diagnostics section 同时承担状态展示、profile 编辑和 lifecycle apply 操作。
+  - 新增 [EditorUiModuleProfileControlsSection.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleProfileControlsSection.h) 与 [EditorUiModuleProfileControlsSection.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleProfileControlsSection.cpp)，注册 Debug Controller section `editor-ui-module-profile`。
+  - 更新 [EditorUiModuleDiagnosticsSection.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleDiagnosticsSection.cpp)，移除 profile storage/schema/property inspector/reapply button 依赖，只保留 active module 与 registry count diagnostics。
+  - 更新 [EditorUiModuleComposition.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleComposition.cpp)，core editor UI module 同时注册 diagnostics section 与 profile controls section。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 profile controls section 源文件和头文件。
+  - 已执行静态检查：确认 `EditorUiModuleProfileControlsSection`、`registerEditorUiModuleProfileControlsSection(...)`、`editor-ui-module-profile` section key 和 VS 工程注册均可检索。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过；3 个 focused verification mode 全部通过。
+  - 已执行直接 CLI 空 module 组合检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 退出码为 0，确认 core/sample module 都禁用时 verification 路径仍不崩溃。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 verification mode 全部通过。
+  - 本轮只降低 Editor UI module diagnostics/profile controls 的 UI 职责耦合，不修改 module policy、profile 文件格式、runtime reapply 时机、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

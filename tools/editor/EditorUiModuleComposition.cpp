@@ -4,6 +4,7 @@
 #include "DebugPipelineProfileControlSections.h"
 #include "DebugSceneProfileControlSections.h"
 #include "EditorUiModuleDiagnosticsSection.h"
+#include "EditorUiModuleProfileControlsSection.h"
 #include "SampleEditorUiModule.h"
 #include "../inspector/SelectionInspectorProviders.h"
 
@@ -13,6 +14,7 @@ namespace
 	{
 		GL_EDITOR::registerDefaultDebugControllerSections(registries.debugControllerSections);
 		GL_EDITOR::registerEditorUiModuleDiagnosticsSection(registries.debugControllerSections);
+		GL_EDITOR::registerEditorUiModuleProfileControlsSection(registries.debugControllerSections);
 		GL_EDITOR::registerDefaultDebugPipelineProfileControlSections(registries.pipelineProfileControls);
 		GL_EDITOR::registerDefaultDebugSceneProfileControlSections(registries.sceneProfileControls);
 		GL_EDITOR::registerDefaultSelectionInspectorProviders(registries.selectionInspectors);

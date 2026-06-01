@@ -625,6 +625,8 @@ public:
 415. 当前仍保留 startup-time registry composition；下一步建议设计 runtime registry reapply 的显式安全边界，或先把 profile/settings controls 从 diagnostics section 拆到独立 Editor Settings/Profile section。
 416. Runtime Editor UI Module Reapply Boundary 已完成第一版：Debug UI 只发起 `EditorUiModuleProfile` reapply request，`RuntimeEditorLifecycleState` 保存 pending policy，并在当前 editor panels 绘制结束后安全重建 active registries。
 417. Reapply 边界保留 selection 与 edit transaction state，只替换 UI registry composition；下一步建议把 profile controls 从 diagnostics section 拆到独立 Editor Settings/Profile section，或补充 active/pending/applied policy diagnostics。
+418. Editor UI Module Profile Controls Section Extraction 已完成第一版：新增 `EditorUiModuleProfileControlsSection` 承载 profile edit/save/reload/apply，`EditorUiModuleDiagnosticsSection` 回到只展示 active modules 与 registry counts。
+419. 下一步建议为 Editor UI module policy 增加 active/pending/applied diagnostics，或把 profile controls section 提升为更通用的 Editor Settings section registry。
 
 ## 约束
 

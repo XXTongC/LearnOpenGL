@@ -478,8 +478,9 @@ flowchart TD
 - Editor UI Module Profile Storage 已完成第一版：新增 `EditorUiModuleProfile` / config schema / storage，`RuntimeProfileLoader` 从 `config/editor_ui_modules.local.ini` 加载默认 module policy，CLI 显式参数保持优先。
 - Editor UI Module Profile Controls 已完成第一版：Debug Controller 的 `Editor UI Modules` section 现在可编辑 core/sample module profile，并能保存/重载 `config/editor_ui_modules.local.ini`；active registries 仍按 startup policy 构建。
 - Runtime Editor UI Module Reapply Boundary 已完成第一版：Debug Controller 可以请求按当前 module profile 重建 active registries，实际 rebuild 延后到当前 UI frame 绘制结束后执行，避免 registry 遍历期间被替换。
+- Editor UI Module Profile Controls Section Extraction 已完成第一版：新增独立 `EditorUiModuleProfileControlsSection`；`EditorUiModuleDiagnosticsSection` 只保留 active module 和 registry count diagnostics。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Runtime Editor UI Module Reapply Boundary 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议把 profile/settings UI 收敛到独立 Editor Settings/Profile section 或补充 active/pending policy diagnostics；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Editor UI Module Profile Controls Section Extraction 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议补充 active/pending/applied policy diagnostics 或设计通用 Editor Settings section registry；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Editor UI Module Reapply Boundary 已接入后，module policy 可以通过 Debug Controller 请求运行时安全重建 active registries；`config/editor_ui_modules.local.ini` 仍控制默认启用状态，CLI 显式参数仍优先。
+当前最新修正：Editor UI Module Profile Controls Section Extraction 已接入后，module diagnostics 与 profile controls 已拆分为两个 Debug Controller section；`config/editor_ui_modules.local.ini` 仍控制默认启用状态，CLI 显式参数仍优先。
