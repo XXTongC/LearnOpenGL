@@ -8356,3 +8356,17 @@
   - 已执行临时 local profile 检查：创建 `config/editor_ui_modules.local.ini` 并写入 core/sample 均禁用后运行 `x64\Debug\text2.exe --verify-renderer-backend-registry-noop` 退出码为 0；随后已删除该临时 local 文件。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 verification mode 全部通过。
   - 本轮让 Editor UI module policy 有了可持久化默认值入口，不修改默认 module policy、CLI 显式覆盖语义、现有 Debug UI section 业务逻辑、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百六十一轮 Editor UI Module Profile Controls：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `052210e Add editor UI module profile storage`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档选择低风险 slice：把 `EditorUiModuleProfile` 接入 Debug Controller 保存/重载 UI；暂不实现 runtime module registry 热重建。
+  - 更新 [DebugControllerContext.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerContext.h)，新增 `editorUiModuleProfile` 与 `editorUiModuleProfilePath`。
+  - 更新 [RuntimeEditorPanelCoordinator.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorPanelCoordinator.cpp)，`makeDebugControllerContext(...)` 注入 `context.profiles.editorUiModuleProfile()` 和 `context.profiles.editorUiModuleProfilePath`。
+  - 更新 [EditorUiModuleDiagnosticsSection.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleDiagnosticsSection.cpp)，在 `Editor UI Modules` Debug Controller section 内复用 `EditorUiModuleProfileConfig` schema 绘制 core/sample module 默认启用状态，并新增 `Save Editor UI Module Profile` / `Reload Editor UI Module Profile` 按钮。
+  - 已明确 UI 文案：profile edits 是 startup policy；保存/重载只更新 local profile 或内存 profile，不在本轮热重建 active module registries。
+  - 已执行静态检查：确认 `editorUiModuleProfile` context 注入、profile controls、save/reload 按钮和 schema builder 调用链均可检索。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过；3 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 verification mode 全部通过。
+  - 本轮补齐 Editor UI module profile 的 Debug Controller 编辑入口，不修改默认 module policy、CLI 显式覆盖语义、registry composition 时机、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

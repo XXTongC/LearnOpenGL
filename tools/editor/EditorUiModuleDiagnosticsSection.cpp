@@ -3,12 +3,64 @@
 #include "DebugControllerContext.h"
 #include "DebugControllerSectionRegistry.h"
 #include "DebugSectionRegistration.h"
+#include "EditorUiModuleProfile.h"
+#include "EditorUiModuleProfileConfig.h"
 #include "EditorUiModuleRegistry.h"
 #include "../../third_party/imgui/imgui.h"
+#include "../inspector/PropertyInspector.h"
+
+#include <string>
 
 namespace
 {
 	constexpr int kEditorUiModuleDiagnosticsOrder = 850;
+
+	void drawEditorUiModuleProfileControls(const GL_EDITOR::DebugControllerContext& context)
+	{
+		if (!context.editorUiModuleProfile)
+		{
+			ImGui::TextUnformatted("Editor UI module profile is not available in this context.");
+			return;
+		}
+
+		static std::string lastProfileStatus{};
+		const std::string configPath = context.editorUiModuleProfilePath
+			? *context.editorUiModuleProfilePath
+			: GL_EDITOR::EditorUiModuleProfileStorage::defaultPath();
+
+		ImGui::Separator();
+		ImGui::TextWrapped("Profile File: %s", configPath.c_str());
+		ImGui::TextWrapped("Profile edits are startup policy. Save and restart the editor path to rebuild the active module registries.");
+
+		GL_EDITOR::PropertyBuilder builder{};
+		GL_EDITOR::buildEditorUiModuleProfileConfigSchema(builder, *context.editorUiModuleProfile);
+		GL_EDITOR::drawProperties(builder);
+
+		if (ImGui::Button("Save Editor UI Module Profile"))
+		{
+			lastProfileStatus = GL_EDITOR::EditorUiModuleProfileStorage::saveToFile(
+				configPath,
+				*context.editorUiModuleProfile
+			)
+				? "Editor UI module profile saved."
+				: "Editor UI module profile save failed.";
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Reload Editor UI Module Profile"))
+		{
+			lastProfileStatus = GL_EDITOR::EditorUiModuleProfileStorage::loadFromFile(
+				configPath,
+				*context.editorUiModuleProfile
+			)
+				? "Editor UI module profile reloaded. Restart the editor path to apply the module registry composition."
+				: "Editor UI module profile reload failed.";
+		}
+
+		if (!lastProfileStatus.empty())
+		{
+			ImGui::TextWrapped("%s", lastProfileStatus.c_str());
+		}
+	}
 
 	void drawEditorUiModuleDiagnostics(const GL_EDITOR::DebugControllerContext& context)
 	{
@@ -21,6 +73,7 @@ namespace
 		if (!modules)
 		{
 			ImGui::TextUnformatted("No injected editor UI module registries; static fallback may be active.");
+			drawEditorUiModuleProfileControls(context);
 			return;
 		}
 
@@ -42,6 +95,8 @@ namespace
 		ImGui::Text("Pipeline Profile Sections: %d", static_cast<int>(modules->pipelineProfileControls.sectionCount()));
 		ImGui::Text("Scene Profile Sections: %d", static_cast<int>(modules->sceneProfileControls.sectionCount()));
 		ImGui::Text("Selection Inspector Providers: %d", static_cast<int>(modules->selectionInspectors.providerCount()));
+
+		drawEditorUiModuleProfileControls(context);
 	}
 }
 

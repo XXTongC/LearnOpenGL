@@ -11048,3 +11048,27 @@ Subagent 审查：
 
 - 这是 Editor UI Module Profile Storage slice，让 module policy 有了可持久化默认值入口；不改变默认 module policy、CLI 显式覆盖语义、现有 Debug UI section 业务逻辑、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议把 `EditorUiModuleProfile` 接入 Debug Controller 的保存/重载 UI，或让 runtime editor lifecycle 支持在运行时重新应用 module policy。
+
+### 2026-06-01 Editor UI Module Profile Controls
+
+本轮把上一轮新增的 `EditorUiModuleProfile` 接入 Debug Controller。目标是补齐 Editor UI module policy 的可见、可编辑、可保存和可重载闭环；当前仍保持 module registry 是 startup-time composition，不在点击 reload 时热重建 active registries。
+
+新增与修改：
+
+- `DebugControllerContext` 新增 `editorUiModuleProfile` 与 `editorUiModuleProfilePath`，让 Debug Controller section 可以访问当前运行时 profile 对象和默认 local profile 路径。
+- `RuntimeEditorPanelCoordinator::makeDebugControllerContext(...)` 注入 `context.profiles.editorUiModuleProfile()` 与 `context.profiles.editorUiModuleProfilePath`。
+- `EditorUiModuleDiagnosticsSection.cpp` 复用 `EditorUiModuleProfileConfig` schema，在 `Editor UI Modules` section 内显示 profile file、core/sample module 默认启用状态和 save/reload 按钮。
+- `Save Editor UI Module Profile` 会写入 `config/editor_ui_modules.local.ini`；`Reload Editor UI Module Profile` 会重新读取 local profile 并更新内存 profile。
+- UI 文案明确说明 profile edits 是 startup policy；active module registry 仍显示当前已构建组合，修改后需要重走 editor startup 才会应用到 registries。
+
+已完成验证：
+
+- 静态检查确认 `editorUiModuleProfile` context 注入、profile controls、save/reload 按钮和 schema builder 调用链均可检索。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `RuntimeEditorPanelCoordinator.cpp`、`DebugControllerPanel.cpp`、`DebugControllerSections.cpp`、`EditorUiModuleDiagnosticsSection.cpp` 与相关 editor panel 路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 verification mode 全部通过。
+
+结论：
+
+- 这是 Editor UI Module Profile Controls slice，补齐 profile 的 Debug Controller 编辑入口；不改变默认 module policy、CLI 显式覆盖语义、现有 registry composition 时机、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步如果继续 UI 系统化，应进入 runtime reapply 的安全边界设计：让 `RuntimeEditorLifecycleState` 可显式重建 module registries，并定义 selection/debug/profile panels 在 registry 切换时的状态保留策略；或者先抽独立 Editor Settings/Profile section，避免 diagnostics section 承担过多设置职责。

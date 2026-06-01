@@ -621,6 +621,8 @@ public:
 411. Editor UI Module Profile Storage 已完成第一版：新增 `EditorUiModuleProfile`、config schema、storage 和 example ini；startup profile loading 会从 `config/editor_ui_modules.local.ini` 读取 core/sample module policy。
 412. CLI 显式 module 参数优先级已固化：`RuntimeApplicationShellConfig` 记录 core/sample CLI override 标记，profile 只覆盖未由命令行显式设置的字段。
 413. 下一步建议把 `EditorUiModuleProfile` 接入 Debug Controller 保存/重载 UI，或让 `RuntimeEditorLifecycleState` 支持运行时重新应用 module policy。
+414. Editor UI Module Profile Controls 已完成第一版：`DebugControllerContext` 注入 `EditorUiModuleProfile` 与 profile path，`Editor UI Modules` section 复用 `EditorUiModuleProfileConfig` schema 绘制 core/sample policy，并提供保存/重载 local profile 按钮。
+415. 当前仍保留 startup-time registry composition；下一步建议设计 runtime registry reapply 的显式安全边界，或先把 profile/settings controls 从 diagnostics section 拆到独立 Editor Settings/Profile section。
 
 ## 约束
 

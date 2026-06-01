@@ -476,8 +476,9 @@ flowchart TD
 - Runtime Editor UI Module CLI Policy 已完成第一版：`RuntimeVerificationArgs.cpp` 支持 `--enable/--disable-core-editor-ui-module` 与 `--enable/--disable-sample-editor-ui-module`，module policy 可以从命令行覆盖 shell config。
 - Editor UI Module Diagnostics Section 已完成第一版：`EditorUiModuleRegistries` 记录 active module keys，Debug Controller 新增 `Editor UI Modules` 诊断 section，显示 active modules 和各 registry 的 section/provider 数量。
 - Editor UI Module Profile Storage 已完成第一版：新增 `EditorUiModuleProfile` / config schema / storage，`RuntimeProfileLoader` 从 `config/editor_ui_modules.local.ini` 加载默认 module policy，CLI 显式参数保持优先。
+- Editor UI Module Profile Controls 已完成第一版：Debug Controller 的 `Editor UI Modules` section 现在可编辑 core/sample module profile，并能保存/重载 `config/editor_ui_modules.local.ini`；active registries 仍按 startup policy 构建。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Editor UI Module Profile Storage 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议把 `EditorUiModuleProfile` 接入 Debug Controller 的保存/重载 UI 或 runtime reapply；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Editor UI Module Profile Controls 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议设计 runtime registry reapply 边界或把 profile/settings UI 收敛到独立 Editor Settings/Profile section；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Editor UI Module Profile Storage 已接入后，module policy 已有可持久化默认值入口；`config/editor_ui_modules.local.ini` 可控制 core/sample module 默认启用状态，CLI 显式参数仍优先。
+当前最新修正：Editor UI Module Profile Controls 已接入后，module policy 已有 Debug Controller 内的可见、可编辑、可保存和可重载入口；`config/editor_ui_modules.local.ini` 可控制 core/sample module 默认启用状态，CLI 显式参数仍优先。

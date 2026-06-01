@@ -39,6 +39,8 @@ namespace GL_RUNTIME
 		editorContext.engine = context.engineAttachments.engine;
 		editorContext.engineWorld = context.engineAttachments.engineWorld;
 		editorContext.assetSubsystem = context.engineAttachments.assetSubsystem;
+		editorContext.editorUiModuleProfile = &context.profiles.editorUiModuleProfile();
+		editorContext.editorUiModuleProfilePath = &context.profiles.editorUiModuleProfilePath;
 		editorContext.editorUiModules = &editorUiModules;
 		RuntimeEditorRenderResourceAdapter::applyDebugControllerResources(context.renderResources, editorContext);
 		return editorContext;

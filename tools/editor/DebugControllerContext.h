@@ -40,6 +40,7 @@ namespace GL_SCENE
 
 namespace GL_EDITOR
 {
+	struct EditorUiModuleProfile;
 	struct EditorUiModuleRegistries;
 
 	struct DebugControllerContext
@@ -68,6 +69,8 @@ namespace GL_EDITOR
 		const GLengine::Engine* engine{ nullptr };
 		const GLengine::World* engineWorld{ nullptr };
 		const GLengine::AssetSubsystem* assetSubsystem{ nullptr };
+		EditorUiModuleProfile* editorUiModuleProfile{ nullptr };
+		const std::string* editorUiModuleProfilePath{ nullptr };
 		const EditorUiModuleRegistries* editorUiModules{ nullptr };
 	};
 }
