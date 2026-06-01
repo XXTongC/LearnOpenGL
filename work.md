@@ -10158,3 +10158,26 @@ Subagent 审查：
 
 - 这是 ActorComponent property provider registry first slice，不改变 Actor / Component inspector 字段、字段顺序、SceneComponent transform edit、undo latest transform、snapshot action、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步可以继续把 Material inspector 的属性声明迁入类似 provider registry，或把 Actor property schema 也拆成可注册 provider。
+
+### 2026-06-01 Runtime Actor Property Provider Registry
+
+本轮继续推进系统化 UI/inspector 的 provider 模式。上一轮已经把 Component 基础字段与组件类型专属字段拆开，本轮把 Actor schema 中的 Root SceneComponent section 也迁入 Actor property provider registry。这样 `EngineWorldInspector::buildActorPropertySchema(...)` 只保留 Actor 基础字段，Actor 的扩展 section 由默认 provider 追加。
+
+新增与修改：
+
+- 新增 `tools/inspector/ActorPropertyProviderRegistry.h/.cpp`，提供 `ActorPropertyProviderContext`、`ActorPropertyProvider` 和 `ActorPropertyProviderRegistry`，支持注册 provider 并按顺序构建所有匹配的 Actor 属性。
+- 新增 `tools/inspector/ActorPropertyProviders.h/.cpp`，集中默认 `root-scene-component` provider。
+- `EngineWorldInspector.cpp` 删除 Root SceneComponent section 的直接构建逻辑，改为调用 `getDefaultActorPropertyProviderRegistry().buildMatching(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 Actor property provider registry/factory 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 Root SceneComponent / Attached Children 字段只在 `ActorPropertyProviders.cpp` 中生成，`EngineWorldInspector.cpp` 只调用 Actor provider registry。
+- 静态检查确认新增 `ActorPropertyProviderRegistry` / `ActorPropertyProviders` 文件已注册到 Visual Studio 工程。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,engine-world-scene-package,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 Actor provider 文件和 `EngineWorldInspector.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Actor property provider registry first slice，不改变 Actor inspector 字段、字段顺序、Component inspector、SceneComponent transform edit、snapshot action、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步更适合处理 Material inspector provider boundary：先保留现有 material `visitEditableProperties(...)` 作为兼容 provider，再逐步评估是否能把部分 material 字段从 runtime material 类迁出。

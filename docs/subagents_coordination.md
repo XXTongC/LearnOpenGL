@@ -1948,6 +1948,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `tools/inspector/SelectionInspectorProviders.h`, `tools/inspector/SelectionInspectorProviders.cpp`, `tools/inspector/SelectionInspectorPanel.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime ActorComponent property provider registry is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `tools/inspector/ActorComponentPropertyProviderRegistry.h`, `tools/inspector/ActorComponentPropertyProviderRegistry.cpp`, `tools/inspector/ActorComponentPropertyProviders.h`, `tools/inspector/ActorComponentPropertyProviders.cpp`, `tools/inspector/EngineWorldInspector.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime Actor property provider registry is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `tools/inspector/ActorPropertyProviderRegistry.h`, `tools/inspector/ActorPropertyProviderRegistry.cpp`, `tools/inspector/ActorPropertyProviders.h`, `tools/inspector/ActorPropertyProviders.cpp`, `tools/inspector/EngineWorldInspector.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

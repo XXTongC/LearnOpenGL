@@ -978,6 +978,12 @@
     <ClCompile Include="tools\config\ProfileConfigIO.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\inspector\ActorPropertyProviderRegistry.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\inspector\ActorPropertyProviders.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\inspector\ActorComponentPropertyProviderRegistry.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -2923,6 +2929,12 @@
     </ClInclude>
     <ClInclude Include="tools\editor\EditorWorldActions.h">
       <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\inspector\ActorPropertyProviderRegistry.h">
+      <Filter>include\GLframework\tools\inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\inspector\ActorPropertyProviders.h">
+      <Filter>include\GLframework\tools\inspector</Filter>
     </ClInclude>
     <ClInclude Include="tools\inspector\ActorComponentPropertyProviderRegistry.h">
       <Filter>include\GLframework\tools\inspector</Filter>

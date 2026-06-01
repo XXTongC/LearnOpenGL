@@ -548,6 +548,8 @@ public:
 338. 下一步建议把 ActorComponent 或 Material 的内部属性声明拆成可注册 property provider，让 provider registry 不只负责目标分发，也开始承载类型属性扩展点。
 339. Runtime ActorComponent Property Provider Registry 已完成第一版：新增 `ActorComponentPropertyProviderRegistry` 与默认 `ActorComponentPropertyProviders`，Component 基础字段继续由 `EngineWorldInspector` 生成，SceneComponent / MeshComponent / LightComponent / CameraComponent / LegacyObjectComponent 专属字段改由 provider 追加。
 340. 下一步建议继续把 Material inspector 或 Actor property schema 迁入类似 provider registry，让系统化 UI 扩展点覆盖更多运行时类型。
+341. Runtime Actor Property Provider Registry 已完成第一版：新增 `ActorPropertyProviderRegistry` 与默认 `ActorPropertyProviders`，Actor 基础字段继续由 `EngineWorldInspector` 生成，Root SceneComponent section 改由 provider 追加。
+342. 下一步建议继续把 Material inspector 接入 provider registry，先保留现有 material `visitEditableProperties(...)` 作为兼容 provider，再评估逐步迁出 material runtime 类中的 editor schema 依赖。
 
 ## 约束
 

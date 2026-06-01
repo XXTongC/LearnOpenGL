@@ -5,17 +5,9 @@
 #include "../../engine/ActorComponent.h"
 #include "../../engine/EngineObject.h"
 #include "../../engine/Level.h"
-#include "../../engine/SceneComponent.h"
 #include "../../engine/World.h"
 #include "ActorComponentPropertyProviders.h"
-
-namespace
-{
-	glm::vec3 toGlmVec3(const GLengine::Vector3& value)
-	{
-		return { value.x, value.y, value.z };
-	}
-}
+#include "ActorPropertyProviders.h"
 
 namespace GL_EDITOR
 {
@@ -60,17 +52,8 @@ namespace GL_EDITOR
 		builder.addReadOnlyInt("Components", static_cast<int>(actor.getComponents().size()));
 		builder.addReadOnlyBool("Editable World", engineWorldEditable);
 
-		if (auto* root = actor.getRootComponent())
-		{
-			const auto& transform = root->getRelativeTransform();
-			builder.addSection("Root SceneComponent");
-			builder.addReadOnlyString("Name", getEngineObjectDisplayName(*root, "SceneComponent"));
-			builder.addReadOnlyString("Type", getComponentTypeName(*root));
-			builder.addReadOnlyVec3("Location", toGlmVec3(transform.location));
-			builder.addReadOnlyVec3("Rotation", toGlmVec3(transform.rotation));
-			builder.addReadOnlyVec3("Scale", toGlmVec3(transform.scale));
-			builder.addReadOnlyInt("Attached Children", static_cast<int>(root->getChildren().size()));
-		}
+		ActorPropertyProviderContext providerContext{ actor, engineWorldEditable };
+		getDefaultActorPropertyProviderRegistry().buildMatching(builder, providerContext);
 
 		return builder;
 	}
