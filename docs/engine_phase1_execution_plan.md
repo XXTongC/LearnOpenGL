@@ -417,10 +417,11 @@ passed
 - Renderer Frame Pass Profile Config Schema Adapter 已接入：新增 `RendererFramePassProfileConfig` schema adapter；`RendererFramePassProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，DebugControllerPanel 与 renderer frame pass profile storage 改为通过 adapter 构建 schema。
 - PBR Preview Profile Config Schema Adapter 已接入：新增 `PBRPreviewProfileConfig` schema adapter；`PBRPreviewProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，DebugControllerPanel、PBR preview profile storage 与 PBR experiment preset 的 `pbrPreview.*` 子配置改为通过 adapter 构建 schema。
 - PBR Light/Camera Rig Config Schema Adapter 已接入：新增 `PBRLightRigProfileConfig` 与 `PBRCameraRigProfileConfig` schema adapter；`PBRLightRigProfile.h` 和 `PBRCameraRigProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，PBR experiment preset 的 `lightRig.*` 与 `cameraRig.*` 子配置改为通过 adapter 构建 schema。
+- Runtime Frame Pipeline Profile Config Schema Adapter 已接入：新增 `RuntimeFramePipelineProfileConfig` schema adapter；`RuntimeFramePipelineProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，Runtime Frame Pipeline debug panel 与 profile storage 改为通过 adapter 构建 schema。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：PBR Light/Camera Rig Config Schema Adapter 已接入后，PBRLightRigProfile 与 PBRCameraRigProfile header 不再暴露 editor `PropertyBuilder`，Ambient/Directional/Spot/Point light 和 camera rig 配置 schema 集中到对应 `*Config` adapter；PBR experiment preset 的 `lightRig.*` / `cameraRig.*` key、light/camera apply/copy 行为保持不变。
+当前最新修正：Runtime Frame Pipeline Profile Config Schema Adapter 已接入后，RuntimeFramePipelineProfile header 不再暴露 editor `PropertyBuilder`，frame pipeline pass order 与 pass enable 配置 schema 集中到 `RuntimeFramePipelineProfileConfig`；`config/runtime_frame_pipeline.local.ini` 默认路径、frame pass key、DebugControllerPanel save/reload 行为和 renderer backend contract 保持不变。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步建议处理最后剩余直接在 runtime/profile 类型中暴露 `visitEditableProperties(PropertyBuilder&)` 的配置对象：`RuntimeFramePipelineProfile`；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议检查 config/provider 层的 `PropertyBuilder` 依赖是否都处在合理边界，或继续把 DebugControllerPanel 的 profile panel 编排拆成独立 profile panel facade；当前不建议继续扩张 PBR pass。

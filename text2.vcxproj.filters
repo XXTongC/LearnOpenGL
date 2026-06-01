@@ -513,6 +513,9 @@
     <ClCompile Include="application\RuntimeFramePipeline.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeFramePipelineProfileConfig.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeFramePipelineProfile.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -1350,6 +1353,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeFramePipeline.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeFramePipelineProfileConfig.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeFramePipelineProfile.h">

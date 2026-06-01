@@ -202,6 +202,7 @@
     <ClCompile Include="application\RuntimeFrameLifecycle.cpp" />
     <ClCompile Include="application\RuntimeFrameLifecycleState.cpp" />
     <ClCompile Include="application\RuntimeFramePipeline.cpp" />
+    <ClCompile Include="application\RuntimeFramePipelineProfileConfig.cpp" />
     <ClCompile Include="application\RuntimeFramePipelineProfile.cpp" />
     <ClCompile Include="application\RuntimeFramePassRegistry.cpp" />
     <ClCompile Include="application\RuntimeFrameReadinessResourceAdapter.cpp" />
@@ -584,6 +585,7 @@
     <ClInclude Include="application\RuntimeFrameLifecycleConfig.h" />
     <ClInclude Include="application\RuntimeFrameLifecycleState.h" />
     <ClInclude Include="application\RuntimeFramePipeline.h" />
+    <ClInclude Include="application\RuntimeFramePipelineProfileConfig.h" />
     <ClInclude Include="application\RuntimeFramePipelineProfile.h" />
     <ClInclude Include="application\RuntimeFramePassRegistry.h" />
     <ClInclude Include="application\RuntimeFrameReadinessResourceAdapter.h" />

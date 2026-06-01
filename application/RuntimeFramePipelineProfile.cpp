@@ -1,21 +1,10 @@
 #include "RuntimeFramePipelineProfile.h"
 
+#include "RuntimeFramePipelineProfileConfig.h"
 #include "../tools/config/ProfileConfigIO.h"
-#include "../tools/inspector/PropertySchema.h"
 
 namespace GL_RUNTIME
 {
-	void RuntimeFramePipelineProfile::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
-	{
-		builder.addSection("Frame Pipeline Plan");
-		builder.addConfigString("passOrder", "Pass Order", &passOrder);
-		builder.addSection("Frame Pipeline Passes");
-		builder.addConfigBool("sceneColorPassEnabled", "Scene Color Pass", &sceneColorPassEnabled);
-		builder.addConfigBool("sceneResolvePassEnabled", "Scene Resolve Pass", &sceneResolvePassEnabled);
-		builder.addConfigBool("bloomPassEnabled", "Bloom Pass", &bloomPassEnabled);
-		builder.addConfigBool("screenCompositePassEnabled", "Screen Composite Pass", &screenCompositePassEnabled);
-	}
-
 	std::string RuntimeFramePipelineProfileStorage::defaultPath()
 	{
 		return "config/runtime_frame_pipeline.local.ini";
@@ -28,7 +17,7 @@ namespace GL_RUNTIME
 	{
 		RuntimeFramePipelineProfile loadedProfile = profile;
 		GL_EDITOR::PropertyBuilder builder{};
-		loadedProfile.visitEditableProperties(builder);
+		buildRuntimeFramePipelineProfileConfigSchema(builder, loadedProfile);
 		const bool loaded = GL_CONFIG::loadPropertyConfig(path, builder);
 		if (!loaded)
 		{
@@ -46,7 +35,7 @@ namespace GL_RUNTIME
 	{
 		RuntimeFramePipelineProfile snapshot = profile;
 		GL_EDITOR::PropertyBuilder builder{};
-		snapshot.visitEditableProperties(builder);
+		buildRuntimeFramePipelineProfileConfigSchema(builder, snapshot);
 		return GL_CONFIG::savePropertyConfig(
 			path,
 			"# Local runtime frame pipeline pass plan and toggles",

@@ -2,11 +2,6 @@
 
 #include <string>
 
-namespace GL_EDITOR
-{
-	class PropertyBuilder;
-}
-
 namespace GL_RUNTIME
 {
 	struct RuntimeFramePipelineProfile
@@ -16,8 +11,6 @@ namespace GL_RUNTIME
 		bool sceneResolvePassEnabled{ true };
 		bool bloomPassEnabled{ true };
 		bool screenCompositePassEnabled{ true };
-
-		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder);
 	};
 
 	class RuntimeFramePipelineProfileStorage

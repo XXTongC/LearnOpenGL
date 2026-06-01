@@ -7,6 +7,7 @@
 #include "EngineDiagnosticsContext.h"
 #include "EngineDiagnosticsPanel.h"
 #include "../../application/RuntimeFramePipelineProfile.h"
+#include "../../application/RuntimeFramePipelineProfileConfig.h"
 #include "../../renderer/EnvironmentRenderTargets.h"
 #include "../../renderer/EnvironmentProfile.h"
 #include "../../renderer/EnvironmentProfileConfig.h"
@@ -165,7 +166,7 @@ namespace
 			ImGui::TextWrapped("These toggles are intended for render-path debugging. Disabling required passes may leave stale frame textures visible.");
 
 			GL_EDITOR::PropertyBuilder builder{};
-			profile->visitEditableProperties(builder);
+			GL_RUNTIME::buildRuntimeFramePipelineProfileConfigSchema(builder, *profile);
 			GL_EDITOR::drawProperties(builder);
 
 			if (ImGui::Button("Save Frame Pipeline Profile"))

@@ -10559,3 +10559,27 @@ Subagent 审查：
 
 - 这是 PBR light/camera rig config schema adapter slice，不改变 PBR experiment preset 的 `lightRig.*` / `cameraRig.*` key、point light count 上限、light apply/copy 行为、camera apply/copy 行为、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议处理最后剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile 对象：`RuntimeFramePipelineProfile`。
+
+### 2026-06-01 Runtime Frame Pipeline Profile Config Schema Adapter
+
+本轮继续 profile/config schema adapter 化，处理最后一个仍直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 runtime/profile 配置对象：`RuntimeFramePipelineProfile`。目标是让 runtime frame pipeline profile header 不再暴露 editor `PropertyBuilder` 类型，同时保持 `runtime_frame_pipeline.local.ini` 的 pass order 与 pass enable 配置 key、DebugControllerPanel save/reload 行为和 renderer backend contract 不变。
+
+新增与修改：
+
+- 新增 `application/RuntimeFramePipelineProfileConfig.h/.cpp`，提供 `buildRuntimeFramePipelineProfileConfigSchema(...)`，集中生成 Frame Pipeline Plan 与 Frame Pipeline Passes 配置 schema。
+- `RuntimeFramePipelineProfile.h` 删除 `GL_EDITOR::PropertyBuilder` forward declaration 和 `visitEditableProperties(...)`，现在只保留 pass order 和 pass enable runtime/profile 数据。
+- `RuntimeFramePipelineProfile.cpp` 删除 schema 构造实现与 `PropertySchema.h` 直接 include，storage load/save 改为通过 `buildRuntimeFramePipelineProfileConfigSchema(...)` 生成配置 schema。
+- `DebugControllerPanel.cpp` 的 Runtime Frame Pipeline 控制面板改为调用 `buildRuntimeFramePipelineProfileConfigSchema(...)`，保持现有字段、save/reload 按钮和提示文案不变。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 Runtime frame pipeline profile config adapter 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeFramePipelineProfile::visitEditableProperties`、`profile->visitEditableProperties(builder)`、`loadedProfile.visitEditableProperties(builder)` 和 `snapshot.visitEditableProperties(builder)` 不再存在；当前相关源码只保留 `buildRuntimeFramePipelineProfileConfigSchema(...)` adapter 入口。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `RuntimeFramePipelineProfileConfig.cpp`、`RuntimeFramePipelineProfile.cpp`、`RuntimeFramePassRegistry.cpp`、`RuntimeRendererFrameBridgeAdapter.cpp`、`RuntimePBRStartupProfileVerification.cpp`、`RuntimeProfileLoader.cpp` 和 `DebugControllerPanel.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime frame pipeline profile config schema adapter slice，不改变 `config/runtime_frame_pipeline.local.ini` 默认路径、`passOrder` key、`sceneColorPassEnabled` / `sceneResolvePassEnabled` / `bloomPassEnabled` / `screenCompositePassEnabled` key、runtime frame pass registry predicate 或 renderer backend contract。
+- profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；下一步建议从“profile schema adapter”转入更高层系统化 UI 收束，例如检查 `PropertyBuilder` 仍在 config/provider 层的合理性，或把 DebugControllerPanel 的 profile panel 编排继续拆成独立 profile panel facade。
