@@ -10801,3 +10801,25 @@ Subagent 审查：
 
 - 这是 Debug Section Registration Helper Extraction slice，不改变 Debug Controller UI section 顺序、pipeline/scene profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议转入 Debug Controller section provider 的外部注册入口，或开始设计真正的 editor plugin/module registration boundary，让默认 UI provider 不再只能在 factory 内静态组合。
+
+### 2026-06-01 Debug Controller Section Registration Entry
+
+本轮把 Debug Controller 默认 section 的注册入口从“只在静态 factory 内部可用”提升为公开可调用函数。目标是让后续 editor module / plugin 可以构造自己的 `DebugControllerSectionRegistry`，先复用默认 section，再追加或替换自定义 section。
+
+新增与修改：
+
+- `DebugControllerSections.h` 新增 `registerDefaultDebugControllerSections(DebugControllerSectionRegistry& registry)`。
+- `DebugControllerSections.cpp` 将 legacy controls、pipeline profile controls、renderer frame stats、engine diagnostics、scene profile controls 的默认注册逻辑迁入公开注册入口。
+- `defaultDebugControllerSectionRegistry()` 继续保留并委托 `registerDefaultDebugControllerSections(...)` 构建静态默认 registry，现有 `DebugControllerPanel.cpp` 调用路径不变。
+
+已完成验证：
+
+- 静态检查确认 `defaultDebugControllerSectionRegistry()` 仍由 `makeDefaultDebugControllerSectionRegistry()` 构建，后者只委托公开注册入口；默认 section key/order 未改变。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `DebugControllerPanel.cpp` 与 `DebugControllerSections.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Debug Controller Section Registration Entry slice，不改变 Debug Controller UI section 顺序、section key/order、profile UI、配置 key、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议开始设计 editor plugin/module registration boundary：增加一个更高层的 Editor UI module composer，统一接收 Debug Controller section provider、profile control provider 与 selection inspector provider 的注册。

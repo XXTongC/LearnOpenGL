@@ -4,5 +4,6 @@
 
 namespace GL_EDITOR
 {
+	void registerDefaultDebugControllerSections(DebugControllerSectionRegistry& registry);
 	const DebugControllerSectionRegistry& defaultDebugControllerSectionRegistry();
 }

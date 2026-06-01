@@ -466,8 +466,9 @@ flowchart TD
 - Debug Pipeline Profile Control Provider Extraction 已完成第一版：新增 `DebugPipelineProfileControlSections` provider；Post Process、Runtime Frame Pipeline、Renderer Frame Pass Plan 三个 pipeline profile section 的绘制与注册从 `DebugProfileControlSections.cpp` 迁出。
 - Debug Scene Profile Control Provider Extraction 已完成第一版：新增 `DebugSceneProfileControlSections` provider；PBR Preview、PBR Experiment Preset、Environment / IBL 三个 scene profile section 的绘制与注册从 `DebugProfileControlSections.cpp` 迁出。
 - Debug Section Registration Helper Extraction 已完成第一版：新增 `DebugSectionRegistration.h`；Debug Controller、pipeline profile provider 与 scene profile provider 共用 `registerRequiredDebugSection(...)`，注册失败断言与 diagnostics 检查集中到 helper。
+- Debug Controller Section Registration Entry 已完成第一版：`DebugControllerSections.h` 暴露 `registerDefaultDebugControllerSections(...)`，外部 registry 可复用默认 Debug Controller section 注册，静态默认 registry 继续作为兼容入口保留。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Debug Section Registration Helper Extraction 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议转入 Debug Controller section provider 的外部注册入口，或开始设计 editor plugin/module registration boundary；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Debug Controller Section Registration Entry 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议开始设计 editor plugin/module registration boundary，增加一个更高层的 Editor UI module composer；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Debug Section Registration Helper Extraction 已接入后，三个 Debug section provider 不再各自复制注册断言逻辑，`KeyedSectionRegistry` 暴露 `SectionType` / `ContextType` 作为通用 helper 的稳定类型边界。
+当前最新修正：Debug Controller Section Registration Entry 已接入后，默认 Debug Controller section 注册不再只能通过静态 factory 使用，后续 editor module / plugin 可以构造自己的 registry 并复用默认 section。

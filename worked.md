@@ -8166,6 +8166,18 @@
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Debug Controller UI section 顺序、pipeline/scene profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
 
+- 启动第五百五十一轮 Debug Controller Section Registration Entry：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `224e8e2 Extract debug section registration helper`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档转入 Debug Controller section provider 的外部注册入口，目标是让后续 editor module / plugin 可以构造自有 registry 并复用默认 section。
+  - 更新 [DebugControllerSections.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerSections.h)，新增 `registerDefaultDebugControllerSections(DebugControllerSectionRegistry& registry)` 公开入口。
+  - 更新 [DebugControllerSections.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerSections.cpp)，把默认 legacy controls、pipeline profile controls、renderer frame stats、engine diagnostics 和 scene profile controls 注册逻辑迁入公开入口；`defaultDebugControllerSectionRegistry()` 继续委托该入口构建静态默认 registry。
+  - 已执行静态检查：确认 `DebugControllerPanel.cpp` 调用路径仍为 `defaultDebugControllerSectionRegistry().drawAll(context)`，默认 section key/order 未改变，新增入口可被外部 registry 复用。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过，MSBuild 编译了 `DebugControllerPanel.cpp` 与 `DebugControllerSections.cpp`；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 Debug Controller UI section 顺序、section key/order、profile UI、配置 key、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
 - 启动第五百四十九轮 Debug Scene Profile Control Provider Extraction：
   - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
   - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `566a9e9 Extract debug pipeline profile control provider`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。

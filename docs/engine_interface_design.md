@@ -600,6 +600,8 @@ public:
 390. 下一步建议继续推进可组合 UI provider 边界：可以把 pipeline/scene provider 共用的注册 assert helper 抽成小工具，或转入 Debug Controller section provider 的外部注册入口。
 391. Debug Section Registration Helper Extraction 已完成第一版：新增 `DebugSectionRegistration.h`，Debug Controller、pipeline profile provider 与 scene profile provider 共用 `registerRequiredDebugSection(...)`，注册失败断言与 `lastRegistrationFailure()` 检查不再散落在各 provider 文件中。
 392. 下一步建议转入 Debug Controller section provider 的外部注册入口，或开始设计 editor plugin/module registration boundary，让默认 UI provider 从静态 factory 组合进一步走向可扩展模块注册。
+393. Debug Controller Section Registration Entry 已完成第一版：`DebugControllerSections.h` 暴露 `registerDefaultDebugControllerSections(...)`，外部 registry 现在可以复用默认 Debug Controller section 注册，静态 `defaultDebugControllerSectionRegistry()` 仅作为默认组合的一种使用方式。
+394. 下一步建议开始设计 editor plugin/module registration boundary：增加一个更高层的 Editor UI module composer，统一接收 Debug Controller section provider、profile control provider 与 selection inspector provider 的注册。
 
 ## 约束
 
