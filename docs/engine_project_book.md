@@ -347,6 +347,7 @@ flowchart TD
 - Runtime Render Resource PostProcessPass Owner Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再传播 `PostProcessPass.h`，post-process pass 由 implementation-owned pointer 持有；frame pass implementation 显式 include 并通过访问器执行 resolve/bloom/composite。
 - Runtime Render Resource FrameRenderTargets Owner Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再传播 `FrameRenderTargets.h`，frame render targets 由 implementation-owned pointer 持有；runtime frame pass、backend readiness、scene setup 和 resize callback 路径通过访问器取得引用。
 - Runtime Render Resource Bloom Owner Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再公开暴露 Bloom shared_ptr owner，Bloom owner 由 private `mBloom` 持有；scene setup 注入、Bloom frame pass 和 backend readiness 通过访问器取得引用。
+- Runtime Render Resource Screen Quad Owner Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再公开暴露 screen quad shared_ptr owner，screen quad owner 由 private `mScreenQuad` 持有；scene setup 注入、screen composite pass 和 backend readiness 通过访问器取得引用。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已完成第一版：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已完成第一版：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已完成第一版：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -405,6 +406,6 @@ flowchart TD
 - Engine-driven subsystem health counters 已完成第一版：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，diagnostics UI 和 verification 都能证明 Engine tick loop 统一驱动 active World 与 owned subsystems。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Render Resource Bloom Owner Boundary Cleanup 后，下一步优先继续 remaining runtime render resource shared_ptr owner 收敛，或继续 application composition root / runtime context state 依赖边界收敛；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 Runtime Render Resource Screen Quad Owner Boundary Cleanup 后，下一步优先继续 remaining runtime render resource shared_ptr owner 收敛，或继续 application composition root / runtime context state 依赖边界收敛；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Render Resource Bloom Owner Boundary Cleanup 已接入后，`RuntimeRenderResourceState.h` 不再公开暴露 Bloom shared_ptr owner，Bloom 初始化/执行/readiness 路径通过访问器取得引用；下一步继续 remaining runtime render resource shared_ptr owner 收敛，但不扩张 PBR pass。
+当前最新修正：Runtime Render Resource Screen Quad Owner Boundary Cleanup 已接入后，`RuntimeRenderResourceState.h` 不再公开暴露 screen quad shared_ptr owner，screen composite 初始化/执行/readiness 路径通过访问器取得引用；下一步继续 remaining runtime render resource shared_ptr owner 收敛，但不扩张 PBR pass。

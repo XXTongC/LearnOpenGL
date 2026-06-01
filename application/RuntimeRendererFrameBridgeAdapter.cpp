@@ -86,7 +86,7 @@ namespace
 	bool isScreenCompositeReady(const GLframework::AppRuntimeContext& context)
 	{
 		return context.renderResources.renderer != nullptr
-			&& context.renderResources.screenQuad != nullptr
+			&& context.renderResources.screenQuad() != nullptr
 			&& context.renderResources.frameRenderTargets().isInitialized();
 	}
 

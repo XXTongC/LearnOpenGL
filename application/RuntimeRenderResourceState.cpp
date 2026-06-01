@@ -46,3 +46,13 @@ const std::shared_ptr<GLframework::Bloom>& GL_RUNTIME::RuntimeRenderResourceStat
 {
 	return mBloom;
 }
+
+std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceState::screenQuad()
+{
+	return mScreenQuad;
+}
+
+const std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceState::screenQuad() const
+{
+	return mScreenQuad;
+}

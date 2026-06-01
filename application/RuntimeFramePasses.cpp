@@ -60,7 +60,7 @@ namespace GL_RUNTIME
 	)
 	{
 		context.renderResources.postProcessPass().renderScreenComposite(
-			context.renderResources.screenQuad,
+			context.renderResources.screenQuad(),
 			context.renderResources.renderer->getShader(GLframework::MaterialType::ScreenMaterial),
 			context.profiles.postProcessSettings(),
 			config.framebufferWidth,

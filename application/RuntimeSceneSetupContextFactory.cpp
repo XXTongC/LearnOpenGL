@@ -18,7 +18,7 @@ namespace GL_RUNTIME
 			context.renderResources.sceneInScreen,
 			context.renderResources.frameRenderTargets(),
 			context.renderResources.bloom(),
-			context.renderResources.screenQuad,
+			context.renderResources.screenQuad(),
 			context.renderResources.skyBoxMesh,
 			context.renderResources.textD,
 			context.renderResources.screenMaterial,

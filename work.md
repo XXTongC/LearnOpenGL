@@ -9263,3 +9263,27 @@ Subagent 审查：
 
 - 这是 Runtime render resource Bloom owner boundary cleanup，不改变 Bloom 初始化尺寸、bright extraction、blur pass、post-process settings、frame pass order、renderer backend readiness、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 remaining runtime render resource shared_ptr owner 收敛，优先审计访问面较小的 `screenQuad` / `screenMaterial` / legacy-only resources；仍不建议扩张 PBR pass。
+
+### 2026-06-01 Runtime Render Resource Screen Quad Owner Boundary Cleanup
+
+本轮继续 remaining runtime render resource shared_ptr owner 收敛，不扩张 PBR 功能。审计确认：`RuntimeRenderResourceState.h` 仍把 screen composite 使用的 `std::shared_ptr<GLframework::Mesh>` screen quad 作为公开可变字段暴露；真实访问集中在 scene setup 注入、screen composite pass 执行和 renderer backend readiness gate，适合作为 Bloom 后的连续小切片。
+
+新增与修改：
+
+- `RuntimeRenderResourceState.h` 移除公开字段 `screenQuad`，改为 private `mScreenQuad`。
+- `RuntimeRenderResourceState` 新增 `screenQuad()` / `screenQuad() const` 访问器，返回 shared pointer 引用以保持 scene setup assignment 契约。
+- `RuntimeRenderResourceState.cpp` 集中提供 screen quad owner 访问器 implementation。
+- `RuntimeSceneSetupContextFactory.cpp` 通过访问器把 screen quad owner 引用传入 `SetupContext`，保持 `SceneSetup.cpp` 创建 screen quad 并挂入 screen scene 的原行为。
+- `RuntimeFramePasses.cpp` 和 `RuntimeRendererFrameBridgeAdapter.cpp` 改为通过访问器执行 screen composite pass 和 readiness 检查。
+
+已完成验证：
+
+- 静态检查确认旧字段式 `context.renderResources.screenQuad` 访问已清零，剩余访问均为 `screenQuad()` accessor。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeRenderResourceState.cpp`、`RuntimeFramePasses.cpp`、`RuntimeSceneSetupContextFactory.cpp`、`RuntimeRendererFrameBridgeAdapter.cpp` 和相关 runtime 使用点。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime render resource screen quad owner boundary cleanup，不改变 screen quad 创建、screen scene attach、screen composite pass、post-process settings、frame pass order、renderer backend readiness、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 remaining runtime render resource shared_ptr owner 收敛，优先审计 `screenMaterial` 或 legacy-only resources；仍不建议扩张 PBR pass。
