@@ -3,6 +3,7 @@
 #include "DebugControllerSections.h"
 #include "DebugPipelineProfileControlSections.h"
 #include "DebugSceneProfileControlSections.h"
+#include "SampleEditorUiModule.h"
 #include "../inspector/SelectionInspectorProviders.h"
 
 #include <cassert>
@@ -43,6 +44,7 @@ const GL_EDITOR::EditorUiModuleList& GL_EDITOR::defaultEditorUiModules()
 {
 	static const EditorUiModuleList modules{
 		{ "core-editor-ui", registerCoreEditorUiModule },
+		GL_EDITOR::sampleEditorUiModule(),
 	};
 	return modules;
 }

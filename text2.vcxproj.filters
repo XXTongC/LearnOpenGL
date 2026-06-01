@@ -1086,6 +1086,9 @@
     <ClCompile Include="tools\editor\RendererFrameStatsPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\editor\SampleEditorUiModule.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\editor\SceneTransformSnapshot.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -3042,6 +3045,9 @@
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\editor\RendererFrameStatsPanel.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\editor\SampleEditorUiModule.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\editor\SceneTransformSnapshot.h">

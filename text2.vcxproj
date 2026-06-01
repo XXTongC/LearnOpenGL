@@ -383,6 +383,7 @@
     <ClCompile Include="tools\editor\EditorPanels.cpp" />
     <ClCompile Include="tools\editor\HierarchyPanel.cpp" />
     <ClCompile Include="tools\editor\RendererFrameStatsPanel.cpp" />
+    <ClCompile Include="tools\editor\SampleEditorUiModule.cpp" />
     <ClCompile Include="tools\editor\SceneTransformSnapshot.cpp" />
     <ClCompile Include="tools\editor\EditorWorldActions.cpp" />
     <ClCompile Include="tools\Logger\Logger.cpp" />
@@ -1034,6 +1035,7 @@
     <ClInclude Include="tools\editor\EditorUiModuleRegistry.h" />
     <ClInclude Include="tools\editor\KeyedSectionRegistry.h" />
     <ClInclude Include="tools\editor\RendererFrameStatsPanel.h" />
+    <ClInclude Include="tools\editor\SampleEditorUiModule.h" />
     <ClInclude Include="tools\editor\SceneTransformSnapshot.h" />
     <ClInclude Include="tools\editor\EditorWorldActions.h" />
     <ClInclude Include="tools\inspector\ActorPropertyProviderRegistry.h" />

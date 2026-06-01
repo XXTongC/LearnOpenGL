@@ -2006,6 +2006,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `tools/editor/EditorUiModuleRegistry.h`, `tools/editor/EditorUiModuleRegistry.cpp`, `tools/editor/DebugControllerPanel.cpp`, `tools/editor/DebugProfileControlsPanel.cpp`, `tools/inspector/SelectionInspectorPanel.cpp`, `tools/inspector/SelectionInspectorProviders.h`, `tools/inspector/SelectionInspectorProviders.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Editor UI module registration list is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `tools/editor/EditorUiModuleRegistry.h`, `tools/editor/EditorUiModuleRegistry.cpp`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the sample editor UI module is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `tools/editor/SampleEditorUiModule.h`, `tools/editor/SampleEditorUiModule.cpp`, `tools/editor/EditorUiModuleRegistry.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

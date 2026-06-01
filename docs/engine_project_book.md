@@ -469,8 +469,9 @@ flowchart TD
 - Debug Controller Section Registration Entry 已完成第一版：`DebugControllerSections.h` 暴露 `registerDefaultDebugControllerSections(...)`，外部 registry 可复用默认 Debug Controller section 注册，静态默认 registry 继续作为兼容入口保留。
 - Editor UI Module Registry Composer 已完成第一版：新增 `EditorUiModuleRegistry`，聚合 Debug Controller sections、pipeline profile controls、scene profile controls 和 selection inspector providers，三条 panel 消费路径统一从 `defaultEditorUiModuleRegistries()` 读取 registry。
 - Editor UI Module Registration List 已完成第一版：`EditorUiModuleRegistry` 新增 `EditorUiModule` / `EditorUiModuleList`，支持按外部 module list 构建 UI registries；默认列表当前包含 `core-editor-ui`。
+- Sample Editor UI Module 已完成第一版：新增 `SampleEditorUiModule`，通过 `EditorUiModuleList` 注册 `sample-editor-ui-module` Debug Controller section，验证独立 module 可不修改 panel 代码扩展 UI。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Editor UI Module Registration List 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议新增一个 sample editor module 验证 module registration boundary；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Sample Editor UI Module 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议把 module list 选择权上提到 editor/application composition 层或增加 module enable/disable policy；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Editor UI Module Registration List 已接入后，默认 UI 仍由 `core-editor-ui` 组成，但外部 module/plugin 后续可以提供自己的 `EditorUiModuleList`，按列表顺序注册 Debug section / profile section / inspector provider。
+当前最新修正：Sample Editor UI Module 已接入后，默认 UI 由 `core-editor-ui` 与 `sample-editor-ui` 组成；sample module 通过 `EditorUiModuleList` 注册轻量 Debug Controller diagnostics section，证明扩展点不需要改 panel 代码。

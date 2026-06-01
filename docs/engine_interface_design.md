@@ -606,6 +606,8 @@ public:
 396. 下一步建议把 composer 从“默认 registry 聚合”推进到“可注入 module registration list”：引入 `EditorUiModule` 描述对象，让外部模块声明自己注册哪些 Debug section / profile section / inspector provider。
 397. Editor UI Module Registration List 已完成第一版：`EditorUiModuleRegistry` 新增 `EditorUiModule` / `EditorUiModuleList`，支持通过 `registerEditorUiModules(...)` 和 `buildEditorUiModuleRegistries(...)` 按外部 module list 构建 UI registries；默认列表当前包含 `core-editor-ui`。
 398. 下一步建议新增一个 sample editor module，通过不修改 panel 代码的方式注册诊断或测试 section，用实际扩展示例验证 module registration boundary。
+399. Sample Editor UI Module 已完成第一版：新增 `SampleEditorUiModule`，通过 `EditorUiModuleList` 注册 `sample-editor-ui-module` Debug Controller section；默认 UI 现在由 `core-editor-ui` 与 `sample-editor-ui` 组合构建，验证独立 module 可不修改 panel 代码扩展 UI。
+400. 下一步建议把 module list 的选择权从静态默认列表上提到 editor/application composition 层，或增加 module enable/disable policy，让 sample/default/plugin module 组合不再长期依赖修改 `EditorUiModuleRegistry.cpp`。
 
 ## 约束
 

@@ -10871,3 +10871,27 @@ Subagent 审查：
 
 - 这是 Editor UI Module Registration List slice，不改变默认 UI module 内容、Debug Controller UI section 顺序、profile section 顺序、selection inspector provider 优先级、配置 key、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议开始把具体扩展示例接入该 module list：例如新增一个只注册诊断/测试 section 的 sample editor module，用它验证外部 module 可以不修改 panel 代码而扩展 UI。
+
+### 2026-06-01 Sample Editor UI Module
+
+本轮新增一个真正通过 `EditorUiModuleList` 接入的 sample editor module。目标不是增加 PBR 功能，而是验证 editor UI module boundary 已经可以让独立模块在不修改 DebugControllerPanel / profile panel / selection panel 的情况下注册自己的 UI section。
+
+新增与修改：
+
+- 新增 `tools/editor/SampleEditorUiModule.h/.cpp`，提供 `sampleEditorUiModule()` 与 `registerSampleEditorUiModule(...)`。
+- `SampleEditorUiModule` 通过 `EditorUiModuleRegistries::debugControllerSections` 注册 `sample-editor-ui-module` section，order 为 900，显示轻量上下文诊断信息。
+- `EditorUiModuleRegistry.cpp` 的默认 module list 追加 `sample-editor-ui`，默认 UI 现在由 `core-editor-ui` 与 `sample-editor-ui` 组合构建。
+- 新 sample section 只依赖 `DebugControllerContext` 和 ImGui，不直接触碰 renderer pass、PBR profile 或 panel implementation。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 sample module 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 sample module 只通过 `sampleEditorUiModule()` 进入 `defaultEditorUiModules()`，没有修改 DebugControllerPanel / DebugProfileControlsPanel / SelectionInspectorPanel。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `EditorUiModuleRegistry.cpp` 与 `SampleEditorUiModule.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Sample Editor UI Module boundary validation slice，会在 Debug Controller 中新增一个轻量 sample diagnostics section，但不改变 PBR pass、runtime frame pipeline、renderer backend contract、profile 配置 key、selection inspector provider 优先级或已有默认 section 的相对顺序。
+- 下一步建议把 module list 的选择权从静态默认列表继续上提到 editor/application composition 层，或增加 module enable/disable policy，避免长期只能通过改 `EditorUiModuleRegistry.cpp` 控制默认模块组合。
