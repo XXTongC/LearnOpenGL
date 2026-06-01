@@ -5,19 +5,56 @@
 #include "DebugSceneProfileControlSections.h"
 #include "../inspector/SelectionInspectorProviders.h"
 
+#include <cassert>
+
+namespace
+{
+	void registerCoreEditorUiModule(GL_EDITOR::EditorUiModuleRegistries& registries)
+	{
+		GL_EDITOR::registerDefaultDebugControllerSections(registries.debugControllerSections);
+		GL_EDITOR::registerDefaultDebugPipelineProfileControlSections(registries.pipelineProfileControls);
+		GL_EDITOR::registerDefaultDebugSceneProfileControlSections(registries.sceneProfileControls);
+		GL_EDITOR::registerDefaultSelectionInspectorProviders(registries.selectionInspectors);
+	}
+}
+
+void GL_EDITOR::registerEditorUiModules(EditorUiModuleRegistries& registries, const EditorUiModuleList& modules)
+{
+	for (const auto& module : modules)
+	{
+		assert(!module.key.empty() && module.registerModule);
+		if (module.key.empty() || !module.registerModule)
+		{
+			continue;
+		}
+
+		module.registerModule(registries);
+	}
+}
+
+GL_EDITOR::EditorUiModuleRegistries GL_EDITOR::buildEditorUiModuleRegistries(const EditorUiModuleList& modules)
+{
+	EditorUiModuleRegistries registries{};
+	registerEditorUiModules(registries, modules);
+	return registries;
+}
+
+const GL_EDITOR::EditorUiModuleList& GL_EDITOR::defaultEditorUiModules()
+{
+	static const EditorUiModuleList modules{
+		{ "core-editor-ui", registerCoreEditorUiModule },
+	};
+	return modules;
+}
+
 void GL_EDITOR::registerDefaultEditorUiModules(EditorUiModuleRegistries& registries)
 {
-	registerDefaultDebugControllerSections(registries.debugControllerSections);
-	registerDefaultDebugPipelineProfileControlSections(registries.pipelineProfileControls);
-	registerDefaultDebugSceneProfileControlSections(registries.sceneProfileControls);
-	registerDefaultSelectionInspectorProviders(registries.selectionInspectors);
+	registerEditorUiModules(registries, defaultEditorUiModules());
 }
 
 GL_EDITOR::EditorUiModuleRegistries GL_EDITOR::buildDefaultEditorUiModuleRegistries()
 {
-	EditorUiModuleRegistries registries{};
-	registerDefaultEditorUiModules(registries);
-	return registries;
+	return buildEditorUiModuleRegistries(defaultEditorUiModules());
 }
 
 const GL_EDITOR::EditorUiModuleRegistries& GL_EDITOR::defaultEditorUiModuleRegistries()

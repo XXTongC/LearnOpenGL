@@ -10847,3 +10847,27 @@ Subagent 审查：
 
 - 这是 Editor UI Module Registry Composer slice，不改变 Debug Controller UI section 顺序、profile section 顺序、selection inspector provider 优先级、配置 key、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议把 Editor UI module composer 从“默认 registry 聚合”继续推进到“可注入的 module registration list”，例如引入 `EditorUiModule` 描述对象，让外部模块声明自己要注册哪些 Debug section / profile section / inspector provider。
+
+### 2026-06-01 Editor UI Module Registration List
+
+本轮把 Editor UI module composer 从“固定默认聚合函数”推进到“可注入 module registration list”。目标是让默认 UI 仍由 core module 组成，但外部 module/plugin 后续可以提供自己的 `EditorUiModuleList`，按列表顺序向同一组 registry 注册 Debug Controller section、profile control section 或 selection inspector provider。
+
+新增与修改：
+
+- `EditorUiModuleRegistry.h` 新增 `EditorUiModuleRegister`、`EditorUiModule` 与 `EditorUiModuleList`。
+- 新增 `registerEditorUiModules(...)` 和 `buildEditorUiModuleRegistries(...)`，可对任意 module list 构建 `EditorUiModuleRegistries`。
+- 新增 `defaultEditorUiModules()`，当前默认 module list 只包含 `core-editor-ui`。
+- `registerDefaultEditorUiModules(...)` 与 `buildDefaultEditorUiModuleRegistries()` 改为复用默认 module list，不再直接硬编码四个默认 provider 注册函数。
+- `registerEditorUiModules(...)` 对空 key 或空注册回调在 Debug 构建下 assert，并在非 Debug 路径跳过无效 module，避免损坏后续 registry。
+
+已完成验证：
+
+- 静态检查确认 `core-editor-ui` 负责调用 Debug Controller、pipeline profile、scene profile 与 selection inspector 的默认注册函数，三条 panel 消费路径仍使用 `defaultEditorUiModuleRegistries()`。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `DebugControllerPanel.cpp`、`DebugProfileControlsPanel.cpp`、`EditorUiModuleRegistry.cpp` 与 `SelectionInspectorPanel.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Editor UI Module Registration List slice，不改变默认 UI module 内容、Debug Controller UI section 顺序、profile section 顺序、selection inspector provider 优先级、配置 key、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议开始把具体扩展示例接入该 module list：例如新增一个只注册诊断/测试 section 的 sample editor module，用它验证外部 module 可以不修改 panel 代码而扩展 UI。

@@ -604,6 +604,8 @@ public:
 394. 下一步建议开始设计 editor plugin/module registration boundary：增加一个更高层的 Editor UI module composer，统一接收 Debug Controller section provider、profile control provider 与 selection inspector provider 的注册。
 395. Editor UI Module Registry Composer 已完成第一版：新增 `EditorUiModuleRegistry` 聚合 Debug Controller sections、pipeline profile controls、scene profile controls 和 selection inspector providers；三条 panel 消费路径改为从 `defaultEditorUiModuleRegistries()` 读取默认 registry。
 396. 下一步建议把 composer 从“默认 registry 聚合”推进到“可注入 module registration list”：引入 `EditorUiModule` 描述对象，让外部模块声明自己注册哪些 Debug section / profile section / inspector provider。
+397. Editor UI Module Registration List 已完成第一版：`EditorUiModuleRegistry` 新增 `EditorUiModule` / `EditorUiModuleList`，支持通过 `registerEditorUiModules(...)` 和 `buildEditorUiModuleRegistries(...)` 按外部 module list 构建 UI registries；默认列表当前包含 `core-editor-ui`。
+398. 下一步建议新增一个 sample editor module，通过不修改 panel 代码的方式注册诊断或测试 section，用实际扩展示例验证 module registration boundary。
 
 ## 约束
 

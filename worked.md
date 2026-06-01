@@ -8193,6 +8193,20 @@
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Debug Controller UI section 顺序、profile section 顺序、selection inspector provider 优先级、配置 key、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
 
+- 启动第五百五十三轮 Editor UI Module Registration List：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `bda3a9d Add editor UI module registry composer`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把 Editor UI module composer 从“默认 registry 聚合”推进到“可注入 module registration list”。
+  - 更新 [EditorUiModuleRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleRegistry.h)，新增 `EditorUiModuleRegister`、`EditorUiModule` 与 `EditorUiModuleList`，并暴露 `registerEditorUiModules(...)`、`buildEditorUiModuleRegistries(...)` 和 `defaultEditorUiModules()`。
+  - 更新 [EditorUiModuleRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleRegistry.cpp)，新增默认 `core-editor-ui` module；该 module 负责注册 Debug Controller sections、pipeline profile controls、scene profile controls 和 selection inspector providers。
+  - `registerDefaultEditorUiModules(...)` 与 `buildDefaultEditorUiModuleRegistries()` 已改为复用默认 module list，不再直接硬编码四个默认 provider 注册函数。
+  - `registerEditorUiModules(...)` 对空 key 或空注册回调在 Debug 构建下 assert，并在非 Debug 路径跳过无效 module。
+  - 已执行静态检查：确认 `core-editor-ui` 负责调用四类默认注册函数，三条 panel 消费路径仍使用 `defaultEditorUiModuleRegistries()`。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过，MSBuild 编译了 `DebugControllerPanel.cpp`、`DebugProfileControlsPanel.cpp`、`EditorUiModuleRegistry.cpp` 与 `SelectionInspectorPanel.cpp`；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改默认 UI module 内容、Debug Controller UI section 顺序、profile section 顺序、selection inspector provider 优先级、配置 key、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
 - 启动第五百四十九轮 Debug Scene Profile Control Provider Extraction：
   - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
   - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `566a9e9 Extract debug pipeline profile control provider`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
