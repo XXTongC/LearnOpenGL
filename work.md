@@ -9741,3 +9741,27 @@ Subagent 审查：
 
 - 这是 PBR stats/report 的 read-only resource adapter cleanup，不改变 `PBR verification scene stats` 或 `PBR verification renderer stats` 输出契约、prepared scene 统计规则、IBL readiness 判断、renderer frame stats 字段、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步应继续审计 Engine World verification 和 frame bridge readiness 这两类 remaining read-only observation path，判断是否需要拆出更窄的 verification/resource snapshot；当前仍不建议继续扩张 PBR pass。
+
+### 2026-06-01 Runtime Frame Readiness Resource Adapter Cleanup
+
+本轮继续处理 frame bridge readiness 只读 observation path。`RuntimeRendererFrameBridgeAdapter.cpp` 原本同时负责 backend facade、pass plan、frame rendering forwarding 和每个 runtime frame pass 的资源 ready 判断；其中 ready 判断需要读取 renderer、offscreen scene、frame render targets、Bloom、screen quad 和 post-process settings。backend bridge 不应直接知道这些 render resource 细节，本轮把 frame pass readiness 判断迁入专用 adapter。
+
+新增与修改：
+
+- 新增 `RuntimeFrameReadinessResourceAdapter.h/.cpp`，提供 `isFramePassReady(...)`。
+- `RuntimeFrameReadinessResourceAdapter.cpp` 内部集中创建 `RuntimeRenderResourceView`，并集中判断 SceneColor / SceneResolve / Bloom / ScreenComposite pass 所需资源是否 ready。
+- `RuntimeRendererFrameBridgeAdapter.cpp` 移除 frame target、post-process settings、`RuntimeRenderResourceView` 和 `readOnlyView()` 直接依赖，只保留 pass plan、backend key、frame plan key 和 render forwarding。
+- `RuntimeRendererFrameBridgeAdapter::isBackendReady()` 改为委托 `RuntimeFrameReadinessResourceAdapter::isFramePassReady(...)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 adapter 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeRendererFrameBridgeAdapter.cpp/.h` 中不再出现 `readOnlyView()`、`RuntimeRenderResourceView`、direct render resource accessor、`FrameRenderTargets` 或 `PostProcessSettings`。
+- 静态检查确认 frame pass readiness direct render resource access 已集中到 `RuntimeFrameReadinessResourceAdapter.cpp`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `RuntimeFrameReadinessResourceAdapter.cpp` 与 `RuntimeRendererFrameBridgeAdapter.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime frame bridge readiness 的 read-only resource adapter cleanup，不改变 renderer backend key、backend ready 语义、pass order、pass enabled policy、frame plan key、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步应继续处理剩余 `RuntimeEngineWorldVerification.cpp` 中的 read-only resource access，为 prepared scene stats 与 scene package resolver 创建更窄 Engine World verification resource adapter 或 snapshot；当前仍不建议继续扩张 PBR pass。
