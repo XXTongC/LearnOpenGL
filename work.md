@@ -9384,3 +9384,26 @@ Subagent 审查：
 
 - 这是 Runtime render resource renderer/scene owner boundary cleanup，不改变 renderer 创建/附着、scene setup、scene render、editor panels、legacy experiment hooks、PBR verification probes、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议只处理 `clearColor` 这类低风险值型状态访问器，或者设计 read-only runtime resource facade；当前仍不建议继续扩张 PBR pass。
+
+### 2026-06-01 Runtime Render Resource Clear Color State Boundary Cleanup
+
+本轮继续 `RuntimeRenderResourceState` 剩余公开状态收敛，不扩张 PBR 功能。上一轮 renderer/scene owner 已从公开字段改为 accessor 后，`clearColor` 成为该 state 中最后一个直接公开的数据字段；本轮只把它改为 private value state + accessor，不移动清屏策略、不改变默认值、不改变 frame runner 中每帧向 renderer 同步 clear color 的行为。
+
+新增与修改：
+
+- `RuntimeRenderResourceState.h` 移除公开字段 `clearColor`，改为 private `mClearColor`。
+- `RuntimeRenderResourceState` 新增 `clearColor()` / `clearColor() const`，返回 `glm::vec3` 引用以保留后续 runtime 配置写入能力。
+- `RuntimeRenderResourceState.cpp` 集中提供 clear color accessor implementation。
+- `RuntimeFrameRunner.cpp` 改为通过 `context.renderResources.clearColor()` 调用 `Renderer::setClearColor(...)`，保持原有 frame-time clear color 同步语义。
+
+已完成验证：
+
+- 静态检查确认旧字段式 `context.renderResources.clearColor` 访问已清零，剩余访问为 `clearColor()` accessor。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 重新编译受 `RuntimeRenderResourceState.h` 和 `RuntimeFrameRunner.cpp` 影响的 runtime 文件。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime render resource clear color state boundary cleanup，不改变 renderer 创建/附着、OpenGL startup clear color、runtime frame pipeline、renderer backend contract、scene setup 或 PBR pass。
+- `RuntimeRenderResourceState` 现在不再直接公开数据字段；下一步更适合设计只读 runtime resource facade，或转向其他 runtime/application state 的依赖边界，而不是继续扩张 PBR pass。

@@ -17,6 +17,16 @@ GL_RUNTIME::RuntimeRenderResourceState& GL_RUNTIME::RuntimeRenderResourceState::
 	RuntimeRenderResourceState&&
 ) noexcept = default;
 
+glm::vec3& GL_RUNTIME::RuntimeRenderResourceState::clearColor()
+{
+	return mClearColor;
+}
+
+const glm::vec3& GL_RUNTIME::RuntimeRenderResourceState::clearColor() const
+{
+	return mClearColor;
+}
+
 std::shared_ptr<GLframework::Renderer>& GL_RUNTIME::RuntimeRenderResourceState::renderer()
 {
 	return mRenderer;

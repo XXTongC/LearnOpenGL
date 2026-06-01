@@ -29,8 +29,8 @@ namespace GL_RUNTIME
 		RuntimeRenderResourceState(RuntimeRenderResourceState&&) noexcept;
 		RuntimeRenderResourceState& operator=(RuntimeRenderResourceState&&) noexcept;
 
-		glm::vec3 clearColor{};
-
+		glm::vec3& clearColor();
+		const glm::vec3& clearColor() const;
 		std::shared_ptr<GLframework::Renderer>& renderer();
 		const std::shared_ptr<GLframework::Renderer>& renderer() const;
 		std::shared_ptr<GLframework::Scene>& sceneOffScreen();
@@ -59,6 +59,7 @@ namespace GL_RUNTIME
 		const std::shared_ptr<GLframework::PhongCSMShadowMaterial>& csmShadowMaterial() const;
 
 	private:
+		glm::vec3 mClearColor{};
 		std::shared_ptr<GLframework::Renderer> mRenderer{ nullptr };
 		std::shared_ptr<GLframework::Scene> mSceneOffScreen{ nullptr };
 		std::shared_ptr<GLframework::Scene> mSceneInScreen{ nullptr };

@@ -504,7 +504,8 @@ public:
 294. Runtime Render Resource Scene Mesh/Material Owner Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再公开暴露 `grassMaterial`、`skyBoxMesh`、`movePlane`、`textD`、`csmShadowMaterial` scene/legacy mesh/material owners，scene setup、legacy experiment 和 editor debug panel 注入通过访问器取得引用。
 295. Runtime Render Resource Dead Point Light Mesh Owner Removal 已完成第一版：`RuntimeRenderResourceState.h` 删除无源码使用点的 `meshPointLight` 公开 owner 字段；未新增 replacement accessor。
 296. Runtime Render Resource Renderer/Scene Owner Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再公开暴露 `renderer`、`sceneOffScreen`、`sceneInScreen` shared_ptr owners，frame pass、scene setup、legacy experiment、editor context、renderer backend readiness 和 verification/report 路径通过访问器取得引用。
-297. 下一步建议优先处理 `clearColor` 这类值型状态 accessor，或设计只读 runtime resource facade；当前仍不建议继续扩张 PBR pass。
+297. Runtime Render Resource Clear Color State Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再公开暴露 `clearColor` 值型字段，frame runner 通过 `clearColor()` accessor 把当前 clear color 同步到 renderer。
+298. 下一步建议设计只读 runtime resource facade，或转向其他 runtime/application state 的依赖边界；当前仍不建议继续扩张 PBR pass。
 
 ## 约束
 

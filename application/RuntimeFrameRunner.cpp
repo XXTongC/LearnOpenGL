@@ -31,7 +31,7 @@ namespace GL_RUNTIME
 	)
 	{
 		context.cameraLights.cameracontrol->update();
-		context.renderResources.renderer()->setClearColor(context.renderResources.clearColor);
+		context.renderResources.renderer()->setClearColor(context.renderResources.clearColor());
 		RuntimeLegacyExperimentLifecycle::update(context, legacyExperiments);
 		if (config.engine)
 		{
