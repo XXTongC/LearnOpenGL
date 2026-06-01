@@ -8151,6 +8151,20 @@
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Debug Controller UI section 顺序、profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
 
+- 启动第五百四十八轮 Debug Pipeline Profile Control Provider Extraction：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `292b4da Add section ordering diagnostics`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续推进 editor/gameplay boundary，把 UI provider 注册从默认 factory 逐步移向可组合模块；本轮选择先抽取 pipeline profile controls。
+  - 新增 [DebugPipelineProfileControlSections.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugPipelineProfileControlSections.h) 与 [DebugPipelineProfileControlSections.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugPipelineProfileControlSections.cpp)，提供 `registerDefaultDebugPipelineProfileControlSections(...)`。
+  - 更新 [DebugProfileControlSections.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugProfileControlSections.cpp)，Post Process、Runtime Frame Pipeline、Renderer Frame Pass Plan 三个 pipeline section 的绘制 helper、order 常量和注册逻辑迁出，默认 pipeline registry 构建改为调用 provider 注册函数。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 provider 源文件和头文件。
+  - 中间验证发现 `DebugProfileControlSectionRegistry` 是 alias，不能在 provider header 中以前置 `class` 声明表达；已修正为 provider header 直接 include `DebugProfileControlSectionRegistry.h`。
+  - 已执行静态检查：确认 pipeline 三个 draw helper 只保留在 `DebugPipelineProfileControlSections.cpp`，`DebugProfileControlSections.cpp` 只调用 `registerDefaultDebugPipelineProfileControlSections(registry)`。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：修正 alias 前置声明问题后，`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 pipeline/profile UI 顺序、配置 key、save/reload 行为、Renderer Frame Pass reset 行为、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
 - 启动第五百四十七轮 Keyed Section Ordering and Diagnostics：
   - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
   - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `34531d7 Extract keyed section registry`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。

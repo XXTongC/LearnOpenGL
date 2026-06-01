@@ -1059,6 +1059,9 @@
     <ClCompile Include="tools\editor\DebugLegacyControlsPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\editor\DebugPipelineProfileControlSections.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\editor\DebugProfileControlSections.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -2988,6 +2991,9 @@
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\editor\DebugLegacyControlsPanel.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\editor\DebugPipelineProfileControlSections.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\editor\DebugProfileControlSectionRegistry.h">

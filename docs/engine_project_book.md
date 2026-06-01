@@ -463,8 +463,9 @@ flowchart TD
 - Debug Profile Control Section Registry 已完成第一版：新增 `DebugProfileControlSectionRegistry` 与默认 `DebugProfileControlSections` factory；pipeline/scene profile control section 顺序从 `DebugProfileControlsPanel.cpp` 迁出到可注册 section registry。
 - Keyed Section Registry Extraction 已完成第一版：新增通用 `KeyedSectionRegistry<Section, Context>`；Debug Controller 与 Debug Profile Control 两套 section registry 复用同一套 key 校验、重复 key 拒绝和顺序绘制逻辑，重复 registry `.cpp` 已删除。
 - Keyed Section Ordering and Diagnostics 已完成第一版：`KeyedSectionRegistry` 支持按 `section.order` 稳定插入，记录最近一次注册失败原因，并提供 `sectionCount()`；默认 Debug Controller/Profile section factory 均显式声明 order 并在 Debug 构建下 assert 注册结果。
+- Debug Pipeline Profile Control Provider Extraction 已完成第一版：新增 `DebugPipelineProfileControlSections` provider；Post Process、Runtime Frame Pipeline、Renderer Frame Pass Plan 三个 pipeline profile section 的绘制与注册从 `DebugProfileControlSections.cpp` 迁出。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Keyed Section Ordering and Diagnostics 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议把 UI provider 注册从默认 factory 逐步移向可组合模块，或开始抽取 Debug Profile Control section 内部的大型 helper 到独立 provider 文件；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Debug Pipeline Profile Control Provider Extraction 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议对 scene profile controls 做同类 provider extraction，把 PBR Preview、PBR Experiment 和 Environment / IBL 从 `DebugProfileControlSections.cpp` 迁出；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Keyed Section Ordering and Diagnostics 已接入后，Debug Controller 与 Debug Profile Control section 顺序不再依赖注册调用顺序，而是由 section `order` 显式声明；registry 会记录空 key、空 draw callback 或重复 key 的注册失败原因。
+当前最新修正：Debug Pipeline Profile Control Provider Extraction 已接入后，pipeline profile controls 的绘制 helper 与默认注册逻辑从 `DebugProfileControlSections.cpp` 迁入独立 provider；默认 facade 只负责组装 registry。

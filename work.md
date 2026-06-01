@@ -10730,3 +10730,27 @@ Subagent 审查：
 
 - 这是 Keyed Section Ordering and Diagnostics slice，不改变 Debug Controller UI section 顺序、profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续推进 editor/gameplay boundary，把 UI provider 注册从默认 factory 逐步移向可组合模块，或开始抽取 Debug Profile Control section 内部的大型 helper 到独立 provider 文件。
+
+### 2026-06-01 Debug Pipeline Profile Control Provider Extraction
+
+本轮开始把 Debug Profile Control section 内部的大型 helper 拆成可组合 provider 文件。先处理 pipeline profile controls 这一半，避免一次性移动 scene/PBR/Environment 全部逻辑造成过大风险。
+
+新增与修改：
+
+- 新增 `tools/editor/DebugPipelineProfileControlSections.h/.cpp`，提供 `registerDefaultDebugPipelineProfileControlSections(...)`。
+- Post Process、Runtime Frame Pipeline、Renderer Frame Pass Plan 三个 pipeline section 的绘制 helper、order 常量和注册逻辑从 `DebugProfileControlSections.cpp` 迁入新 provider 文件。
+- `DebugProfileControlSections.cpp` 保留默认 registry facade 与 scene profile controls，pipeline registry 构建时委托 `registerDefaultDebugPipelineProfileControlSections(registry)`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 provider 源文件和头文件。
+- 修正一次中间编译问题：`DebugProfileControlSectionRegistry` 是 alias，不能在 provider header 中以前置 `class` 声明表达；最终 provider header 直接 include `DebugProfileControlSectionRegistry.h`。
+
+已完成验证：
+
+- 静态检查确认 `drawPostProcessControls(...)`、`drawFramePipelineControls(...)` 与 `drawRendererFramePassControls(...)` 只保留在 `DebugPipelineProfileControlSections.cpp`，`DebugProfileControlSections.cpp` 只调用 provider 注册函数。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：第一次构建暴露 alias 前置声明错误；修正后重新执行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `DebugPipelineProfileControlSections.cpp` 与 `DebugProfileControlSections.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Debug Pipeline Profile Control Provider Extraction slice，不改变 pipeline/profile UI 顺序、配置 key、save/reload 行为、Renderer Frame Pass reset 行为、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议对 scene profile controls 做同类 provider extraction，把 PBR Preview、PBR Experiment 和 Environment / IBL 从 `DebugProfileControlSections.cpp` 迁出。

@@ -594,6 +594,8 @@ public:
 384. 下一步建议为 keyed section 增加显式 ordering metadata 与 duplicate registration diagnostics，或继续推进 editor/gameplay boundary，把 UI provider 注册从默认 factory 逐步移向可组合模块。
 385. Keyed Section Ordering and Diagnostics 已完成第一版：`KeyedSectionRegistry` 支持按 `section.order` 稳定插入，记录最近一次注册失败原因，并提供 `sectionCount()`；默认 Debug Controller/Profile section factory 均显式声明 order 并在 Debug 构建下 assert 注册结果。
 386. 下一步建议继续推进 editor/gameplay boundary，把 UI provider 注册从默认 factory 逐步移向可组合模块，或开始抽取 Debug Profile Control section 内部的大型 helper 到独立 provider 文件。
+387. Debug Pipeline Profile Control Provider Extraction 已完成第一版：新增 `DebugPipelineProfileControlSections` provider，Post Process、Runtime Frame Pipeline、Renderer Frame Pass Plan 三个 pipeline profile section 的绘制与注册从 `DebugProfileControlSections.cpp` 迁出。
+388. 下一步建议对 scene profile controls 做同类 provider extraction，把 PBR Preview、PBR Experiment 和 Environment / IBL 从 `DebugProfileControlSections.cpp` 迁出。
 
 ## 约束
 
