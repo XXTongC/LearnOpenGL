@@ -8047,3 +8047,19 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；5 个 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 PBR preview profile 默认路径、preview geometry/grid key、material profile path、normal map key、PBR experiment preset 的 `pbrPreview.*` key、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百四十轮 PBR Light/Camera Rig Config Schema Adapter：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `86d751d Extract PBR preview profile config schema`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续处理仍直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 runtime/profile 配置对象，本轮选择 `PBRLightRigProfile` 与 `PBRCameraRigProfile`。
+  - 新增 [PBRLightRigProfileConfig.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRLightRigProfileConfig.h) 与 [PBRLightRigProfileConfig.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRLightRigProfileConfig.cpp)，提供 `buildPBRLightRigProfileConfigSchema(...)` 统一生成 Ambient、Directional、Spot 与 Point Lights 配置 schema。
+  - 新增 [PBRCameraRigProfileConfig.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRCameraRigProfileConfig.h) 与 [PBRCameraRigProfileConfig.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRCameraRigProfileConfig.cpp)，提供 `buildPBRCameraRigProfileConfigSchema(...)` 统一生成 Camera Rig 配置 schema。
+  - 更新 [PBRLightRigProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRLightRigProfile.h) 与 [PBRCameraRigProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRCameraRigProfile.h)，删除 editor `PropertyBuilder` forward declaration 和 `visitEditableProperties(...)`，header 只保留数据、apply/copy 和运行时转换 API。
+  - 更新 [PBRLightRigProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRLightRigProfile.cpp) 与 [PBRCameraRigProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRCameraRigProfile.cpp)，移除 schema 构造实现和 `PropertySchema.h` include。
+  - 更新 [PBRExperimentProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\PBRExperimentProfile.cpp)，PBR experiment preset 的 `lightRig.*` 与 `cameraRig.*` 子配置 load/save 改为通过对应 schema adapter 构建。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 Light/Camera rig config adapter 源文件和头文件。
+  - 已执行静态检查：确认 Light/Camera rig 的旧 `visitEditableProperties(...)` 实现和 PBR experiment preset 旧调用点不再存在，当前相关源码只保留 `buildPBRLightRigProfileConfigSchema(...)` 与 `buildPBRCameraRigProfileConfigSchema(...)` adapter 入口。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 PBR experiment preset 的 `lightRig.*` / `cameraRig.*` key、point light count 上限、light apply/copy 行为、camera apply/copy 行为、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

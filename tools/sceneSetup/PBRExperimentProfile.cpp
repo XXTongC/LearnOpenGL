@@ -10,7 +10,9 @@
 #include "../../renderer/PostProcessSettings.h"
 #include "../../renderer/PostProcessSettingsConfig.h"
 #include "PBRCameraRigProfile.h"
+#include "PBRCameraRigProfileConfig.h"
 #include "PBRLightRigProfile.h"
+#include "PBRLightRigProfileConfig.h"
 #include "PBRPreviewProfile.h"
 #include "PBRPreviewProfileConfig.h"
 
@@ -64,9 +66,9 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	GL_EDITOR::PropertyBuilder pbrPreviewBuilder{};
 	buildPBRPreviewProfileConfigSchema(pbrPreviewBuilder, loadedPBRPreviewProfile);
 	GL_EDITOR::PropertyBuilder lightRigBuilder{};
-	loadedLightRigProfile.visitEditableProperties(lightRigBuilder);
+	buildPBRLightRigProfileConfigSchema(lightRigBuilder, loadedLightRigProfile);
 	GL_EDITOR::PropertyBuilder cameraRigBuilder{};
-	loadedCameraRigProfile.visitEditableProperties(cameraRigBuilder);
+	buildPBRCameraRigProfileConfigSchema(cameraRigBuilder, loadedCameraRigProfile);
 
 	const bool loaded = GL_CONFIG::readKeyValueFile(path, [
 		&enabled,
@@ -180,9 +182,9 @@ bool GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 	GL_EDITOR::PropertyBuilder pbrPreviewBuilder{};
 	buildPBRPreviewProfileConfigSchema(pbrPreviewBuilder, pbrPreviewSnapshot);
 	GL_EDITOR::PropertyBuilder lightRigBuilder{};
-	lightRigSnapshot.visitEditableProperties(lightRigBuilder);
+	buildPBRLightRigProfileConfigSchema(lightRigBuilder, lightRigSnapshot);
 	GL_EDITOR::PropertyBuilder cameraRigBuilder{};
-	cameraRigSnapshot.visitEditableProperties(cameraRigBuilder);
+	buildPBRCameraRigProfileConfigSchema(cameraRigBuilder, cameraRigSnapshot);
 
 	output
 		<< "# Local PBR experiment preset for environment, postprocess, PBR preview, light rig, and camera rig\n"

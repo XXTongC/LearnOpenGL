@@ -4,11 +4,6 @@
 
 class Camera;
 
-namespace GL_EDITOR
-{
-	class PropertyBuilder;
-}
-
 namespace GL_SCENE
 {
 	struct PBRCameraRigProfile
@@ -22,6 +17,5 @@ namespace GL_SCENE
 
 		void applyTo(Camera* camera) const;
 		void copyFrom(const Camera* camera);
-		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder);
 	};
 }

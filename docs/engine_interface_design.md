@@ -578,6 +578,8 @@ public:
 368. 下一步建议继续处理剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile/settings 对象，例如 PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile。
 369. PBR Preview Profile Config Schema Adapter 已完成第一版：新增 `PBRPreviewProfileConfig` schema adapter，`PBRPreviewProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，DebugControllerPanel、PBR preview profile storage 和 PBR experiment preset 的 `pbrPreview.*` 子配置改为通过 adapter 构建 schema。
 370. 下一步建议继续处理剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile/settings 对象，例如 PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile。
+371. PBR Light/Camera Rig Config Schema Adapter 已完成第一版：新增 `PBRLightRigProfileConfig` 与 `PBRCameraRigProfileConfig` schema adapter，`PBRLightRigProfile.h` 和 `PBRCameraRigProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，PBR experiment preset 的 `lightRig.*` 与 `cameraRig.*` 子配置改为通过 adapter 构建 schema。
+372. 下一步建议处理最后剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile 对象：`RuntimeFramePipelineProfile`。
 
 ## 约束
 

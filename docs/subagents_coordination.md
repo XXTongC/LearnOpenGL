@@ -1978,6 +1978,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `renderer/RendererFramePassProfile.h`, `renderer/RendererFramePassProfile.cpp`, `renderer/RendererFramePassProfileConfig.h`, `renderer/RendererFramePassProfileConfig.cpp`, `tools/editor/DebugControllerPanel.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the PBR preview profile config schema adapter is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `tools/sceneSetup/PBRPreviewProfile.h`, `tools/sceneSetup/PBRPreviewProfile.cpp`, `tools/sceneSetup/PBRPreviewProfileConfig.h`, `tools/sceneSetup/PBRPreviewProfileConfig.cpp`, `tools/sceneSetup/PBRExperimentProfile.cpp`, `tools/editor/DebugControllerPanel.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the PBR Light/Camera rig config schema adapter is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `tools/sceneSetup/PBRLightRigProfile.h`, `tools/sceneSetup/PBRLightRigProfile.cpp`, `tools/sceneSetup/PBRLightRigProfileConfig.h`, `tools/sceneSetup/PBRLightRigProfileConfig.cpp`, `tools/sceneSetup/PBRCameraRigProfile.h`, `tools/sceneSetup/PBRCameraRigProfile.cpp`, `tools/sceneSetup/PBRCameraRigProfileConfig.h`, `tools/sceneSetup/PBRCameraRigProfileConfig.cpp`, `tools/sceneSetup/PBRExperimentProfile.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

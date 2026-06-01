@@ -9,20 +9,9 @@
 #include "../../light/pointLight.h"
 #include "../../light/shadow/pointLightShadow/pointLightShadow.h"
 #include "../../light/spotLight.h"
-#include "../inspector/PropertySchema.h"
 
 namespace
 {
-	std::array<std::string, 3> xyzKeys(const std::string& prefix)
-	{
-		return { prefix + "X", prefix + "Y", prefix + "Z" };
-	}
-
-	std::array<std::string, 3> rgbKeys(const std::string& prefix)
-	{
-		return { prefix + "R", prefix + "G", prefix + "B" };
-	}
-
 	void applyBasicLightProfile(const GL_SCENE::PBRBasicLightProfile& profile, GLframework::Light& light)
 	{
 		light.setPosition(profile.position);
@@ -41,20 +30,6 @@ namespace
 		profile.color = light.getColor();
 		profile.intensity = light.getIntensity();
 		profile.specularIntensity = light.getSpecularIntensity();
-	}
-
-	void addBasicLightProperties(
-		GL_EDITOR::PropertyBuilder& builder,
-		const std::string& keyPrefix,
-		const std::string& labelPrefix,
-		GL_SCENE::PBRBasicLightProfile& profile
-	)
-	{
-		builder.addConfigVec3(xyzKeys(keyPrefix + "Position"), labelPrefix + " Position", &profile.position);
-		builder.addConfigVec3(xyzKeys(keyPrefix + "Rotation"), labelPrefix + " Rotation", &profile.rotation);
-		builder.addConfigColor3(rgbKeys(keyPrefix + "Color"), labelPrefix + " Color", &profile.color);
-		builder.addConfigFloat(keyPrefix + "Intensity", labelPrefix + " Intensity", &profile.intensity, 0.0f, 20.0f);
-		builder.addConfigFloat(keyPrefix + "Specular", labelPrefix + " Specular", &profile.specularIntensity, 0.0f, 20.0f);
 	}
 
 	int clampPointLightCount(int value)
@@ -177,33 +152,5 @@ void GL_SCENE::PBRLightRigProfile::copyFrom(
 		profile.attenuationK2 = runtimeLight->getK2();
 		profile.attenuationK1 = runtimeLight->getK1();
 		profile.attenuationK0 = runtimeLight->getK0();
-	}
-}
-
-void GL_SCENE::PBRLightRigProfile::visitEditableProperties(GL_EDITOR::PropertyBuilder& builder)
-{
-	builder.addSection("Ambient Light");
-	builder.addConfigColor3(rgbKeys("ambientColor"), "Ambient Color", &ambientColor);
-	builder.addConfigFloat("ambientIntensity", "Ambient Intensity", &ambientIntensity, 0.0f, 10.0f);
-
-	builder.addSection("Directional Light");
-	addBasicLightProperties(builder, "directional", "Directional", directional);
-
-	builder.addSection("Spot Light");
-	addBasicLightProperties(builder, "spot", "Spot", spot);
-	builder.addConfigFloat("spotInnerAngle", "Spot Inner Angle", &spot.innerAngle, 0.0f, 90.0f);
-	builder.addConfigFloat("spotOuterAngle", "Spot Outer Angle", &spot.outerAngle, 0.0f, 90.0f);
-
-	builder.addSection("Point Lights");
-	builder.addConfigInt("pointLightCount", "Point Light Count", &pointLightCount, 0, maxPointLights);
-	for (int index = 0; index < maxPointLights; ++index)
-	{
-		auto& profile = pointLights[static_cast<std::size_t>(index)];
-		const std::string keyPrefix = "point" + std::to_string(index);
-		const std::string labelPrefix = "Point " + std::to_string(index);
-		addBasicLightProperties(builder, keyPrefix, labelPrefix, profile);
-		builder.addConfigFloat(keyPrefix + "AttenuationK2", labelPrefix + " Attenuation K2", &profile.attenuationK2, 0.0f, 10.0f);
-		builder.addConfigFloat(keyPrefix + "AttenuationK1", labelPrefix + " Attenuation K1", &profile.attenuationK1, 0.0f, 10.0f);
-		builder.addConfigFloat(keyPrefix + "AttenuationK0", labelPrefix + " Attenuation K0", &profile.attenuationK0, 0.0f, 10.0f);
 	}
 }

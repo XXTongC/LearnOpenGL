@@ -6,11 +6,6 @@
 
 #include "../../third_party/glm/glm.hpp"
 
-namespace GL_EDITOR
-{
-	class PropertyBuilder;
-}
-
 namespace GLframework
 {
 	class AmbientLight;
@@ -68,6 +63,5 @@ namespace GL_SCENE
 			const std::shared_ptr<GLframework::SpotLight>& spotLight,
 			const std::vector<std::shared_ptr<GLframework::PointLight>>& runtimePointLights
 		);
-		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder);
 	};
 }
