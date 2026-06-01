@@ -7892,3 +7892,17 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；五条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Material inspector 字段、字段顺序、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百三十轮 Screen Material Input Texture Encapsulation：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `403cc85 Add material edit control DTOs`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把下一步聚焦到把 DTO 覆盖的 material fields 逐步下沉为 private，并先选择外部引用较少、验证面清晰的 `ScreenMaterial` 输入纹理作为第一片。
+  - 更新 [screenMaterial.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\screenMaterial.h) 与 [screenMaterial.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\materials\screenMaterial.cpp)，新增 `setInputTextures(...)`，并将 `mScreenTexture`、`mBloomTexture`、`mDepthStencilTexture` 下沉为 `private`。
+  - 更新 [SceneSetup.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\sceneSetup\SceneSetup.cpp)，screen pass 初始输入纹理注入改为调用 `ScreenMaterial::setInputTextures(...)`。
+  - 更新 [RuntimeViewport.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeViewport.cpp)，resize 后 post-process 输入纹理同步改为调用 `ScreenMaterial::setInputTextures(...)`。
+  - 更新 [PostProcessPass.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\renderer\PostProcessPass.cpp)，screen composite 改为通过 `ScreenMaterial::inputTextures()` DTO 读取 screen/bloom/depth-stencil texture，不再直接访问内部字段。
+  - 已执行静态检查：确认 `mScreenTexture`、`mBloomTexture` 和 `mDepthStencilTexture` 只在 `ScreenMaterial` 自身 header/implementation 中出现。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了 `RuntimeViewport.cpp`、`screenMaterial.cpp`、`PostProcessPass.cpp`、`MaterialPropertyProviders.cpp` 和 `SceneSetup.cpp`，五条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 ScreenMaterial inspector 字段、post-process 输入纹理来源、screen composite shader binding unit、Bloom 开关逻辑、resize 同步时机、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

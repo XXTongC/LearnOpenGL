@@ -558,6 +558,8 @@ public:
 348. 下一步建议把本轮新增的零散 accessors 聚合为 Material property DTO，或逐步把 provider 已覆盖的 material public fields 下沉为 private，继续收缩 runtime material 数据布局暴露面。
 349. Runtime Material Edit Controls DTO 已完成第一版：新增 `MaterialEditControls.h`，用 `PhongSurfaceEditControls`、`GrassMaterialEditControls`、`ScreenMaterialInputTextures` 和 `PBRMaterialEditControls` 聚合 provider 所需编辑入口；Material provider 不再调用上一轮一项字段一个函数的零散 accessors。
 350. 下一步建议把 DTO 已覆盖的 material fields 逐步下沉为 private，或拆分 `PBRMaterialProfile` 配置 schema 与 editor `PropertyBuilder` 的依赖边界。
+351. Screen Material Input Texture Encapsulation 已完成第一版：`ScreenMaterial` 新增 `setInputTextures(...)`，`mScreenTexture`、`mBloomTexture` 和 `mDepthStencilTexture` 下沉为 `private`；scene setup、resize 同步和 post-process composite 均改为通过明确 API / `ScreenMaterialInputTextures` DTO 访问。
+352. 下一步建议继续按低风险 slice 私有化 Phong/Grass 的 surface texture 与 shininess 字段，或先为 PBRMaterial 增加完整 runtime setter/slot DTO 后再处理其大批公开字段。
 
 ## 约束
 

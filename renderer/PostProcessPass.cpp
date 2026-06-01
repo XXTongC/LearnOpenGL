@@ -57,7 +57,11 @@ void PostProcessPass::renderScreenComposite(
 	}
 
 	auto screenMaterial = std::static_pointer_cast<ScreenMaterial>(material);
-	if (screenMaterial->mScreenTexture == nullptr)
+	const auto inputTextures = screenMaterial->inputTextures();
+	const auto screenTexture = inputTextures.screenTexture != nullptr ? *inputTextures.screenTexture : nullptr;
+	const auto bloomTexture = inputTextures.bloomTexture != nullptr ? *inputTextures.bloomTexture : nullptr;
+	const auto depthStencilTexture = inputTextures.depthStencilTexture != nullptr ? *inputTextures.depthStencilTexture : nullptr;
+	if (screenTexture == nullptr)
 	{
 		return;
 	}
@@ -81,20 +85,20 @@ void PostProcessPass::renderScreenComposite(
 	shader->setFloat("texHeight", static_cast<float>(height));
 	shader->setFloat("exposure", settings.exposure);
 	shader->setInt("toneMappingMode", static_cast<int>(settings.toneMappingMode));
-	shader->setInt("enableBloom", settings.bloomEnabled && screenMaterial->mBloomTexture != nullptr ? 1 : 0);
+	shader->setInt("enableBloom", settings.bloomEnabled && bloomTexture != nullptr ? 1 : 0);
 	shader->setFloat("bloomIntensity", settings.bloomIntensity);
 
-	screenMaterial->mScreenTexture->setUnit(0);
-	screenMaterial->mScreenTexture->Bind();
-	if (screenMaterial->mDepthStencilTexture != nullptr)
+	screenTexture->setUnit(0);
+	screenTexture->Bind();
+	if (depthStencilTexture != nullptr)
 	{
-		screenMaterial->mDepthStencilTexture->setUnit(1);
-		screenMaterial->mDepthStencilTexture->Bind();
+		depthStencilTexture->setUnit(1);
+		depthStencilTexture->Bind();
 	}
-	if (screenMaterial->mBloomTexture != nullptr)
+	if (bloomTexture != nullptr)
 	{
-		screenMaterial->mBloomTexture->setUnit(2);
-		screenMaterial->mBloomTexture->Bind();
+		bloomTexture->setUnit(2);
+		bloomTexture->Bind();
 	}
 
 	auto geometry = screenQuad->getGeometry();

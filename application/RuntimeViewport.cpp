@@ -55,9 +55,11 @@ void RuntimeViewport::syncPostProcessInputTextures(
 		return;
 	}
 
-	screenMaterial->mScreenTexture = frameRenderTargets.getResolvedColorAttachment();
-	screenMaterial->mDepthStencilTexture = frameRenderTargets.getResolvedDepthStencilAttachment();
-	screenMaterial->mBloomTexture = frameRenderTargets.getBloomPongColorAttachment();
+	screenMaterial->setInputTextures(
+		frameRenderTargets.getResolvedColorAttachment(),
+		frameRenderTargets.getBloomPongColorAttachment(),
+		frameRenderTargets.getResolvedDepthStencilAttachment()
+	);
 }
 
 RuntimeResizeResult RuntimeViewport::applyResize(int width, int height, const RuntimeResizeContext& context)

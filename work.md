@@ -10282,3 +10282,28 @@ Subagent 审查：
 
 - 这是 Material edit controls DTO first slice，不改变 Material inspector 字段、字段顺序、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议可以开始把 DTO 覆盖的字段逐步下沉为 private，或者继续处理 `PBRMaterialProfile` 配置 schema 仍直接依赖 editor `PropertyBuilder` 的边界。
+
+### 2026-06-01 Screen Material Input Texture Encapsulation
+
+本轮继续上一轮 Material edit controls DTO 的后续封装工作。上一轮已经让 `ScreenMaterial` 的 inspector/provider 通过 `ScreenMaterialInputTextures` 只读观察 post-process 输入纹理，但实际 runtime 仍公开暴露 `mScreenTexture`、`mBloomTexture` 和 `mDepthStencilTexture`，scene setup、resize 和 post-process pass 仍可直接写入或读取这些字段。本轮先选 `ScreenMaterial` 作为低风险 private-field slice，把 screen composite 所需输入纹理收敛到明确 API。
+
+新增与修改：
+
+- `ScreenMaterial` 新增 `setInputTextures(...)`，作为 scene setup 和 resize 后同步 screen/bloom/depth-stencil 输入纹理的唯一写入口。
+- `ScreenMaterial` 的 `mScreenTexture`、`mBloomTexture` 和 `mDepthStencilTexture` 已下沉为 `private`。
+- `SceneSetup::prepareScreenPass(...)` 改为通过 `setInputTextures(...)` 注入 frame render targets 输出。
+- `RuntimeViewport::syncPostProcessInputTextures(...)` 改为通过 `setInputTextures(...)` 在 resize 后同步 post-process 输入。
+- `PostProcessPass::renderScreenComposite(...)` 改为通过 `inputTextures()` DTO 获取只读输入纹理，不再直接访问 `ScreenMaterial` 内部字段。
+- `MaterialPropertyProviders.cpp` 继续通过 `inputTextures()` 构建 ScreenMaterial inspector 的只读 texture text，UI 字段和顺序不变。
+
+已完成验证：
+
+- 静态检查确认 `mScreenTexture`、`mBloomTexture` 和 `mDepthStencilTexture` 只在 `ScreenMaterial` 自身 header/implementation 中出现，外部源码不再直接访问这些字段。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `RuntimeViewport.cpp`、`screenMaterial.cpp`、`PostProcessPass.cpp`、`MaterialPropertyProviders.cpp` 和 `SceneSetup.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 ScreenMaterial input texture encapsulation first slice，不改变 ScreenMaterial inspector 字段、post-process 输入纹理来源、screen composite shader binding unit、Bloom 开关逻辑、resize 同步时机、runtime frame pipeline 或 renderer backend contract。
+- 下一步可以继续按同样方式处理 Phong/Grass 的 surface texture 和 shininess 字段，或先为 PBRMaterial 增加更完整的 texture/surface/runtime setter DTO 后再私有化 PBR 字段。

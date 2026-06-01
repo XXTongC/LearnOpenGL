@@ -445,8 +445,9 @@ flowchart TD
 - Runtime Material Property Provider Schema Extraction 已完成第一版：Material inspector schema 由 `render-state` provider 与具体 Material 类型 provider 叠加构建；runtime material 类不再声明或实现 inspector `visitEditableProperties(...)` override。
 - Runtime Material Editable Accessor Boundary 已完成第一版：Phong / Grass / Screen / PBR material 新增 provider 所需 edit accessors，Material provider 不再直接访问这些字段名。
 - Runtime Material Edit Controls DTO 已完成第一版：新增 `MaterialEditControls.h` 聚合 Phong / Grass / Screen / PBR provider 所需编辑入口，Material provider 消费 DTO 而不是零散单字段 accessors。
+- Screen Material Input Texture Encapsulation 已完成第一版：`ScreenMaterial` 的 post-process 输入纹理字段已下沉为 private，scene setup / resize 同步通过 `setInputTextures(...)` 写入，post-process composite 与 inspector 通过 `inputTextures()` DTO 只读访问。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime Material Edit Controls DTO 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先把 DTO 覆盖字段逐步私有化，或拆分 `PBRMaterialProfile` 配置 schema 与 editor `PropertyBuilder` 的依赖边界；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Screen Material Input Texture Encapsulation 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先按低风险 slice 私有化 Phong/Grass 的 surface texture 与 shininess 字段，或先为 PBRMaterial 增加完整 runtime setter/slot DTO 后再私有化公开字段；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Material Edit Controls DTO 已接入后，Material provider 通过 `MaterialEditControls.h` 中的 DTO 构建 Phong / Grass / Screen / PBR 字段，不再依赖零散单字段 accessors。
+当前最新修正：Screen Material Input Texture Encapsulation 已接入后，`ScreenMaterial` 的 post-process 输入纹理不再公开暴露字段；运行时写入口收敛为 `setInputTextures(...)`，渲染和 inspector 读入口收敛为 `inputTextures()` DTO。
