@@ -590,6 +590,8 @@ public:
 380. 下一步建议继续把 `DebugProfileControlsPanel.cpp` 内部 profile sections 拆到同类 provider/factory，或为 Debug Controller registry 增加更明确的 section ordering metadata。
 381. Debug Profile Control Section Registry 已完成第一版：新增 `DebugProfileControlSectionRegistry` 与默认 `DebugProfileControlSections` factory，pipeline/scene profile control section 顺序从 `DebugProfileControlsPanel.cpp` 迁出到可注册 section registry。
 382. 下一步建议减少 registry 模板重复，例如提取通用 keyed section registry，或为 Debug Controller / profile control section registry 增加显式 ordering metadata 与 duplicate registration diagnostics。
+383. Keyed Section Registry Extraction 已完成第一版：新增通用 `KeyedSectionRegistry<Section, Context>`，Debug Controller 与 Debug Profile Control 两套 section registry 复用同一套 key 校验、重复注册拒绝和顺序绘制逻辑，删除重复 `.cpp` 实现。
+384. 下一步建议为 keyed section 增加显式 ordering metadata 与 duplicate registration diagnostics，或继续推进 editor/gameplay boundary，把 UI provider 注册从默认 factory 逐步移向可组合模块。
 
 ## 约束
 

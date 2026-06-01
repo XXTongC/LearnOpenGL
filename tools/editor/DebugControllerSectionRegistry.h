@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cstddef>
 #include <functional>
 #include <string>
-#include <vector>
+
+#include "KeyedSectionRegistry.h"
 
 namespace GL_EDITOR
 {
@@ -17,13 +17,5 @@ namespace GL_EDITOR
 		DebugControllerSectionDraw draw{};
 	};
 
-	class DebugControllerSectionRegistry
-	{
-	public:
-		bool registerSection(DebugControllerSection section);
-		std::size_t drawAll(const DebugControllerContext& context) const;
-
-	private:
-		std::vector<DebugControllerSection> mSections{};
-	};
+	using DebugControllerSectionRegistry = KeyedSectionRegistry<DebugControllerSection, DebugControllerContext>;
 }

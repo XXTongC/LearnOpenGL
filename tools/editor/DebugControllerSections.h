@@ -1,8 +1,8 @@
 #pragma once
 
+#include "DebugControllerSectionRegistry.h"
+
 namespace GL_EDITOR
 {
-	class DebugControllerSectionRegistry;
-
 	const DebugControllerSectionRegistry& defaultDebugControllerSectionRegistry();
 }

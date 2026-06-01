@@ -10679,3 +10679,29 @@ Subagent 审查：
 
 - 这是 Debug profile control section registry slice，不改变 profile UI 顺序、配置 key、save/reload 行为、PBR experiment preset apply/copy 行为、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议减少 registry 模板重复，例如提取通用 keyed section registry，或为 Debug Controller / profile control section registry 增加显式 ordering metadata 与 duplicate registration diagnostics。
+
+### 2026-06-01 Keyed Section Registry Extraction
+
+本轮处理上一轮留下的 registry 模板重复问题，把 Debug Controller section registry 与 Debug Profile Control section registry 的共同注册/绘制逻辑抽成通用 header-only 模板。目标是保留当前 section/provider 模型，同时减少每新增一组 UI section registry 都复制一份 `registerSection(...)` / `drawAll(...)` 实现的趋势。
+
+新增与修改：
+
+- 新增 `tools/editor/KeyedSectionRegistry.h`，提供 `KeyedSectionRegistry<Section, Context>`，统一处理空 key、空 draw callback、重复 key 拒绝和顺序绘制。
+- `DebugControllerSectionRegistry.h` 改为定义 `DebugControllerSection` 后通过 alias 复用 `KeyedSectionRegistry<DebugControllerSection, DebugControllerContext>`。
+- `DebugProfileControlSectionRegistry.h` 改为定义 `DebugProfileControlSection` 后通过 alias 复用 `KeyedSectionRegistry<DebugProfileControlSection, DebugControllerContext>`。
+- 删除重复实现文件 `DebugControllerSectionRegistry.cpp` 与 `DebugProfileControlSectionRegistry.cpp`。
+- `DebugControllerSections.h` 与 `DebugProfileControlSections.h` 改为 include 对应 alias header，避免 alias 类型无法 forward declare 的问题。
+- `DebugControllerPanel.cpp` 与 `DebugProfileControlsPanel.cpp` 移除不再需要的具体 registry include，只依赖对应 default sections facade。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 移除被删除的 registry `.cpp`，并注册新增 `KeyedSectionRegistry.h`。
+
+已完成验证：
+
+- 静态检查确认工程文件不再引用 `DebugControllerSectionRegistry.cpp` / `DebugProfileControlSectionRegistry.cpp`，两套 concrete registry 均通过 `KeyedSectionRegistry` alias 实现。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `DebugControllerPanel.cpp`、`DebugControllerSections.cpp`、`DebugProfileControlSections.cpp` 与 `DebugProfileControlsPanel.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Keyed Section Registry extraction slice，不改变 Debug Controller UI section 顺序、profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议为 `KeyedSectionRegistry` 增加显式 ordering metadata 与 duplicate registration diagnostics，或继续推进 editor/gameplay boundary，把 UI provider 注册从默认 factory 逐步移向可组合模块。

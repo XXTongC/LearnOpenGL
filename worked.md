@@ -8133,3 +8133,20 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；5 个 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 profile UI 顺序、配置 key、save/reload 行为、PBR experiment preset apply/copy 行为、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百四十六轮 Keyed Section Registry Extraction：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `47aa1da Add debug profile control section registry`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续处理 registry 模板重复问题，本轮选择抽取通用 `KeyedSectionRegistry`。
+  - 新增 [KeyedSectionRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\KeyedSectionRegistry.h)，提供 `KeyedSectionRegistry<Section, Context>`，统一处理 section key 校验、draw callback 校验、重复 key 拒绝与顺序绘制。
+  - 更新 [DebugControllerSectionRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerSectionRegistry.h)，保留 `DebugControllerSection` 数据结构并通过 alias 复用 `KeyedSectionRegistry<DebugControllerSection, DebugControllerContext>`。
+  - 更新 [DebugProfileControlSectionRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugProfileControlSectionRegistry.h)，保留 `DebugProfileControlSection` 数据结构并通过 alias 复用 `KeyedSectionRegistry<DebugProfileControlSection, DebugControllerContext>`。
+  - 删除 [DebugControllerSectionRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerSectionRegistry.cpp) 与 [DebugProfileControlSectionRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugProfileControlSectionRegistry.cpp)，两套 registry 不再需要重复 `.cpp` 实现。
+  - 更新 [DebugControllerSections.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerSections.h) 与 [DebugProfileControlSections.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugProfileControlSections.h)，改为 include 对应 alias header，避免 alias 类型无法 forward declare。
+  - 更新 [DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp) 与 [DebugProfileControlsPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugProfileControlsPanel.cpp)，移除不再需要的具体 registry include。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，移除被删除 `.cpp` 注册并加入 `KeyedSectionRegistry.h`。
+  - 已执行静态检查：确认工程文件不再引用删除的 registry `.cpp`，两套具体 registry header 均通过 `KeyedSectionRegistry` alias 实现。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 Debug Controller UI section 顺序、profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

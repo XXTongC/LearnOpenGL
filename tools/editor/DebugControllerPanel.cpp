@@ -1,6 +1,5 @@
 #include "DebugControllerPanel.h"
 
-#include "DebugControllerSectionRegistry.h"
 #include "DebugControllerSections.h"
 #include "../../third_party/imgui/imgui.h"
 

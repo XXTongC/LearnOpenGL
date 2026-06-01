@@ -1,9 +1,9 @@
 #pragma once
 
+#include "DebugProfileControlSectionRegistry.h"
+
 namespace GL_EDITOR
 {
-	class DebugProfileControlSectionRegistry;
-
 	const DebugProfileControlSectionRegistry& defaultDebugPipelineProfileControlSectionRegistry();
 	const DebugProfileControlSectionRegistry& defaultDebugSceneProfileControlSectionRegistry();
 }

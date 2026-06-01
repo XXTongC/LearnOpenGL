@@ -461,8 +461,9 @@ flowchart TD
 - Debug Controller Remaining Panel Extraction 已完成第一版：新增 `DebugLegacyControlsPanel` 与 `RendererFrameStatsPanel` facade；legacy debug controls 与 renderer frame stats 从 `DebugControllerPanel.cpp` 迁出，DebugControllerPanel 收敛为 Debug Controller section 顺序编排 shell。
 - Debug Controller Section Registry 已完成第一版：新增 `DebugControllerSectionRegistry` 与默认 `DebugControllerSections` factory；Debug Controller 默认 section 顺序从 `DebugControllerPanel.cpp` 迁出到可注册 section registry。
 - Debug Profile Control Section Registry 已完成第一版：新增 `DebugProfileControlSectionRegistry` 与默认 `DebugProfileControlSections` factory；pipeline/scene profile control section 顺序从 `DebugProfileControlsPanel.cpp` 迁出到可注册 section registry。
+- Keyed Section Registry Extraction 已完成第一版：新增通用 `KeyedSectionRegistry<Section, Context>`；Debug Controller 与 Debug Profile Control 两套 section registry 复用同一套 key 校验、重复 key 拒绝和顺序绘制逻辑，重复 registry `.cpp` 已删除。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Debug Profile Control Section Registry 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议减少 registry 模板重复，例如提取通用 keyed section registry，或为 Debug Controller / profile control section registry 增加显式 ordering metadata 与 duplicate registration diagnostics；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Keyed Section Registry Extraction 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议为 keyed section 增加显式 ordering metadata 与 duplicate registration diagnostics，或把 UI provider 注册从默认 factory 逐步移向可组合模块；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Debug Profile Control Section Registry 已接入后，DebugProfileControlsPanel 不再直接知道 pipeline/scene profile section implementation 或 section 顺序；默认 profile section 注册集中到 `DebugProfileControlSections`，facade 只调用对应 registry。
+当前最新修正：Keyed Section Registry Extraction 已接入后，Debug Controller 与 Debug Profile Control 的 section registry 不再各自维护重复实现；具体 header 只声明 section 数据结构并 alias 到通用 `KeyedSectionRegistry`，默认 section factory 与 facade 行为保持不变。

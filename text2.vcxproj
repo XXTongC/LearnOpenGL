@@ -372,10 +372,8 @@
     <ClCompile Include="tools\inspector\SelectionInspectorProviderRegistry.cpp" />
     <ClCompile Include="tools\editor\AssetBrowserPanel.cpp" />
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp" />
-    <ClCompile Include="tools\editor\DebugControllerSectionRegistry.cpp" />
     <ClCompile Include="tools\editor\DebugControllerSections.cpp" />
     <ClCompile Include="tools\editor\DebugLegacyControlsPanel.cpp" />
-    <ClCompile Include="tools\editor\DebugProfileControlSectionRegistry.cpp" />
     <ClCompile Include="tools\editor\DebugProfileControlSections.cpp" />
     <ClCompile Include="tools\editor\DebugProfileControlsPanel.cpp" />
     <ClCompile Include="tools\editor\EngineDiagnosticsPanel.cpp" />
@@ -1027,6 +1025,7 @@
     <ClInclude Include="tools\editor\EditorPanelFacades.h" />
     <ClInclude Include="tools\editor\EditorPanels.h" />
     <ClInclude Include="tools\editor\EditorSelectionState.h" />
+    <ClInclude Include="tools\editor\KeyedSectionRegistry.h" />
     <ClInclude Include="tools\editor\RendererFrameStatsPanel.h" />
     <ClInclude Include="tools\editor\SceneTransformSnapshot.h" />
     <ClInclude Include="tools\editor\EditorWorldActions.h" />

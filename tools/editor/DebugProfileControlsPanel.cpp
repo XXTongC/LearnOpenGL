@@ -1,6 +1,5 @@
 #include "DebugProfileControlsPanel.h"
 
-#include "DebugProfileControlSectionRegistry.h"
 #include "DebugProfileControlSections.h"
 
 void GL_EDITOR::drawDebugPipelineProfileControls(const DebugControllerContext& context)
