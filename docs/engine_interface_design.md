@@ -538,6 +538,8 @@ public:
 328. 下一步建议推进类型/组件 property provider 注册机制，或继续拆分 asset browser / hierarchy tree display helper，让 editor panels 更接近纯 selection/action shell。
 329. Runtime Selection Inspector Panel Extraction 已完成第一版：新增 `SelectionInspectorPanel.cpp` 承载 selection target dispatch、Light / Shadow / Camera / Actor / Component / Asset inspector render helper 与 edit transaction summary；`EditorPanels.cpp` 进一步收敛为 hierarchy / asset browser / selection click shell。
 330. 下一步建议继续拆分 hierarchy tree / asset browser tree display helper，或开始推进类型/组件 property provider 注册机制，让系统化 UI 从 facade schema 走向可注册的 inspector provider。
+331. Runtime Hierarchy and Asset Browser Panel Extraction 已完成第一版：新增 `HierarchyPanel.cpp` 与 `AssetBrowserPanel.cpp` 承载两个 editor panel 的 tree/display helper；`EditorPanels.cpp` 只保留 selection state helper。
+332. 下一步建议推进类型/组件 property provider 注册机制，或把 `EditorPanels.h` 继续拆为 panel context、selection API 与 panel facade 窄头，避免所有 editor panel implementation 共享宽 facade header。
 
 ## 约束
 

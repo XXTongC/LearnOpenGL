@@ -10039,3 +10039,26 @@ Subagent 审查：
 
 - 这是 selection inspector panel implementation extraction，不改变 selection kind、对象/灯光/阴影/相机/Actor/Component/Asset inspector 字段、transaction summary、snapshot action、asset browser 展示、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步可以继续拆分 hierarchy tree / asset browser tree display helper，或开始推进类型/组件 property provider 注册机制，让系统化 UI 从 facade schema 走向可注册的 inspector provider。
+
+### 2026-06-01 Runtime Hierarchy and Asset Browser Panel Extraction
+
+本轮继续拆分 `EditorPanels.cpp`。Selection inspector 已迁入独立 implementation 后，`EditorPanels.cpp` 仍同时承载 selection state helper、Hierarchy 面板 tree 渲染、Asset Browser 面板 tree 渲染。Hierarchy / Asset Browser 都是独立 editor panel，继续留在 selection state implementation 中会让 `EditorPanels.cpp` 重新成为面板杂项聚合点。本轮将这两个面板拆成独立 `.cpp` 文件。
+
+新增与修改：
+
+- 新增 `tools/editor/HierarchyPanel.cpp`，承载 `drawHierarchyPanel(...)`、Scene tree、Engine World tree、Light / Shadow / Shadow Camera tree 和 Main Camera selection UI。
+- 新增 `tools/editor/AssetBrowserPanel.cpp`，承载 `drawAssetBrowserPanel(...)`、asset registry summary、Imported Asset Handles / All Asset Handles tree 和 asset selection UI。
+- `EditorPanels.cpp` 现在只保留 selection state 基础函数：`ensureSelectionIsInitialized(...)`、`getSelected*` 与 `select*`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 editor panel implementation，并补齐 `EditorPanels.cpp` 的 VS filter 项。
+
+已完成验证：
+
+- 静态检查确认 hierarchy helper 只存在于 `HierarchyPanel.cpp`，asset descriptor tree helper 只存在于 `AssetBrowserPanel.cpp`。
+- 静态检查确认 `EditorPanels.cpp` 不再 include ImGui、Scene/Object、Light、AssetRegistry、EngineWorldInspector、SceneObjectInspector 或 AssetInspector implementation 依赖。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `AssetBrowserPanel.cpp`、`HierarchyPanel.cpp` 与瘦身后的 `EditorPanels.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 editor panel implementation extraction，不改变 hierarchy 展示、asset browser 展示、selection kind、对象/灯光/阴影/相机/Actor/Component/Asset inspector 字段、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议开始推进类型/组件 property provider 注册机制，或先把 `EditorPanels.h` 进一步拆成 `EditorPanelContext`、selection API 与 panel facade 的窄头，避免所有 editor panel implementation 都依赖同一个宽 facade header。

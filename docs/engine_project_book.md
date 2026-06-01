@@ -435,8 +435,9 @@ flowchart TD
 - Runtime Engine World Inspector Schema Extraction 已完成第一版：新增 `EngineWorldInspector` 集中 Actor / Component schema builder、SceneComponent transform edit、legacy Object transform sync、type/display name helper 与 undo helper；`EditorPanels.cpp` 只保留 Components tree、selection、transaction summary 和 snapshot action 编排。
 - Runtime Asset Inspector Schema Extraction 已完成第一版：新增 `AssetInspector` 集中 AssetDescriptor display name、imported-source 判断和 read-only property schema；`EditorPanels.cpp` 不再直写 Asset inspector 的 `PropertyBuilder`。
 - Runtime Selection Inspector Panel Extraction 已完成第一版：新增 `SelectionInspectorPanel.cpp` 承载 selection target dispatch、各类对象 inspector render helper 与 edit transaction summary；`EditorPanels.cpp` 进一步收敛为 hierarchy / asset browser / selection click shell。
+- Runtime Hierarchy and Asset Browser Panel Extraction 已完成第一版：新增 `HierarchyPanel.cpp` 与 `AssetBrowserPanel.cpp` 承载两个 editor panel 的 tree/display helper；`EditorPanels.cpp` 只保留 selection state helper。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime Selection Inspector Panel Extraction 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先推进 property provider 注册机制或拆分 asset browser / hierarchy tree display helper，当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime Hierarchy and Asset Browser Panel Extraction 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先推进 property provider 注册机制或拆分 `EditorPanels.h` 窄头，当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Selection Inspector Panel Extraction 已接入后，selection target dispatch、对象/灯光/阴影/相机/Actor/Component/Asset inspector render helper 与 edit transaction summary 已迁入 `SelectionInspectorPanel.cpp`，`EditorPanels.cpp` 继续收敛为 hierarchy / asset browser / selection click shell。
+当前最新修正：Runtime Hierarchy and Asset Browser Panel Extraction 已接入后，Hierarchy 与 Asset Browser 的 tree/display helper 已迁入独立 implementation，`EditorPanels.cpp` 只保留 selection state helper。

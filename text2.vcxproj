@@ -356,9 +356,11 @@
     <ClCompile Include="tools\inspector\PropertyInspector.cpp" />
     <ClCompile Include="tools\inspector\SceneObjectInspector.cpp" />
     <ClCompile Include="tools\inspector\SelectionInspectorPanel.cpp" />
+    <ClCompile Include="tools\editor\AssetBrowserPanel.cpp" />
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp" />
     <ClCompile Include="tools\editor\EngineDiagnosticsPanel.cpp" />
     <ClCompile Include="tools\editor\EditorPanels.cpp" />
+    <ClCompile Include="tools\editor\HierarchyPanel.cpp" />
     <ClCompile Include="tools\editor\SceneTransformSnapshot.cpp" />
     <ClCompile Include="tools\editor\EditorWorldActions.cpp" />
     <ClCompile Include="tools\Logger\Logger.cpp" />

@@ -996,10 +996,19 @@
     <ClCompile Include="tools\inspector\SelectionInspectorPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\editor\AssetBrowserPanel.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
     <ClCompile Include="tools\editor\EngineDiagnosticsPanel.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\editor\EditorPanels.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\editor\HierarchyPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
     <ClCompile Include="tools\editor\SceneTransformSnapshot.cpp">

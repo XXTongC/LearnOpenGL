@@ -7747,3 +7747,17 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了新增 `SelectionInspectorPanel.cpp`、更新后的 `SceneObjectInspector.cpp` 与 `EditorPanels.cpp`，四条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 selection kind、对象/灯光/阴影/相机/Actor/Component/Asset inspector 字段、transaction summary、snapshot action、asset browser 展示、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百二十轮 Runtime Hierarchy and Asset Browser Panel Extraction：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `146c536 Extract selection inspector panel`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把下一步聚焦到 `EditorPanels.cpp` 内部 Hierarchy / Asset Browser panel implementation 的迁出，目标是让 `EditorPanels.cpp` 只保留 selection state helper。
+  - 新增 [HierarchyPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\HierarchyPanel.cpp)，承载 `drawHierarchyPanel(...)`、Scene tree、Engine World tree、Light / Shadow / Shadow Camera tree 和 Main Camera selection UI。
+  - 新增 [AssetBrowserPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\AssetBrowserPanel.cpp)，承载 `drawAssetBrowserPanel(...)`、asset registry summary、Imported Asset Handles / All Asset Handles tree 和 asset selection UI。
+  - 更新 [EditorPanels.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorPanels.cpp)，删除 Hierarchy / Asset Browser helper 与 panel draw implementation，只保留 `ensureSelectionIsInitialized(...)`、`getSelected*` 与 `select*`。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 editor panel implementation，并补齐 `EditorPanels.cpp` 的 VS filter 项。
+  - 已执行静态检查：确认 hierarchy helper 只存在于 `HierarchyPanel.cpp`，asset descriptor tree helper 只存在于 `AssetBrowserPanel.cpp`。
+  - 已执行静态检查：确认 `EditorPanels.cpp` 不再 include ImGui、Scene/Object、Light、AssetRegistry、EngineWorldInspector、SceneObjectInspector 或 AssetInspector implementation 依赖。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了新增 `AssetBrowserPanel.cpp`、`HierarchyPanel.cpp` 与瘦身后的 `EditorPanels.cpp`，四条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 hierarchy 展示、asset browser 展示、selection kind、对象/灯光/阴影/相机/Actor/Component/Asset inspector 字段、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
