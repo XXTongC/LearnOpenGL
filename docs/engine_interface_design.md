@@ -560,6 +560,8 @@ public:
 350. 下一步建议把 DTO 已覆盖的 material fields 逐步下沉为 private，或拆分 `PBRMaterialProfile` 配置 schema 与 editor `PropertyBuilder` 的依赖边界。
 351. Screen Material Input Texture Encapsulation 已完成第一版：`ScreenMaterial` 新增 `setInputTextures(...)`，`mScreenTexture`、`mBloomTexture` 和 `mDepthStencilTexture` 下沉为 `private`；scene setup、resize 同步和 post-process composite 均改为通过明确 API / `ScreenMaterialInputTextures` DTO 访问。
 352. 下一步建议继续按低风险 slice 私有化 Phong/Grass 的 surface texture 与 shininess 字段，或先为 PBRMaterial 增加完整 runtime setter/slot DTO 后再处理其大批公开字段。
+353. Phong Surface Runtime State Encapsulation 已完成第一版：新增 `PhongSurfaceInput` / `PhongSurfaceRuntimeState`，`PhongMaterial`、`PhongPointShadowMaterial` 和 `PhongCSMShadowMaterial` 的 diffuse/specular/shininess 字段下沉为 `private`；renderer 通过 `surfaceState()` 读取，setup/import/legacy 路径通过 setter 或 `setSurface(...)` 写入。
+354. 下一步建议继续私有化 `GrassInstanceMaterial` 的 surface/wind/cloud 字段，或先为 PBRMaterial 建立完整 runtime setter/slot DTO 后再处理 PBR 字段封装。
 
 ## 约束
 

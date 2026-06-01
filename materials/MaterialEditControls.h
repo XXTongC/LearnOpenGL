@@ -15,6 +15,20 @@ namespace GLframework
 		const std::shared_ptr<Texture>* specularMaskTexture{ nullptr };
 	};
 
+	struct PhongSurfaceInput
+	{
+		std::shared_ptr<Texture> diffuseTexture{ nullptr };
+		std::shared_ptr<Texture> specularMaskTexture{ nullptr };
+		float shininess{ 10.0f };
+	};
+
+	struct PhongSurfaceRuntimeState
+	{
+		const std::shared_ptr<Texture>* diffuseTexture{ nullptr };
+		const std::shared_ptr<Texture>* specularMaskTexture{ nullptr };
+		float shininess{ 10.0f };
+	};
+
 	struct GrassMaterialEditControls
 	{
 		float* shininess{ nullptr };

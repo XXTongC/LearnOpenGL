@@ -16,10 +16,15 @@ namespace GLframework
 		}
 
 		~PhongCSMShadowMaterial() override{}
+		void setSurface(PhongSurfaceInput surface);
+		void setDiffuseTexture(std::shared_ptr<Texture> diffuse);
+		void setSpecularMaskTexture(std::shared_ptr<Texture> specularMask);
+		void setShininess(float shininess);
+		PhongSurfaceRuntimeState surfaceState() const;
 		PhongSurfaceEditControls surfaceEditControls();
 
 
-	public:
+	private:
 		std::shared_ptr<Texture> mDiffuse{ nullptr };
 		std::shared_ptr<Texture> mSpecularMask{ nullptr };
 		float mShiness{ 10.0f };

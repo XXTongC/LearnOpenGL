@@ -95,7 +95,7 @@ namespace GL_EXPERIMENTS
 
 		auto createPlanet = [&](const char* texturePath, float scaleValue, glm::vec3 position) {
 			auto mat = std::make_shared<GLframework::PhongMaterial>();
-			mat->mDiffuse = std::make_shared<GLframework::Texture>(texturePath, 0);
+			mat->setDiffuseTexture(std::make_shared<GLframework::Texture>(texturePath, 0));
 			auto mesh = std::make_shared<GLframework::Mesh>(sphereGeo, mat);
 			mesh->setScale(glm::vec3(scaleValue * sizeOfEarth));
 			mesh->setPosition(position);
@@ -214,7 +214,7 @@ namespace GL_EXPERIMENTS
 
 		mImpl->csmPlaneEnabled = true;
 		context.csmShadowMaterial = std::make_shared<GLframework::PhongCSMShadowMaterial>();
-		context.csmShadowMaterial->mDiffuse = std::make_shared<GLframework::Texture>("Texture/box.png", 0, GL_SRGB_ALPHA);
+		context.csmShadowMaterial->setDiffuseTexture(std::make_shared<GLframework::Texture>("Texture/box.png", 0, GL_SRGB_ALPHA));
 
 		auto boxGeo = GLframework::Geometry::createPlane(
 			context.renderer->getShader(context.csmShadowMaterial->getMaterialType()),
@@ -227,7 +227,7 @@ namespace GL_EXPERIMENTS
 		context.sceneOffScreen->addChild(context.movePlane);
 
 		auto parallaxTestMaterial = std::make_shared<GLframework::PhongCSMShadowMaterial>();
-		parallaxTestMaterial->mDiffuse = std::make_shared<GLframework::Texture>("Texture/parallax/bricks.jpg", 0, GL_SRGB_ALPHA);
+		parallaxTestMaterial->setDiffuseTexture(std::make_shared<GLframework::Texture>("Texture/parallax/bricks.jpg", 0, GL_SRGB_ALPHA));
 		auto planeGeo = GLframework::Geometry::createPlane(
 			context.renderer->getShader(parallaxTestMaterial->getMaterialType()),
 			10.0f,
@@ -258,7 +258,7 @@ namespace GL_EXPERIMENTS
 
 		auto previewMaterial = std::make_shared<GLframework::PhongMaterial>();
 		context.dirLight->getShadow()->mRenderTarget->getDepthAttachment()->setUnit(2);
-		previewMaterial->mDiffuse = context.dirLight->getShadow()->mRenderTarget->getDepthAttachment();
+		previewMaterial->setDiffuseTexture(context.dirLight->getShadow()->mRenderTarget->getDepthAttachment());
 
 		auto previewGeo = GLframework::Geometry::createPlane(
 			context.renderer->getShader(previewMaterial->getMaterialType()),

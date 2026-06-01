@@ -10307,3 +10307,29 @@ Subagent 审查：
 
 - 这是 ScreenMaterial input texture encapsulation first slice，不改变 ScreenMaterial inspector 字段、post-process 输入纹理来源、screen composite shader binding unit、Bloom 开关逻辑、resize 同步时机、runtime frame pipeline 或 renderer backend contract。
 - 下一步可以继续按同样方式处理 Phong/Grass 的 surface texture 和 shininess 字段，或先为 PBRMaterial 增加更完整的 texture/surface/runtime setter DTO 后再私有化 PBR 字段。
+
+### 2026-06-01 Phong Surface Runtime State Encapsulation
+
+本轮继续 DTO 覆盖字段私有化路线。上一轮已经完成 `ScreenMaterial` 输入纹理封装，本轮处理共享同一套 surface 语义的 `PhongMaterial`、`PhongPointShadowMaterial` 和 `PhongCSMShadowMaterial`，把 Diffuse / Specular Mask / Shininess 从公开字段改为明确的 runtime state / writer API。
+
+新增与修改：
+
+- `MaterialEditControls.h` 新增 `PhongSurfaceInput` 与 `PhongSurfaceRuntimeState`，分别用于 runtime 写入完整 Phong surface 和 renderer 只读绑定 surface。
+- `PhongMaterial`、`PhongPointShadowMaterial`、`PhongCSMShadowMaterial` 新增 `setSurface(...)`、`setDiffuseTexture(...)`、`setSpecularMaskTexture(...)`、`setShininess(...)` 和 `surfaceState()`。
+- 上述三个 Material 的 `mDiffuse`、`mSpecularMask`、`mShiness` 已下沉为 `private`；editor/provider 继续通过 `surfaceEditControls()` 构建现有 inspector 字段。
+- `MaterialBinder.cpp` 新增本地 `setPhongSurface(...)` helper，Phong / Point Shadow / CSM Shadow 三条绑定路径改为通过 `surfaceState()` 读取 texture 与 shininess。
+- `SceneSetup.cpp` 中默认房间地面和 box 的 PhongPointShadow diffuse 注入改为 `setDiffuseTexture(...)`。
+- `LegacyExperimentRunner.cpp` 中 solar-system planet、CSM plane、parallax test plane、shadow preview 的 Phong diffuse 注入改为 `setDiffuseTexture(...)`。
+- `AssimpMaterialImporter.cpp` 中 legacy Phong import 改为先收集 diffuse/specular/shininess，再通过 `setSurface(...)` 一次性写入。
+
+已完成验证：
+
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- C++ build 已证明 `PhongMaterial`、`PhongPointShadowMaterial`、`PhongCSMShadowMaterial` 的 private surface 字段没有残留外部直接访问点。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 material、MaterialBinder、Assimp importer、legacy experiment 和 scene setup 相关路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Phong surface runtime state encapsulation first slice，不改变 Phong inspector 字段、默认材质贴图来源、Assimp legacy Phong import 行为、Phong forward lighting shader uniform、shadow resource binding、runtime frame pipeline 或 renderer backend contract。
+- 下一步可以继续处理 `GrassInstanceMaterial` 的 surface/wind/cloud 字段封装，或者先为 `PBRMaterial` 建立更完整的 runtime setter/slot DTO 后再私有化 PBR 字段。

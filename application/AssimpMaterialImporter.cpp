@@ -145,10 +145,10 @@ namespace
 			0,
 			true
 		);
-		phongMaterial->mDiffuse = diffuse.texture;
-		if (!phongMaterial->mDiffuse && options.useDefaultPhongTextures)
+		auto diffuseTexture = diffuse.texture;
+		if (!diffuseTexture && options.useDefaultPhongTextures)
 		{
-			phongMaterial->mDiffuse = Texture::createTexture("Texture/defaultTexture.jpg", 0);
+			diffuseTexture = Texture::createTexture("Texture/defaultTexture.jpg", 0);
 		}
 
 		const auto specular = loadFirstTexture(
@@ -159,17 +159,15 @@ namespace
 			1,
 			false
 		);
-		phongMaterial->mSpecularMask = specular.texture;
-		if (!phongMaterial->mSpecularMask && options.useDefaultPhongTextures)
+		auto specularMask = specular.texture;
+		if (!specularMask && options.useDefaultPhongTextures)
 		{
-			phongMaterial->mSpecularMask = Texture::createTexture("Texture/defaultTexture.jpg", 1);
+			specularMask = Texture::createTexture("Texture/defaultTexture.jpg", 1);
 		}
 
-		float shininess{ phongMaterial->mShiness };
-		if (getFloat(material, AI_MATKEY_SHININESS, shininess))
-		{
-			phongMaterial->mShiness = shininess;
-		}
+		float shininess{ phongMaterial->surfaceState().shininess };
+		getFloat(material, AI_MATKEY_SHININESS, shininess);
+		phongMaterial->setSurface({ diffuseTexture, specularMask, shininess });
 
 		return phongMaterial;
 	}

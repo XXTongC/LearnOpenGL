@@ -59,7 +59,7 @@ namespace
 	void prepareRoomScene(GL_SCENE::SetupContext& context)
 	{
 		auto groundMat = std::make_shared<GLframework::PhongPointShadowMaterial>();
-		groundMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/land.jpg", 0, GL_SRGB_ALPHA);
+		groundMat->setDiffuseTexture(std::make_shared<GLframework::Texture>("Texture/land.jpg", 0, GL_SRGB_ALPHA));
 
 		auto groundGeo = GLframework::Geometry::createPlane(context.renderer->getShader(groundMat->getMaterialType()), 10.0, 10.0);
 		auto groundMeshA = std::make_shared<GLframework::Mesh>(groundGeo, groundMat);
@@ -100,7 +100,7 @@ namespace
 		context.sceneOffScreen->addChild(groundMeshF);
 
 		auto boxMat = std::make_shared<GLframework::PhongPointShadowMaterial>();
-		boxMat->mDiffuse = std::make_shared<GLframework::Texture>("Texture/box.png", 0, GL_SRGB_ALPHA);
+		boxMat->setDiffuseTexture(std::make_shared<GLframework::Texture>("Texture/box.png", 0, GL_SRGB_ALPHA));
 		auto boxGeo = GLframework::Geometry::createBox(context.renderer->getShader(boxMat->getMaterialType()), 3, 1, 1);
 		auto boxMeshA = std::make_shared<GLframework::Mesh>(boxGeo, boxMat);
 		boxMeshA->setName("Center Box");

@@ -407,10 +407,11 @@ passed
 - Runtime Material Editable Accessor Boundary 已接入：Phong / Grass / Screen / PBR material 新增 provider 所需 edit accessors，Material provider 不再直接访问这些字段名。
 - Runtime Material Edit Controls DTO 已接入：新增 `MaterialEditControls.h` 聚合 Phong / Grass / Screen / PBR provider 所需编辑入口，Material provider 消费 DTO 而不是零散单字段 accessors。
 - Screen Material Input Texture Encapsulation 已接入：`ScreenMaterial` 的 screen/bloom/depth-stencil 输入纹理字段已下沉为 private，scene setup / resize 同步通过 `setInputTextures(...)` 写入，post-process composite 与 inspector 通过 `inputTextures()` DTO 只读访问。
+- Phong Surface Runtime State Encapsulation 已接入：`PhongMaterial`、`PhongPointShadowMaterial` 与 `PhongCSMShadowMaterial` 的 diffuse/specular/shininess 字段已下沉为 private，renderer 通过 `surfaceState()` 读取，setup/import/legacy 路径通过 setter 或 `setSurface(...)` 写入。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Screen Material Input Texture Encapsulation 已接入后，`ScreenMaterial` 的 post-process 输入纹理不再公开暴露字段；运行时写入口收敛为 `setInputTextures(...)`，渲染和 inspector 读入口收敛为 `inputTextures()` DTO。
+当前最新修正：Phong Surface Runtime State Encapsulation 已接入后，三类 Phong runtime material 的 surface 字段不再公开暴露；renderer 走 `surfaceState()` 只读 DTO，setup/import/legacy 走 setter 或 `setSurface(...)`。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步优先按低风险 slice 继续私有化 Phong/Grass 的 surface texture 与 shininess 字段，或为 PBRMaterial 增加完整 runtime setter/slot DTO 后再私有化其公开字段；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，主要 scene object、Engine World、Asset、selection inspector、Hierarchy 与 Asset Browser panel implementation 已拆出，editor panel 头边界也已收窄。下一步优先继续私有化 `GrassInstanceMaterial` 的 surface/wind/cloud 字段，或为 PBRMaterial 增加完整 runtime setter/slot DTO 后再私有化其公开字段；当前不建议继续扩张 PBR pass。

@@ -64,6 +64,12 @@ namespace
 		bindTexture(shader, "MaskSampler", specularMask);
 	}
 
+	void setPhongSurface(const std::shared_ptr<Shader>& shader, const PhongSurfaceRuntimeState& surface)
+	{
+		setPhongTextures(shader, *surface.diffuseTexture, *surface.specularMaskTexture);
+		shader->setFloat("shiness", surface.shininess);
+	}
+
 	void setInstanceMatrixUniforms(const std::shared_ptr<Shader>& shader, const std::shared_ptr<InstancedMesh>& mesh)
 	{
 		if (mesh->getMatricesUpdateState())
@@ -268,11 +274,10 @@ namespace
 		std::shared_ptr<PhongMaterial> phongMat = std::static_pointer_cast<PhongMaterial>(material);
 
 		setCommonMaterialUniforms(shader, material, camera);
-		setPhongTextures(shader, phongMat->mDiffuse, phongMat->mSpecularMask);
+		setPhongSurface(shader, phongMat->surfaceState());
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
 		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
-		shader->setFloat("shiness", phongMat->mShiness);
 	}
 
 	void bindPhongNormalMaterial(
@@ -371,13 +376,12 @@ namespace
 	{
 		std::shared_ptr<PhongCSMShadowMaterial> phongMat = std::static_pointer_cast<PhongCSMShadowMaterial>(material);
 		setCommonMaterialUniforms(shader, material, camera);
-		setPhongTextures(shader, phongMat->mDiffuse, phongMat->mSpecularMask);
+		setPhongSurface(shader, phongMat->surfaceState());
 		ShadowResourceBinder::bindCSMShadowResources(shader, camera, dirLight);
 
 		setMVPMatrices(shader, mesh, camera);
 		setNormalMatrix(shader, mesh);
 		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
-		shader->setFloat("shiness", phongMat->mShiness);
 	}
 
 	void bindPhongPointShadowMaterial(
@@ -393,7 +397,7 @@ namespace
 	{
 		std::shared_ptr<PhongPointShadowMaterial> phongMat = std::static_pointer_cast<PhongPointShadowMaterial>(material);
 		setCommonMaterialUniforms(shader, material, camera);
-		setPhongTextures(shader, phongMat->mDiffuse, phongMat->mSpecularMask);
+		setPhongSurface(shader, phongMat->surfaceState());
 		ShadowResourceBinder::bindPointShadowResources(shader, pointLights);
 		ShadowResourceBinder::bindDirectionalFallbackShadow(shader, dirLight);
 
@@ -401,7 +405,6 @@ namespace
 		setNormalMatrix(shader, mesh);
 		LightResourceBinder::bindForwardLights(shader, dirLight, spotLight, pointLights, ambient);
 
-		shader->setFloat("shiness", phongMat->mShiness);
 		shader->setInt("debugShadowMap", 1);
 		shader->setInt("debugLightIndex", 0);
 	}
