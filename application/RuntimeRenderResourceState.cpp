@@ -17,6 +17,36 @@ GL_RUNTIME::RuntimeRenderResourceState& GL_RUNTIME::RuntimeRenderResourceState::
 	RuntimeRenderResourceState&&
 ) noexcept = default;
 
+std::shared_ptr<GLframework::Renderer>& GL_RUNTIME::RuntimeRenderResourceState::renderer()
+{
+	return mRenderer;
+}
+
+const std::shared_ptr<GLframework::Renderer>& GL_RUNTIME::RuntimeRenderResourceState::renderer() const
+{
+	return mRenderer;
+}
+
+std::shared_ptr<GLframework::Scene>& GL_RUNTIME::RuntimeRenderResourceState::sceneOffScreen()
+{
+	return mSceneOffScreen;
+}
+
+const std::shared_ptr<GLframework::Scene>& GL_RUNTIME::RuntimeRenderResourceState::sceneOffScreen() const
+{
+	return mSceneOffScreen;
+}
+
+std::shared_ptr<GLframework::Scene>& GL_RUNTIME::RuntimeRenderResourceState::sceneInScreen()
+{
+	return mSceneInScreen;
+}
+
+const std::shared_ptr<GLframework::Scene>& GL_RUNTIME::RuntimeRenderResourceState::sceneInScreen() const
+{
+	return mSceneInScreen;
+}
+
 GLframework::FrameRenderTargets& GL_RUNTIME::RuntimeRenderResourceState::frameRenderTargets()
 {
 	return *mFrameRenderTargets;

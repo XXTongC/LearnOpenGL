@@ -12,8 +12,8 @@ namespace GL_RUNTIME
 {
 	void RuntimeSceneColorPass::execute(GLframework::AppRuntimeContext& context)
 	{
-		context.renderResources.renderer->render(
-			context.renderResources.sceneOffScreen,
+		context.renderResources.renderer()->render(
+			context.renderResources.sceneOffScreen(),
 			context.cameraLights.camera,
 			context.cameraLights.dirLight,
 			context.cameraLights.spotLight,
@@ -61,7 +61,7 @@ namespace GL_RUNTIME
 	{
 		context.renderResources.postProcessPass().renderScreenComposite(
 			context.renderResources.screenQuad(),
-			context.renderResources.renderer->getShader(GLframework::MaterialType::ScreenMaterial),
+			context.renderResources.renderer()->getShader(GLframework::MaterialType::ScreenMaterial),
 			context.profiles.postProcessSettings(),
 			config.framebufferWidth,
 			config.framebufferHeight

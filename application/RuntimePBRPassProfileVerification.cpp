@@ -14,7 +14,7 @@ namespace GL_RUNTIME
 		const RuntimeVerificationConfig& verification
 	)
 	{
-		if (!context.renderResources.renderer)
+		if (!context.renderResources.renderer())
 		{
 			return;
 		}
@@ -24,7 +24,7 @@ namespace GL_RUNTIME
 		const auto& probes = config.probes;
 		const auto& deferred = config.deferred;
 		const auto& rendererVerification = verification.renderer;
-		auto& rendererPassProfile = context.renderResources.renderer->getFramePassProfile();
+		auto& rendererPassProfile = context.renderResources.renderer()->getFramePassProfile();
 		rendererPassProfile.resetToDefaults();
 		const std::string shadowPrefix = passes.disablePbrShadowAtlasPass
 			? "BeginFrame,ShadowMaps,"

@@ -56,8 +56,8 @@ namespace
 
 	bool isSceneColorReady(const GLframework::AppRuntimeContext& context)
 	{
-		return context.renderResources.renderer != nullptr
-			&& context.renderResources.sceneOffScreen != nullptr
+		return context.renderResources.renderer() != nullptr
+			&& context.renderResources.sceneOffScreen() != nullptr
 			&& context.cameraLights.camera != nullptr
 			&& context.renderResources.frameRenderTargets().isInitialized()
 			&& context.renderResources.frameRenderTargets().getSceneFbo() != 0;
@@ -85,7 +85,7 @@ namespace
 
 	bool isScreenCompositeReady(const GLframework::AppRuntimeContext& context)
 	{
-		return context.renderResources.renderer != nullptr
+		return context.renderResources.renderer() != nullptr
 			&& context.renderResources.screenQuad() != nullptr
 			&& context.renderResources.frameRenderTargets().isInitialized();
 	}

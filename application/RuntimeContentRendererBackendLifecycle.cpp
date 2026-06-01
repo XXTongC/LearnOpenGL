@@ -12,7 +12,7 @@ namespace GL_RUNTIME
 		std::string_view rendererBackendKey
 	)
 	{
-		if (!context.renderResources.renderer)
+		if (!context.renderResources.renderer())
 		{
 			LogError("Runtime content preparation failed: scene prepare did not create a renderer");
 			return false;

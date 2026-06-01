@@ -97,12 +97,12 @@ namespace GL_RUNTIME
 		const RuntimeVerificationConfig& verification
 	)
 	{
-		if (!verification.pbr.probes.enablePbrImportedAssetProbe || !context.renderResources.sceneOffScreen || !context.renderResources.renderer)
+		if (!verification.pbr.probes.enablePbrImportedAssetProbe || !context.renderResources.sceneOffScreen() || !context.renderResources.renderer())
 		{
 			return;
 		}
 
-		auto importedAsset = GL_APPLICATION::AssimpLoader::loadPBR("fbx/test/test.fbx", context.renderResources.renderer);
+		auto importedAsset = GL_APPLICATION::AssimpLoader::loadPBR("fbx/test/test.fbx", context.renderResources.renderer());
 		if (!importedAsset)
 		{
 			reportLine("PBR imported asset probe failed: fbx/test/test.fbx");
@@ -112,7 +112,7 @@ namespace GL_RUNTIME
 		importedAsset->setName("PBR Imported Asset Probe");
 		importedAsset->setPosition({ -2.4f, -1.1f, 1.8f });
 		importedAsset->setScale({ 0.65f, 0.65f, 0.65f });
-		context.renderResources.sceneOffScreen->addChild(importedAsset);
+		context.renderResources.sceneOffScreen()->addChild(importedAsset);
 
 		if (!context.engineAttachments.engineWorld || !context.engineAttachments.engineWorld->getPersistentLevel())
 		{

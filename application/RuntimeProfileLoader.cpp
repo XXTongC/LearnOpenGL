@@ -57,14 +57,14 @@ namespace
 
 	void loadRendererFramePassProfile(GLframework::AppRuntimeContext& context)
 	{
-		if (!context.renderResources.renderer)
+		if (!context.renderResources.renderer())
 		{
 			return;
 		}
 
 		if (GLframework::RendererFramePassProfileStorage::loadFromFile(
 			context.profiles.rendererFramePassProfilePath,
-			context.renderResources.renderer->getFramePassProfile()
+			context.renderResources.renderer()->getFramePassProfile()
 		))
 		{
 			LogInfo("Renderer frame pass profile loaded from " + context.profiles.rendererFramePassProfilePath);

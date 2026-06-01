@@ -29,11 +29,14 @@ namespace GL_RUNTIME
 		RuntimeRenderResourceState(RuntimeRenderResourceState&&) noexcept;
 		RuntimeRenderResourceState& operator=(RuntimeRenderResourceState&&) noexcept;
 
-		std::shared_ptr<GLframework::Renderer> renderer{ nullptr };
-		std::shared_ptr<GLframework::Scene> sceneOffScreen{ nullptr };
-		std::shared_ptr<GLframework::Scene> sceneInScreen{ nullptr };
 		glm::vec3 clearColor{};
 
+		std::shared_ptr<GLframework::Renderer>& renderer();
+		const std::shared_ptr<GLframework::Renderer>& renderer() const;
+		std::shared_ptr<GLframework::Scene>& sceneOffScreen();
+		const std::shared_ptr<GLframework::Scene>& sceneOffScreen() const;
+		std::shared_ptr<GLframework::Scene>& sceneInScreen();
+		const std::shared_ptr<GLframework::Scene>& sceneInScreen() const;
 		GLframework::FrameRenderTargets& frameRenderTargets();
 		const GLframework::FrameRenderTargets& frameRenderTargets() const;
 		GLframework::PostProcessPass& postProcessPass();
@@ -56,6 +59,9 @@ namespace GL_RUNTIME
 		const std::shared_ptr<GLframework::PhongCSMShadowMaterial>& csmShadowMaterial() const;
 
 	private:
+		std::shared_ptr<GLframework::Renderer> mRenderer{ nullptr };
+		std::shared_ptr<GLframework::Scene> mSceneOffScreen{ nullptr };
+		std::shared_ptr<GLframework::Scene> mSceneInScreen{ nullptr };
 		std::shared_ptr<GLframework::Bloom> mBloom{ nullptr };
 		std::shared_ptr<GLframework::Mesh> mScreenQuad{ nullptr };
 		std::shared_ptr<GLframework::ScreenMaterial> mScreenMaterial{ nullptr };

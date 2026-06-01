@@ -47,7 +47,7 @@ namespace GL_RUNTIME
 		}
 
 		const auto& rendererSubsystemStats = rendererSubsystem->getFrameBridgeStats();
-		const bool runtimeRendererAttached = rendererSubsystem->getRenderer() == context.renderResources.renderer.get();
+		const bool runtimeRendererAttached = rendererSubsystem->getRenderer() == context.renderResources.renderer().get();
 		const bool runtimeContextRendererSubsystemAttached = context.engineAttachments.rendererSubsystem == rendererSubsystem;
 		reportLine(formatRuntimeRendererSubsystemStats(
 			rendererSubsystemStats,

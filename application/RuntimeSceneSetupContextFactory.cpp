@@ -13,9 +13,9 @@ namespace GL_RUNTIME
 	)
 	{
 		return {
-			context.renderResources.renderer,
-			context.renderResources.sceneOffScreen,
-			context.renderResources.sceneInScreen,
+			context.renderResources.renderer(),
+			context.renderResources.sceneOffScreen(),
+			context.renderResources.sceneInScreen(),
 			context.renderResources.frameRenderTargets(),
 			context.renderResources.bloom(),
 			context.renderResources.screenQuad(),

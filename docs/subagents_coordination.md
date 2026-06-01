@@ -197,13 +197,30 @@ If a delegated report recommends a change, the parent agent decides whether to i
 
 ## Agent Boundaries
 
-### Current Round: Runtime Render Resource Dead Point Light Mesh Owner Removal
+### Current Round: Runtime Render Resource Renderer/Scene Owner Boundary Cleanup
 
 Parent mode: implementation owner.
 
 Parent write scope:
 
 - `application/RuntimeRenderResourceState.h`
+- `application/RuntimeRenderResourceState.cpp`
+- `application/RuntimeContentRendererBackendLifecycle.cpp`
+- `application/RuntimeEditorPanelCoordinator.cpp`
+- `application/RuntimeEngineWorldVerification.cpp`
+- `application/RuntimeFramePasses.cpp`
+- `application/RuntimeFrameRunner.cpp`
+- `application/RuntimeImportedAssetVerification.cpp`
+- `application/RuntimeLegacyExperimentLifecycle.cpp`
+- `application/RuntimePBRPassProfileVerification.cpp`
+- `application/RuntimePBRPreparedSceneStatsVerification.cpp`
+- `application/RuntimePBRRendererStatsVerification.cpp`
+- `application/RuntimePBRSceneProbeVerification.cpp`
+- `application/RuntimeProfileLoader.cpp`
+- `application/RuntimeRendererBackendAttachmentLifecycle.cpp`
+- `application/RuntimeRendererFrameBridgeAdapter.cpp`
+- `application/RuntimeSceneSetupContextFactory.cpp`
+- `application/RuntimeVerificationReport.cpp`
 - `docs/subagents_coordination.md`
 - `work.md`
 - `worked.md`
@@ -214,7 +231,7 @@ Delegated mode: read-only advisory.
 Delegated scope:
 
 - none. This slice is parent-owned and does not start a new sidecar.
-- Runtime render resource dead point light mesh owner removal remains parent-reviewed.
+- Runtime render resource renderer/scene owner boundary cleanup remains parent-reviewed.
 
 Rules for this round:
 
@@ -1880,6 +1897,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `application/RuntimeSceneSetupContextFactory.cpp`, `application/RuntimeLegacyExperimentLifecycle.cpp`, `application/RuntimeEditorPanelCoordinator.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime render resource dead point light mesh owner removal is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `application/RuntimeRenderResourceState.h`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime render resource renderer/scene owner boundary cleanup is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `application/RuntimeContentRendererBackendLifecycle.cpp`, `application/RuntimeEditorPanelCoordinator.cpp`, `application/RuntimeEngineWorldVerification.cpp`, `application/RuntimeFramePasses.cpp`, `application/RuntimeFrameRunner.cpp`, `application/RuntimeImportedAssetVerification.cpp`, `application/RuntimeLegacyExperimentLifecycle.cpp`, `application/RuntimePBRPassProfileVerification.cpp`, `application/RuntimePBRPreparedSceneStatsVerification.cpp`, `application/RuntimePBRRendererStatsVerification.cpp`, `application/RuntimePBRSceneProbeVerification.cpp`, `application/RuntimeProfileLoader.cpp`, `application/RuntimeRendererBackendAttachmentLifecycle.cpp`, `application/RuntimeRendererFrameBridgeAdapter.cpp`, `application/RuntimeSceneSetupContextFactory.cpp`, `application/RuntimeVerificationReport.cpp`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

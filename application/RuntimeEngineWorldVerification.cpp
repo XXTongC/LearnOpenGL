@@ -792,7 +792,7 @@ namespace GL_RUNTIME
 		const auto& engineWorld = verification.engineWorld;
 		EngineWorldPreparedSceneStats stats{};
 		collectEngineWorldPreparedSceneStats(
-			std::static_pointer_cast<GLframework::Object>(context.renderResources.sceneOffScreen),
+			std::static_pointer_cast<GLframework::Object>(context.renderResources.sceneOffScreen()),
 			stats
 		);
 		stats.runtimeWorldActorCount = countRuntimeWorldActors(context);
@@ -842,7 +842,7 @@ namespace GL_RUNTIME
 			{
 				const std::string packagePath = "out/engine_world_scene_package.verification.ini";
 				const auto packageSave = GLengine::saveScenePackage(*context.engineAttachments.engineWorld, packagePath);
-				RuntimeScenePackageAssetResolver resolver(context.renderResources.renderer);
+				RuntimeScenePackageAssetResolver resolver(context.renderResources.renderer());
 				GLengine::ScenePackageLoadOptions loadOptions{};
 				loadOptions.assetResolver = &resolver;
 				const auto packageLoad = GLengine::loadScenePackage(packagePath, loadOptions);

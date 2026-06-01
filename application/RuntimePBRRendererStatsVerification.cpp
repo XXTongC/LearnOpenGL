@@ -21,12 +21,12 @@ namespace GL_RUNTIME
 {
 	void RuntimePBRRendererStatsVerification::reportRenderedFrame(GLframework::AppRuntimeContext& context)
 	{
-		if (!context.renderResources.renderer)
+		if (!context.renderResources.renderer())
 		{
 			return;
 		}
 
-		const auto& stats = context.renderResources.renderer->getLastFrameStats();
+		const auto& stats = context.renderResources.renderer()->getLastFrameStats();
 		std::string statsLine =
 			"PBR verification renderer stats: rendererPasses=" + std::to_string(stats.rendererPassCount)
 			+ ", shadowCasters=" + std::to_string(stats.shadowCasterCount)

@@ -9358,3 +9358,29 @@ Subagent 审查：
 
 - 这是 Runtime render resource dead owner removal，不改变点光源、默认场景、legacy experiment、editor UI、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议单独设计高访问面的 `renderer` / `sceneOffScreen` / `sceneInScreen` owner boundary；不要把这三者和小字段 cleanup 混在同一轮里做。
+
+### 2026-06-01 Runtime Render Resource Renderer/Scene Owner Boundary Cleanup
+
+本轮继续 remaining runtime render resource owner cleanup，不扩张 PBR 功能。上一轮删除 `meshPointLight` 后，`RuntimeRenderResourceState` 剩余高访问面 owner 主要是 `renderer`、`sceneOffScreen`、`sceneInScreen` 和值型 `clearColor`；本轮只处理前三个 shared pointer owner，把公开字段收敛为私有 owner + 访问器，保持当前 setup assignment、frame rendering、editor context 注入和 verification 探针语义。
+
+新增与修改：
+
+- `RuntimeRenderResourceState.h` 移除公开字段 `renderer`、`sceneOffScreen`、`sceneInScreen`，改为 private `mRenderer`、`mSceneOffScreen`、`mSceneInScreen`。
+- `RuntimeRenderResourceState` 新增 `renderer()`、`sceneOffScreen()`、`sceneInScreen()` 及 const overload，返回 shared pointer 引用以保持启动阶段资源构造和后续 context 注入契约。
+- `RuntimeRenderResourceState.cpp` 集中提供 renderer/scene owner 访问器 implementation。
+- `RuntimeContentRendererBackendLifecycle.cpp`、`RuntimeRendererBackendAttachmentLifecycle.cpp`、`RuntimeRendererFrameBridgeAdapter.cpp` 和 `RuntimeFrameRunner.cpp` 通过访问器读取 renderer readiness、backend attachment、frame bridge readiness 和 clear color 应用目标。
+- `RuntimeFramePasses.cpp` 通过访问器执行 scene render、screen scene render 和 shader lookup，不改变 frame pass order 或 pass 行为。
+- `RuntimeSceneSetupContextFactory.cpp`、`RuntimeLegacyExperimentLifecycle.cpp` 和 `RuntimeEditorPanelCoordinator.cpp` 通过访问器向 scene setup、legacy experiment 和 editor panel context 注入 renderer/scene owner。
+- `RuntimeEngineWorldVerification.cpp`、`RuntimeImportedAssetVerification.cpp`、`RuntimePBRSceneProbeVerification.cpp`、`RuntimePBRPreparedSceneStatsVerification.cpp`、`RuntimePBRPassProfileVerification.cpp`、`RuntimePBRRendererStatsVerification.cpp`、`RuntimeProfileLoader.cpp` 和 `RuntimeVerificationReport.cpp` 改为 accessor 访问，保持 verification/report 语义不变。
+
+已完成验证：
+
+- 静态检查确认旧字段式 `context.renderResources.renderer` / `sceneOffScreen` / `sceneInScreen` 访问已清零，剩余访问均为 `renderer()` / `sceneOffScreen()` / `sceneInScreen()` accessor。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 重新编译本轮相关 runtime 文件。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime render resource renderer/scene owner boundary cleanup，不改变 renderer 创建/附着、scene setup、scene render、editor panels、legacy experiment hooks、PBR verification probes、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议只处理 `clearColor` 这类低风险值型状态访问器，或者设计 read-only runtime resource facade；当前仍不建议继续扩张 PBR pass。

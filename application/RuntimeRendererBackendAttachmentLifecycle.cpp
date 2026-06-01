@@ -16,7 +16,7 @@ namespace GL_RUNTIME
 		std::string_view rendererBackendKey
 	)
 	{
-		rendererSubsystem.setRenderer(context.renderResources.renderer.get());
+		rendererSubsystem.setRenderer(context.renderResources.renderer().get());
 
 		const auto selection = RuntimeRendererBackendCatalog::resolveBackendSelection(rendererBackendKey);
 		auto rendererBackend = RuntimeRendererBackendFactory::createBackend(context, selection);

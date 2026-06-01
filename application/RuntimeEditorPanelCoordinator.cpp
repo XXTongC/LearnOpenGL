@@ -25,7 +25,7 @@ namespace GL_RUNTIME
 			&context.profiles.rendererFramePassProfilePath,
 			&context.profiles.postProcessSettings(),
 			&context.profiles.postProcessSettingsPath,
-			context.renderResources.renderer,
+			context.renderResources.renderer(),
 			context.engineAttachments.rendererSubsystem,
 			&context.profiles.environmentProfile(),
 			&context.profiles.environmentProfilePath,
@@ -48,8 +48,8 @@ namespace GL_RUNTIME
 	)
 	{
 		GL_EDITOR::EditorPanelContext editorContext{};
-		editorContext.sceneOffScreen = context.renderResources.sceneOffScreen;
-		editorContext.sceneInScreen = context.renderResources.sceneInScreen;
+		editorContext.sceneOffScreen = context.renderResources.sceneOffScreen();
+		editorContext.sceneInScreen = context.renderResources.sceneInScreen();
 		editorContext.directionalLight = context.cameraLights.dirLight;
 		editorContext.spotLight = context.cameraLights.spotLight;
 		editorContext.pointLights = &context.cameraLights.pointLights;
@@ -70,7 +70,7 @@ namespace GL_RUNTIME
 	{
 		GL_EDITOR::drawDebugControllerPanel(makeDebugControllerContext(context, orbitAngle));
 		const auto editorContext = makeEditorPanelContext(context, editTransactions);
-		GL_EDITOR::ensureSelectionIsInitialized(selection, context.renderResources.sceneOffScreen);
+		GL_EDITOR::ensureSelectionIsInitialized(selection, context.renderResources.sceneOffScreen());
 		GL_EDITOR::drawHierarchyPanel(editorContext, selection);
 		GL_EDITOR::drawAssetBrowserPanel(editorContext, selection);
 		GL_EDITOR::drawSelectionInspectorPanel(editorContext, selection);
