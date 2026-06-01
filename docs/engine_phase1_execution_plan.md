@@ -438,10 +438,11 @@ passed
 - Editor UI Module Diagnostics Section 已接入：`EditorUiModuleRegistries` 记录 active module keys，Debug Controller 新增 `Editor UI Modules` 诊断 section，显示 active modules 和各 registry 的 section/provider 数量。
 - Editor UI Module Profile Storage 已接入：新增 `EditorUiModuleProfile` / config schema / storage，`RuntimeProfileLoader` 从 `config/editor_ui_modules.local.ini` 加载默认 module policy，CLI 显式参数保持优先。
 - Editor UI Module Profile Controls 已接入：`DebugControllerContext` 注入 `EditorUiModuleProfile` 与 profile path，`Editor UI Modules` section 复用 schema 绘制 core/sample module policy，并提供 save/reload local profile 按钮；active registries 仍按 startup policy 构建。
+- Runtime Editor UI Module Reapply Boundary 已接入：Debug UI 通过 callback 请求 profile reapply，`RuntimeEditorLifecycleState` 在当前 UI frame 绘制结束后应用 pending policy 并安全重建 active registries；selection/edit transaction state 不随 registry rebuild 丢失。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Editor UI Module Profile Controls 已接入后，module policy 已有 Debug Controller 内的可见、可编辑、可保存和可重载入口；`config/editor_ui_modules.local.ini` 继续控制 core/sample module 默认启用状态，CLI 显式参数仍优先。
+当前最新修正：Runtime Editor UI Module Reapply Boundary 已接入后，module policy 不再只能依赖重启；Debug Controller 可以请求按当前 profile 安全重建 active registries，实际 rebuild 延后到当前 UI frame 绘制完成后执行。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议设计 runtime editor lifecycle 的显式 registry reapply 边界，或把 profile/settings UI 收敛到独立 Editor Settings/Profile section；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议把 Editor UI module/profile controls 从 diagnostics section 拆到独立 Editor Settings/Profile section，或增加 last applied / pending / active policy diagnostics；当前不建议继续扩张 PBR pass。

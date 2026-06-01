@@ -1,6 +1,7 @@
 #include "RuntimeEditorPanelCoordinator.h"
 
 #include "AppRuntimeContext.h"
+#include "RuntimeEditorLifecycleState.h"
 #include "RuntimeEditorRenderResourceAdapter.h"
 #include "../engine/AssetSubsystem.h"
 #include "../tools/editor/DebugControllerContext.h"
@@ -12,7 +13,7 @@ namespace GL_RUNTIME
 {
 	GL_EDITOR::DebugControllerContext RuntimeEditorPanelCoordinator::makeDebugControllerContext(
 		GLframework::AppRuntimeContext& context,
-		const GL_EDITOR::EditorUiModuleRegistries& editorUiModules,
+		RuntimeEditorLifecycleState& editorState,
 		float* orbitAngle
 	)
 	{
@@ -41,7 +42,11 @@ namespace GL_RUNTIME
 		editorContext.assetSubsystem = context.engineAttachments.assetSubsystem;
 		editorContext.editorUiModuleProfile = &context.profiles.editorUiModuleProfile();
 		editorContext.editorUiModuleProfilePath = &context.profiles.editorUiModuleProfilePath;
-		editorContext.editorUiModules = &editorUiModules;
+		editorContext.requestEditorUiModuleProfileApply = [&editorState](const GL_EDITOR::EditorUiModuleProfile& profile)
+		{
+			return editorState.requestEditorUiModuleReconfiguration(profile);
+		};
+		editorContext.editorUiModules = &editorState.editorUiModules();
 		RuntimeEditorRenderResourceAdapter::applyDebugControllerResources(context.renderResources, editorContext);
 		return editorContext;
 	}
@@ -68,14 +73,17 @@ namespace GL_RUNTIME
 
 	void RuntimeEditorPanelCoordinator::drawPanels(
 		GLframework::AppRuntimeContext& context,
-		GL_EDITOR::SelectionContext& selection,
-		GL_EDITOR::EditTransactionLog& editTransactions,
-		const GL_EDITOR::EditorUiModuleRegistries& editorUiModules,
+		RuntimeEditorLifecycleState& editorState,
 		float* orbitAngle
 	)
 	{
-		GL_EDITOR::drawDebugControllerPanel(makeDebugControllerContext(context, editorUiModules, orbitAngle));
-		const auto editorContext = makeEditorPanelContext(context, editTransactions, editorUiModules);
+		GL_EDITOR::drawDebugControllerPanel(makeDebugControllerContext(context, editorState, orbitAngle));
+		const auto editorContext = makeEditorPanelContext(
+			context,
+			editorState.editTransactions(),
+			editorState.editorUiModules()
+		);
+		auto& selection = editorState.selection();
 		RuntimeEditorRenderResourceAdapter::ensureDefaultSelection(context.renderResources, selection);
 		GL_EDITOR::drawHierarchyPanel(editorContext, selection);
 		GL_EDITOR::drawAssetBrowserPanel(editorContext, selection);

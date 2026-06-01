@@ -8370,3 +8370,20 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过；3 个 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 verification mode 全部通过。
   - 本轮补齐 Editor UI module profile 的 Debug Controller 编辑入口，不修改默认 module policy、CLI 显式覆盖语义、registry composition 时机、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百六十二轮 Runtime Editor UI Module Reapply Boundary：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `448c04a Add editor UI module profile controls`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档进入 runtime reapply 安全边界设计；关键约束是不能在 `KeyedSectionRegistry::drawAll(...)` 遍历 section 时直接替换 active registry。
+  - 更新 [RuntimeEditorLifecycleState.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycleState.h) 与 [RuntimeEditorLifecycleState.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycleState.cpp)，`configureEditorUiModules(...)` 改为返回是否 rebuild，并新增 pending policy request/apply 两段式接口。
+  - 更新 [RuntimeEditorLifecycle.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycle.cpp)，在 editor panels 绘制结束后调用 `state.applyPendingEditorUiModuleReconfiguration()`。
+  - 更新 [RuntimeEditorPanelCoordinator.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorPanelCoordinator.h) 与 [RuntimeEditorPanelCoordinator.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorPanelCoordinator.cpp)，coordinator 现在接收完整 `RuntimeEditorLifecycleState&`，并向 Debug Controller context 注入 reapply request callback。
+  - 更新 [DebugControllerContext.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerContext.h)，新增 `EditorUiModuleProfileApplyRequest` 和 `requestEditorUiModuleProfileApply`。
+  - 更新 [EditorUiModuleDiagnosticsSection.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleDiagnosticsSection.cpp)，新增 `Apply Profile To Active Modules` 按钮；按钮只排队 reapply，不直接重建 registry。
+  - 已增加 UI 警告：如果应用 profile 时关闭 Core Editor UI，本 controls section 会在下一帧消失，需要通过 local profile 或 CLI 重新启用。
+  - 已执行静态检查：确认 request/apply 两段式接口、callback 注入和 UI 按钮调用链均可检索。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过；3 个 focused verification mode 全部通过。
+  - 已执行直接 CLI 空 module 组合检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 退出码为 0，确认 core/sample module 都禁用时 verification 路径不崩溃。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 verification mode 全部通过。
+  - 本轮让 Editor UI module profile 可以在运行时安全请求 active registry rebuild；selection 与 edit transaction state 保持独立，不随 registry rebuild 丢失；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

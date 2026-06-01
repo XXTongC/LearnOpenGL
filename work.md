@@ -11072,3 +11072,30 @@ Subagent 审查：
 
 - 这是 Editor UI Module Profile Controls slice，补齐 profile 的 Debug Controller 编辑入口；不改变默认 module policy、CLI 显式覆盖语义、现有 registry composition 时机、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步如果继续 UI 系统化，应进入 runtime reapply 的安全边界设计：让 `RuntimeEditorLifecycleState` 可显式重建 module registries，并定义 selection/debug/profile panels 在 registry 切换时的状态保留策略；或者先抽独立 Editor Settings/Profile section，避免 diagnostics section 承担过多设置职责。
+
+### 2026-06-01 Runtime Editor UI Module Reapply Boundary
+
+本轮把 Editor UI module profile 从“保存后重启生效”推进到“可在运行时显式请求重建 active module registries”。关键约束是不能在 `KeyedSectionRegistry::drawAll(...)` 正在遍历 section 时直接替换 registry；因此本轮采用 request/apply 两段式：UI 按钮只排队 reapply，真正替换 registries 在当前 editor panels 绘制结束后执行。
+
+新增与修改：
+
+- `RuntimeEditorLifecycleState::configureEditorUiModules(...)` 现在返回是否真的发生 registry rebuild。
+- `RuntimeEditorLifecycleState` 新增 `requestEditorUiModuleReconfiguration(...)` 与 `applyPendingEditorUiModuleReconfiguration()`，内部保存 pending policy，避免 UI 绘制过程中直接替换 active registries。
+- `RuntimeEditorLifecycle.cpp` 在 `RuntimeEditorPanelCoordinator::drawPanels(...)` 结束后调用 `state.applyPendingEditorUiModuleReconfiguration()`，使 registry rebuild 发生在本帧 UI 遍历完成之后。
+- `RuntimeEditorPanelCoordinator` 现在接收完整 `RuntimeEditorLifecycleState&`，Debug Controller context 从 state 读取 active registries，并注入 `requestEditorUiModuleProfileApply` callback。
+- `DebugControllerContext` 新增 `EditorUiModuleProfileApplyRequest`，UI section 只通过 callback 请求 reapply，不直接依赖 runtime lifecycle state。
+- `EditorUiModuleDiagnosticsSection.cpp` 增加 `Apply Profile To Active Modules` 按钮；按钮会提示 reapply 已排队或当前 registries 已匹配 profile。
+- UI 增加 core module 禁用警告：如果应用时关闭 Core Editor UI，本 section 会在下一帧从 active registry 中消失，需要通过 local profile 或 CLI 重新启用。
+
+已完成验证：
+
+- 静态检查确认 `requestEditorUiModuleReconfiguration`、`applyPendingEditorUiModuleReconfiguration`、`requestEditorUiModuleProfileApply`、`Apply Profile To Active Modules` 和新的 coordinator 调用链均可检索。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 editor lifecycle state、editor lifecycle、panel coordinator、diagnostics section 和相关 editor panel 路径。
+- 直接 CLI 空 module 组合检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 已通过，确认 core/sample module 都禁用时 verification 路径不崩溃。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime Editor UI Module Reapply Boundary slice，让 module profile 可以在运行时安全请求 active registry rebuild；selection 与 edit transaction state 保持在 `RuntimeEditorLifecycleState` 的独立字段中，reapply 只替换 UI registries。
+- 下一步建议把 Editor UI module controls 从 diagnostics section 拆到独立 Editor Settings/Profile section，或增加更明确的 reapply diagnostics（例如 last applied policy / pending policy / active policy），避免 diagnostics section 同时承担状态展示、配置编辑和生命周期操作。

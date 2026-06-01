@@ -2,6 +2,7 @@
 
 #include "../tools/editor/EditorSelectionState.h"
 #include "../tools/editor/EditorUiModuleComposition.h"
+#include "../tools/editor/EditorUiModuleProfile.h"
 #include "../tools/editor/EditorUiModuleRegistry.h"
 
 namespace GL_RUNTIME
@@ -23,6 +24,16 @@ namespace GL_RUNTIME
 		{
 			return GL_EDITOR::buildEditorUiModuleRegistries(GL_EDITOR::buildEditorUiModuleList(policy));
 		}
+
+		GL_EDITOR::EditorUiModuleCompositionPolicy makeEditorUiModulePolicy(
+			const GL_EDITOR::EditorUiModuleProfile& profile
+		)
+		{
+			GL_EDITOR::EditorUiModuleCompositionPolicy policy{};
+			policy.includeCoreEditorUi = profile.enableCoreEditorUiModule;
+			policy.includeSampleEditorUi = profile.enableSampleEditorUiModule;
+			return policy;
+		}
 	}
 
 	struct RuntimeEditorLifecycleState::Impl
@@ -31,6 +42,8 @@ namespace GL_RUNTIME
 		GL_EDITOR::EditTransactionLog editTransactions{};
 		GL_EDITOR::EditorUiModuleCompositionPolicy editorUiModulePolicy{ GL_EDITOR::defaultEditorUiModuleCompositionPolicy() };
 		GL_EDITOR::EditorUiModuleRegistries editorUiModules{ buildEditorUiModuleRegistries(editorUiModulePolicy) };
+		bool hasPendingEditorUiModulePolicy{ false };
+		GL_EDITOR::EditorUiModuleCompositionPolicy pendingEditorUiModulePolicy{};
 	};
 
 	RuntimeEditorLifecycleState::RuntimeEditorLifecycleState()
@@ -60,17 +73,40 @@ namespace GL_RUNTIME
 		return mImpl->editTransactions;
 	}
 
-	void RuntimeEditorLifecycleState::configureEditorUiModules(
+	bool RuntimeEditorLifecycleState::configureEditorUiModules(
 		const GL_EDITOR::EditorUiModuleCompositionPolicy& policy
 	)
 	{
 		if (isSameEditorUiModulePolicy(mImpl->editorUiModulePolicy, policy))
 		{
-			return;
+			return false;
 		}
 
 		mImpl->editorUiModulePolicy = policy;
 		mImpl->editorUiModules = buildEditorUiModuleRegistries(policy);
+		return true;
+	}
+
+	bool RuntimeEditorLifecycleState::requestEditorUiModuleReconfiguration(
+		const GL_EDITOR::EditorUiModuleProfile& profile
+	)
+	{
+		const auto policy = makeEditorUiModulePolicy(profile);
+		mImpl->pendingEditorUiModulePolicy = policy;
+		mImpl->hasPendingEditorUiModulePolicy = true;
+		return !isSameEditorUiModulePolicy(mImpl->editorUiModulePolicy, policy);
+	}
+
+	bool RuntimeEditorLifecycleState::applyPendingEditorUiModuleReconfiguration()
+	{
+		if (!mImpl->hasPendingEditorUiModulePolicy)
+		{
+			return false;
+		}
+
+		const auto policy = mImpl->pendingEditorUiModulePolicy;
+		mImpl->hasPendingEditorUiModulePolicy = false;
+		return configureEditorUiModules(policy);
 	}
 
 	const GL_EDITOR::EditorUiModuleRegistries& RuntimeEditorLifecycleState::editorUiModules() const

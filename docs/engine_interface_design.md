@@ -623,6 +623,8 @@ public:
 413. 下一步建议把 `EditorUiModuleProfile` 接入 Debug Controller 保存/重载 UI，或让 `RuntimeEditorLifecycleState` 支持运行时重新应用 module policy。
 414. Editor UI Module Profile Controls 已完成第一版：`DebugControllerContext` 注入 `EditorUiModuleProfile` 与 profile path，`Editor UI Modules` section 复用 `EditorUiModuleProfileConfig` schema 绘制 core/sample policy，并提供保存/重载 local profile 按钮。
 415. 当前仍保留 startup-time registry composition；下一步建议设计 runtime registry reapply 的显式安全边界，或先把 profile/settings controls 从 diagnostics section 拆到独立 Editor Settings/Profile section。
+416. Runtime Editor UI Module Reapply Boundary 已完成第一版：Debug UI 只发起 `EditorUiModuleProfile` reapply request，`RuntimeEditorLifecycleState` 保存 pending policy，并在当前 editor panels 绘制结束后安全重建 active registries。
+417. Reapply 边界保留 selection 与 edit transaction state，只替换 UI registry composition；下一步建议把 profile controls 从 diagnostics section 拆到独立 Editor Settings/Profile section，或补充 active/pending/applied policy diagnostics。
 
 ## 约束
 

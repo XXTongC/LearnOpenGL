@@ -44,11 +44,10 @@ namespace GL_RUNTIME
 				{
 					RuntimeEditorPanelCoordinator::drawPanels(
 						context,
-						state.selection(),
-						state.editTransactions(),
-						state.editorUiModules(),
+						state,
 						config.editorOrbitAngle
 					);
+					state.applyPendingEditorUiModuleReconfiguration();
 				}
 			});
 		};

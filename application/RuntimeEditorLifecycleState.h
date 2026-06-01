@@ -6,6 +6,7 @@ namespace GL_EDITOR
 {
 	class EditTransactionLog;
 	struct EditorUiModuleCompositionPolicy;
+	struct EditorUiModuleProfile;
 	struct EditorUiModuleRegistries;
 	struct SelectionContext;
 }
@@ -27,7 +28,9 @@ namespace GL_RUNTIME
 		GL_EDITOR::EditTransactionLog& editTransactions();
 		const GL_EDITOR::EditTransactionLog& editTransactions() const;
 
-		void configureEditorUiModules(const GL_EDITOR::EditorUiModuleCompositionPolicy& policy);
+		bool configureEditorUiModules(const GL_EDITOR::EditorUiModuleCompositionPolicy& policy);
+		bool requestEditorUiModuleReconfiguration(const GL_EDITOR::EditorUiModuleProfile& profile);
+		bool applyPendingEditorUiModuleReconfiguration();
 		const GL_EDITOR::EditorUiModuleRegistries& editorUiModules() const;
 
 	private:

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -43,6 +44,8 @@ namespace GL_EDITOR
 	struct EditorUiModuleProfile;
 	struct EditorUiModuleRegistries;
 
+	using EditorUiModuleProfileApplyRequest = std::function<bool(const EditorUiModuleProfile&)>;
+
 	struct DebugControllerContext
 	{
 		std::shared_ptr<GLframework::DirectionalLight>* directionalLight{ nullptr };
@@ -71,6 +74,7 @@ namespace GL_EDITOR
 		const GLengine::AssetSubsystem* assetSubsystem{ nullptr };
 		EditorUiModuleProfile* editorUiModuleProfile{ nullptr };
 		const std::string* editorUiModuleProfilePath{ nullptr };
+		EditorUiModuleProfileApplyRequest requestEditorUiModuleProfileApply{};
 		const EditorUiModuleRegistries* editorUiModules{ nullptr };
 	};
 }

@@ -16,12 +16,14 @@ namespace GL_EDITOR
 
 namespace GL_RUNTIME
 {
+	class RuntimeEditorLifecycleState;
+
 	class RuntimeEditorPanelCoordinator
 	{
 	public:
 		static GL_EDITOR::DebugControllerContext makeDebugControllerContext(
 			GLframework::AppRuntimeContext& context,
-			const GL_EDITOR::EditorUiModuleRegistries& editorUiModules,
+			RuntimeEditorLifecycleState& editorState,
 			float* orbitAngle
 		);
 
@@ -33,9 +35,7 @@ namespace GL_RUNTIME
 
 		static void drawPanels(
 			GLframework::AppRuntimeContext& context,
-			GL_EDITOR::SelectionContext& selection,
-			GL_EDITOR::EditTransactionLog& editTransactions,
-			const GL_EDITOR::EditorUiModuleRegistries& editorUiModules,
+			RuntimeEditorLifecycleState& editorState,
 			float* orbitAngle
 		);
 	};

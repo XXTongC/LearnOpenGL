@@ -30,11 +30,16 @@ namespace
 
 		ImGui::Separator();
 		ImGui::TextWrapped("Profile File: %s", configPath.c_str());
-		ImGui::TextWrapped("Profile edits are startup policy. Save and restart the editor path to rebuild the active module registries.");
+		ImGui::TextWrapped("Save/reload changes the profile. Apply queues a safe registry rebuild after the current UI frame.");
 
 		GL_EDITOR::PropertyBuilder builder{};
 		GL_EDITOR::buildEditorUiModuleProfileConfigSchema(builder, *context.editorUiModuleProfile);
 		GL_EDITOR::drawProperties(builder);
+
+		if (!context.editorUiModuleProfile->enableCoreEditorUiModule)
+		{
+			ImGui::TextWrapped("Warning: applying with Core Editor UI disabled removes this controls section until the profile or CLI enables it again.");
+		}
 
 		if (ImGui::Button("Save Editor UI Module Profile"))
 		{
@@ -52,8 +57,27 @@ namespace
 				configPath,
 				*context.editorUiModuleProfile
 			)
-				? "Editor UI module profile reloaded. Restart the editor path to apply the module registry composition."
+				? "Editor UI module profile reloaded. Apply it to rebuild the active module registries."
 				: "Editor UI module profile reload failed.";
+		}
+		ImGui::SameLine();
+		if (!context.requestEditorUiModuleProfileApply)
+		{
+			ImGui::BeginDisabled();
+		}
+		if (ImGui::Button("Apply Profile To Active Modules"))
+		{
+			const bool willRebuild = context.requestEditorUiModuleProfileApply
+				? context.requestEditorUiModuleProfileApply(*context.editorUiModuleProfile)
+				: false;
+			lastProfileStatus = willRebuild
+				? "Editor UI module registry reapply queued after this UI frame."
+				: "Editor UI module registries already match the current profile.";
+		}
+		if (!context.requestEditorUiModuleProfileApply)
+		{
+			ImGui::EndDisabled();
+			ImGui::TextWrapped("Runtime reapply is unavailable in this context.");
 		}
 
 		if (!lastProfileStatus.empty())
