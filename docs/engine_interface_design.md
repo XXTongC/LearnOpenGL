@@ -507,7 +507,8 @@ public:
 297. Runtime Render Resource Clear Color State Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再公开暴露 `clearColor` 值型字段，frame runner 通过 `clearColor()` accessor 把当前 clear color 同步到 renderer。
 298. Runtime Render Resource ReadOnly View Facade Cleanup 已完成第一版：新增 `RuntimeRenderResourceView` 与 `readOnlyView()`，renderer backend readiness、renderer backend attachment 和 verification report 的只读路径先迁到 read-only facade。
 299. Runtime Render Resource ReadOnly View PBR Stats Consumer Cleanup 已完成第一版：PBR renderer stats 与 prepared scene stats 两个只读 verification collector 改为通过 `RuntimeRenderResourceView` 读取 renderer / scene，不再直接依赖 mutable render resource accessor。
-300. 下一步建议继续把更多只读 consumer 迁到 `RuntimeRenderResourceView`，或转向其他 runtime/application state 的依赖边界；当前仍不建议继续扩张 PBR pass。
+300. Runtime Render Resource Renderer Pass Profile Access Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState` 新增 `rendererFramePassProfile()`，PBR pass profile verification 与 runtime profile loader 不再直接取得 renderer owner 写 frame pass profile。
+301. 下一步建议继续区分只读 consumer 与真实 mutation path：只读路径迁到 `RuntimeRenderResourceView`，写路径收敛为明确的小边界；当前仍不建议继续扩张 PBR pass。
 
 ## 约束
 

@@ -5,7 +5,6 @@
 #include "AppRuntimeContext.h"
 #include "RuntimeVerificationConfig.h"
 #include "../renderer/RendererFramePassProfile.h"
-#include "../renderer/renderer.h"
 
 namespace GL_RUNTIME
 {
@@ -14,7 +13,8 @@ namespace GL_RUNTIME
 		const RuntimeVerificationConfig& verification
 	)
 	{
-		if (!context.renderResources.renderer())
+		auto* rendererPassProfile = context.renderResources.rendererFramePassProfile();
+		if (!rendererPassProfile)
 		{
 			return;
 		}
@@ -24,91 +24,90 @@ namespace GL_RUNTIME
 		const auto& probes = config.probes;
 		const auto& deferred = config.deferred;
 		const auto& rendererVerification = verification.renderer;
-		auto& rendererPassProfile = context.renderResources.renderer()->getFramePassProfile();
-		rendererPassProfile.resetToDefaults();
+		rendererPassProfile->resetToDefaults();
 		const std::string shadowPrefix = passes.disablePbrShadowAtlasPass
 			? "BeginFrame,ShadowMaps,"
 			: "BeginFrame,ShadowMaps,PBRShadowAtlas,";
 		if (passes.disablePbrShadowAtlasPass)
 		{
-			rendererPassProfile.defaultPassOrder =
+			rendererPassProfile->defaultPassOrder =
 				"BeginFrame,ShadowMaps,PBRDepthPrepass,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene";
 		}
 		if (passes.enablePbrDeferredLightingPass)
 		{
-			rendererPassProfile.defaultPassOrder =
+			rendererPassProfile->defaultPassOrder =
 				shadowPrefix + "PBRDepthPrepass,PBRGBuffer,PBRDeferredLighting";
 			if (probes.enablePbrTransparentFallbackPass)
 			{
-				rendererPassProfile.defaultPassOrder += ",LegacyTransparentScene,PBRTransparentScene";
+				rendererPassProfile->defaultPassOrder += ",LegacyTransparentScene,PBRTransparentScene";
 			}
-			rendererPassProfile.pbrDeferredLightingIntensity = 1.0f;
-			rendererPassProfile.pbrDeferredIblDiffuseStrength = 1.0f;
-			rendererPassProfile.pbrDeferredIblSpecularStrength = 1.0f;
+			rendererPassProfile->pbrDeferredLightingIntensity = 1.0f;
+			rendererPassProfile->pbrDeferredIblDiffuseStrength = 1.0f;
+			rendererPassProfile->pbrDeferredIblSpecularStrength = 1.0f;
 		}
 		else if (passes.enablePbrDeferredTiledLightDebugPass)
 		{
-			rendererPassProfile.defaultPassOrder =
+			rendererPassProfile->defaultPassOrder =
 				shadowPrefix + "PBRDepthPrepass,PBRGBuffer,PBRDeferredTiledLightDebug";
-			rendererPassProfile.pbrDeferredTiledLightDebugMaxLights = 2;
-			rendererPassProfile.pbrDeferredTiledLightDebugIntensity = 1.0f;
+			rendererPassProfile->pbrDeferredTiledLightDebugMaxLights = 2;
+			rendererPassProfile->pbrDeferredTiledLightDebugIntensity = 1.0f;
 		}
 		else if (passes.enablePbrDeferredClusteredLightDebugPass)
 		{
-			rendererPassProfile.defaultPassOrder =
+			rendererPassProfile->defaultPassOrder =
 				shadowPrefix + "PBRDepthPrepass,PBRGBuffer,PBRDeferredClusteredLightDebug";
-			rendererPassProfile.pbrDeferredClusteredLightDebugDepthSlice = -1;
-			rendererPassProfile.pbrDeferredClusteredLightDebugMaxLights = 2;
-			rendererPassProfile.pbrDeferredClusteredLightDebugIntensity = 1.0f;
+			rendererPassProfile->pbrDeferredClusteredLightDebugDepthSlice = -1;
+			rendererPassProfile->pbrDeferredClusteredLightDebugMaxLights = 2;
+			rendererPassProfile->pbrDeferredClusteredLightDebugIntensity = 1.0f;
 		}
 		else if (passes.enablePbrGBufferPass || passes.enablePbrGBufferDebugPass)
 		{
-			rendererPassProfile.defaultPassOrder =
+			rendererPassProfile->defaultPassOrder =
 				shadowPrefix + "PBRDepthPrepass,PBRGBuffer,LegacyOpaqueScene,PBROpaqueScene,LegacyTransparentScene,PBRTransparentScene";
 		}
 
 		if (deferred.pbrDeferredTileSizeOverride > 0)
 		{
-			rendererPassProfile.pbrDeferredTileSize = deferred.pbrDeferredTileSizeOverride;
+			rendererPassProfile->pbrDeferredTileSize = deferred.pbrDeferredTileSizeOverride;
 		}
 		if (deferred.pbrDeferredTiledLightCutoffOverride > 0.0f)
 		{
-			rendererPassProfile.pbrDeferredTiledLightCutoff = deferred.pbrDeferredTiledLightCutoffOverride;
+			rendererPassProfile->pbrDeferredTiledLightCutoff = deferred.pbrDeferredTiledLightCutoffOverride;
 		}
 		if (deferred.disablePbrDeferredTiledLights)
 		{
-			rendererPassProfile.pbrDeferredTiledLightsEnabled = false;
+			rendererPassProfile->pbrDeferredTiledLightsEnabled = false;
 		}
 		if (probes.enablePbrClusteredLayoutProbe)
 		{
-			rendererPassProfile.pbrDeferredClusteredLayoutStatsEnabled = true;
+			rendererPassProfile->pbrDeferredClusteredLayoutStatsEnabled = true;
 		}
 		if (probes.enablePbrClusteredGridProbe)
 		{
-			rendererPassProfile.pbrDeferredClusteredLightsEnabled = true;
+			rendererPassProfile->pbrDeferredClusteredLightsEnabled = true;
 		}
 		if (probes.enablePbrClusteredStatsReadback)
 		{
-			rendererPassProfile.pbrDeferredClusteredStatsReadbackEnabled = true;
+			rendererPassProfile->pbrDeferredClusteredStatsReadbackEnabled = true;
 		}
 		if (rendererVerification.enableGpuTimingProbe)
 		{
-			rendererPassProfile.rendererGpuTimingEnabled = true;
+			rendererPassProfile->rendererGpuTimingEnabled = true;
 		}
 
 		if (passes.enablePbrGBufferDebugPass)
 		{
-			rendererPassProfile.defaultPassOrder += ",PBRGBufferDebug";
-			rendererPassProfile.pbrGBufferDebugMode = 0;
-			rendererPassProfile.pbrGBufferDebugIntensity = 1.0f;
+			rendererPassProfile->defaultPassOrder += ",PBRGBufferDebug";
+			rendererPassProfile->pbrGBufferDebugMode = 0;
+			rendererPassProfile->pbrGBufferDebugIntensity = 1.0f;
 		}
 
 		if (passes.enableIblDebugPass)
 		{
-			rendererPassProfile.defaultPassOrder += ",IBLDebug";
-			rendererPassProfile.iblDebugMode = 0;
-			rendererPassProfile.iblDebugMipLevel = 0.0f;
-			rendererPassProfile.iblDebugIntensity = 1.0f;
+			rendererPassProfile->defaultPassOrder += ",IBLDebug";
+			rendererPassProfile->iblDebugMode = 0;
+			rendererPassProfile->iblDebugMipLevel = 0.0f;
+			rendererPassProfile->iblDebugIntensity = 1.0f;
 		}
 	}
 }

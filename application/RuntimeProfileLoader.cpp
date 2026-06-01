@@ -5,7 +5,6 @@
 #include "../renderer/EnvironmentProfile.h"
 #include "../renderer/PostProcessSettings.h"
 #include "../renderer/RendererFramePassProfile.h"
-#include "../renderer/renderer.h"
 #include "../tools/Logger/LogManager.h"
 #include "../tools/sceneSetup/PBRCameraRigProfile.h"
 #include "../tools/sceneSetup/PBRExperimentProfile.h"
@@ -57,14 +56,15 @@ namespace
 
 	void loadRendererFramePassProfile(GLframework::AppRuntimeContext& context)
 	{
-		if (!context.renderResources.renderer())
+		auto* rendererFramePassProfile = context.renderResources.rendererFramePassProfile();
+		if (!rendererFramePassProfile)
 		{
 			return;
 		}
 
 		if (GLframework::RendererFramePassProfileStorage::loadFromFile(
 			context.profiles.rendererFramePassProfilePath,
-			context.renderResources.renderer()->getFramePassProfile()
+			*rendererFramePassProfile
 		))
 		{
 			LogInfo("Renderer frame pass profile loaded from " + context.profiles.rendererFramePassProfilePath);

@@ -9456,3 +9456,26 @@ Subagent 审查：
 
 - 这是 Runtime render resource read-only facade 的 PBR stats consumer cleanup，不改变 PBR renderer、prepared scene 构建、environment precompute、frame pass order、renderer backend contract 或 verification 判定标准。
 - 下一步可继续迁移其他只读 consumer 到 `RuntimeRenderResourceView`，或转向其他 runtime/application state 依赖边界；当前仍不建议继续扩张 PBR pass。
+
+### 2026-06-01 Runtime Render Resource Renderer Pass Profile Access Boundary Cleanup
+
+本轮继续 Engine runtime ownership 的边界收敛，不扩张 PBR 功能。复查剩余 `context.renderResources.renderer()` 使用点后确认，`RuntimePBRPassProfileVerification` 与 `RuntimeProfileLoader` 都不是只读 consumer：二者会写 renderer-owned `RendererFramePassProfile`。因此本轮不把它们迁到 read-only view，而是新增显式 profile access boundary，让需要写 renderer frame pass profile 的 application 模块不再直接取得 renderer owner。
+
+新增与修改：
+
+- `RuntimeRenderResourceState.h` 前置声明 `RendererFramePassProfile`，新增 `rendererFramePassProfile()` / const overload，返回 nullable profile pointer。
+- `RuntimeRenderResourceState.cpp` 集中通过 renderer owner 取得 `Renderer::getFramePassProfile()`，并把完整 `renderer.h` 依赖局部化到 resource state implementation。
+- `RuntimePBRPassProfileVerification.cpp` 改为通过 `context.renderResources.rendererFramePassProfile()` 写 verification pass profile，不再 include `renderer.h`，也不再直接调用 `context.renderResources.renderer()`。
+- `RuntimeProfileLoader.cpp` 改为通过 `rendererFramePassProfile()` 加载 renderer frame pass profile config，不再 include `renderer.h`，也不再直接调用 `context.renderResources.renderer()`。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRPassProfileVerification.cpp` 与 `RuntimeProfileLoader.cpp` 中不再出现 `context.renderResources.renderer()` 或 `context.renderResources.renderer()->getFramePassProfile()`。
+- 静态检查确认新增 `rendererFramePassProfile()` accessor 只在 `RuntimeRenderResourceState`、PBR pass profile verification 和 profile loader 中出现。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimePBRPassProfileVerification.cpp`、`RuntimeProfileLoader.cpp`、`RuntimeRenderResourceState.cpp` 和相关 runtime 文件。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 renderer frame pass profile 写入口边界 cleanup，不改变 profile 文件格式、verification pass profile policy、renderer pass profile 默认值、frame pass order 语义、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步应继续区分只读 consumer 与真实 mutation path：只读路径优先迁到 `RuntimeRenderResourceView`，写路径则继续收敛为明确的小边界，而不是扩大 renderer owner 暴露面。

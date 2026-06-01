@@ -2,6 +2,7 @@
 
 #include "../renderer/FrameRenderTargets.h"
 #include "../renderer/PostProcessPass.h"
+#include "../renderer/renderer.h"
 
 GL_RUNTIME::RuntimeRenderResourceState::RuntimeRenderResourceState()
 	: mFrameRenderTargets(std::make_unique<GLframework::FrameRenderTargets>()),
@@ -40,6 +41,26 @@ std::shared_ptr<GLframework::Renderer>& GL_RUNTIME::RuntimeRenderResourceState::
 const std::shared_ptr<GLframework::Renderer>& GL_RUNTIME::RuntimeRenderResourceState::renderer() const
 {
 	return mRenderer;
+}
+
+GLframework::RendererFramePassProfile* GL_RUNTIME::RuntimeRenderResourceState::rendererFramePassProfile()
+{
+	if (!mRenderer)
+	{
+		return nullptr;
+	}
+
+	return &mRenderer->getFramePassProfile();
+}
+
+const GLframework::RendererFramePassProfile* GL_RUNTIME::RuntimeRenderResourceState::rendererFramePassProfile() const
+{
+	if (!mRenderer)
+	{
+		return nullptr;
+	}
+
+	return &mRenderer->getFramePassProfile();
 }
 
 std::shared_ptr<GLframework::Scene>& GL_RUNTIME::RuntimeRenderResourceState::sceneOffScreen()
