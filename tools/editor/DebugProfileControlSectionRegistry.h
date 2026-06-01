@@ -14,6 +14,7 @@ namespace GL_EDITOR
 	struct DebugProfileControlSection
 	{
 		std::string key{};
+		int order = 0;
 		DebugProfileControlSectionDraw draw{};
 	};
 

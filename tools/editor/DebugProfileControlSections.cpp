@@ -1,5 +1,6 @@
 #include "DebugProfileControlSections.h"
 
+#include <cassert>
 #include <memory>
 #include <string>
 #include <utility>
@@ -27,12 +28,20 @@
 
 namespace
 {
+	constexpr int kPostProcessOrder = 100;
+	constexpr int kRuntimeFramePipelineOrder = 200;
+	constexpr int kRendererFramePassOrder = 300;
+	constexpr int kPBRPreviewOrder = 100;
+	constexpr int kPBRExperimentOrder = 200;
+	constexpr int kEnvironmentIblOrder = 300;
+
 	void registerDefaultProfileSection(
 		GL_EDITOR::DebugProfileControlSectionRegistry& registry,
 		GL_EDITOR::DebugProfileControlSection section
 	)
 	{
-		(void)registry.registerSection(std::move(section));
+		const bool registered = registry.registerSection(std::move(section));
+		assert(registered && registry.lastRegistrationFailure().empty());
 	}
 
 	void drawEnvironmentControls(
@@ -404,6 +413,7 @@ namespace
 
 		registerDefaultProfileSection(registry, {
 			"post-process",
+			kPostProcessOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
 			{
 				drawPostProcessControls(context.postProcessSettings, context.postProcessSettingsPath);
@@ -412,6 +422,7 @@ namespace
 
 		registerDefaultProfileSection(registry, {
 			"runtime-frame-pipeline",
+			kRuntimeFramePipelineOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
 			{
 				drawFramePipelineControls(context.framePipelineProfile, context.framePipelineProfilePath);
@@ -420,6 +431,7 @@ namespace
 
 		registerDefaultProfileSection(registry, {
 			"renderer-frame-pass",
+			kRendererFramePassOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
 			{
 				drawRendererFramePassControls(context.renderer, context.rendererFramePassProfilePath);
@@ -435,6 +447,7 @@ namespace
 
 		registerDefaultProfileSection(registry, {
 			"pbr-preview",
+			kPBRPreviewOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
 			{
 				drawPBRPreviewControls(context.pbrPreviewProfile, context.pbrPreviewProfilePath);
@@ -443,6 +456,7 @@ namespace
 
 		registerDefaultProfileSection(registry, {
 			"pbr-experiment",
+			kPBRExperimentOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
 			{
 				drawPBRExperimentControls(context);
@@ -451,6 +465,7 @@ namespace
 
 		registerDefaultProfileSection(registry, {
 			"environment-ibl",
+			kEnvironmentIblOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
 			{
 				drawEnvironmentControls(context.renderer, context.environmentProfile, context.environmentProfilePath);

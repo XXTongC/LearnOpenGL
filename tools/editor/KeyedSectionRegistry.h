@@ -1,6 +1,8 @@
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -12,8 +14,17 @@ namespace GL_EDITOR
 	public:
 		bool registerSection(Section section)
 		{
-			if (section.key.empty() || !section.draw)
+			mLastRegistrationFailure.clear();
+
+			if (section.key.empty())
 			{
+				mLastRegistrationFailure = "section key is empty";
+				return false;
+			}
+
+			if (!section.draw)
+			{
+				mLastRegistrationFailure = "section draw callback is empty: " + section.key;
 				return false;
 			}
 
@@ -21,11 +32,21 @@ namespace GL_EDITOR
 			{
 				if (existingSection.key == section.key)
 				{
+					mLastRegistrationFailure = "duplicate section key: " + section.key;
 					return false;
 				}
 			}
 
-			mSections.push_back(std::move(section));
+			const auto insertPosition = std::upper_bound(
+				mSections.begin(),
+				mSections.end(),
+				section.order,
+				[](const int order, const Section& existingSection)
+				{
+					return order < existingSection.order;
+				}
+			);
+			mSections.insert(insertPosition, std::move(section));
 			return true;
 		}
 
@@ -41,7 +62,18 @@ namespace GL_EDITOR
 			return drawnSections;
 		}
 
+		std::size_t sectionCount() const
+		{
+			return mSections.size();
+		}
+
+		const std::string& lastRegistrationFailure() const
+		{
+			return mLastRegistrationFailure;
+		}
+
 	private:
 		std::vector<Section> mSections{};
+		std::string mLastRegistrationFailure{};
 	};
 }

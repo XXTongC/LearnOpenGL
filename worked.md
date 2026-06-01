@@ -8150,3 +8150,17 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；5 个 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Debug Controller UI section 顺序、profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百四十七轮 Keyed Section Ordering and Diagnostics：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `34531d7 Extract keyed section registry`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续处理 keyed section 的 ordering metadata 与 duplicate registration diagnostics。
+  - 更新 [KeyedSectionRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\KeyedSectionRegistry.h)，注册时按 `section.order` 稳定插入，并新增 `lastRegistrationFailure()` / `sectionCount()` 诊断入口。
+  - 更新 [DebugControllerSectionRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerSectionRegistry.h) 与 [DebugProfileControlSectionRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugProfileControlSectionRegistry.h)，两套 section struct 新增 `order` 字段。
+  - 更新 [DebugControllerSections.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerSections.cpp)，默认 Debug Controller section 显式传入 order 常量，并在 Debug 构建下 assert 注册结果。
+  - 更新 [DebugProfileControlSections.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugProfileControlSections.cpp)，pipeline/scene profile section 显式传入 order 常量，并在 Debug 构建下 assert 注册结果。
+  - 已执行静态检查：确认两套 section struct 均包含 `order` 字段，默认 factory 均显式传入 order，registry exposes `lastRegistrationFailure()` / `sectionCount()`。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 Debug Controller UI section 顺序、profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

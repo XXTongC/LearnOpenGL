@@ -1,5 +1,6 @@
 #include "DebugControllerSections.h"
 
+#include <cassert>
 #include <utility>
 
 #include "DebugControllerContext.h"
@@ -12,12 +13,19 @@
 
 namespace
 {
+	constexpr int kLegacyControlsOrder = 100;
+	constexpr int kPipelineProfileControlsOrder = 200;
+	constexpr int kRendererFrameStatsOrder = 300;
+	constexpr int kEngineDiagnosticsOrder = 400;
+	constexpr int kSceneProfileControlsOrder = 500;
+
 	void registerDefaultSection(
 		GL_EDITOR::DebugControllerSectionRegistry& registry,
 		GL_EDITOR::DebugControllerSection section
 	)
 	{
-		(void)registry.registerSection(std::move(section));
+		const bool registered = registry.registerSection(std::move(section));
+		assert(registered && registry.lastRegistrationFailure().empty());
 	}
 
 	GL_EDITOR::DebugControllerSectionRegistry makeDefaultDebugControllerSectionRegistry()
@@ -26,6 +34,7 @@ namespace
 
 		registerDefaultSection(registry, {
 			"legacy-controls",
+			kLegacyControlsOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
 			{
 				GL_EDITOR::drawDebugLegacyControls(context);
@@ -34,6 +43,7 @@ namespace
 
 		registerDefaultSection(registry, {
 			"pipeline-profile-controls",
+			kPipelineProfileControlsOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
 			{
 				GL_EDITOR::drawDebugPipelineProfileControls(context);
@@ -42,6 +52,7 @@ namespace
 
 		registerDefaultSection(registry, {
 			"renderer-frame-stats",
+			kRendererFrameStatsOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
 			{
 				GL_EDITOR::drawRendererFrameStatsPanel(context.renderer.get());
@@ -50,6 +61,7 @@ namespace
 
 		registerDefaultSection(registry, {
 			"engine-diagnostics",
+			kEngineDiagnosticsOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
 			{
 				GL_EDITOR::EngineDiagnosticsContext engineDiagnosticsContext{};
@@ -63,6 +75,7 @@ namespace
 
 		registerDefaultSection(registry, {
 			"scene-profile-controls",
+			kSceneProfileControlsOrder,
 			[](const GL_EDITOR::DebugControllerContext& context)
 			{
 				GL_EDITOR::drawDebugSceneProfileControls(context);

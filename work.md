@@ -10705,3 +10705,28 @@ Subagent 审查：
 
 - 这是 Keyed Section Registry extraction slice，不改变 Debug Controller UI section 顺序、profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议为 `KeyedSectionRegistry` 增加显式 ordering metadata 与 duplicate registration diagnostics，或继续推进 editor/gameplay boundary，把 UI provider 注册从默认 factory 逐步移向可组合模块。
+
+### 2026-06-01 Keyed Section Ordering and Diagnostics
+
+本轮继续收束 UI section registry，把上一轮通用 registry 的“隐式注册顺序”改为“section 自带显式 order”，并补上注册失败诊断。目标是让默认 factory 仍保持当前 UI 顺序，但未来外部模块插入 section 时不需要依赖 include/调用顺序这种隐含约定。
+
+新增与修改：
+
+- `KeyedSectionRegistry<Section, Context>` 新增 ordered insertion：注册时按 `section.order` 稳定插入，同 order 仍保持注册先后顺序。
+- `KeyedSectionRegistry` 新增 `lastRegistrationFailure()` 与 `sectionCount()`，注册失败会记录空 key、空 draw callback 或重复 key 的具体原因。
+- `DebugControllerSection` 与 `DebugProfileControlSection` 新增 `order` 字段。
+- `DebugControllerSections.cpp` 为默认 Debug Controller section 增加显式 order 常量，保持 legacy controls、pipeline profile controls、renderer frame stats、engine diagnostics、scene profile controls 的原有顺序。
+- `DebugProfileControlSections.cpp` 为 pipeline/scene profile section 增加显式 order 常量，保持 Post Process、Runtime Frame Pipeline、Renderer Frame Pass Plan 与 PBR Preview、PBR Experiment、Environment / IBL 的原有顺序。
+- 默认 factory 的注册 helper 在 Debug 构建下通过 `assert(registered && registry.lastRegistrationFailure().empty())` 暴露内部注册错误。
+
+已完成验证：
+
+- 静态检查确认两套 section struct 均包含 `order` 字段，默认 factory 均显式传入 order，registry exposes `lastRegistrationFailure()` / `sectionCount()`。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `DebugControllerSections.cpp` 与 `DebugProfileControlSections.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Keyed Section Ordering and Diagnostics slice，不改变 Debug Controller UI section 顺序、profile UI 顺序、配置 key、save/reload 行为、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续推进 editor/gameplay boundary，把 UI provider 注册从默认 factory 逐步移向可组合模块，或开始抽取 Debug Profile Control section 内部的大型 helper 到独立 provider 文件。

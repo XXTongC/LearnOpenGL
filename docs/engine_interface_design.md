@@ -592,6 +592,8 @@ public:
 382. 下一步建议减少 registry 模板重复，例如提取通用 keyed section registry，或为 Debug Controller / profile control section registry 增加显式 ordering metadata 与 duplicate registration diagnostics。
 383. Keyed Section Registry Extraction 已完成第一版：新增通用 `KeyedSectionRegistry<Section, Context>`，Debug Controller 与 Debug Profile Control 两套 section registry 复用同一套 key 校验、重复注册拒绝和顺序绘制逻辑，删除重复 `.cpp` 实现。
 384. 下一步建议为 keyed section 增加显式 ordering metadata 与 duplicate registration diagnostics，或继续推进 editor/gameplay boundary，把 UI provider 注册从默认 factory 逐步移向可组合模块。
+385. Keyed Section Ordering and Diagnostics 已完成第一版：`KeyedSectionRegistry` 支持按 `section.order` 稳定插入，记录最近一次注册失败原因，并提供 `sectionCount()`；默认 Debug Controller/Profile section factory 均显式声明 order 并在 Debug 构建下 assert 注册结果。
+386. 下一步建议继续推进 editor/gameplay boundary，把 UI provider 注册从默认 factory 逐步移向可组合模块，或开始抽取 Debug Profile Control section 内部的大型 helper 到独立 provider 文件。
 
 ## 约束
 
