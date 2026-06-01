@@ -431,10 +431,11 @@ passed
 - Editor UI Module Registry Composer 已接入：新增 `EditorUiModuleRegistry`，聚合 Debug Controller sections、pipeline profile controls、scene profile controls 和 selection inspector providers，三条 panel 消费路径统一从 `defaultEditorUiModuleRegistries()` 读取 registry。
 - Editor UI Module Registration List 已接入：`EditorUiModuleRegistry` 新增 `EditorUiModule` / `EditorUiModuleList`，支持按外部 module list 构建 UI registries；默认列表当前包含 `core-editor-ui`。
 - Sample Editor UI Module 已接入：新增 `SampleEditorUiModule`，通过 `EditorUiModuleList` 注册 `sample-editor-ui-module` Debug Controller section，验证外部 module 可不修改 panel 代码扩展 UI。
+- Editor UI Module Composition Policy 已接入：新增 `EditorUiModuleComposition`，默认 module list 由 `EditorUiModuleCompositionPolicy` 生成，registry 不再直接依赖 core provider 或 sample module。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Sample Editor UI Module 已接入后，默认 UI 由 `core-editor-ui` 与 `sample-editor-ui` 组成；sample module 通过 `EditorUiModuleList` 注册轻量 Debug Controller diagnostics section，证明扩展点不需要改 panel 代码。
+当前最新修正：Editor UI Module Composition Policy 已接入后，默认 UI 仍由 `core-editor-ui` 与 `sample-editor-ui` 组成，但 module list 由 `EditorUiModuleCompositionPolicy` 生成，`EditorUiModuleRegistry.cpp` 不再硬编码具体 module 组合。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议把 module list 的选择权上提到 editor/application composition 层，或增加 module enable/disable policy，避免长期只能改 `EditorUiModuleRegistry.cpp` 控制默认模块组合；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议把 `EditorUiModuleCompositionPolicy` 的来源继续上提到 editor/application composition 层，或让 profile/config/command-line 控制 sample/default/plugin module 的启用状态；当前不建议继续扩张 PBR pass。

@@ -1,23 +1,6 @@
 #include "EditorUiModuleRegistry.h"
 
-#include "DebugControllerSections.h"
-#include "DebugPipelineProfileControlSections.h"
-#include "DebugSceneProfileControlSections.h"
-#include "SampleEditorUiModule.h"
-#include "../inspector/SelectionInspectorProviders.h"
-
 #include <cassert>
-
-namespace
-{
-	void registerCoreEditorUiModule(GL_EDITOR::EditorUiModuleRegistries& registries)
-	{
-		GL_EDITOR::registerDefaultDebugControllerSections(registries.debugControllerSections);
-		GL_EDITOR::registerDefaultDebugPipelineProfileControlSections(registries.pipelineProfileControls);
-		GL_EDITOR::registerDefaultDebugSceneProfileControlSections(registries.sceneProfileControls);
-		GL_EDITOR::registerDefaultSelectionInspectorProviders(registries.selectionInspectors);
-	}
-}
 
 void GL_EDITOR::registerEditorUiModules(EditorUiModuleRegistries& registries, const EditorUiModuleList& modules)
 {
@@ -38,15 +21,6 @@ GL_EDITOR::EditorUiModuleRegistries GL_EDITOR::buildEditorUiModuleRegistries(con
 	EditorUiModuleRegistries registries{};
 	registerEditorUiModules(registries, modules);
 	return registries;
-}
-
-const GL_EDITOR::EditorUiModuleList& GL_EDITOR::defaultEditorUiModules()
-{
-	static const EditorUiModuleList modules{
-		{ "core-editor-ui", registerCoreEditorUiModule },
-		GL_EDITOR::sampleEditorUiModule(),
-	};
-	return modules;
 }
 
 void GL_EDITOR::registerDefaultEditorUiModules(EditorUiModuleRegistries& registries)

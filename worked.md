@@ -8261,3 +8261,17 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过，MSBuild 编译了 `EditorUiModuleRegistry.cpp` 与 `SampleEditorUiModule.cpp`；5 个 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮新增一个 Debug Controller sample diagnostics section，但不修改 PBR pass、runtime frame pipeline、renderer backend contract、profile 配置 key、selection inspector provider 优先级或已有默认 section 的相对顺序；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百五十五轮 Editor UI Module Composition Policy：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `f384ddf Add sample editor UI module`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档继续把 module list 的选择权从 `EditorUiModuleRegistry.cpp` 上提，本轮新增 composition/policy 层。
+  - 新增 [EditorUiModuleComposition.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleComposition.h) 与 [EditorUiModuleComposition.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleComposition.cpp)，定义 `EditorUiModuleCompositionPolicy`、`defaultEditorUiModuleCompositionPolicy()` 与 `buildEditorUiModuleList(...)`。
+  - `EditorUiModuleCompositionPolicy` 当前提供 `includeCoreEditorUi` 与 `includeSampleEditorUi` 两个默认启用开关。
+  - 更新 [EditorUiModuleRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleRegistry.cpp)，移除对 Debug Controller/provider/sample module 具体头文件的依赖，只保留 registry 注册和默认 registry 构建。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 composition 源文件和头文件。
+  - 已执行静态检查：确认 `EditorUiModuleRegistry.cpp` 不再直接 include core provider 或 sample module 头文件，默认 module list 由 `EditorUiModuleComposition.cpp` 负责。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过，MSBuild 编译了 `EditorUiModuleComposition.cpp` 与 `EditorUiModuleRegistry.cpp`；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改默认 module 启用状态、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

@@ -608,6 +608,8 @@ public:
 398. 下一步建议新增一个 sample editor module，通过不修改 panel 代码的方式注册诊断或测试 section，用实际扩展示例验证 module registration boundary。
 399. Sample Editor UI Module 已完成第一版：新增 `SampleEditorUiModule`，通过 `EditorUiModuleList` 注册 `sample-editor-ui-module` Debug Controller section；默认 UI 现在由 `core-editor-ui` 与 `sample-editor-ui` 组合构建，验证独立 module 可不修改 panel 代码扩展 UI。
 400. 下一步建议把 module list 的选择权从静态默认列表上提到 editor/application composition 层，或增加 module enable/disable policy，让 sample/default/plugin module 组合不再长期依赖修改 `EditorUiModuleRegistry.cpp`。
+401. Editor UI Module Composition Policy 已完成第一版：新增 `EditorUiModuleComposition` 与 `EditorUiModuleCompositionPolicy`，默认 module list 由 policy 生成；`EditorUiModuleRegistry.cpp` 不再直接依赖 core provider 或 sample module。
+402. 下一步建议把 `EditorUiModuleCompositionPolicy` 的来源继续上提到 editor/application composition 层，或接入 profile/config/command-line，让 sample/default/plugin module 启用状态可由组合根决定。
 
 ## 约束
 

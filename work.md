@@ -10895,3 +10895,28 @@ Subagent 审查：
 
 - 这是 Sample Editor UI Module boundary validation slice，会在 Debug Controller 中新增一个轻量 sample diagnostics section，但不改变 PBR pass、runtime frame pipeline、renderer backend contract、profile 配置 key、selection inspector provider 优先级或已有默认 section 的相对顺序。
 - 下一步建议把 module list 的选择权从静态默认列表继续上提到 editor/application composition 层，或增加 module enable/disable policy，避免长期只能通过改 `EditorUiModuleRegistry.cpp` 控制默认模块组合。
+
+### 2026-06-01 Editor UI Module Composition Policy
+
+本轮把默认 Editor UI module 组合从 `EditorUiModuleRegistry.cpp` 中拆出，新增独立 composition/policy 层。目标是让 registry 只负责注册和构建 registry set，具体默认启用哪些 module 由更高一层的 composition policy 决定，为后续 application/editor composition 接管 module 组合做准备。
+
+新增与修改：
+
+- 新增 `tools/editor/EditorUiModuleComposition.h/.cpp`，定义 `EditorUiModuleCompositionPolicy`。
+- `EditorUiModuleCompositionPolicy` 当前包含 `includeCoreEditorUi` 与 `includeSampleEditorUi` 两个开关，默认都启用。
+- 新增 `buildEditorUiModuleList(...)`，按 policy 生成 `EditorUiModuleList`。
+- `core-editor-ui` 默认注册函数迁入 `EditorUiModuleComposition.cpp`，集中组合 Debug Controller section、pipeline profile control section、scene profile control section 与 selection inspector provider。
+- `defaultEditorUiModules()` 的实现迁入 composition 层；`EditorUiModuleRegistry.cpp` 不再 include core provider 或 sample module 的具体头文件。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 composition 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `EditorUiModuleRegistry.cpp` 不再直接依赖 `DebugControllerSections`、`DebugPipelineProfileControlSections`、`DebugSceneProfileControlSections`、`SelectionInspectorProviders` 或 `SampleEditorUiModule`。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `EditorUiModuleComposition.cpp` 与 `EditorUiModuleRegistry.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Editor UI Module Composition Policy slice，不改变默认 module 启用状态、Debug Controller section 内容、profile section 内容、selection inspector provider 优先级、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议把 `EditorUiModuleCompositionPolicy` 的来源继续上提到 editor/application composition 层，或让 profile/config/command-line 控制 sample/default/plugin module 的启用状态。
