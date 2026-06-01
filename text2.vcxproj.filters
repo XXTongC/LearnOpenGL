@@ -513,6 +513,9 @@
     <ClCompile Include="application\RuntimeFramePassRegistry.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeFrameRenderResourceAdapter.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeFramePasses.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -1245,6 +1248,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeFramePassRegistry.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeFrameRenderResourceAdapter.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeFramePasses.h">

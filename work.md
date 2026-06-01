@@ -9593,3 +9593,27 @@ Subagent 审查：
 
 - 这是 Engine World verification 的 read-only render resource cleanup，不改变 scene package schema、asset resolver 解析策略、runtime-generated mesh/material/light 创建、transform snapshot、Engine World import/export 或 PBR pass。
 - 下一步建议继续处理 `RuntimeFramePasses.cpp` 的 frame execution direct renderer/scene owner 访问；editor/scene setup/legacy setup 仍是注入路径，后续应按职责切 adapter，而不是简单迁到 read-only view。
+
+### 2026-06-01 Runtime Frame Render Resource Adapter Cleanup
+
+本轮继续处理 frame execution resource boundary，不扩张 PBR 功能。`RuntimeFramePasses.cpp` 原本直接访问 renderer、offscreen scene、frame render targets、post-process pass、Bloom 和 screen quad。这是实际 frame execution path，不应伪装成 read-only consumer；本轮新增专用 adapter，把 render resource owner 访问集中到 `RuntimeFrameRenderResourceAdapter.cpp`，让 frame pass definition 只表达 pass 语义和调度。
+
+新增与修改：
+
+- 新增 `RuntimeFrameRenderResourceAdapter.h/.cpp`，提供 `renderSceneColor(...)`、`resolveSceneColor(...)`、`renderBloom(...)` 与 `renderScreenComposite(...)`。
+- `RuntimeFrameRenderResourceAdapter.cpp` 内部集中访问 `RuntimeRenderResourceState` 的 renderer、scene、frame targets、post-process pass、Bloom、screen quad 和 screen shader。
+- `RuntimeFramePasses.cpp` 移除 renderer/post-process/frame-target/material implementation headers，只调用 adapter 方法执行对应 pass。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 adapter 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeFramePasses.cpp` 中不再直接调用 `context.renderResources.renderer()` / `sceneOffScreen()` / `frameRenderTargets()` / `postProcessPass()` / `bloom()` / `screenQuad()`，也不再 include renderer/post-process/material implementation headers。
+- 静态检查确认 renderer/scene/frame target/post-process direct owner access 已集中到 `RuntimeFrameRenderResourceAdapter.cpp`。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `RuntimeFrameRenderResourceAdapter.cpp` 和 `RuntimeFramePasses.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 runtime frame pass execution 的 adapter boundary cleanup，不改变 pass order、pass enabled policy、scene color render、MSAA resolve、Bloom、screen composite、renderer backend contract 或 PBR pass。
+- 下一步应处理剩余 editor/scene setup/legacy setup 注入路径中的 direct renderer/scene owner 访问；这些路径是 context wiring，不应直接套 read-only view，需要按职责继续拆 adapter 或 setup DTO。

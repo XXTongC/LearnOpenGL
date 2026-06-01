@@ -513,7 +513,8 @@ public:
 303. Runtime Render Resource Imported Asset Probe Scene Boundary Cleanup 已完成第一版：imported asset probe verification 通过 `hasOffScreenSceneAndRenderer()` 与 `addOffScreenSceneChild(...)` 判断 readiness / 添加 probe，不再直接访问 offscreen scene owner；`AssimpLoader::loadPBR` 的 renderer 依赖保留为后续 asset-loading adapter 任务。
 304. Runtime Asset Import Service Adapter Cleanup 已完成第一版：新增 `RuntimeAssetImportService` 隔离 Assimp PBR loader 对 renderer 的依赖，`RuntimeImportedAssetVerification` 不再直接访问 renderer/scene owner 或 `AssimpLoader`。
 305. Runtime Engine World Verification ReadOnly Resource Cleanup 已完成第一版：Engine World verification 的 prepared scene stats 与 scene package round-trip resolver 创建改为通过 `RuntimeRenderResourceView` 读取 render resources，不再直接访问 mutable renderer/scene owner。
-306. 下一步建议继续处理 frame pass 中剩余 direct renderer/scene owner 访问点；当前仍不建议继续扩张 PBR pass。
+306. Runtime Frame Render Resource Adapter Cleanup 已完成第一版：新增 `RuntimeFrameRenderResourceAdapter` 集中 runtime frame pass execution 对 renderer/scene/frame-target/post-process 资源的访问，`RuntimeFramePasses` 不再直接访问 render resource owner。
+307. 下一步建议继续处理 editor/scene setup/legacy setup 注入路径中的 direct renderer/scene owner 访问点；当前仍不建议继续扩张 PBR pass。
 
 ## 约束
 

@@ -322,6 +322,7 @@ passed
 - Runtime Render Resource Imported Asset Probe Scene Boundary Cleanup 已接入：imported asset probe verification 通过 `hasOffScreenSceneAndRenderer()` 与 `addOffScreenSceneChild(...)` 判断 readiness / 添加 probe，不再直接访问 offscreen scene owner；`AssimpLoader::loadPBR` 的 renderer 依赖保留为后续 asset-loading adapter 任务。
 - Runtime Asset Import Service Adapter Cleanup 已接入：新增 `RuntimeAssetImportService` 隔离 Assimp PBR loader 对 renderer 的依赖，`RuntimeImportedAssetVerification` 不再直接访问 renderer/scene owner 或 `AssimpLoader`。
 - Runtime Engine World Verification ReadOnly Resource Cleanup 已接入：Engine World verification 的 prepared scene stats 与 scene package round-trip resolver 创建改为通过 `RuntimeRenderResourceView` 读取 render resources，不再直接访问 mutable renderer/scene owner。
+- Runtime Frame Render Resource Adapter Cleanup 已接入：新增 `RuntimeFrameRenderResourceAdapter` 集中 runtime frame pass execution 对 renderer/scene/frame-target/post-process 资源的访问，`RuntimeFramePasses` 不再直接访问 render resource owner。
 - Engine AssetSubsystem Registry Header Boundary Cleanup 已接入：`AssetSubsystem.h` 不再 include 完整 `AssetRegistry.h`，registry 通过 private owning pointer 隐藏；实际访问 registry API 的实现文件显式 include `AssetRegistry.h`。
 - Runtime Application Shutdown Cleanup Verification Config Boundary Cleanup 已接入：shutdown cleanup bridge 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射集中到 shutdown lifecycle facade。
 - Runtime Application Shutdown Lifecycle Verification Config Boundary Cleanup 已接入：shutdown lifecycle facade 改为接收 `RuntimeVerificationConfig`，完整 shell config 到 verification config 的映射上移到 callback binder。
@@ -382,6 +383,6 @@ passed
 
 ## 下一阶段
 
-当前最新修正：Runtime Engine World Verification ReadOnly Resource Cleanup 已接入后，Engine World verification 的 prepared scene stats 与 scene package round-trip resolver 创建已通过 read-only render resource view 读取资源，不再直接访问 mutable renderer/scene owner。
+当前最新修正：Runtime Frame Render Resource Adapter Cleanup 已接入后，runtime frame pass execution 对 renderer/scene/frame-target/post-process 资源的访问已集中到 `RuntimeFrameRenderResourceAdapter`，`RuntimeFramePasses` 不再直接访问 render resource owner。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 engine world verification read-only cleanup 后，下一步可继续处理 frame pass 中剩余 direct renderer/scene owner 访问点；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 frame render resource adapter cleanup 后，下一步可继续处理 editor/scene setup/legacy setup 注入路径中的 direct renderer/scene owner 访问点；当前不建议继续扩张 PBR pass。
