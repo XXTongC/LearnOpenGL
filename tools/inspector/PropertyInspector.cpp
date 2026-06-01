@@ -38,6 +38,22 @@ namespace GL_EDITOR
 				break;
 			}
 
+			case PropertyKind::InputFloat:
+			{
+				float value = property.getFloat();
+				if (property.readOnly)
+				{
+					ImGui::Text("%s: %.3f", property.label.c_str(), value);
+					break;
+				}
+				if (ImGui::InputFloat(property.label.c_str(), &value, 0.0f, 0.0f, property.format.c_str()))
+				{
+					property.setFloat(value);
+					changed = true;
+				}
+				break;
+			}
+
 			case PropertyKind::Bool:
 			{
 				bool value = property.getBool();
@@ -63,6 +79,22 @@ namespace GL_EDITOR
 					break;
 				}
 				if (ImGui::SliderInt(property.label.c_str(), &value, static_cast<int>(property.minValue), static_cast<int>(property.maxValue)))
+				{
+					property.setInt(value);
+					changed = true;
+				}
+				break;
+			}
+
+			case PropertyKind::InputInt:
+			{
+				int value = property.getInt();
+				if (property.readOnly)
+				{
+					ImGui::Text("%s: %d", property.label.c_str(), value);
+					break;
+				}
+				if (ImGui::InputInt(property.label.c_str(), &value))
 				{
 					property.setInt(value);
 					changed = true;

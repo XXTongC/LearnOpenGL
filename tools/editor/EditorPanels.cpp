@@ -1,11 +1,5 @@
 #include "EditorPanels.h"
 
-#include "../../camera/camera.h"
-#include "../../camera/orthographiccamera.h"
-#include "../../camera/perspectivecamera.h"
-#include "../../light/shadow/directionalLightCSMShadow/directionalLightCSMShadow.h"
-#include "../../light/shadow/directionalLightShadow/directionalLightShadow.h"
-#include "../../light/shadow/pointLightShadow/pointLightShadow.h"
 #include "../../framework/object.h"
 #include "../../framework/scene.h"
 #include "../../light/directionalLight.h"
@@ -25,6 +19,7 @@
 #include "SceneTransformSnapshot.h"
 #include "../inspector/MaterialInspector.h"
 #include "../inspector/PropertyInspector.h"
+#include "../inspector/SceneObjectInspector.h"
 #include "../../third_party/imgui/imgui.h"
 
 namespace
@@ -75,15 +70,6 @@ namespace
 		if (!explicitName.empty()) return explicitName;
 
 		return getObjectTypeName(object->getType());
-	}
-
-	std::string getShadowTypeName(const std::shared_ptr<GLframework::Shadow>& shadow)
-	{
-		if (!shadow) return "Shadow";
-		if (std::dynamic_pointer_cast<GLframework::DirectionalLightCSMShadow>(shadow)) return "DirectionalLightCSMShadow";
-		if (std::dynamic_pointer_cast<GLframework::DirectionalLightShadow>(shadow)) return "DirectionalLightShadow";
-		if (std::dynamic_pointer_cast<GLframework::PointLightShadow>(shadow)) return "PointLightShadow";
-		return "Shadow";
 	}
 
 	glm::vec3 toGlmVec3(const GLengine::Vector3& value)
@@ -348,50 +334,12 @@ namespace
 
 	void renderLightInspector(const std::shared_ptr<GLframework::Light>& light, GL_EDITOR::SelectionContext& selection)
 	{
-		glm::vec3 color = light->getColor();
-		if (ImGui::ColorEdit3("Light Color", &color[0]))
-		{
-			light->setColor(color);
-		}
-
-		float intensity = light->getIntensity();
-		if (ImGui::SliderFloat("Intensity", &intensity, 0.0f, 10.0f))
-		{
-			light->setIntensity(intensity);
-		}
-
-		float specular = light->getSpecularIntensity();
-		if (ImGui::SliderFloat("Specular", &specular, 0.0f, 10.0f))
-		{
-			light->setSpecularIntensity(specular);
-		}
-
-		if (auto pointLight = std::dynamic_pointer_cast<GLframework::PointLight>(light))
-		{
-			float attenuation[3] = { pointLight->getK2(), pointLight->getK1(), pointLight->getK0() };
-			if (ImGui::InputFloat3("Attenuation (k2,k1,k0)", attenuation))
-			{
-				pointLight->setK(attenuation[0], attenuation[1], attenuation[2]);
-			}
-		}
-
-		if (auto spot = std::dynamic_pointer_cast<GLframework::SpotLight>(light))
-		{
-			float inner = spot->getInnerAngle();
-			float outer = spot->getOutAngle();
-			if (ImGui::SliderFloat("Inner Angle", &inner, 0.0f, 90.0f))
-			{
-				spot->setInnerAngle(inner);
-			}
-			if (ImGui::SliderFloat("Outer Angle", &outer, 0.0f, 90.0f))
-			{
-				spot->setOutAngle(outer);
-			}
-		}
+		const auto lightProperties = GL_EDITOR::buildLightPropertySchema(light);
+		GL_EDITOR::drawProperties(lightProperties);
 
 		if (light->getShadow())
 		{
-			ImGui::Text("Shadow: %s", getShadowTypeName(light->getShadow()).c_str());
+			ImGui::Text("Shadow: %s", GL_EDITOR::getShadowTypeName(light->getShadow()).c_str());
 			if (ImGui::Button("Inspect Shadow"))
 			{
 				GL_EDITOR::selectShadow(selection, light->getShadow(), getObjectDisplayName(light) + " Shadow");
@@ -401,46 +349,8 @@ namespace
 
 	void renderShadowInspector(const std::shared_ptr<GLframework::Shadow>& shadow, GL_EDITOR::SelectionContext& selection)
 	{
-		ImGui::SliderFloat("Bias", &shadow->mBias, 0.0f, 0.01f, "%.6f");
-		ImGui::SliderFloat("PCF Radius", &shadow->mPcfRadius, 0.0f, 10.0f, "%.3f");
-		ImGui::SliderFloat("Disk Tightness", &shadow->mDiskTightness, 0.0f, 4.0f, "%.3f");
-		ImGui::SliderFloat("Light Size", &shadow->mLightSize, 0.0f, 1.0f, "%.3f");
-
-		if (shadow->mRenderTarget)
-		{
-			int widthValue = static_cast<int>(shadow->mRenderTarget->getWidth());
-			int heightValue = static_cast<int>(shadow->mRenderTarget->getHeight());
-			if (ImGui::InputInt("Shadow Width", &widthValue) | ImGui::InputInt("Shadow Height", &heightValue))
-			{
-				if (widthValue < 1) widthValue = 1;
-				if (heightValue < 1) heightValue = 1;
-				shadow->setRenderTargetSize(widthValue, heightValue);
-			}
-		}
-
-		if (auto csmShadow = std::dynamic_pointer_cast<GLframework::DirectionalLightCSMShadow>(shadow))
-		{
-			int layerCount = csmShadow->getLayerCount();
-			if (ImGui::SliderInt("Cascade Layers", &layerCount, 1, 8))
-			{
-				csmShadow->setLayerCount(layerCount);
-				if (csmShadow->mRenderTarget)
-				{
-					csmShadow->setRenderTargetSize(
-						static_cast<int>(csmShadow->mRenderTarget->getWidth()),
-						static_cast<int>(csmShadow->mRenderTarget->getHeight())
-					);
-				}
-			}
-		}
-
-		if (auto pointShadow = std::dynamic_pointer_cast<GLframework::PointLightShadow>(shadow))
-		{
-			int shadowMapIndex = pointShadow->getShadowMapIndex();
-			ImGui::InputInt("Shadow Map Index", &shadowMapIndex);
-			pointShadow->setShadowMapIndex(shadowMapIndex);
-			ImGui::Text("Max Point Lights: %d", GLframework::PointLightShadow::getMAX_POINT_LIGHT());
-		}
+		const auto shadowProperties = GL_EDITOR::buildShadowPropertySchema(shadow);
+		GL_EDITOR::drawProperties(shadowProperties);
 
 		if (shadow->mCamera)
 		{
@@ -455,33 +365,8 @@ namespace
 	{
 		if (!selectedCamera) return;
 
-		ImGui::InputFloat3("Position", &selectedCamera->mPosition[0]);
-		ImGui::InputFloat3("Up", &selectedCamera->mUp[0]);
-		ImGui::InputFloat3("Right", &selectedCamera->mRight[0]);
-		ImGui::InputFloat("Near", &selectedCamera->mNear);
-		ImGui::InputFloat("Far", &selectedCamera->mFar);
-
-		if (auto perspective = dynamic_cast<PerspectiveCamera*>(selectedCamera))
-		{
-			float fovy = perspective->getFovy();
-			float aspect = perspective->getAspect();
-			if (ImGui::SliderFloat("Fovy", &fovy, 1.0f, 179.0f))
-			{
-				perspective->setFovy(fovy);
-			}
-			if (ImGui::InputFloat("Aspect", &aspect))
-			{
-				perspective->setAspect(aspect);
-			}
-		}
-
-		if (auto orthographic = dynamic_cast<OrthographicCamera*>(selectedCamera))
-		{
-			ImGui::InputFloat("Left", &orthographic->mL);
-			ImGui::InputFloat("Right", &orthographic->mR);
-			ImGui::InputFloat("Top", &orthographic->mT);
-			ImGui::InputFloat("Bottom", &orthographic->mB);
-		}
+		const auto cameraProperties = GL_EDITOR::buildCameraPropertySchema(selectedCamera);
+		GL_EDITOR::drawProperties(cameraProperties);
 	}
 
 	void renderActorInspector(GLengine::Actor& actor, bool engineWorldEditable, GL_EDITOR::EditTransactionLog* editTransactions)
@@ -923,7 +808,7 @@ namespace
 				if (shadowSelected) shadowFlags |= ImGuiTreeNodeFlags_Selected;
 
 				ImGui::PushID(shadow.get());
-				ImGui::TreeNodeEx("shadow", shadowFlags, "%s", getShadowTypeName(shadow).c_str());
+				ImGui::TreeNodeEx("shadow", shadowFlags, "%s", GL_EDITOR::getShadowTypeName(shadow).c_str());
 				if (ImGui::IsItemClicked())
 				{
 					GL_EDITOR::selectShadow(selection, shadow, getObjectDisplayName(light) + " Shadow");
@@ -1221,7 +1106,7 @@ void GL_EDITOR::drawSelectionInspectorPanel(const EditorPanelContext& context, S
 	if (selectedShadow)
 	{
 		ImGui::Text("Name: %s", selection.label.c_str());
-		ImGui::Text("Type: %s", getShadowTypeName(selectedShadow).c_str());
+		ImGui::Text("Type: %s", GL_EDITOR::getShadowTypeName(selectedShadow).c_str());
 		ImGui::Separator();
 		renderShadowInspector(selectedShadow, selection);
 		ImGui::End();
@@ -1234,11 +1119,7 @@ void GL_EDITOR::drawSelectionInspectorPanel(const EditorPanelContext& context, S
 			"Name: %s",
 			selection.label.c_str()
 		);
-		ImGui::Text(
-			"Type: %s",
-			dynamic_cast<PerspectiveCamera*>(selectedCamera) ? "PerspectiveCamera"
-			: (dynamic_cast<OrthographicCamera*>(selectedCamera) ? "OrthographicCamera" : "Camera")
-		);
+		ImGui::Text("Type: %s", GL_EDITOR::getCameraTypeName(selectedCamera).c_str());
 		ImGui::Separator();
 		renderCameraInspector(selectedCamera);
 		ImGui::End();

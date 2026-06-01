@@ -430,8 +430,9 @@ flowchart TD
 - Runtime Render Resource ReadOnly View Facade Removal 已完成第一版：`RuntimeFrameReadinessResourceAdapter.cpp` 改为直接使用 `RuntimeRenderResourceState` const accessor，`RuntimeRenderResourceState` 删除 `RuntimeRenderResourceView` class 与 `readOnlyView()` public facade，application 源码不再存在 read-only view 过渡 API。
 - Runtime Frame Pass Registry Profile Predicate Cleanup 已完成第一版：`RuntimeFramePassRegistry` 的 pass enabled predicate 从完整 `AppRuntimeContext` 收窄到 `RuntimeFramePipelineProfile`，registry implementation 不再 include `AppRuntimeContext.h`，frame pipeline 与 renderer frame bridge readiness 共用 profile 引用判断 pass enabled。
 - Runtime Inspector Implementation Split 已完成第一版：`PropertyInspector.h` 与 `MaterialInspector.h` 不再作为 header-only implementation 传播 ImGui、完整 material/texture 或 `PropertyInspector.h` 间接依赖，property/material inspector 绘制实现迁入 `tools/inspector/*.cpp` 并注册到 VS 工程。
+- Runtime Scene Object Inspector Schema Cleanup 已完成第一版：新增 `SceneObjectInspector` 集中 Light / Shadow / Camera 的 property schema 与 type name 判断，`EditorPanels.cpp` 不再直接写这些 inspector 的 ImGui 控件；`PropertySchema` 新增 `InputFloat` / `InputInt` 以保留原输入框控件语义。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime Inspector Implementation Split 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，把 Light / Shadow / Camera inspector 直写 ImGui 逻辑迁入 property schema builder 或独立 inspector facade，当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Runtime Scene Object Inspector Schema Cleanup 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，优先迁出 legacy object transform inspector 或 Actor/Component schema builder，当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Runtime Inspector Implementation Split 已接入后，`PropertyInspector.h` 与 `MaterialInspector.h` 不再作为 header-only implementation 传播 ImGui、完整 material/texture 或 `PropertyInspector.h` 间接依赖，property/material inspector 绘制实现迁入 `tools/inspector/*.cpp` 并注册到 VS 工程。
+当前最新修正：Runtime Scene Object Inspector Schema Cleanup 已接入后，新增 `SceneObjectInspector` 集中 Light / Shadow / Camera 的 property schema 与 type name 判断，`EditorPanels.cpp` 不再直接写这些 inspector 的 ImGui 控件；`PropertySchema` 新增 `InputFloat` / `InputInt` 以保留原输入框控件语义。

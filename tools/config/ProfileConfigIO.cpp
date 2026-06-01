@@ -62,6 +62,7 @@ namespace
 		switch (property.kind)
 		{
 		case GL_EDITOR::PropertyKind::Float:
+		case GL_EDITOR::PropertyKind::InputFloat:
 		{
 			float parsedValue{ property.getFloat ? property.getFloat() : 0.0f };
 			if (GL_CONFIG::parseFloat(value, parsedValue) && property.setFloat)
@@ -72,6 +73,7 @@ namespace
 		}
 
 		case GL_EDITOR::PropertyKind::Int:
+		case GL_EDITOR::PropertyKind::InputInt:
 		{
 			int parsedValue{ property.getInt ? property.getInt() : 0 };
 			if (GL_CONFIG::parseInt(value, parsedValue) && property.setInt)
@@ -113,10 +115,12 @@ namespace
 		switch (property.kind)
 		{
 		case GL_EDITOR::PropertyKind::Float:
+		case GL_EDITOR::PropertyKind::InputFloat:
 			stream << (property.getFloat ? property.getFloat() : 0.0f);
 			return stream.str();
 
 		case GL_EDITOR::PropertyKind::Int:
+		case GL_EDITOR::PropertyKind::InputInt:
 			stream << (property.getInt ? property.getInt() : 0);
 			return stream.str();
 
@@ -136,7 +140,9 @@ namespace
 		return !property.configKey.empty()
 			&& (
 				property.kind == GL_EDITOR::PropertyKind::Float
+				|| property.kind == GL_EDITOR::PropertyKind::InputFloat
 				|| property.kind == GL_EDITOR::PropertyKind::Int
+				|| property.kind == GL_EDITOR::PropertyKind::InputInt
 				|| property.kind == GL_EDITOR::PropertyKind::Bool
 				|| property.kind == GL_EDITOR::PropertyKind::String
 			);

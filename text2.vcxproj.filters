@@ -984,6 +984,9 @@
     <ClCompile Include="tools\inspector\PropertyInspector.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\inspector\SceneObjectInspector.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -2892,6 +2895,9 @@
       <Filter>include\GLframework\tools\inspector</Filter>
     </ClInclude>
     <ClInclude Include="tools\inspector\PropertySchema.h">
+      <Filter>include\GLframework\tools\inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\inspector\SceneObjectInspector.h">
       <Filter>include\GLframework\tools\inspector</Filter>
     </ClInclude>
     <ClInclude Include="tools\ObjectPool\ObjectPool.h">

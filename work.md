@@ -9917,3 +9917,29 @@ Subagent 审查：
 
 - 这是 inspector facade 的 header-to-implementation split，不改变 property schema 字段、ImGui 控件行为、material inspector 输出、selection inspector、DebugControllerPanel、EngineDiagnosticsPanel、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步可继续把 `EditorPanels.cpp` 内部的 Light / Shadow / Camera inspector 直写 ImGui 逻辑也迁入 property schema builder 或独立 inspector facade，让对象只声明可编辑属性，UI 自动生成对应 inspector。
+
+### 2026-06-01 Runtime Scene Object Inspector Schema Cleanup
+
+本轮继续推进系统化 UI/inspector。`EditorPanels.cpp` 内部的 Light / Shadow / Camera inspector 原本直接写 ImGui 控件并直接依赖具体 light、shadow、camera 子类：Light 颜色/强度、PointLight 衰减、SpotLight 角度、Shadow bias/PCF/尺寸/CSM 层数/point shadow index、Camera near/far/perspective/orthographic 参数都在 panel implementation 里直接处理。这会让 selection inspector 同时承担 UI 编排、类型分发、属性 schema 和具体对象写入四类职责。本轮将这些可编辑属性迁入独立 scene object inspector schema facade。
+
+新增与修改：
+
+- 新增 `tools/inspector/SceneObjectInspector.h/.cpp`，提供 `buildLightPropertySchema(...)`、`buildShadowPropertySchema(...)`、`buildCameraPropertySchema(...)`、`getShadowTypeName(...)` 与 `getCameraTypeName(...)`。
+- `SceneObjectInspector.cpp` 集中包含具体 light/shadow/camera 子类头，并把 Light / Shadow / Camera 的可编辑属性声明为 `PropertyBuilder` schema。
+- `EditorPanels.cpp` 的 `renderLightInspector(...)`、`renderShadowInspector(...)` 与 `renderCameraInspector(...)` 改为调用 scene object inspector schema 并统一走 `drawProperties(...)`。
+- `EditorPanels.cpp` 仍保留 selection-specific 操作按钮，例如 `Inspect Shadow` 与 `Inspect Shadow Camera`；这些是 selection 编排职责，不下沉到 property schema。
+- `PropertySchema.h` 新增 `InputFloat` 与 `InputInt` property kind，用于保留原 Camera/Shadow 中 `InputFloat` / `InputInt` 控件语义，避免把原有输入框退化成 slider。
+- `PropertyInspector.cpp` 增加 `InputFloat` / `InputInt` 绘制支持；`ProfileConfigIO.cpp` 同步把这两类 scalar property 纳入 load/save 兼容路径。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 scene object inspector 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `EditorPanels.cpp` 不再直接引用 `PerspectiveCamera`、`OrthographicCamera`、具体 shadow subclasses，也不再残留 Light / Shadow / Camera inspector 的旧直写 ImGui 控件。
+- 静态检查确认 `SceneObjectInspector.cpp/.h` 已注册到 `text2.vcxproj` / `.filters`，并确认 `InputFloat` / `InputInt` 已接入 `PropertySchema`、`PropertyInspector` 与 `ProfileConfigIO`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `SceneObjectInspector.cpp`、`PropertyInspector.cpp`、`EditorPanels.cpp`、profile config IO、material/profile schema implementation 和 editor panels。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Light / Shadow / Camera selection inspector 的 schema cleanup，不改变 inspector 字段、控件类型、selection 按钮语义、engine world editor create verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步可继续把 `EditorPanels.cpp` 中 legacy object transform inspector 或 Actor/Component schema builder 迁出 panel implementation，让 selection panel 进一步收敛为“选中对象分发 + schema 绘制 + selection action”。

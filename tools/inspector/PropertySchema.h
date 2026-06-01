@@ -15,7 +15,9 @@ namespace GL_EDITOR
 	{
 		Section,
 		Float,
+		InputFloat,
 		Int,
+		InputInt,
 		Bool,
 		Vec3,
 		Color3,
@@ -99,6 +101,22 @@ namespace GL_EDITOR
 			mProperties.push_back(std::move(descriptor));
 		}
 
+		void addInputFloat(
+			std::string label,
+			const std::function<float()>& getter,
+			const std::function<void(float)>& setter,
+			std::string format = "%.3f"
+		)
+		{
+			PropertyDescriptor descriptor{};
+			descriptor.kind = PropertyKind::InputFloat;
+			descriptor.label = std::move(label);
+			descriptor.format = std::move(format);
+			descriptor.getFloat = getter;
+			descriptor.setFloat = setter;
+			mProperties.push_back(std::move(descriptor));
+		}
+
 		void addReadOnlyBool(std::string label, const std::function<bool()>& getter)
 		{
 			addBool(
@@ -125,6 +143,16 @@ namespace GL_EDITOR
 				[value](float newValue) { *value = newValue; },
 				minValue,
 				maxValue,
+				std::move(format)
+			);
+		}
+
+		void addInputFloat(std::string label, float* value, std::string format = "%.3f")
+		{
+			addInputFloat(
+				std::move(label),
+				[value]() { return *value; },
+				[value](float newValue) { *value = newValue; },
 				std::move(format)
 			);
 		}
@@ -209,6 +237,20 @@ namespace GL_EDITOR
 			mProperties.push_back(std::move(descriptor));
 		}
 
+		void addInputInt(
+			std::string label,
+			const std::function<int()>& getter,
+			const std::function<void(int)>& setter
+		)
+		{
+			PropertyDescriptor descriptor{};
+			descriptor.kind = PropertyKind::InputInt;
+			descriptor.label = std::move(label);
+			descriptor.getInt = getter;
+			descriptor.setInt = setter;
+			mProperties.push_back(std::move(descriptor));
+		}
+
 		void addReadOnlyVec3(std::string label, const std::function<glm::vec3()>& getter)
 		{
 			addVec3(
@@ -235,6 +277,15 @@ namespace GL_EDITOR
 				[value](int newValue) { *value = newValue; },
 				minValue,
 				maxValue
+			);
+		}
+
+		void addInputInt(std::string label, int* value)
+		{
+			addInputInt(
+				std::move(label),
+				[value]() { return *value; },
+				[value](int newValue) { *value = newValue; }
 			);
 		}
 

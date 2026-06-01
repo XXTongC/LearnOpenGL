@@ -352,6 +352,7 @@
     <ClCompile Include="tools\config\ProfileConfigIO.cpp" />
     <ClCompile Include="tools\inspector\MaterialInspector.cpp" />
     <ClCompile Include="tools\inspector\PropertyInspector.cpp" />
+    <ClCompile Include="tools\inspector\SceneObjectInspector.cpp" />
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp" />
     <ClCompile Include="tools\editor\EngineDiagnosticsPanel.cpp" />
     <ClCompile Include="tools\editor\EditorPanels.cpp" />
@@ -988,6 +989,7 @@
     <ClInclude Include="tools\inspector\MaterialInspector.h" />
     <ClInclude Include="tools\inspector\PropertyInspector.h" />
     <ClInclude Include="tools\inspector\PropertySchema.h" />
+    <ClInclude Include="tools\inspector\SceneObjectInspector.h" />
     <ClInclude Include="tools\Logger\Logger.h" />
     <ClInclude Include="tools\Logger\LogManager.h" />
     <ClInclude Include="tools\legacyExperiments\LegacyExperimentRunner.h" />

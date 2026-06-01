@@ -391,10 +391,11 @@ passed
 - Runtime Render Resource ReadOnly View Facade Removal 已接入：`RuntimeFrameReadinessResourceAdapter.cpp` 改为直接使用 `RuntimeRenderResourceState` const accessor，`RuntimeRenderResourceState` 删除 `RuntimeRenderResourceView` class 与 `readOnlyView()` public facade，application 源码不再存在 read-only view 过渡 API。
 - Runtime Frame Pass Registry Profile Predicate Cleanup 已接入：`RuntimeFramePassRegistry` 的 pass enabled predicate 从完整 `AppRuntimeContext` 收窄到 `RuntimeFramePipelineProfile`，registry implementation 不再 include `AppRuntimeContext.h`，frame pipeline 与 renderer frame bridge readiness 共用 profile 引用判断 pass enabled。
 - Runtime Inspector Implementation Split 已接入：`PropertyInspector.h` 与 `MaterialInspector.h` 不再作为 header-only implementation 传播 ImGui、完整 material/texture 或 `PropertyInspector.h` 间接依赖，property/material inspector 绘制实现迁入 `tools/inspector/*.cpp` 并注册到 VS 工程。
+- Runtime Scene Object Inspector Schema Cleanup 已接入：新增 `SceneObjectInspector` 集中 Light / Shadow / Camera 的 property schema 与 type name 判断，`EditorPanels.cpp` 不再直接写这些 inspector 的 ImGui 控件；`PropertySchema` 新增 `InputFloat` / `InputInt` 以保留原输入框控件语义。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Runtime Inspector Implementation Split 已接入后，`PropertyInspector.h` 与 `MaterialInspector.h` 不再作为 header-only implementation 传播 ImGui、完整 material/texture 或 `PropertyInspector.h` 间接依赖，property/material inspector 绘制实现迁入 `tools/inspector/*.cpp` 并注册到 VS 工程。
+当前最新修正：Runtime Scene Object Inspector Schema Cleanup 已接入后，新增 `SceneObjectInspector` 集中 Light / Shadow / Camera 的 property schema 与 type name 判断，`EditorPanels.cpp` 不再直接写这些 inspector 的 ImGui 控件；`PropertySchema` 新增 `InputFloat` / `InputInt` 以保留原输入框控件语义。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束。本轮开始收敛 inspector public header surface；下一步优先把 `EditorPanels.cpp` 内部的 Light / Shadow / Camera inspector 直写 ImGui 逻辑迁入 property schema builder 或独立 inspector facade，让对象声明属性、UI 统一生成，当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束，Light / Shadow / Camera inspector 已 schema 化。下一步优先迁出 `EditorPanels.cpp` 中 legacy object transform inspector 或 Actor/Component schema builder，让 selection panel 进一步收敛为选中对象分发、schema 绘制和 selection action，当前不建议继续扩张 PBR pass。

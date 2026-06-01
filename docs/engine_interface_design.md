@@ -528,6 +528,8 @@ public:
 318. Render resource decoupling 已达到阶段性收束条件：剩余 direct render resource accessor 已集中在 resource adapter/service implementation；下一步建议转入更高层 Engine runtime ownership、editor/gameplay boundary、场景/资产生命周期或系统化 UI/inspector 边界整理。
 319. Runtime Inspector Implementation Split 已完成第一版：`PropertyInspector.h` 和 `MaterialInspector.h` 不再作为 header-only implementation 传播 ImGui、完整 material/texture 或 `PropertyInspector.h` 间接依赖，property/material inspector 绘制实现迁入 `tools/inspector/*.cpp` 并注册到 VS 工程。
 320. 下一步建议继续推进系统化 UI/inspector：优先把 `EditorPanels.cpp` 内部的 Light / Shadow / Camera inspector 直写 ImGui 逻辑迁入 property schema builder 或独立 inspector facade，让对象声明属性、UI 统一生成。
+321. Runtime Scene Object Inspector Schema Cleanup 已完成第一版：新增 `SceneObjectInspector` 集中 Light / Shadow / Camera 的 property schema 与 type name 判断，`EditorPanels.cpp` 不再直接写这些 inspector 的 ImGui 控件；`PropertySchema` 新增 `InputFloat` / `InputInt` 以保留原输入框控件语义。
+322. 下一步建议继续迁出 `EditorPanels.cpp` 中 legacy object transform inspector 或 Actor/Component schema builder，让 selection panel 进一步收敛为选中对象分发、schema 绘制和 selection action。
 
 ## 约束
 

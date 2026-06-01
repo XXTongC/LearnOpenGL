@@ -7674,3 +7674,19 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了新增 inspector implementation、material property schema implementation、`DebugControllerPanel.cpp` 与 `EditorPanels.cpp`，三条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 property schema 字段、ImGui 控件行为、material inspector 输出、selection inspector、DebugControllerPanel、EngineDiagnosticsPanel、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百一十五轮 Runtime Scene Object Inspector Schema Cleanup：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `c3e050e Split inspector implementations from headers`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把下一步聚焦到 `EditorPanels.cpp` 内部 Light / Shadow / Camera inspector 的直写 ImGui 逻辑迁出，目标是让对象属性先声明为 `PropertyBuilder` schema，再由统一 property inspector 绘制。
+  - 更新 [PropertySchema.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\PropertySchema.h)，新增 `InputFloat` 与 `InputInt` property kind，以及 `addInputFloat(...)` / `addInputInt(...)` helper，用于保留原 Camera/Shadow 输入框控件语义。
+  - 更新 [PropertyInspector.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\PropertyInspector.cpp)，新增 `InputFloat` / `InputInt` 绘制支持。
+  - 更新 [ProfileConfigIO.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\config\ProfileConfigIO.cpp)，把 `InputFloat` / `InputInt` 纳入 scalar property load/save 兼容路径。
+  - 新增 [SceneObjectInspector.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SceneObjectInspector.h) 与 [SceneObjectInspector.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SceneObjectInspector.cpp)，提供 `buildLightPropertySchema(...)`、`buildShadowPropertySchema(...)`、`buildCameraPropertySchema(...)`、`getShadowTypeName(...)` 与 `getCameraTypeName(...)`。
+  - 更新 [EditorPanels.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorPanels.cpp)，`renderLightInspector(...)`、`renderShadowInspector(...)` 与 `renderCameraInspector(...)` 改为使用 scene object inspector schema + `drawProperties(...)`，panel implementation 只保留 `Inspect Shadow` / `Inspect Shadow Camera` 等 selection action。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 scene object inspector 源文件和头文件，保持 VS 工程分类同步。
+  - 已执行静态检查：确认 `EditorPanels.cpp` 不再直接引用 `PerspectiveCamera`、`OrthographicCamera`、具体 shadow subclasses，也不再残留 Light / Shadow / Camera inspector 的旧直写 ImGui 控件。
+  - 已执行静态检查：确认 `SceneObjectInspector.cpp/.h` 已注册到 `text2.vcxproj` / `.filters`，并确认 `InputFloat` / `InputInt` 已接入 `PropertySchema`、`PropertyInspector` 与 `ProfileConfigIO`。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了新增 `SceneObjectInspector.cpp`、`PropertyInspector.cpp`、`EditorPanels.cpp`、profile config IO、material/profile schema implementation 和 editor panels，三条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 inspector 字段、控件类型、selection 按钮语义、engine world editor create verification、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
