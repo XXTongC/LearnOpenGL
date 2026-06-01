@@ -978,6 +978,9 @@
     <ClCompile Include="tools\config\ProfileConfigIO.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\inspector\AssetInspector.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\inspector\EngineWorldInspector.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -2890,6 +2893,9 @@
     </ClInclude>
     <ClInclude Include="tools\editor\EditorWorldActions.h">
       <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\inspector\AssetInspector.h">
+      <Filter>include\GLframework\tools\inspector</Filter>
     </ClInclude>
     <ClInclude Include="tools\inspector\EngineWorldInspector.h">
       <Filter>include\GLframework\tools\inspector</Filter>

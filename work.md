@@ -9992,3 +9992,27 @@ Subagent 审查：
 
 - 这是 Engine World Actor / Component inspector schema extraction，不改变 Actor/Component inspector 字段、SceneComponent transform 编辑语义、legacy Object transform 同步、transaction record/undo 行为、engine world editor create verification、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步可从“独立 schema facade”继续推进到类型/组件 property provider 注册机制，或先把 asset inspector schema 也从 `EditorPanels.cpp` 迁出，进一步压缩 selection panel 的属性声明职责。
+
+### 2026-06-01 Runtime Asset Inspector Schema Extraction
+
+本轮继续压缩 `EditorPanels.cpp` 的属性声明职责。Engine World inspector 迁出后，Asset inspector 仍在 panel implementation 中直接创建 `PropertyBuilder` 并写入 Name / Kind / Handle / Source / Path / Material Type 等字段，同时 asset display name 与 imported asset 判断也在 panel 内部。Asset browser 的树形展示属于 panel 编排，但 asset descriptor 的属性 schema 应由独立 inspector facade 提供。
+
+新增与修改：
+
+- 新增 `tools/inspector/AssetInspector.h/.cpp`，提供 `isImportedAsset(...)`、`getAssetDisplayName(...)` 与 `buildAssetPropertySchema(...)`。
+- `AssetInspector.cpp` 集中 include `AssetRegistry.h`，封装 AssetDescriptor 的 display name、imported-source 判断和 read-only property schema。
+- `EditorPanels.cpp` 删除 asset display helper、imported helper 和 asset inspector 中的直写 `PropertyBuilder`，改为调用 `AssetInspector` facade。
+- `EditorPanels.cpp` 继续保留 asset browser tree、selection、missing registry/missing handle 提示等 UI 编排职责。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 Asset inspector 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `EditorPanels.cpp` 不再残留 `PropertyBuilder` / `addSection` / `addReadOnlyString` 的直写 schema 调用。
+- 静态检查确认新增 `AssetInspector.h/.cpp` 已注册到 `text2.vcxproj` / `.filters`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `AssetInspector.cpp` 与更新后的 `EditorPanels.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Asset inspector schema extraction，不改变 asset browser 展示、asset selection、asset registry 统计、imported asset 判断语义、asset property 字段、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步可开始推进类型/组件 property provider 注册机制，或继续拆分 `EditorPanels.cpp` 的 asset browser / hierarchy tree display helper，让 panel 更接近纯 selection/action shell。

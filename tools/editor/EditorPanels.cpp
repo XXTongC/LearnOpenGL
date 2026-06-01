@@ -15,6 +15,7 @@
 #include "../../engine/World.h"
 #include "EditorWorldActions.h"
 #include "SceneTransformSnapshot.h"
+#include "../inspector/AssetInspector.h"
 #include "../inspector/EngineWorldInspector.h"
 #include "../inspector/MaterialInspector.h"
 #include "../inspector/PropertyInspector.h"
@@ -414,19 +415,9 @@ namespace
 		ImGui::PopID();
 	}
 
-	bool isImportedAsset(const GLengine::AssetDescriptor& asset)
-	{
-		return asset.source == "imported-asset";
-	}
-
-	std::string getAssetDisplayName(const GLengine::AssetDescriptor& asset)
-	{
-		return asset.name.empty() ? asset.handle.value : asset.name;
-	}
-
 	void renderAssetDescriptor(const GLengine::AssetDescriptor& asset, GL_EDITOR::SelectionContext& selection)
 	{
-		const std::string label = getAssetDisplayName(asset);
+		const std::string label = GL_EDITOR::getAssetDisplayName(asset);
 		const bool isSelected =
 			selection.kind == GL_EDITOR::SelectionKind::Asset
 			&& GL_EDITOR::getSelectedAssetHandle(selection) == asset.handle.value;
@@ -477,17 +468,7 @@ namespace
 			return;
 		}
 
-		GL_EDITOR::PropertyBuilder builder{};
-		builder.addSection("Asset");
-		builder.addReadOnlyString("Name", getAssetDisplayName(*asset));
-		builder.addReadOnlyString("Kind", std::string(GLengine::assetKindToken(asset->kind)));
-		builder.addReadOnlyString("Handle", asset->handle.value);
-		builder.addReadOnlyString("Source", asset->source.empty() ? "unknown" : asset->source);
-		builder.addReadOnlyString("Path", asset->path.empty() ? "unknown" : asset->path);
-		if (!asset->materialType.empty())
-		{
-			builder.addReadOnlyString("Material Type", asset->materialType);
-		}
+		const auto builder = GL_EDITOR::buildAssetPropertySchema(*asset);
 		GL_EDITOR::drawProperties(builder);
 	}
 
@@ -731,7 +712,7 @@ void GL_EDITOR::drawAssetBrowserPanel(const EditorPanelContext& context, Selecti
 	int importedAssetCount = 0;
 	for (const auto& asset : assets)
 	{
-		if (isImportedAsset(asset))
+		if (GL_EDITOR::isImportedAsset(asset))
 		{
 			++importedAssetCount;
 		}
@@ -754,7 +735,7 @@ void GL_EDITOR::drawAssetBrowserPanel(const EditorPanelContext& context, Selecti
 		}
 		for (const auto& asset : assets)
 		{
-			if (isImportedAsset(asset))
+			if (GL_EDITOR::isImportedAsset(asset))
 			{
 				renderAssetDescriptor(asset, selection);
 			}

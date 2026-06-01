@@ -350,6 +350,7 @@
     <ClCompile Include="third_party\imgui\imgui_widgets.cpp" />
     <ClCompile Include="tools\config\ProfileConfigParser.cpp" />
     <ClCompile Include="tools\config\ProfileConfigIO.cpp" />
+    <ClCompile Include="tools\inspector\AssetInspector.cpp" />
     <ClCompile Include="tools\inspector\EngineWorldInspector.cpp" />
     <ClCompile Include="tools\inspector\MaterialInspector.cpp" />
     <ClCompile Include="tools\inspector\PropertyInspector.cpp" />
@@ -987,6 +988,7 @@
     <ClInclude Include="tools\editor\EditorSelectionState.h" />
     <ClInclude Include="tools\editor\SceneTransformSnapshot.h" />
     <ClInclude Include="tools\editor\EditorWorldActions.h" />
+    <ClInclude Include="tools\inspector\AssetInspector.h" />
     <ClInclude Include="tools\inspector\EngineWorldInspector.h" />
     <ClInclude Include="tools\inspector\MaterialInspector.h" />
     <ClInclude Include="tools\inspector\PropertyInspector.h" />

@@ -534,6 +534,8 @@ public:
 324. 下一步建议继续迁出 `EditorPanels.cpp` 中 Actor/Component schema builder，或推进类型/组件 property provider 注册机制，让 selection inspector 从“按类型手写 schema”继续向系统化 UI 生成过渡。
 325. Runtime Engine World Inspector Schema Extraction 已完成第一版：新增 `EngineWorldInspector` 集中 Actor / Component schema builder、SceneComponent transform edit、legacy Object transform sync、type/display name helper 与 undo helper；`EditorPanels.cpp` 只保留 Components tree、selection、transaction summary 和 snapshot action 编排。
 326. 下一步建议继续把 Asset inspector schema 从 `EditorPanels.cpp` 迁出，或推进类型/组件 property provider 注册机制，让 selection panel 进一步收敛为目标分发与 action 编排。
+327. Runtime Asset Inspector Schema Extraction 已完成第一版：新增 `AssetInspector` 集中 AssetDescriptor display name、imported-source 判断和 read-only property schema；`EditorPanels.cpp` 不再直写 Asset inspector 的 `PropertyBuilder`。
+328. 下一步建议推进类型/组件 property provider 注册机制，或继续拆分 asset browser / hierarchy tree display helper，让 editor panels 更接近纯 selection/action shell。
 
 ## 约束
 

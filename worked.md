@@ -7720,3 +7720,16 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了新增 `EngineWorldInspector.cpp` 与更新后的 `EditorPanels.cpp`，三条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 Actor/Component inspector 字段、SceneComponent transform 编辑语义、legacy Object transform 同步、transaction record/undo 行为、engine world editor create verification、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百一十八轮 Runtime Asset Inspector Schema Extraction：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `2d3f83f Extract engine world inspector schemas`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把下一步聚焦到 `EditorPanels.cpp` 内部 Asset inspector schema 的迁出，目标是让 AssetDescriptor 属性声明也由独立 inspector facade 提供。
+  - 新增 [AssetInspector.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\AssetInspector.h) 与 [AssetInspector.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\AssetInspector.cpp)，提供 `isImportedAsset(...)`、`getAssetDisplayName(...)` 与 `buildAssetPropertySchema(...)`。
+  - 更新 [EditorPanels.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorPanels.cpp)，删除 asset display helper、imported helper 和 asset inspector 中的直写 `PropertyBuilder`，改为调用 `AssetInspector` facade；panel 仍保留 asset browser tree、selection 和 missing registry/missing handle UI 编排。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 Asset inspector 源文件和头文件，保持 VS 工程分类同步。
+  - 已执行静态检查：确认 `EditorPanels.cpp` 不再残留 `PropertyBuilder` / `addSection` / `addReadOnlyString` 的直写 schema 调用。
+  - 已执行静态检查：确认新增 `AssetInspector.h/.cpp` 已注册到 `text2.vcxproj` / `.filters`。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了新增 `AssetInspector.cpp` 与更新后的 `EditorPanels.cpp`，四条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 asset browser 展示、asset selection、asset registry 统计、imported asset 判断语义、asset property 字段、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
