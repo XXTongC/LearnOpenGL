@@ -180,6 +180,7 @@
     <ClCompile Include="application\RuntimeApplicationState.cpp" />
     <ClCompile Include="application\RuntimeApplicationStartupLifecycle.cpp" />
     <ClCompile Include="application\RuntimeApplicationWindowStartupLifecycle.cpp" />
+    <ClCompile Include="application\RuntimeAssetImportService.cpp" />
     <ClCompile Include="application\RuntimeBootstrapper.cpp" />
     <ClCompile Include="application\RuntimeCameraLifecycle.cpp" />
     <ClCompile Include="application\RuntimeContentCameraLifecycle.cpp" />
@@ -512,6 +513,7 @@
     <ClInclude Include="application\RuntimeApplicationStartupLifecycle.h" />
     <ClInclude Include="application\RuntimeApplicationWindowStartupLifecycle.h" />
     <ClInclude Include="application\RuntimeBootstrapperCallbacks.h" />
+    <ClInclude Include="application\RuntimeAssetImportService.h" />
     <ClInclude Include="application\RuntimeBootstrapper.h" />
     <ClInclude Include="application\RuntimeCameraConfig.h" />
     <ClInclude Include="application\RuntimeCameraLifecycle.h" />

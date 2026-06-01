@@ -3,8 +3,8 @@
 #include <iostream>
 #include <string>
 
+#include "RuntimeAssetImportService.h"
 #include "RuntimeVerificationConfig.h"
-#include "assimpLoader.h"
 #include "../engine/AssetRegistry.h"
 #include "../engine/AssetSubsystem.h"
 #include "../engine/LegacySceneWorldBuilder.h"
@@ -102,7 +102,7 @@ namespace GL_RUNTIME
 			return;
 		}
 
-		auto importedAsset = GL_APPLICATION::AssimpLoader::loadPBR("fbx/test/test.fbx", context.renderResources.renderer());
+		auto importedAsset = RuntimeAssetImportService::loadPbrAsset(context.renderResources, "fbx/test/test.fbx");
 		if (!importedAsset)
 		{
 			reportLine("PBR imported asset probe failed: fbx/test/test.fbx");

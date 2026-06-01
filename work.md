@@ -9546,3 +9546,27 @@ Subagent 审查：
 
 - 这是 imported asset probe 的 scene resource boundary cleanup，不改变 FBX 路径、PBR material import mode、Engine World import、asset registry 或 scene package verification 语义。
 - 下一步更合理的继续方向是 asset-loading adapter 或 engine world verification/frame pass 中剩余 renderer/scene owner 访问点；当前仍不建议继续扩张 PBR pass。
+
+### 2026-06-01 Runtime Asset Import Service Adapter Cleanup
+
+本轮继续上一轮留下的 asset-loading adapter 任务，不扩张 PBR 功能。`RuntimeImportedAssetVerification` 不应该知道 imported PBR asset 加载需要 renderer owner；这属于 asset import implementation detail。新增 `RuntimeAssetImportService` 后，verification 模块只表达“加载一个 PBR asset probe”，renderer 依赖被隔离到 adapter implementation。
+
+新增与修改：
+
+- 新增 `RuntimeAssetImportService.h/.cpp`，提供 `RuntimeAssetImportService::loadPbrAsset(const RuntimeRenderResourceState&, const std::string&)`。
+- `RuntimeAssetImportService.cpp` 内部检查 renderer 是否存在，并通过 `AssimpLoader::loadPBR(path, renderResources.renderer())` 调用现有 loader；renderer owner 访问集中在 adapter implementation。
+- `RuntimeImportedAssetVerification.cpp` 移除 `assimpLoader.h` 依赖，改为调用 `RuntimeAssetImportService::loadPbrAsset(...)`，不再直接访问 renderer/scene owner。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 adapter 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeImportedAssetVerification.cpp` 中不再出现 `context.renderResources.renderer()` / `sceneOffScreen()` / `sceneInScreen()`、`assimpLoader.h` 或 `AssimpLoader`。
+- 静态检查确认 `renderResources.renderer()` 与 `AssimpLoader::loadPBR` 只出现在 `RuntimeAssetImportService.cpp` 的 adapter implementation 中。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes import,forward,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `RuntimeAssetImportService.cpp` 和 `RuntimeImportedAssetVerification.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 imported PBR asset loader 的 adapter boundary cleanup，不改变 Assimp loader 行为、FBX 路径、PBR material import mode、Engine World import、asset registry、scene package verification、runtime frame pipeline 或 PBR pass。
+- 下一步建议继续处理 engine world verification 或 frame pass 中剩余 direct renderer/scene owner 访问点；editor/scene setup/legacy setup 仍是注入型路径，需要谨慎区分，不要盲目迁到 read-only view。

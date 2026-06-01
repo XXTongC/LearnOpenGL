@@ -447,6 +447,9 @@
     <ClCompile Include="application\RuntimeApplicationWindowStartupLifecycle.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeAssetImportService.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeBootstrapper.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -1146,6 +1149,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeBootstrapperCallbacks.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeAssetImportService.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeBootstrapper.h">
