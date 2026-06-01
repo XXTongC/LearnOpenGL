@@ -586,6 +586,8 @@ public:
 376. 下一步建议继续拆 `DebugControllerPanel.cpp` 的 legacy debug controls / renderer stats 编排，或把 Debug profile controls facade 内部进一步拆成可注册 profile panel provider。
 377. Debug Controller Remaining Panel Extraction 已完成第一版：新增 `DebugLegacyControlsPanel` 与 `RendererFrameStatsPanel` facade，legacy debug controls 与 renderer frame stats 从 `DebugControllerPanel.cpp` 迁出，DebugControllerPanel 收敛为 Debug Controller section 顺序编排 shell。
 378. 下一步建议从文件级拆分进入 Debug panel provider / section registry，或继续检查 `DebugProfileControlsPanel.cpp` 内部 profile section 是否需要 provider 化。
+379. Debug Controller Section Registry 已完成第一版：新增 `DebugControllerSectionRegistry` 与默认 `DebugControllerSections` factory，Debug Controller 默认 section 顺序从 `DebugControllerPanel.cpp` 迁出到可注册 section registry。
+380. 下一步建议继续把 `DebugProfileControlsPanel.cpp` 内部 profile sections 拆到同类 provider/factory，或为 Debug Controller registry 增加更明确的 section ordering metadata。
 
 ## 约束
 

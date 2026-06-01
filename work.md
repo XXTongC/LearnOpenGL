@@ -10630,3 +10630,27 @@ Subagent 审查：
 
 - 这是 Debug Controller remaining panel extraction slice，不改变旧实验调试参数、renderer frame stats 字段、profile controls、Engine diagnostics、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议从“文件级拆分”进入更系统的 Debug panel provider / section registry，或继续检查 `DebugProfileControlsPanel.cpp` 内部 profile section 是否需要按 provider 化拆分。
+
+### 2026-06-01 Debug Controller Section Registry
+
+本轮从文件级 facade 拆分进入 Debug Controller section registry。目标是让 Debug Controller 的 section 顺序和 section 注册集中到可扩展的 registry/factory，而不是让 `DebugControllerPanel.cpp` 直接 include 和调用每个 section implementation。
+
+新增与修改：
+
+- 新增 `tools/editor/DebugControllerSectionRegistry.h/.cpp`，提供 `DebugControllerSection`、`registerSection(...)` 和 `drawAll(...)`。
+- 新增 `tools/editor/DebugControllerSections.h/.cpp`，提供 `defaultDebugControllerSectionRegistry()`，集中注册默认 Debug Controller section。
+- 默认 section 顺序保持不变：legacy controls、pipeline profile controls、renderer frame stats、engine diagnostics、scene profile controls。
+- `DebugControllerPanel.cpp` 改为只打开/关闭 ImGui controller 窗口、调用默认 section registry、显示 FPS 文案。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 section registry/factory 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `DebugControllerPanel.cpp` 只调用 `defaultDebugControllerSectionRegistry().drawAll(context)`，默认 section 注册集中到 `DebugControllerSections.cpp`。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `DebugControllerPanel.cpp`、`DebugControllerSectionRegistry.cpp` 与 `DebugControllerSections.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Debug Controller section registry slice，不改变 Debug Controller UI section 顺序、legacy controls、profile controls、renderer stats、Engine diagnostics、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续把 `DebugProfileControlsPanel.cpp` 内部 profile sections 拆到同类 provider/factory，或为 Debug Controller registry 增加更明确的 section ordering metadata。

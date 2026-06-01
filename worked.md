@@ -8105,3 +8105,17 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；5 个 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改旧实验调试控件语义、renderer stats 字段、profile controls、Engine diagnostics、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百四十四轮 Debug Controller Section Registry：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `b955a28 Extract remaining debug controller panels`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档从文件级 facade 拆分进入 Debug Controller section registry，目标是让 Debug Controller 的 section 顺序和 section 注册从 `DebugControllerPanel.cpp` 迁出。
+  - 新增 [DebugControllerSectionRegistry.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerSectionRegistry.h) 与 [DebugControllerSectionRegistry.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerSectionRegistry.cpp)，提供 `DebugControllerSection`、`registerSection(...)` 与 `drawAll(...)`。
+  - 新增 [DebugControllerSections.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerSections.h) 与 [DebugControllerSections.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerSections.cpp)，提供默认 section registry，并按原顺序注册 legacy controls、pipeline profile controls、renderer frame stats、engine diagnostics 和 scene profile controls。
+  - 更新 [DebugControllerPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerPanel.cpp)，只保留 controller 窗口生命周期、默认 section registry 调用和 FPS 文案。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 section registry/factory 源文件和头文件。
+  - 已执行静态检查：确认 `DebugControllerPanel.cpp` 只调用 `defaultDebugControllerSectionRegistry().drawAll(context)`，section 顺序集中在 `DebugControllerSections.cpp`。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；5 个 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 Debug Controller UI section 顺序、legacy controls、profile controls、renderer stats、Engine diagnostics、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

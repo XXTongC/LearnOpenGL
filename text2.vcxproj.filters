@@ -1053,6 +1053,12 @@
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\editor\DebugControllerSectionRegistry.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\editor\DebugControllerSections.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\editor\DebugLegacyControlsPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
@@ -2973,6 +2979,12 @@
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\editor\DebugControllerPanel.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\editor\DebugControllerSectionRegistry.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\editor\DebugControllerSections.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
     <ClInclude Include="tools\editor\DebugLegacyControlsPanel.h">

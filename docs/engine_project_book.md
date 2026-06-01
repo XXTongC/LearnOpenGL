@@ -459,8 +459,9 @@ flowchart TD
 - Runtime Frame Pipeline Profile Config Schema Adapter 已完成第一版：新增 `RuntimeFramePipelineProfileConfig` schema adapter；`RuntimeFramePipelineProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，Runtime Frame Pipeline debug panel 与 profile storage 改为通过 adapter 构建 schema。
 - Debug Profile Controls Panel Extraction 已完成第一版：新增 `DebugProfileControlsPanel` facade；Post Process、Runtime Frame Pipeline、Renderer Frame Pass、PBR Preview、PBR Experiment 与 Environment profile 控制从 `DebugControllerPanel.cpp` 迁出，DebugControllerPanel 只保留高层编排。
 - Debug Controller Remaining Panel Extraction 已完成第一版：新增 `DebugLegacyControlsPanel` 与 `RendererFrameStatsPanel` facade；legacy debug controls 与 renderer frame stats 从 `DebugControllerPanel.cpp` 迁出，DebugControllerPanel 收敛为 Debug Controller section 顺序编排 shell。
+- Debug Controller Section Registry 已完成第一版：新增 `DebugControllerSectionRegistry` 与默认 `DebugControllerSections` factory；Debug Controller 默认 section 顺序从 `DebugControllerPanel.cpp` 迁出到可注册 section registry。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Debug Controller Remaining Panel Extraction 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议从文件级拆分进入 Debug panel provider / section registry，或继续检查 `DebugProfileControlsPanel.cpp` 内部 profile section 是否需要 provider 化；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完；本轮 Debug Controller Section Registry 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议继续把 `DebugProfileControlsPanel.cpp` 内部 profile sections 拆到同类 provider/factory，或为 Debug Controller registry 增加更明确的 section ordering metadata；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：Debug Controller Remaining Panel Extraction 已接入后，DebugControllerPanel 不再直接承载 legacy debug controls 或 renderer frame stats 实现；这些 UI section 分别集中到 `DebugLegacyControlsPanel` 与 `RendererFrameStatsPanel`，DebugControllerPanel 只保留 section 顺序和 FPS 文案。
+当前最新修正：Debug Controller Section Registry 已接入后，DebugControllerPanel 不再直接知道各 section implementation 或 section 顺序；默认 section 注册集中到 `DebugControllerSections`，controller 只保留窗口生命周期、registry drawAll 调用和 FPS 文案。
