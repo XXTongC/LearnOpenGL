@@ -627,6 +627,8 @@ public:
 417. Reapply 边界保留 selection 与 edit transaction state，只替换 UI registry composition；下一步建议把 profile controls 从 diagnostics section 拆到独立 Editor Settings/Profile section，或补充 active/pending/applied policy diagnostics。
 418. Editor UI Module Profile Controls Section Extraction 已完成第一版：新增 `EditorUiModuleProfileControlsSection` 承载 profile edit/save/reload/apply，`EditorUiModuleDiagnosticsSection` 回到只展示 active modules 与 registry counts。
 419. 下一步建议为 Editor UI module policy 增加 active/pending/applied diagnostics，或把 profile controls section 提升为更通用的 Editor Settings section registry。
+420. Editor UI Module Policy Diagnostics 已完成第一版：新增 `EditorUiModulePolicyDiagnostics`，由 `RuntimeEditorLifecycleState` 记录 active/pending/last applied policy、pending 标记、request/apply 计数、registry build count 与 last apply rebuild 结果。
+421. Debug Controller 的 `Editor UI Modules` diagnostics section 只读取 context 注入的 diagnostics 指针并展示状态；profile 编辑和 apply 操作仍保留在独立 profile controls section。下一步建议把 profile controls 提升为通用 Editor Settings section registry，或继续推进下一类 UI provider/system settings 模块化边界。
 
 ## 约束
 

@@ -8402,3 +8402,19 @@
   - 已执行直接 CLI 空 module 组合检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 退出码为 0，确认 core/sample module 都禁用时 verification 路径仍不崩溃。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 verification mode 全部通过。
   - 本轮只降低 Editor UI module diagnostics/profile controls 的 UI 职责耦合，不修改 module policy、profile 文件格式、runtime reapply 时机、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百六十四轮 Editor UI Module Policy Diagnostics：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `2eb455d Extract editor UI module profile controls section`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档补充 active/pending/applied module policy diagnostics，让 runtime reapply 的状态可以在 Debug Controller 中观察。
+  - 新增 [EditorUiModulePolicyDiagnostics.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModulePolicyDiagnostics.h)，定义 `EditorUiModulePolicySnapshot` 与 `EditorUiModulePolicyDiagnostics`。
+  - 更新 [RuntimeEditorLifecycleState.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycleState.h) 与 [RuntimeEditorLifecycleState.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorLifecycleState.cpp)，新增 `editorUiModulePolicyDiagnostics()` 并记录 active policy、pending policy、last applied policy、request/apply count、registry build count 与 last apply rebuild 结果。
+  - 更新 [DebugControllerContext.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\DebugControllerContext.h) 与 [RuntimeEditorPanelCoordinator.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorPanelCoordinator.cpp)，把 diagnostics 指针注入 Debug Controller context。
+  - 更新 [EditorUiModuleDiagnosticsSection.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleDiagnosticsSection.cpp)，在 `Editor UI Modules` section 内新增 `Policy Diagnostics` 展示区；profile controls 继续保留在独立 section。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 diagnostics header。
+  - 已执行静态检查：确认 `EditorUiModulePolicyDiagnostics`、`lastAppliedPolicy`、`editorUiModulePolicyDiagnostics()`、context 注入和 UI 展示链路均可检索。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过；3 个 focused verification mode 全部通过。
+  - 已执行直接 CLI 空 module 组合检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 退出码为 0，确认 core/sample module 都禁用时 verification 路径仍不崩溃。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 verification mode 全部通过。
+  - 本轮只增加 Editor UI module runtime policy/reapply active/pending/applied 可观察性，不修改 module policy、profile 文件格式、runtime reapply 时机、selection/edit transaction state、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

@@ -2026,6 +2026,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `application/RuntimeEditorLifecycleState.h`, `application/RuntimeEditorLifecycleState.cpp`, `application/RuntimeEditorLifecycle.cpp`, `application/RuntimeEditorPanelCoordinator.h`, `application/RuntimeEditorPanelCoordinator.cpp`, `tools/editor/DebugControllerContext.h`, `tools/editor/EditorUiModuleDiagnosticsSection.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Editor UI module profile controls section extraction slice is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `tools/editor/EditorUiModuleDiagnosticsSection.cpp`, `tools/editor/EditorUiModuleProfileControlsSection.h`, `tools/editor/EditorUiModuleProfileControlsSection.cpp`, `tools/editor/EditorUiModuleComposition.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Editor UI module policy diagnostics slice is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `tools/editor/EditorUiModulePolicyDiagnostics.h`, `application/RuntimeEditorLifecycleState.h`, `application/RuntimeEditorLifecycleState.cpp`, `application/RuntimeEditorPanelCoordinator.cpp`, `tools/editor/DebugControllerContext.h`, `tools/editor/EditorUiModuleDiagnosticsSection.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

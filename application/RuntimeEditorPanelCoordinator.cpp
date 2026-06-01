@@ -47,6 +47,7 @@ namespace GL_RUNTIME
 			return editorState.requestEditorUiModuleReconfiguration(profile);
 		};
 		editorContext.editorUiModules = &editorState.editorUiModules();
+		editorContext.editorUiModulePolicyDiagnostics = &editorState.editorUiModulePolicyDiagnostics();
 		RuntimeEditorRenderResourceAdapter::applyDebugControllerResources(context.renderResources, editorContext);
 		return editorContext;
 	}

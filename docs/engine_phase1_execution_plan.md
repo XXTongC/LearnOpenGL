@@ -440,10 +440,11 @@ passed
 - Editor UI Module Profile Controls 已接入：`DebugControllerContext` 注入 `EditorUiModuleProfile` 与 profile path，`Editor UI Modules` section 复用 schema 绘制 core/sample module policy，并提供 save/reload local profile 按钮；active registries 仍按 startup policy 构建。
 - Runtime Editor UI Module Reapply Boundary 已接入：Debug UI 通过 callback 请求 profile reapply，`RuntimeEditorLifecycleState` 在当前 UI frame 绘制结束后应用 pending policy 并安全重建 active registries；selection/edit transaction state 不随 registry rebuild 丢失。
 - Editor UI Module Profile Controls Section Extraction 已接入：新增独立 `EditorUiModuleProfileControlsSection`，profile edit/save/reload/apply 从 diagnostics section 中移出；diagnostics section 只保留 active modules 和 registry count 展示。
+- Editor UI Module Policy Diagnostics 已接入：新增 `EditorUiModulePolicyDiagnostics`，`RuntimeEditorLifecycleState` 记录 active/pending/last applied policy、request/apply 计数、registry build count 和 last apply rebuild 结果；Debug Controller 的 module diagnostics section 可直接观察 runtime reapply 状态。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Editor UI Module Profile Controls Section Extraction 已接入后，module diagnostics 与 profile controls 已拆分为两个 Debug Controller section；运行时 reapply 仍保持上一轮的 frame-end 安全应用边界。
+当前最新修正：Editor UI Module Policy Diagnostics 已接入后，module diagnostics 不只显示 active modules 和 registry count，也能显示 active/pending/last applied policy、request/apply count 与 last apply rebuild 结果；profile controls 仍保持独立 section，运行时 reapply 仍保持 frame-end 安全应用边界。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议增加 active/pending/applied module policy diagnostics，或把 profile controls section 提升为更通用的 Editor Settings section registry；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议把 profile controls section 提升为更通用的 Editor Settings section registry，或进入下一类 UI provider/system settings 的模块化边界；当前不建议继续扩张 PBR pass。

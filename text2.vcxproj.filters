@@ -3059,6 +3059,9 @@
     <ClInclude Include="tools\editor\EditorUiModuleDiagnosticsSection.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>
+    <ClInclude Include="tools\editor\EditorUiModulePolicyDiagnostics.h">
+      <Filter>include\GLframework\tools</Filter>
+    </ClInclude>
     <ClInclude Include="tools\editor\EditorUiModuleProfile.h">
       <Filter>include\GLframework\tools</Filter>
     </ClInclude>

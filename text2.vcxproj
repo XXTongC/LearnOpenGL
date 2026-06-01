@@ -1039,6 +1039,7 @@
     <ClInclude Include="tools\editor\EditorSelectionState.h" />
     <ClInclude Include="tools\editor\EditorUiModuleComposition.h" />
     <ClInclude Include="tools\editor\EditorUiModuleDiagnosticsSection.h" />
+    <ClInclude Include="tools\editor\EditorUiModulePolicyDiagnostics.h" />
     <ClInclude Include="tools\editor\EditorUiModuleProfile.h" />
     <ClInclude Include="tools\editor\EditorUiModuleProfileConfig.h" />
     <ClInclude Include="tools\editor\EditorUiModuleProfileControlsSection.h" />

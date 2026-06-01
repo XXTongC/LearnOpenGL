@@ -11124,3 +11124,29 @@ Subagent 审查：
 
 - 这是 Editor UI Module Profile Controls Section Extraction slice，降低 diagnostics section 职责并为后续独立 Editor Settings/Profile panel 留出更清晰的 provider 边界；不改变 module policy、profile 文件格式、runtime reapply 时机、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议给 `RuntimeEditorLifecycleState` 增加 active/pending/applied module policy diagnostics，或者把 profile controls section 进一步提升为更通用的 Editor Settings section registry。
+
+### 2026-06-01 Editor UI Module Policy Diagnostics
+
+本轮补上上一轮留下的可观察性缺口：runtime reapply 已经有 request/apply 两段式，但 Debug Controller 只能看到 active modules 和 registry 数量，无法判断当前 active policy、是否存在 pending policy，以及最近一次 apply 是否真的触发 registry rebuild。本轮新增只读 diagnostics DTO，由 `RuntimeEditorLifecycleState` 持有并更新，Debug UI 只读取展示。
+
+新增与修改：
+
+- 新增 `tools/editor/EditorUiModulePolicyDiagnostics.h`，定义 `EditorUiModulePolicySnapshot` 与 `EditorUiModulePolicyDiagnostics`。
+- `RuntimeEditorLifecycleState` 新增 `editorUiModulePolicyDiagnostics()` 只读 accessor，并在初始 build、`configureEditorUiModules(...)`、`requestEditorUiModuleReconfiguration(...)` 和 `applyPendingEditorUiModuleReconfiguration()` 中同步 diagnostics。
+- diagnostics 记录 active policy、pending policy、last applied policy、pending 是否存在、registry build count、reapply request/apply count，以及 last apply 是否触发 registries rebuild。
+- `DebugControllerContext` 新增 `editorUiModulePolicyDiagnostics` 指针，`RuntimeEditorPanelCoordinator` 从 editor lifecycle state 注入该指针。
+- `EditorUiModuleDiagnosticsSection.cpp` 在 `Editor UI Modules` section 内新增 `Policy Diagnostics` 展示区；profile 编辑、保存、重载、apply 仍保留在独立 `EditorUiModuleProfileControlsSection`。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 diagnostics header。
+
+已完成验证：
+
+- 静态检查确认 `EditorUiModulePolicyDiagnostics`、`lastAppliedPolicy`、`editorUiModulePolicyDiagnostics()`、context 注入和 diagnostics section 展示链路均可检索。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `RuntimeEditorLifecycleState.cpp`、`RuntimeEditorPanelCoordinator.cpp` 与 `EditorUiModuleDiagnosticsSection.cpp`。
+- 直接 CLI 空 module 组合检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 已通过，确认 core/sample module 都禁用时 verification 路径仍不崩溃。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 verification mode 全部通过。
+
+结论：
+
+- 这是 Editor UI Module Policy Diagnostics slice，只增加 runtime editor UI module policy/reapply 的 active/pending/applied 可观察性；不改变 module policy、profile 文件格式、runtime reapply 时机、selection/edit transaction state、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议把 profile controls section 提升为更通用的 Editor Settings section registry，或进入下一类 UI provider/system settings 的模块化边界；当前仍不建议继续扩张 PBR 功能。

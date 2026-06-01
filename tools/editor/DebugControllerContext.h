@@ -42,6 +42,7 @@ namespace GL_SCENE
 namespace GL_EDITOR
 {
 	struct EditorUiModuleProfile;
+	struct EditorUiModulePolicyDiagnostics;
 	struct EditorUiModuleRegistries;
 
 	using EditorUiModuleProfileApplyRequest = std::function<bool(const EditorUiModuleProfile&)>;
@@ -76,5 +77,6 @@ namespace GL_EDITOR
 		const std::string* editorUiModuleProfilePath{ nullptr };
 		EditorUiModuleProfileApplyRequest requestEditorUiModuleProfileApply{};
 		const EditorUiModuleRegistries* editorUiModules{ nullptr };
+		const EditorUiModulePolicyDiagnostics* editorUiModulePolicyDiagnostics{ nullptr };
 	};
 }
