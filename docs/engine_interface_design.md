@@ -588,6 +588,8 @@ public:
 378. 下一步建议从文件级拆分进入 Debug panel provider / section registry，或继续检查 `DebugProfileControlsPanel.cpp` 内部 profile section 是否需要 provider 化。
 379. Debug Controller Section Registry 已完成第一版：新增 `DebugControllerSectionRegistry` 与默认 `DebugControllerSections` factory，Debug Controller 默认 section 顺序从 `DebugControllerPanel.cpp` 迁出到可注册 section registry。
 380. 下一步建议继续把 `DebugProfileControlsPanel.cpp` 内部 profile sections 拆到同类 provider/factory，或为 Debug Controller registry 增加更明确的 section ordering metadata。
+381. Debug Profile Control Section Registry 已完成第一版：新增 `DebugProfileControlSectionRegistry` 与默认 `DebugProfileControlSections` factory，pipeline/scene profile control section 顺序从 `DebugProfileControlsPanel.cpp` 迁出到可注册 section registry。
+382. 下一步建议减少 registry 模板重复，例如提取通用 keyed section registry，或为 Debug Controller / profile control section registry 增加显式 ordering metadata 与 duplicate registration diagnostics。
 
 ## 约束
 

@@ -10654,3 +10654,28 @@ Subagent 审查：
 
 - 这是 Debug Controller section registry slice，不改变 Debug Controller UI section 顺序、legacy controls、profile controls、renderer stats、Engine diagnostics、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续把 `DebugProfileControlsPanel.cpp` 内部 profile sections 拆到同类 provider/factory，或为 Debug Controller registry 增加更明确的 section ordering metadata。
+
+### 2026-06-01 Debug Profile Control Section Registry
+
+本轮继续系统化 Debug Controller UI，把 `DebugProfileControlsPanel.cpp` 内部固定顺序的 profile section 拆成 pipeline/scene 两组 profile control section registry。目标是让 profile controls 的 section 顺序和 section 注册也进入 provider/factory 模型，而不是继续由 facade 文件直接调用具体 helper。
+
+新增与修改：
+
+- 新增 `tools/editor/DebugProfileControlSectionRegistry.h/.cpp`，提供 `DebugProfileControlSection`、`registerSection(...)` 和 `drawAll(...)`。
+- 新增 `tools/editor/DebugProfileControlSections.h/.cpp`，提供 `defaultDebugPipelineProfileControlSectionRegistry()` 与 `defaultDebugSceneProfileControlSectionRegistry()`。
+- Pipeline profile section 默认顺序保持不变：Post Process、Runtime Frame Pipeline、Renderer Frame Pass Plan。
+- Scene profile section 默认顺序保持不变：PBR Preview Profile、PBR Experiment Preset、Environment / IBL。
+- `DebugProfileControlsPanel.cpp` 收敛为两个 facade，分别调用 pipeline/scene profile control registry。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 profile control section registry/factory 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `DebugProfileControlsPanel.cpp` 只调用 `defaultDebugPipelineProfileControlSectionRegistry().drawAll(context)` 与 `defaultDebugSceneProfileControlSectionRegistry().drawAll(context)`，具体 helper 与默认顺序集中到 `DebugProfileControlSections.cpp`。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `DebugProfileControlSectionRegistry.cpp`、`DebugProfileControlSections.cpp` 与 `DebugProfileControlsPanel.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Debug profile control section registry slice，不改变 profile UI 顺序、配置 key、save/reload 行为、PBR experiment preset apply/copy 行为、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议减少 registry 模板重复，例如提取通用 keyed section registry，或为 Debug Controller / profile control section registry 增加显式 ordering metadata 与 duplicate registration diagnostics。
