@@ -195,6 +195,7 @@
     <ClCompile Include="application\RuntimeEditorRenderResourceAdapter.cpp" />
     <ClCompile Include="application\RuntimeEngineLifecycle.cpp" />
     <ClCompile Include="application\RuntimeEngineWorldVerification.cpp" />
+    <ClCompile Include="application\RuntimeEngineWorldVerificationResourceAdapter.cpp" />
     <ClCompile Include="application\RuntimeImportedAssetVerification.cpp" />
     <ClCompile Include="application\RuntimeApplicationFrameLifecycle.cpp" />
     <ClCompile Include="application\RuntimeFrameClock.cpp" />
@@ -541,6 +542,7 @@
     <ClInclude Include="application\RuntimeEngineLifecycleCleanupRefs.h" />
     <ClInclude Include="application\RuntimeEngineLifecycleState.h" />
     <ClInclude Include="application\RuntimeEngineWorldVerification.h" />
+    <ClInclude Include="application\RuntimeEngineWorldVerificationResourceAdapter.h" />
     <ClInclude Include="application\RuntimeImportedAssetVerification.h" />
     <ClInclude Include="application\RuntimeApplicationFrameLifecycle.h" />
     <ClInclude Include="application\RuntimeFrameCallbacks.h" />

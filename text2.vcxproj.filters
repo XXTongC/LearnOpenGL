@@ -492,6 +492,9 @@
     <ClCompile Include="application\RuntimeEngineWorldVerification.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeEngineWorldVerificationResourceAdapter.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimeImportedAssetVerification.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -1233,6 +1236,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeEngineWorldVerification.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeEngineWorldVerificationResourceAdapter.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeImportedAssetVerification.h">

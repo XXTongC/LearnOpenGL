@@ -9765,3 +9765,31 @@ Subagent 审查：
 
 - 这是 runtime frame bridge readiness 的 read-only resource adapter cleanup，不改变 renderer backend key、backend ready 语义、pass order、pass enabled policy、frame plan key、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步应继续处理剩余 `RuntimeEngineWorldVerification.cpp` 中的 read-only resource access，为 prepared scene stats 与 scene package resolver 创建更窄 Engine World verification resource adapter 或 snapshot；当前仍不建议继续扩张 PBR pass。
+
+### 2026-06-01 Runtime Engine World Verification Resource Adapter Cleanup
+
+本轮继续处理 Engine World verification 中剩余的 read-only render resource access。`RuntimeEngineWorldVerification.cpp` 原本为了 prepared scene mesh stats 和 scene package round-trip resolver 创建直接依赖 `RuntimeRenderResourceView`，并持有 scene traversal / runtime-generated asset resolver 的实现细节。verification 主流程应该只编排 Engine World probe、negative cases 和 report 输出；读取 renderer/offscreen scene 以及创建 resolver 的细节应集中到更窄 adapter。
+
+新增与修改：
+
+- 新增 `RuntimeEngineWorldVerificationResourceAdapter.h/.cpp`，提供 `collectPreparedSceneStats(...)` 与 `loadRuntimeGeneratedScenePackage(...)`。
+- `RuntimeEngineWorldVerificationResourceAdapter.cpp` 内部集中读取 `RuntimeRenderResourceState::sceneOffScreen()` / `renderer()`，并集中保存 prepared scene traversal、runtime-generated mesh/material/light resolver 和 scene package load options 组装。
+- `RuntimeEngineWorldVerification.cpp` 改为通过 adapter 获取 prepared scene stats snapshot，不再直接创建 `RuntimeRenderResourceView` 或读取 offscreen scene。
+- `RuntimeEngineWorldVerification.cpp` 的 scene package round-trip load 改为调用 adapter，不再直接构造 `RuntimeScenePackageAssetResolver` 或读取 renderer。
+- `RuntimeEngineWorldVerification.cpp` 仍保留 `ActorAdapters.h`，因为该文件仍负责构造 scene package light probe；这是 Engine actor construction 边界，不是 render resource 访问边界。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 adapter 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeEngineWorldVerification.cpp` 中不再出现 `readOnlyView()`、`RuntimeRenderResourceView`、`renderResources.renderer()`、`renderResources.sceneOffScreen()`、`RuntimeScenePackageAssetResolver`、runtime-generated PBR material resolver helper 或 scene traversal helper。
+- 静态检查确认 Engine World verification 的 direct render resource access 已集中到 `RuntimeEngineWorldVerificationResourceAdapter.cpp`。
+- 首次 focused verification 暴露 include 边界问题：light probe 仍需要 `ActorAdapters.h`，scene package resolver 仍需要 `AssetRegistry.h`；已按实际依赖补到对应编译单元。
+- 后续 code review 移除 `RuntimeEngineWorldVerificationResourceAdapter.cpp` 中冗余的 `ActorAdapters.h` include；adapter 不需要 actor 类型，light probe actor construction 依赖只保留在 `RuntimeEngineWorldVerification.cpp`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-package,engine-world-minimal-scene,engine-world-editor-create,forward,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `RuntimeEngineWorldVerificationResourceAdapter.cpp` 与调用方。
+- include cleanup 后追加 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-package,forward -DiscardCaptures` 已通过；MSBuild 重新编译 `RuntimeEngineWorldVerificationResourceAdapter.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine World verification 的 read-only resource adapter cleanup，不改变 `Engine world prepared scene stats` 输出、scene package save/load schema、negative probes、transform snapshot/apply、runtime-generated mesh/material/light resolver 语义、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步应重新审计 application 层剩余 `readOnlyView()` / `RuntimeRenderResourceView` / direct render resource accessor；如果只剩 adapter implementation，则这条 render resource decoupling 线可以阶段性收束，转入更高层 Engine runtime ownership 或 editor/gameplay boundary。
