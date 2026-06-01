@@ -9570,3 +9570,26 @@ Subagent 审查：
 
 - 这是 imported PBR asset loader 的 adapter boundary cleanup，不改变 Assimp loader 行为、FBX 路径、PBR material import mode、Engine World import、asset registry、scene package verification、runtime frame pipeline 或 PBR pass。
 - 下一步建议继续处理 engine world verification 或 frame pass 中剩余 direct renderer/scene owner 访问点；editor/scene setup/legacy setup 仍是注入型路径，需要谨慎区分，不要盲目迁到 read-only view。
+
+### 2026-06-01 Runtime Engine World Verification ReadOnly Resource Cleanup
+
+本轮继续处理 Engine runtime ownership 中的 verification/report 只读路径，不扩张 PBR 功能。`RuntimeEngineWorldVerification` 原本在 prepared scene stats 和 scene package round-trip resolver 创建处直接读取 mutable `context.renderResources.sceneOffScreen()` / `renderer()`。这两个使用点都属于观察/验证路径，本轮改为局部 `RuntimeRenderResourceView`，避免 verification 模块继续直接取得 mutable render resource owner。
+
+新增与修改：
+
+- `RuntimeEngineWorldVerification.cpp` 在 `reportPreparedScene(...)` 中创建 `const auto renderResources = context.renderResources.readOnlyView()`，prepared scene stats 通过该 view 读取 offscreen scene。
+- `RuntimeScenePackageAssetResolver` 构造函数改为接收 `const RuntimeRenderResourceView&`，内部再缓存 renderer 用于解析 scene package 中的 runtime-generated mesh adapter。
+- `RuntimeEngineWorldVerification.cpp` 移除已无使用点的 `<utility>` include。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeEngineWorldVerification.cpp` 中不再直接调用 `context.renderResources.renderer()` / `sceneOffScreen()` / `sceneInScreen()`。
+- 静态检查确认 `RuntimeEngineWorldVerification.cpp` 仍通过 `readOnlyView()` 读取 scene/renderer，resolver 行为局部保留。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes engine-world-scene-package,engine-world-minimal-scene,forward,renderer-backend-registry-noop -DiscardCaptures` 已通过；scene package round-trip 仍报告 `resolvedAdapterReferences=6`、`unresolvedAssetHandles=0`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Engine World verification 的 read-only render resource cleanup，不改变 scene package schema、asset resolver 解析策略、runtime-generated mesh/material/light 创建、transform snapshot、Engine World import/export 或 PBR pass。
+- 下一步建议继续处理 `RuntimeFramePasses.cpp` 的 frame execution direct renderer/scene owner 访问；editor/scene setup/legacy setup 仍是注入路径，后续应按职责切 adapter，而不是简单迁到 read-only view。

@@ -1900,6 +1900,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `application/RuntimeImportedAssetVerification.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime asset import service adapter cleanup is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `application/RuntimeAssetImportService.h`, `application/RuntimeAssetImportService.cpp`, `application/RuntimeImportedAssetVerification.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime engine world verification read-only resource cleanup is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `application/RuntimeEngineWorldVerification.cpp`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 
