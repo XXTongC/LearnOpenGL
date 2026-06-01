@@ -3,8 +3,8 @@
 #include <memory>
 #include <string>
 
+#include "RuntimeProbeSceneResourceAdapter.h"
 #include "RuntimeVerificationConfig.h"
-#include "../framework/geometry.h"
 #include "../materials/pbrMaterial/PBRMaterial.h"
 #include "../mesh/mesh.h"
 #include "AppRuntimeContext.h"
@@ -46,18 +46,18 @@ namespace
 		mesh->setName("PBR Showcase Sphere " + label);
 		mesh->setPosition(position);
 		mesh->setScale(scale);
-		context.renderResources.addOffScreenSceneChild(mesh);
+		GL_RUNTIME::RuntimeProbeSceneResourceAdapter::addOffScreenSceneChild(context.renderResources, mesh);
 	}
 
 	void addPbrShowcaseSpheres(GLframework::AppRuntimeContext& context)
 	{
-		if (!context.renderResources.hasOffScreenSceneAndRenderer())
+		if (!GL_RUNTIME::RuntimeProbeSceneResourceAdapter::hasOffScreenSceneAndRenderer(context.renderResources))
 		{
 			return;
 		}
 
-		auto sphereGeometry = GLframework::Geometry::createSphere(
-			context.renderResources.pbrMaterialShader(),
+		auto sphereGeometry = GL_RUNTIME::RuntimeProbeSceneResourceAdapter::createPbrSphereGeometry(
+			context.renderResources,
 			0.42f,
 			48,
 			24
@@ -111,7 +111,8 @@ namespace GL_RUNTIME
 			&& !probes.enablePbrMaterialIblProbe
 			&& !probes.enablePbrAlphaMaskProbe
 			&& !probes.enablePbrTextureSetProbe
-			&& !probes.enablePbrShowcaseSpheres) || !context.renderResources.hasOffScreenSceneAndRenderer())
+			&& !probes.enablePbrShowcaseSpheres)
+			|| !RuntimeProbeSceneResourceAdapter::hasOffScreenSceneAndRenderer(context.renderResources))
 		{
 			return;
 		}
@@ -130,8 +131,8 @@ namespace GL_RUNTIME
 			material->setOpacity(0.45f);
 			material->setDepthWrite(false);
 
-			auto geometry = GLframework::Geometry::createSphere(
-				context.renderResources.pbrMaterialShader(),
+			auto geometry = RuntimeProbeSceneResourceAdapter::createPbrSphereGeometry(
+				context.renderResources,
 				0.55f,
 				32,
 				16
@@ -139,7 +140,7 @@ namespace GL_RUNTIME
 			auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
 			mesh->setName("PBR Transparent Fallback Probe");
 			mesh->setPosition({ 0.0f, 0.65f, 2.45f });
-			context.renderResources.addOffScreenSceneChild(mesh);
+			RuntimeProbeSceneResourceAdapter::addOffScreenSceneChild(context.renderResources, mesh);
 		}
 
 		if (probes.enablePbrEmissiveProbe)
@@ -153,8 +154,8 @@ namespace GL_RUNTIME
 			material->mEmissiveIntensity = 3.5f;
 			material->mUseIBL = false;
 
-			auto geometry = GLframework::Geometry::createSphere(
-				context.renderResources.pbrMaterialShader(),
+			auto geometry = RuntimeProbeSceneResourceAdapter::createPbrSphereGeometry(
+				context.renderResources,
 				0.48f,
 				32,
 				16
@@ -162,7 +163,7 @@ namespace GL_RUNTIME
 			auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
 			mesh->setName("PBR Deferred Emissive Probe");
 			mesh->setPosition({ 0.0f, -0.7f, 2.35f });
-			context.renderResources.addOffScreenSceneChild(mesh);
+			RuntimeProbeSceneResourceAdapter::addOffScreenSceneChild(context.renderResources, mesh);
 		}
 
 		if (probes.enablePbrMaterialIblProbe)
@@ -176,8 +177,8 @@ namespace GL_RUNTIME
 			material->mIblDiffuseStrength = 4.0f;
 			material->mIblSpecularStrength = 4.0f;
 
-			auto geometry = GLframework::Geometry::createSphere(
-				context.renderResources.pbrMaterialShader(),
+			auto geometry = RuntimeProbeSceneResourceAdapter::createPbrSphereGeometry(
+				context.renderResources,
 				0.52f,
 				32,
 				16
@@ -185,7 +186,7 @@ namespace GL_RUNTIME
 			auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
 			mesh->setName("PBR Deferred Material IBL Probe");
 			mesh->setPosition({ 0.0f, 0.8f, 2.35f });
-			context.renderResources.addOffScreenSceneChild(mesh);
+			RuntimeProbeSceneResourceAdapter::addOffScreenSceneChild(context.renderResources, mesh);
 		}
 
 		if (probes.enablePbrAlphaMaskProbe)
@@ -202,15 +203,15 @@ namespace GL_RUNTIME
 			material->mIblDiffuseStrength = 1.0f;
 			material->mIblSpecularStrength = 1.0f;
 
-			auto geometry = GLframework::Geometry::createPlane(
-				context.renderResources.pbrMaterialShader(),
+			auto geometry = RuntimeProbeSceneResourceAdapter::createPbrPlaneGeometry(
+				context.renderResources,
 				1.25f,
 				1.25f
 			);
 			auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
 			mesh->setName("PBR Deferred Alpha Mask Probe");
 			mesh->setPosition({ 0.0f, 0.7f, 2.15f });
-			context.renderResources.addOffScreenSceneChild(mesh);
+			RuntimeProbeSceneResourceAdapter::addOffScreenSceneChild(context.renderResources, mesh);
 		}
 
 		if (probes.enablePbrTextureSetProbe)
@@ -229,15 +230,15 @@ namespace GL_RUNTIME
 			material->mIblDiffuseStrength = 1.0f;
 			material->mIblSpecularStrength = 1.0f;
 
-			auto geometry = GLframework::Geometry::createPlane(
-				context.renderResources.pbrMaterialShader(),
+			auto geometry = RuntimeProbeSceneResourceAdapter::createPbrPlaneGeometry(
+				context.renderResources,
 				1.55f,
 				1.55f
 			);
 			auto mesh = std::make_shared<GLframework::Mesh>(geometry, material);
 			mesh->setName("PBR Texture Set Probe");
 			mesh->setPosition({ 2.35f, -1.05f, 1.85f });
-			context.renderResources.addOffScreenSceneChild(mesh);
+			RuntimeProbeSceneResourceAdapter::addOffScreenSceneChild(context.renderResources, mesh);
 		}
 
 		if (probes.enablePbrShowcaseSpheres)

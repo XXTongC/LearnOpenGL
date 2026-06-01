@@ -17,7 +17,6 @@ namespace GLframework
 	struct RendererFramePassProfile;
 	class Scene;
 	class ScreenMaterial;
-	class Shader;
 }
 
 namespace GL_RUNTIME
@@ -41,9 +40,6 @@ namespace GL_RUNTIME
 		void syncClearColorToRenderer() const;
 		std::shared_ptr<GLframework::Renderer>& renderer();
 		const std::shared_ptr<GLframework::Renderer>& renderer() const;
-		bool hasOffScreenSceneAndRenderer() const;
-		std::shared_ptr<GLframework::Shader> pbrMaterialShader() const;
-		void addOffScreenSceneChild(const std::shared_ptr<GLframework::Object>& object) const;
 		GLframework::RendererFramePassProfile* rendererFramePassProfile();
 		const GLframework::RendererFramePassProfile* rendererFramePassProfile() const;
 		std::shared_ptr<GLframework::Scene>& sceneOffScreen();

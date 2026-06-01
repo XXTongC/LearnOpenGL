@@ -9793,3 +9793,30 @@ Subagent 审查：
 
 - 这是 Engine World verification 的 read-only resource adapter cleanup，不改变 `Engine world prepared scene stats` 输出、scene package save/load schema、negative probes、transform snapshot/apply、runtime-generated mesh/material/light resolver 语义、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步应重新审计 application 层剩余 `readOnlyView()` / `RuntimeRenderResourceView` / direct render resource accessor；如果只剩 adapter implementation，则这条 render resource decoupling 线可以阶段性收束，转入更高层 Engine runtime ownership 或 editor/gameplay boundary。
+
+### 2026-06-01 Runtime Probe Scene Resource Adapter Cleanup
+
+本轮继续处理 Engine World verification adapter 之后剩余的非 adapter probe scene helper 调用。`RuntimePBRSceneProbeVerification.cpp` 和 `RuntimeImportedAssetVerification.cpp` 原本直接调用 `RuntimeRenderResourceState` 的 `hasOffScreenSceneAndRenderer()`、`pbrMaterialShader()` 与 `addOffScreenSceneChild(...)`。这些 helper 虽然比直接 owner 字段更窄，但仍把 verification probe 场景注入能力留在 render resource state 的 public surface 上；更合理的边界是把 PBR probe 几何创建和 offscreen scene 注入集中到 probe scene resource adapter。
+
+新增与修改：
+
+- 新增 `RuntimeProbeSceneResourceAdapter.h/.cpp`，提供 `hasOffScreenSceneAndRenderer(...)`、`createPbrSphereGeometry(...)`、`createPbrPlaneGeometry(...)` 与 `addOffScreenSceneChild(...)`。
+- `RuntimeProbeSceneResourceAdapter.cpp` 内部集中读取 renderer/offscreen scene，并集中使用 PBR material shader 创建 probe geometry。
+- `RuntimePBRSceneProbeVerification.cpp` 改为通过 adapter 创建 PBR sphere/plane geometry 并注入 offscreen scene，不再直接调用 render resource probe helper，也不再直接 include `framework/geometry.h`。
+- `RuntimeImportedAssetVerification.cpp` 改为通过 adapter 判断 probe scene readiness 并注入 imported asset probe。
+- `RuntimeRenderResourceState.h/.cpp` 删除无剩余调用者的 `hasOffScreenSceneAndRenderer()`、`pbrMaterialShader()` 与 `addOffScreenSceneChild(...)` public helper，避免 probe-only API 继续污染 render resource state surface。
+- `RuntimeRenderResourceState.h` 移除 probe helper 删除后残留的无用 `GLframework::Shader` 前置声明。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 adapter 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认旧 `RuntimeRenderResourceState` probe helper 只剩 `RuntimeProbeSceneResourceAdapter` 调用名，不再作为 state public API 存在。
+- 静态检查确认 `RuntimePBRSceneProbeVerification.cpp` 与 `RuntimeImportedAssetVerification.cpp` 不再直接调用 `context.renderResources.hasOffScreenSceneAndRenderer()`、`pbrMaterialShader()` 或 `addOffScreenSceneChild(...)`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,deferred-texture-set,showcase-spheres,deferred-transparent,deferred-emissive,deferred-material-ibl,deferred-alpha-mask -DiscardCaptures` 已通过；MSBuild 编译了新增 `RuntimeProbeSceneResourceAdapter.cpp`、probe verification、import verification 和 `RuntimeRenderResourceState.cpp`。
+- Shader forward cleanup 后追加 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import -DiscardCaptures` 已通过；MSBuild 重新编译 render resource state 和 probe/import 相关模块。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 verification probe scene 的 resource adapter cleanup，不改变 PBR transparent/emissive/material IBL/alpha mask/texture set/showcase/imported asset probe 的材质、位置、scene stats、asset import、scene package 或 Engine World import/export 语义，也不改变 runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步应继续审计非 adapter 调用方里剩余的窄 render resource state 方法，例如 frame runner clear color sync 与 renderer frame pass profile access；当前仍不建议继续扩张 PBR 功能。

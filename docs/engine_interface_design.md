@@ -521,7 +521,8 @@ public:
 311. Runtime PBR Stats Resource Adapter Cleanup 已完成第一版：新增 `RuntimePBRStatsResourceAdapter` 集中 PBR renderer stats 与 prepared-scene stats 对 renderer / offscreen scene 的只读访问和 prepared scene traversal，PBR stats report 模块不再直接创建 `RuntimeRenderResourceView` 或依赖 scene/object/material/mesh/renderer implementation headers。
 312. Runtime Frame Readiness Resource Adapter Cleanup 已完成第一版：新增 `RuntimeFrameReadinessResourceAdapter` 集中 runtime frame pass readiness 对 renderer / offscreen scene / frame render targets / Bloom / screen quad 的只读资源判断，`RuntimeRendererFrameBridgeAdapter` 不再直接创建 `RuntimeRenderResourceView` 或依赖 frame target / post-process implementation headers。
 313. Runtime Engine World Verification Resource Adapter Cleanup 已完成第一版：新增 `RuntimeEngineWorldVerificationResourceAdapter` 集中 Engine World prepared-scene mesh stats traversal 与 runtime-generated scene package resolver load，`RuntimeEngineWorldVerification.cpp` 不再直接创建 `RuntimeRenderResourceView`、调用 `readOnlyView()`、读取 renderer/offscreen scene accessor 或持有 scene traversal/resolver implementation。
-314. 下一步建议重新审计 application 层剩余 `readOnlyView()` / `RuntimeRenderResourceView` / direct render resource accessor；如果只剩 adapter implementation，则 render resource decoupling 可阶段性收束，转入更高层 Engine runtime ownership 或 editor/gameplay boundary。
+314. Runtime Probe Scene Resource Adapter Cleanup 已完成第一版：新增 `RuntimeProbeSceneResourceAdapter` 集中 verification probe 对 offscreen scene readiness、PBR probe geometry 创建和 probe object 注入的访问，`RuntimePBRSceneProbeVerification.cpp` 与 `RuntimeImportedAssetVerification.cpp` 不再直接调用 render resource probe helper，`RuntimeRenderResourceState` 删除 probe-only public helper。
+315. 下一步建议继续审计非 adapter 调用方中剩余的窄 render resource state 方法，例如 frame runner clear color sync 与 renderer frame pass profile access；如果这些也能收束到 adapter，则 render resource decoupling 可阶段性收束，转入更高层 Engine runtime ownership 或 editor/gameplay boundary。
 
 ## 约束
 

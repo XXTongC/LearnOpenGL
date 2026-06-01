@@ -4,6 +4,7 @@
 #include <string>
 
 #include "RuntimeAssetImportService.h"
+#include "RuntimeProbeSceneResourceAdapter.h"
 #include "RuntimeVerificationConfig.h"
 #include "../engine/AssetRegistry.h"
 #include "../engine/AssetSubsystem.h"
@@ -97,7 +98,8 @@ namespace GL_RUNTIME
 		const RuntimeVerificationConfig& verification
 	)
 	{
-		if (!verification.pbr.probes.enablePbrImportedAssetProbe || !context.renderResources.hasOffScreenSceneAndRenderer())
+		if (!verification.pbr.probes.enablePbrImportedAssetProbe
+			|| !RuntimeProbeSceneResourceAdapter::hasOffScreenSceneAndRenderer(context.renderResources))
 		{
 			return;
 		}
@@ -112,7 +114,7 @@ namespace GL_RUNTIME
 		importedAsset->setName("PBR Imported Asset Probe");
 		importedAsset->setPosition({ -2.4f, -1.1f, 1.8f });
 		importedAsset->setScale({ 0.65f, 0.65f, 0.65f });
-		context.renderResources.addOffScreenSceneChild(importedAsset);
+		RuntimeProbeSceneResourceAdapter::addOffScreenSceneChild(context.renderResources, importedAsset);
 
 		if (!context.engineAttachments.engineWorld || !context.engineAttachments.engineWorld->getPersistentLevel())
 		{
