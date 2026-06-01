@@ -1878,6 +1878,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `application/RuntimeSceneSetupContextFactory.cpp`, `application/RuntimeFramePasses.cpp`, `application/RuntimeRendererFrameBridgeAdapter.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Runtime render resource screen quad owner boundary cleanup is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `application/RuntimeSceneSetupContextFactory.cpp`, `application/RuntimeFramePasses.cpp`, `application/RuntimeRendererFrameBridgeAdapter.cpp`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Runtime render resource screen material owner boundary cleanup is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `application/RuntimeRenderResourceState.h`, `application/RuntimeRenderResourceState.cpp`, `application/RuntimeSceneSetupContextFactory.cpp`, `application/RuntimeWindowLifecycle.cpp`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

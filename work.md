@@ -9287,3 +9287,27 @@ Subagent 审查：
 
 - 这是 Runtime render resource screen quad owner boundary cleanup，不改变 screen quad 创建、screen scene attach、screen composite pass、post-process settings、frame pass order、renderer backend readiness、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议继续 remaining runtime render resource shared_ptr owner 收敛，优先审计 `screenMaterial` 或 legacy-only resources；仍不建议扩张 PBR pass。
+
+### 2026-06-01 Runtime Render Resource Screen Material Owner Boundary Cleanup
+
+本轮继续 remaining runtime render resource shared_ptr owner 收敛，不扩张 PBR 功能。审计确认：`RuntimeRenderResourceState.h` 仍把 `std::shared_ptr<GLframework::ScreenMaterial>` 作为公开可变字段暴露；真实访问集中在 scene setup 注入和 window resize 后同步 post-process 输入纹理，访问面比 renderer/scene owner 小，适合继续收敛。
+
+新增与修改：
+
+- `RuntimeRenderResourceState.h` 移除公开字段 `screenMaterial`，改为 private `mScreenMaterial`。
+- `RuntimeRenderResourceState` 新增 `screenMaterial()` / `screenMaterial() const` 访问器，返回 shared pointer 引用以保持 scene setup assignment 和 resize sync 契约。
+- `RuntimeRenderResourceState.cpp` 集中提供 screen material owner 访问器 implementation。
+- `RuntimeSceneSetupContextFactory.cpp` 通过访问器把 screen material owner 引用传入 `SetupContext`，保持 `SceneSetup.cpp` 创建 screen material、绑定 resolved/depth/bloom texture 和创建 screen quad 的原行为。
+- `RuntimeWindowLifecycle.cpp` 通过访问器把 screen material 传入 `RuntimeViewport::applyResize(...)`，保持 resize 后 post-process input texture 同步路径。
+
+已完成验证：
+
+- 静态检查确认旧字段式 `context.renderResources.screenMaterial` 访问已清零，剩余访问均为 `screenMaterial()` accessor。
+- `git diff --check` 已通过；仅报告现有 LF/CRLF 工作区提示，无 whitespace error。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,ibl-debug,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 明确重新编译 `RuntimeRenderResourceState.cpp`、`RuntimeSceneSetupContextFactory.cpp`、`RuntimeWindowLifecycle.cpp` 和相关 runtime 使用点。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Runtime render resource screen material owner boundary cleanup，不改变 screen material 创建、post-process input texture binding、resize texture sync、screen composite pass、frame pass order、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议继续 remaining runtime render resource shared_ptr owner 收敛，优先审计 legacy-only resources 或访问面仍可控的 scene/editor selection owner；仍不建议扩张 PBR pass。

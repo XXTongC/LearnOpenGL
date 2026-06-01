@@ -56,3 +56,13 @@ const std::shared_ptr<GLframework::Mesh>& GL_RUNTIME::RuntimeRenderResourceState
 {
 	return mScreenQuad;
 }
+
+std::shared_ptr<GLframework::ScreenMaterial>& GL_RUNTIME::RuntimeRenderResourceState::screenMaterial()
+{
+	return mScreenMaterial;
+}
+
+const std::shared_ptr<GLframework::ScreenMaterial>& GL_RUNTIME::RuntimeRenderResourceState::screenMaterial() const
+{
+	return mScreenMaterial;
+}

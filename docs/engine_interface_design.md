@@ -500,7 +500,8 @@ public:
 290. Runtime Profile State Frame Pipeline Profile Owner Boundary Cleanup 已完成第一版：`RuntimeProfileState.h` 不再传播 `RuntimeFramePipelineProfile.h`，frame pipeline profile 由 implementation-owned pointer 持有，startup verification、profile loader、frame pass registry、frame pipeline、renderer backend frame plan key 和 debug controller context 构造通过访问器取得引用。
 291. Runtime Render Resource Bloom Owner Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再公开暴露 Bloom shared_ptr owner，Bloom owner 由 private `mBloom` 持有，scene setup 注入、Bloom frame pass 和 backend readiness 通过访问器取得引用。
 292. Runtime Render Resource Screen Quad Owner Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再公开暴露 screen quad shared_ptr owner，screen quad owner 由 private `mScreenQuad` 持有，scene setup 注入、screen composite pass 和 backend readiness 通过访问器取得引用。
-293. 下一步建议继续 remaining runtime render resource shared_ptr owner 收敛，优先审计 `screenMaterial` / legacy-only resources；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
+293. Runtime Render Resource Screen Material Owner Boundary Cleanup 已完成第一版：`RuntimeRenderResourceState.h` 不再公开暴露 screen material shared_ptr owner，screen material owner 由 private `mScreenMaterial` 持有，scene setup 注入和 resize 后 post-process input texture sync 通过访问器取得引用。
+294. 下一步建议继续 remaining runtime render resource shared_ptr owner 收敛，优先审计 legacy-only resources 或访问面仍可控的 scene/editor selection owner；renderer 侧只推进通用 backend/runtime contract，不扩张 PBR pass。
 
 ## 约束
 

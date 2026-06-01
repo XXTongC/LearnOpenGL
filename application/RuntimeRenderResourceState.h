@@ -37,7 +37,6 @@ namespace GL_RUNTIME
 		std::shared_ptr<GLframework::Mesh> skyBoxMesh{ nullptr };
 		std::shared_ptr<GLframework::Mesh> movePlane{ nullptr };
 		std::shared_ptr<GLframework::Mesh> textD{ nullptr };
-		std::shared_ptr<GLframework::ScreenMaterial> screenMaterial{ nullptr };
 		std::shared_ptr<GLframework::PhongCSMShadowMaterial> csmShadowMaterial{ nullptr };
 		glm::vec3 clearColor{};
 
@@ -49,10 +48,13 @@ namespace GL_RUNTIME
 		const std::shared_ptr<GLframework::Bloom>& bloom() const;
 		std::shared_ptr<GLframework::Mesh>& screenQuad();
 		const std::shared_ptr<GLframework::Mesh>& screenQuad() const;
+		std::shared_ptr<GLframework::ScreenMaterial>& screenMaterial();
+		const std::shared_ptr<GLframework::ScreenMaterial>& screenMaterial() const;
 
 	private:
 		std::shared_ptr<GLframework::Bloom> mBloom{ nullptr };
 		std::shared_ptr<GLframework::Mesh> mScreenQuad{ nullptr };
+		std::shared_ptr<GLframework::ScreenMaterial> mScreenMaterial{ nullptr };
 		std::unique_ptr<GLframework::FrameRenderTargets> mFrameRenderTargets{};
 		std::unique_ptr<GLframework::PostProcessPass> mPostProcessPass{};
 	};

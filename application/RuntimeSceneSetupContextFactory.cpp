@@ -21,7 +21,7 @@ namespace GL_RUNTIME
 			context.renderResources.screenQuad(),
 			context.renderResources.skyBoxMesh,
 			context.renderResources.textD,
-			context.renderResources.screenMaterial,
+			context.renderResources.screenMaterial(),
 			context.cameraLights.ambientLight,
 			context.cameraLights.dirLight,
 			context.cameraLights.spotLight,
