@@ -2,11 +2,6 @@
 
 #include <string>
 
-namespace GL_EDITOR
-{
-	class PropertyBuilder;
-}
-
 namespace GLframework
 {
 	struct RendererFramePassProfile
@@ -39,7 +34,6 @@ namespace GLframework
 		float iblDebugIntensity{ 1.0f };
 
 		void resetToDefaults();
-		void visitEditableProperties(GL_EDITOR::PropertyBuilder& builder);
 	};
 
 	class RendererFramePassProfileStorage

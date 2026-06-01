@@ -17,6 +17,7 @@
 #include "../../renderer/PostProcessSettings.h"
 #include "../../renderer/PostProcessSettingsConfig.h"
 #include "../../renderer/RendererFramePassProfile.h"
+#include "../../renderer/RendererFramePassProfileConfig.h"
 #include "../../renderer/RendererFrameStats.h"
 #include "../../renderer/renderer.h"
 #include "../../third_party/imgui/imgui.h"
@@ -208,7 +209,7 @@ namespace
 			ImGui::TextWrapped("This controls the renderer-internal scene pass order. Invalid or empty plans fall back to the built-in default plan.");
 
 			GL_EDITOR::PropertyBuilder builder{};
-			profile.visitEditableProperties(builder);
+			GLframework::buildRendererFramePassProfileConfigSchema(builder, profile);
 			GL_EDITOR::drawProperties(builder);
 
 			if (ImGui::Button("Save Renderer Pass Profile"))

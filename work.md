@@ -10485,3 +10485,27 @@ Subagent 审查：
 
 - 这是 Environment profile config schema adapter slice，不改变 `config/environment_profile.local.ini` 默认路径、HDR texture unit、procedural environment 参数、IBL precompute 条件、PBR experiment preset 的 `environment.*` key、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续处理剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile/settings 对象，例如 RendererFramePassProfile、PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile。
+
+### 2026-06-01 Renderer Frame Pass Profile Config Schema Adapter
+
+本轮继续 profile/config schema adapter 化，处理 `RendererFramePassProfile`。目标是让 renderer frame pass profile header 不再暴露 editor `PropertyBuilder` 类型，同时保持 renderer pass order、GPU timing、deferred lighting、GBuffer debug、IBL debug 等配置 key 与 UI 字段不变。
+
+新增与修改：
+
+- 新增 `renderer/RendererFramePassProfileConfig.h/.cpp`，提供 `buildRendererFramePassProfileConfigSchema(...)`，集中生成 Renderer frame pass profile 的 `PropertyBuilder` schema。
+- `RendererFramePassProfile.h` 删除 `GL_EDITOR::PropertyBuilder` forward declaration 和 `visitEditableProperties(...)`，现在只保留 profile 数据、默认值 reset 和 storage API。
+- `RendererFramePassProfile.cpp` 删除 schema 构造实现与 `tools/inspector/PropertySchema.h` 直接 include，storage load/save 改为通过 `buildRendererFramePassProfileConfigSchema(...)` 生成配置 schema。
+- `DebugControllerPanel.cpp` 的 Renderer Frame Pass Plan 控制面板改为调用 `buildRendererFramePassProfileConfigSchema(...)`，保持现有 UI 字段、reset defaults 和 save/reload 行为不变。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `RendererFramePassProfileConfig.cpp` 和 `RendererFramePassProfileConfig.h`。
+
+已完成验证：
+
+- 静态检查确认 `RendererFramePassProfile::visitEditableProperties`、`profile.visitEditableProperties(builder)`、`loadedProfile.visitEditableProperties(builder)` 和 `snapshot.visitEditableProperties(builder)` 在 RendererFramePassProfile 相关路径中不再存在。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `RendererFramePassProfile.cpp`、`RendererFramePassProfileConfig.cpp`、`RendererFramePassRegistry.cpp`、renderer debug/deferred pass、runtime profile loader、pass profile verification 和 DebugControllerPanel 相关路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Renderer frame pass profile config schema adapter slice，不改变 `config/renderer_frame_pass.local.ini` 默认路径、pass order key、renderer GPU timing 开关、PBR deferred/tiled/clustered/GBuffer/IBL debug 配置、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续处理剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile/settings 对象，例如 PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile。

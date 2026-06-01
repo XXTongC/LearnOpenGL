@@ -840,6 +840,9 @@
     <ClCompile Include="renderer\RendererFramePassProfile.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\RendererFramePassProfileConfig.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\RendererFramePassRegistry.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -1710,6 +1713,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\RendererFramePassProfile.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\RendererFramePassProfileConfig.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\RendererFramePassRegistry.h">
