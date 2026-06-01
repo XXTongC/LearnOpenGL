@@ -540,6 +540,8 @@ public:
 330. 下一步建议继续拆分 hierarchy tree / asset browser tree display helper，或开始推进类型/组件 property provider 注册机制，让系统化 UI 从 facade schema 走向可注册的 inspector provider。
 331. Runtime Hierarchy and Asset Browser Panel Extraction 已完成第一版：新增 `HierarchyPanel.cpp` 与 `AssetBrowserPanel.cpp` 承载两个 editor panel 的 tree/display helper；`EditorPanels.cpp` 只保留 selection state helper。
 332. 下一步建议推进类型/组件 property provider 注册机制，或把 `EditorPanels.h` 继续拆为 panel context、selection API 与 panel facade 窄头，避免所有 editor panel implementation 共享宽 facade header。
+333. Runtime Editor Panel Header Boundary Split 已完成第一版：新增 `EditorPanelContext.h` 与 `EditorPanelFacades.h`，`EditorPanels.h` 收敛为兼容聚合头；runtime coordinator、render resource adapter 与 panel implementation 改为按需 include 窄头。
+334. 下一步建议推进类型/组件 property provider 注册机制，把当前按目标类型手写 dispatch 的 inspector facade 进一步收敛为可注册 provider。
 
 ## 约束
 

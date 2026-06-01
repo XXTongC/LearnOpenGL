@@ -10062,3 +10062,28 @@ Subagent 审查：
 
 - 这是 editor panel implementation extraction，不改变 hierarchy 展示、asset browser 展示、selection kind、对象/灯光/阴影/相机/Actor/Component/Asset inspector 字段、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步建议开始推进类型/组件 property provider 注册机制，或先把 `EditorPanels.h` 进一步拆成 `EditorPanelContext`、selection API 与 panel facade 的窄头，避免所有 editor panel implementation 都依赖同一个宽 facade header。
+
+### 2026-06-01 Runtime Editor Panel Header Boundary Split
+
+本轮继续收紧 editor panel 头文件边界。Hierarchy / Asset Browser / Selection Inspector 都已拆到独立 implementation 后，`EditorPanels.h` 仍同时声明 `EditorPanelContext`、draw facade 和 selection state API，导致 runtime coordinator、render resource adapter 与各 panel implementation 需要通过同一个宽聚合头取得不同职责。这个结构不利于后续 property provider 注册机制，因为 context DTO、panel facade 和 selection API 会继续相互传播。
+
+新增与修改：
+
+- 新增 `tools/editor/EditorPanelContext.h`，只承载 `EditorPanelContext` DTO 与必要前置声明。
+- 新增 `tools/editor/EditorPanelFacades.h`，只声明 `drawHierarchyPanel(...)`、`drawAssetBrowserPanel(...)` 与 `drawSelectionInspectorPanel(...)`。
+- `EditorPanels.h` 收敛为兼容聚合头，只 include `EditorPanelContext.h`、`EditorPanelFacades.h` 与 `EditorSelectionState.h`。
+- `EditorPanels.cpp` 改为只 include `EditorSelectionState.h`，因为它现在只实现 selection state helper。
+- `HierarchyPanel.cpp`、`AssetBrowserPanel.cpp`、`SelectionInspectorPanel.cpp`、`RuntimeEditorPanelCoordinator.cpp` 与 `RuntimeEditorRenderResourceAdapter.cpp` 改为依赖需要的窄头。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 editor panel context/facade headers。
+
+已完成验证：
+
+- 静态检查确认实际 `.cpp` 不再直接 include `EditorPanels.h`，只按需 include `EditorPanelContext.h`、`EditorPanelFacades.h` 或 `EditorSelectionState.h`。
+- 静态检查确认 `EditorPanelContext.h` 与 `EditorPanelFacades.h` 已注册到 Visual Studio 工程。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 runtime coordinator、runtime editor render resource adapter、三个 editor panel implementation 和瘦身后的 `EditorPanels.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 editor panel header boundary split，不改变 editor panel 行为、selection kind、context 字段、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步建议开始推进类型/组件 property provider 注册机制，把当前按目标类型手写 dispatch 的 inspector facade 进一步收敛为可注册 provider。

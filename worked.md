@@ -7761,3 +7761,19 @@
   - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了新增 `AssetBrowserPanel.cpp`、`HierarchyPanel.cpp` 与瘦身后的 `EditorPanels.cpp`，四条 focused verification mode 全部通过。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮不修改 hierarchy 展示、asset browser 展示、selection kind、对象/灯光/阴影/相机/Actor/Component/Asset inspector 字段、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百二十一轮 Runtime Editor Panel Header Boundary Split：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `64a9229 Extract hierarchy and asset browser panels`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把下一步聚焦到 `EditorPanels.h` 的 context / facade / selection API 拆分，避免 runtime coordinator 与各 panel implementation 继续依赖同一个宽聚合头。
+  - 新增 [EditorPanelContext.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorPanelContext.h)，只承载 `EditorPanelContext` DTO 与必要前置声明。
+  - 新增 [EditorPanelFacades.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorPanelFacades.h)，只声明 `drawHierarchyPanel(...)`、`drawAssetBrowserPanel(...)` 与 `drawSelectionInspectorPanel(...)`。
+  - 更新 [EditorPanels.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorPanels.h)，收敛为兼容聚合头，只 include context、facade 与 selection state 窄头。
+  - 更新 [EditorPanels.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorPanels.cpp)，改为只 include `EditorSelectionState.h`，因为该文件现在只实现 selection state helper。
+  - 更新 [HierarchyPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\HierarchyPanel.cpp)、[AssetBrowserPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\AssetBrowserPanel.cpp)、[SelectionInspectorPanel.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\inspector\SelectionInspectorPanel.cpp)、[RuntimeEditorPanelCoordinator.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorPanelCoordinator.cpp) 与 [RuntimeEditorRenderResourceAdapter.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeEditorRenderResourceAdapter.cpp)，改为按需 include context / facade / selection state 窄头。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 editor panel context/facade headers。
+  - 已执行静态检查：确认实际 `.cpp` 不再直接 include `EditorPanels.h`，只按需 include `EditorPanelContext.h`、`EditorPanelFacades.h` 或 `EditorSelectionState.h`。
+  - 已执行静态检查：确认 `EditorPanelContext.h` 与 `EditorPanelFacades.h` 已注册到 Visual Studio 工程。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures`，构建通过；MSBuild 编译了 runtime coordinator、runtime editor render resource adapter、三个 editor panel implementation 和瘦身后的 `EditorPanels.cpp`，四条 focused verification mode 全部通过。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
+  - 本轮不修改 editor panel 行为、selection kind、context 字段、runtime frame pipeline、renderer backend contract 或 PBR pass；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。

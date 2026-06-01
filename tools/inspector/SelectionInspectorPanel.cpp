@@ -1,4 +1,6 @@
-#include "../editor/EditorPanels.h"
+#include "../editor/EditorPanelContext.h"
+#include "../editor/EditorPanelFacades.h"
+#include "../editor/EditorSelectionState.h"
 
 #include <cstdint>
 #include <memory>

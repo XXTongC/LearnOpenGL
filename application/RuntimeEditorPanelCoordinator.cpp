@@ -5,7 +5,8 @@
 #include "../engine/AssetSubsystem.h"
 #include "../tools/editor/DebugControllerContext.h"
 #include "../tools/editor/DebugControllerPanel.h"
-#include "../tools/editor/EditorPanels.h"
+#include "../tools/editor/EditorPanelContext.h"
+#include "../tools/editor/EditorPanelFacades.h"
 
 namespace GL_RUNTIME
 {

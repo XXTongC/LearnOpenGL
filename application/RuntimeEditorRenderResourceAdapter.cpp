@@ -3,7 +3,7 @@
 #include "RuntimeRenderResourceState.h"
 #include "../framework/scene.h"
 #include "../tools/editor/DebugControllerContext.h"
-#include "../tools/editor/EditorPanels.h"
+#include "../tools/editor/EditorPanelContext.h"
 #include "../tools/editor/EditorSelectionState.h"
 
 void GL_RUNTIME::RuntimeEditorRenderResourceAdapter::applyDebugControllerResources(

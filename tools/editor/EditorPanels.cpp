@@ -1,4 +1,4 @@
-#include "EditorPanels.h"
+#include "EditorSelectionState.h"
 
 #include <string>
 #include <utility>
