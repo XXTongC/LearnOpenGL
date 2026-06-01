@@ -350,6 +350,8 @@
     <ClCompile Include="third_party\imgui\imgui_widgets.cpp" />
     <ClCompile Include="tools\config\ProfileConfigParser.cpp" />
     <ClCompile Include="tools\config\ProfileConfigIO.cpp" />
+    <ClCompile Include="tools\inspector\MaterialInspector.cpp" />
+    <ClCompile Include="tools\inspector\PropertyInspector.cpp" />
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp" />
     <ClCompile Include="tools\editor\EngineDiagnosticsPanel.cpp" />
     <ClCompile Include="tools\editor\EditorPanels.cpp" />

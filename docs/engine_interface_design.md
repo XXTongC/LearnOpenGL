@@ -526,6 +526,8 @@ public:
 316. Runtime Render Resource ReadOnly View Facade Removal 已完成第一版：`RuntimeFrameReadinessResourceAdapter.cpp` 改为直接使用 `RuntimeRenderResourceState` const accessor，`RuntimeRenderResourceState` 删除 `RuntimeRenderResourceView` class 与 `readOnlyView()` public facade，application 源码不再存在 read-only view 过渡 API。
 317. Runtime Frame Pass Registry Profile Predicate Cleanup 已完成第一版：`RuntimeFramePassRegistry` 的 pass enabled predicate 从完整 `AppRuntimeContext` 收窄到 `RuntimeFramePipelineProfile`，registry implementation 不再 include `AppRuntimeContext.h`，frame pipeline 与 renderer frame bridge readiness 共用 profile 引用判断 pass enabled。
 318. Render resource decoupling 已达到阶段性收束条件：剩余 direct render resource accessor 已集中在 resource adapter/service implementation；下一步建议转入更高层 Engine runtime ownership、editor/gameplay boundary、场景/资产生命周期或系统化 UI/inspector 边界整理。
+319. Runtime Inspector Implementation Split 已完成第一版：`PropertyInspector.h` 和 `MaterialInspector.h` 不再作为 header-only implementation 传播 ImGui、完整 material/texture 或 `PropertyInspector.h` 间接依赖，property/material inspector 绘制实现迁入 `tools/inspector/*.cpp` 并注册到 VS 工程。
+320. 下一步建议继续推进系统化 UI/inspector：优先把 `EditorPanels.cpp` 内部的 Light / Shadow / Camera inspector 直写 ImGui 逻辑迁入 property schema builder 或独立 inspector facade，让对象声明属性、UI 统一生成。
 
 ## 约束
 

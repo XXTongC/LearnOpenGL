@@ -390,10 +390,11 @@ passed
 - Runtime Renderer State Resource Adapter Cleanup 已接入：新增 `RuntimeRendererStateResourceAdapter` 集中 frame runner clear color sync 与 renderer frame pass profile access，`RuntimeFrameRunner.cpp`、`RuntimePBRPassProfileVerification.cpp` 与 `RuntimeProfileLoader.cpp` 不再直接调用 render resource state 窄 helper，`RuntimeRenderResourceState` 删除 `syncClearColorToRenderer()` 与 `rendererFramePassProfile()` public helper。
 - Runtime Render Resource ReadOnly View Facade Removal 已接入：`RuntimeFrameReadinessResourceAdapter.cpp` 改为直接使用 `RuntimeRenderResourceState` const accessor，`RuntimeRenderResourceState` 删除 `RuntimeRenderResourceView` class 与 `readOnlyView()` public facade，application 源码不再存在 read-only view 过渡 API。
 - Runtime Frame Pass Registry Profile Predicate Cleanup 已接入：`RuntimeFramePassRegistry` 的 pass enabled predicate 从完整 `AppRuntimeContext` 收窄到 `RuntimeFramePipelineProfile`，registry implementation 不再 include `AppRuntimeContext.h`，frame pipeline 与 renderer frame bridge readiness 共用 profile 引用判断 pass enabled。
+- Runtime Inspector Implementation Split 已接入：`PropertyInspector.h` 与 `MaterialInspector.h` 不再作为 header-only implementation 传播 ImGui、完整 material/texture 或 `PropertyInspector.h` 间接依赖，property/material inspector 绘制实现迁入 `tools/inspector/*.cpp` 并注册到 VS 工程。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Runtime Frame Pass Registry Profile Predicate Cleanup 已接入后，`RuntimeFramePassRegistry` 的 pass enabled predicate 从完整 `AppRuntimeContext` 收窄到 `RuntimeFramePipelineProfile`，registry implementation 不再 include `AppRuntimeContext.h`，frame pipeline 与 renderer frame bridge readiness 共用 profile 引用判断 pass enabled。
+当前最新修正：Runtime Inspector Implementation Split 已接入后，`PropertyInspector.h` 与 `MaterialInspector.h` 不再作为 header-only implementation 传播 ImGui、完整 material/texture 或 `PropertyInspector.h` 间接依赖，property/material inspector 绘制实现迁入 `tools/inspector/*.cpp` 并注册到 VS 工程。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮确认剩余 direct render resource accessor 已集中在 resource adapter/service implementation，render resource decoupling 可阶段性收束；下一步应转入更高层 Engine runtime ownership、editor/gameplay boundary、场景/资产生命周期或系统化 UI/inspector 边界整理，当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：render resource decoupling 已阶段性收束。本轮开始收敛 inspector public header surface；下一步优先把 `EditorPanels.cpp` 内部的 Light / Shadow / Camera inspector 直写 ImGui 逻辑迁入 property schema builder 或独立 inspector facade，让对象声明属性、UI 统一生成，当前不建议继续扩张 PBR pass。

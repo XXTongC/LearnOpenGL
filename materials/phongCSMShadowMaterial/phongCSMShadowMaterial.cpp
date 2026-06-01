@@ -1,5 +1,6 @@
 #include "phongCSMShadowMaterial.h"
 #include "../../tools/inspector/MaterialInspector.h"
+#include "../../tools/inspector/PropertySchema.h"
 
 using namespace GLframework;
 

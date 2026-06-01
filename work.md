@@ -9892,3 +9892,28 @@ Subagent 审查：
 
 - 这是 frame pass registry 的 profile predicate cleanup，不改变 pass order、pass enabled policy、frame plan key、frame readiness 判断、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - render resource decoupling 已经达到阶段性收束条件：剩余 direct render resource accessor 位于 adapter/service implementation 内。下一步应转向更高层 Engine runtime ownership、editor/gameplay boundary、场景/资产生命周期或系统化 UI/inspector 的边界整理，而不是继续扩张 PBR 功能。
+
+### 2026-06-01 Runtime Inspector Implementation Split
+
+本轮从系统化 UI/inspector 边界开始推进。`PropertyInspector.h` 和 `MaterialInspector.h` 原本是 header-only：`PropertyInspector.h` 直接 include ImGui 并内联所有 property schema 绘制逻辑；`MaterialInspector.h` 直接 include 完整 `Material` 与 `Texture` 头，并内联 material type name、texture 描述和 material inspector 绘制。这样会让任何只想调用 inspector facade 的文件都被迫传播 ImGui、material、texture implementation 依赖，不利于后续把“材质/组件声明 property schema，UI 自动生成 inspector”的体系继续拆分。
+
+新增与修改：
+
+- 新增 `tools/inspector/PropertyInspector.cpp`，承载 `drawProperties(...)` 的 ImGui 绘制实现。
+- `tools/inspector/PropertyInspector.h` 收敛为只 include `PropertySchema.h` 并声明 `drawProperties(...)`，不再传播 ImGui。
+- 新增 `tools/inspector/MaterialInspector.cpp`，承载 material type name、texture 描述和 material inspector 绘制实现。
+- `tools/inspector/MaterialInspector.h` 改为只 forward declare `MaterialType`、`Material` 与 `Texture`，不再传播完整 material/texture headers，也不再间接传播 `PropertyInspector.h`。
+- material 实现文件显式 include `PropertySchema.h`，不再通过 `MaterialInspector.h` 间接取得 `PropertyBuilder` 定义。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 inspector `.cpp` 文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `PropertyInspector.h` 与 `MaterialInspector.h` 不再包含 ImGui、完整 material 或完整 texture 实现头。
+- 静态检查确认新增 `tools\inspector\MaterialInspector.cpp` 与 `tools\inspector\PropertyInspector.cpp` 已注册到 `text2.vcxproj` / `.filters`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 inspector implementation、material property schema implementation、`DebugControllerPanel.cpp` 与 `EditorPanels.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 inspector facade 的 header-to-implementation split，不改变 property schema 字段、ImGui 控件行为、material inspector 输出、selection inspector、DebugControllerPanel、EngineDiagnosticsPanel、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步可继续把 `EditorPanels.cpp` 内部的 Light / Shadow / Camera inspector 直写 ImGui 逻辑也迁入 property schema builder 或独立 inspector facade，让对象只声明可编辑属性，UI 自动生成对应 inspector。

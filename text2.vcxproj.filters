@@ -978,6 +978,12 @@
     <ClCompile Include="tools\config\ProfileConfigIO.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
+    <ClCompile Include="tools\inspector\MaterialInspector.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\inspector\PropertyInspector.cpp">
+      <Filter>cppfile\GLframework\tools</Filter>
+    </ClCompile>
     <ClCompile Include="tools\editor\DebugControllerPanel.cpp">
       <Filter>cppfile\GLframework\tools</Filter>
     </ClCompile>
