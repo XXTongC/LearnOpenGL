@@ -9716,3 +9716,28 @@ Subagent 审查：
 
 - 这是 renderer backend attachment/report 的 render resource adapter cleanup，不改变 renderer backend selection、`RendererSubsystem` attachment 语义、verification report 字段、frame bridge、runtime frame pipeline 或 PBR pass。
 - 下一步应继续审计 remaining direct access 中的 PBR stats、Engine World verification、frame bridge readiness 等只读观察路径，判断是否需要进一步拆成更窄 readiness/report snapshot；当前仍不建议继续扩张 PBR pass。
+
+### 2026-06-01 Runtime PBR Stats Resource Adapter Cleanup
+
+本轮继续处理 renderer backend adapter 之后留下的只读 observation path。`RuntimePBRRendererStatsVerification.cpp` 和 `RuntimePBRPreparedSceneStatsVerification.cpp` 原本为了输出 PBR verification 文本直接创建 `RuntimeRenderResourceView`，并在 prepared scene stats 模块中持有 scene/object/material/mesh/renderer implementation 依赖。PBR stats 模块的职责应该是格式化 verification 输出，而不是知道 render resource owner 和 scene traversal 细节，因此本轮新增 PBR stats 专用 resource adapter。
+
+新增与修改：
+
+- 新增 `RuntimePBRStatsResourceAdapter.h/.cpp`，提供 `lastRendererFrameStats(...)` 与 `collectPreparedSceneStats(...)`。
+- `RuntimePBRStatsResourceAdapter.cpp` 内部集中读取 `RuntimeRenderResourceState::renderer()` / `sceneOffScreen()`，并集中完成 prepared scene 递归统计与 IBL readiness 判断。
+- `RuntimePBRStatsResourceAdapter.h` 暴露值型 `RuntimePBRPreparedSceneStatsSnapshot`，让 prepared-scene report 模块只依赖 stats snapshot，不再依赖 scene/object/material/mesh/renderer implementation headers。
+- `RuntimePBRRendererStatsVerification.cpp` 改为通过 adapter 取得只读 `RendererFrameStats` 指针，不再通过 `readOnlyView()` 读取 renderer。
+- `RuntimePBRPreparedSceneStatsVerification.cpp` 改为通过 adapter 取得 prepared-scene stats snapshot，不再通过 `readOnlyView()` 读取 scene/renderer，也不再持有 scene traversal 逻辑。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 adapter 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `RuntimePBRRendererStatsVerification.cpp` 与 `RuntimePBRPreparedSceneStatsVerification.cpp` 中不再出现 `readOnlyView()`、`RuntimeRenderResourceView`、`renderResources.renderer()`、`renderResources.sceneOffScreen()` 或 renderer/scene/material/mesh implementation includes。
+- 静态检查确认 PBR stats direct render resource access 已集中到 `RuntimePBRStatsResourceAdapter.cpp`。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,import,showcase-spheres,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `RuntimePBRStatsResourceAdapter.cpp` 和两个 PBR stats report 模块。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 PBR stats/report 的 read-only resource adapter cleanup，不改变 `PBR verification scene stats` 或 `PBR verification renderer stats` 输出契约、prepared scene 统计规则、IBL readiness 判断、renderer frame stats 字段、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步应继续审计 Engine World verification 和 frame bridge readiness 这两类 remaining read-only observation path，判断是否需要拆出更窄的 verification/resource snapshot；当前仍不建议继续扩张 PBR pass。

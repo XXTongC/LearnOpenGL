@@ -226,6 +226,7 @@
     <ClCompile Include="application\RuntimePBRPreparedSceneStatsVerification.cpp" />
     <ClCompile Include="application\RuntimePBRRendererStatsVerification.cpp" />
     <ClCompile Include="application\RuntimePBRSceneProbeVerification.cpp" />
+    <ClCompile Include="application\RuntimePBRStatsResourceAdapter.cpp" />
     <ClCompile Include="application\RuntimePBRStartupProfileVerification.cpp" />
     <ClCompile Include="application\RuntimeVerificationArgs.cpp" />
     <ClCompile Include="application\RuntimeVerificationCleanupLifecycle.cpp" />
@@ -579,6 +580,7 @@
     <ClInclude Include="application\RuntimePBRPreparedSceneStatsVerification.h" />
     <ClInclude Include="application\RuntimePBRRendererStatsVerification.h" />
     <ClInclude Include="application\RuntimePBRSceneProbeVerification.h" />
+    <ClInclude Include="application\RuntimePBRStatsResourceAdapter.h" />
     <ClInclude Include="application\RuntimePBRStartupProfileVerification.h" />
     <ClInclude Include="application\RuntimePBRVerificationConfig.h" />
     <ClInclude Include="application\RuntimeVerificationConfig.h" />

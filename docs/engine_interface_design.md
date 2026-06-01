@@ -518,7 +518,8 @@ public:
 308. Runtime Scene Setup Resource Adapter Cleanup 已完成第一版：新增 `RuntimeSceneSetupResourceAdapter` 集中 scene setup 与 legacy experiment DTO 构造对 renderer/scene/frame-target/Bloom/screen/legacy mesh-material 资源的访问，`RuntimeSceneSetupContextFactory` 与 `RuntimeLegacyExperimentLifecycle` 不再直接访问 render resource owner。
 309. Runtime Window Resize Resource Adapter Cleanup 已完成第一版：新增 `RuntimeWindowRenderResourceAdapter` 集中 window resize callback 对 frame render targets / screen material 的访问，`RuntimeWindowLifecycle` 不再直接访问 resize render resource owner 或 `RuntimeViewport` implementation。
 310. Runtime Renderer Backend Resource Adapter Cleanup 已完成第一版：新增 `RuntimeRendererBackendResourceAdapter` 集中 renderer backend attachment/report 对 runtime renderer pointer 的存在性检查、subsystem attachment 和 attachment comparison，content renderer backend lifecycle、attachment lifecycle 与 verification report 不再为了 renderer pointer 创建过宽 `RuntimeRenderResourceView`。
-311. 下一步建议继续审计 remaining direct access 中的 PBR stats、Engine World verification、frame bridge readiness 等只读观察路径，判断是否需要进一步拆成更窄 readiness/report snapshot；当前仍不建议继续扩张 PBR pass。
+311. Runtime PBR Stats Resource Adapter Cleanup 已完成第一版：新增 `RuntimePBRStatsResourceAdapter` 集中 PBR renderer stats 与 prepared-scene stats 对 renderer / offscreen scene 的只读访问和 prepared scene traversal，PBR stats report 模块不再直接创建 `RuntimeRenderResourceView` 或依赖 scene/object/material/mesh/renderer implementation headers。
+312. 下一步建议继续审计 Engine World verification 和 frame bridge readiness 这两类 remaining read-only observation path，判断是否需要进一步拆成更窄 verification/resource snapshot；当前仍不建议继续扩张 PBR pass。
 
 ## 约束
 

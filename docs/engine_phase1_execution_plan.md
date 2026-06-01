@@ -383,10 +383,11 @@ passed
 - Runtime Scene Setup Resource Adapter Cleanup 已接入：新增 `RuntimeSceneSetupResourceAdapter` 集中 scene setup 与 legacy experiment DTO 构造对 renderer/scene/frame-target/Bloom/screen/legacy mesh-material 资源的访问，`RuntimeSceneSetupContextFactory` 与 `RuntimeLegacyExperimentLifecycle` 不再直接访问 render resource owner。
 - Runtime Window Resize Resource Adapter Cleanup 已接入：新增 `RuntimeWindowRenderResourceAdapter` 集中 window resize callback 对 frame render targets / screen material 的访问，`RuntimeWindowLifecycle` 不再直接访问 resize render resource owner 或 `RuntimeViewport` implementation。
 - Runtime Renderer Backend Resource Adapter Cleanup 已接入：新增 `RuntimeRendererBackendResourceAdapter` 集中 renderer backend attachment/report 对 runtime renderer pointer 的存在性检查、subsystem attachment 和 attachment comparison，content renderer backend lifecycle、attachment lifecycle 与 verification report 不再为了 renderer pointer 创建过宽 `RuntimeRenderResourceView`。
+- Runtime PBR Stats Resource Adapter Cleanup 已接入：新增 `RuntimePBRStatsResourceAdapter` 集中 PBR renderer stats 与 prepared-scene stats 对 renderer / offscreen scene 的只读访问和 prepared scene traversal，PBR stats report 模块不再直接创建 `RuntimeRenderResourceView` 或依赖 scene/object/material/mesh/renderer implementation headers。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Runtime Renderer Backend Resource Adapter Cleanup 已接入后，renderer backend attachment/report 对 runtime renderer pointer 的存在性检查、subsystem attachment 和 attachment comparison 已集中到 `RuntimeRendererBackendResourceAdapter`，三个调用方不再为了 renderer pointer 创建过宽 `RuntimeRenderResourceView`。
+当前最新修正：Runtime PBR Stats Resource Adapter Cleanup 已接入后，PBR renderer stats 与 prepared-scene stats 对 renderer / offscreen scene 的只读访问和 prepared scene traversal 已集中到 `RuntimePBRStatsResourceAdapter`，两个 PBR stats report 模块不再直接创建 `RuntimeRenderResourceView` 或依赖 scene/object/material/mesh/renderer implementation headers。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 renderer backend resource adapter cleanup 后，下一步应继续审计 PBR stats、Engine World verification、frame bridge readiness 等 remaining read-only observation path，判断是否需要更窄 readiness/report snapshot；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 PBR stats resource adapter cleanup 后，下一步应继续审计 Engine World verification 与 frame bridge readiness 这两类 remaining read-only observation path，判断是否需要更窄 verification/resource snapshot；当前不建议继续扩张 PBR pass。

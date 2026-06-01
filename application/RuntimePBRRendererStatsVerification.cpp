@@ -4,9 +4,9 @@
 #include <string>
 
 #include "../renderer/RendererFrameStats.h"
-#include "../renderer/renderer.h"
 #include "../tools/Logger/LogManager.h"
 #include "AppRuntimeContext.h"
+#include "RuntimePBRStatsResourceAdapter.h"
 
 namespace
 {
@@ -21,13 +21,13 @@ namespace GL_RUNTIME
 {
 	void RuntimePBRRendererStatsVerification::reportRenderedFrame(GLframework::AppRuntimeContext& context)
 	{
-		const auto renderResources = context.renderResources.readOnlyView();
-		if (!renderResources.renderer())
+		const auto* rendererStats = RuntimePBRStatsResourceAdapter::lastRendererFrameStats(context.renderResources);
+		if (!rendererStats)
 		{
 			return;
 		}
 
-		const auto& stats = renderResources.renderer()->getLastFrameStats();
+		const auto& stats = *rendererStats;
 		std::string statsLine =
 			"PBR verification renderer stats: rendererPasses=" + std::to_string(stats.rendererPassCount)
 			+ ", shadowCasters=" + std::to_string(stats.shadowCasterCount)

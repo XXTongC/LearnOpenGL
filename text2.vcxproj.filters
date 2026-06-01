@@ -585,6 +585,9 @@
     <ClCompile Include="application\RuntimePBRSceneProbeVerification.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimePBRStatsResourceAdapter.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\RuntimePBRStartupProfileVerification.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -1347,6 +1350,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimePBRSceneProbeVerification.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimePBRStatsResourceAdapter.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimePBRStartupProfileVerification.h">
