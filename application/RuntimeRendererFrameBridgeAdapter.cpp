@@ -76,7 +76,7 @@ namespace
 			return true;
 		}
 
-		return context.renderResources.bloom != nullptr
+		return context.renderResources.bloom() != nullptr
 			&& context.renderResources.frameRenderTargets().getResolved() != nullptr
 			&& context.renderResources.frameRenderTargets().getBloomBright() != nullptr
 			&& context.renderResources.frameRenderTargets().getBloomPing() != nullptr

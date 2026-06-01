@@ -40,13 +40,13 @@ namespace GL_RUNTIME
 		}
 
 		context.renderResources.postProcessPass().extractBloomBright(
-			context.renderResources.bloom,
+			context.renderResources.bloom(),
 			context.renderResources.frameRenderTargets().getResolved(),
 			context.renderResources.frameRenderTargets().getBloomBright(),
 			postProcessSettings.bloomThreshold
 		);
 		context.renderResources.postProcessPass().blurBloom(
-			context.renderResources.bloom,
+			context.renderResources.bloom(),
 			context.renderResources.frameRenderTargets().getBloomBright(),
 			context.renderResources.frameRenderTargets().getBloomPing(),
 			context.renderResources.frameRenderTargets().getBloomPong(),

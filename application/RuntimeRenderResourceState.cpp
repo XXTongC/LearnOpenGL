@@ -36,3 +36,13 @@ const GLframework::PostProcessPass& GL_RUNTIME::RuntimeRenderResourceState::post
 {
 	return *mPostProcessPass;
 }
+
+std::shared_ptr<GLframework::Bloom>& GL_RUNTIME::RuntimeRenderResourceState::bloom()
+{
+	return mBloom;
+}
+
+const std::shared_ptr<GLframework::Bloom>& GL_RUNTIME::RuntimeRenderResourceState::bloom() const
+{
+	return mBloom;
+}
