@@ -5,8 +5,8 @@
 #include "Application.h"
 #include "AppRuntimeContext.h"
 #include "RuntimeInputController.h"
-#include "RuntimeViewport.h"
 #include "RuntimeWindowLifecycleTypes.h"
+#include "RuntimeWindowRenderResourceAdapter.h"
 #include "../tools/Logger/LogManager.h"
 
 namespace GL_RUNTIME
@@ -40,20 +40,17 @@ namespace GL_RUNTIME
 				return;
 			}
 
-			const auto result = RuntimeViewport::applyResize(
+			const bool resizeAccepted = RuntimeWindowRenderResourceAdapter::applyResize(
+				gCallbackContext.runtime->renderResources,
+				gCallbackContext.runtime->cameraLights.camera,
+				gCallbackContext.width,
+				gCallbackContext.height,
 				newWidth,
-				newHeight,
-				{
-					gCallbackContext.width,
-					gCallbackContext.height,
-					gCallbackContext.runtime->cameraLights.camera,
-					&gCallbackContext.runtime->renderResources.frameRenderTargets(),
-					gCallbackContext.runtime->renderResources.screenMaterial()
-				}
+				newHeight
 			);
 
 #ifdef _DEBUG
-			if (result.accepted)
+			if (resizeAccepted)
 			{
 				std::cout << "OnResize" << std::endl;
 			}

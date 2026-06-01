@@ -636,6 +636,9 @@
     <ClCompile Include="application\RuntimeWindowLifecycle.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
+    <ClCompile Include="application\RuntimeWindowRenderResourceAdapter.cpp">
+      <Filter>cppfile\Application</Filter>
+    </ClCompile>
     <ClCompile Include="application\AssimpMaterialImporter.cpp">
       <Filter>cppfile\Application</Filter>
     </ClCompile>
@@ -1404,6 +1407,9 @@
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\RuntimeWindowLifecycleTypes.h">
+      <Filter>include\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="application\RuntimeWindowRenderResourceAdapter.h">
       <Filter>include\Application</Filter>
     </ClInclude>
     <ClInclude Include="application\AssimpMaterialImporter.h">

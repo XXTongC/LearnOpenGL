@@ -243,6 +243,7 @@
     <ClCompile Include="application\RuntimeSceneSetupReport.cpp" />
     <ClCompile Include="application\RuntimeViewport.cpp" />
     <ClCompile Include="application\RuntimeWindowLifecycle.cpp" />
+    <ClCompile Include="application\RuntimeWindowRenderResourceAdapter.cpp" />
     <ClCompile Include="application\AssimpMaterialImporter.cpp" />
     <ClCompile Include="application\assimpInstanceLoader.cpp" />
     <ClCompile Include="application\assimpLoader.cpp" />
@@ -598,6 +599,7 @@
     <ClInclude Include="application\RuntimeViewport.h" />
     <ClInclude Include="application\RuntimeWindowLifecycle.h" />
     <ClInclude Include="application\RuntimeWindowLifecycleTypes.h" />
+    <ClInclude Include="application\RuntimeWindowRenderResourceAdapter.h" />
     <ClInclude Include="light\spotLight.h" />
     <ClInclude Include="third_party\stb_image\stb_image.h" />
     <ClInclude Include="framework\texture.h" />

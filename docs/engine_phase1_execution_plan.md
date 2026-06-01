@@ -381,10 +381,11 @@ passed
 - Engine-driven subsystem health counters 已接入：Engine / World / AssetSubsystem / RendererSubsystem 都记录 tick count，Engine diagnostics panel 显示统一 health stats，verification 断言四个 tick counter 大于 0 且相等，并确认 context World 匹配 active World。
 - Runtime Editor Render Resource Adapter Cleanup 已接入：新增 `RuntimeEditorRenderResourceAdapter` 集中 editor panel/debug controller 对 renderer/text object/offscreen scene/inscreen scene/default selection scene 的访问，`RuntimeEditorPanelCoordinator` 不再直接访问 render resource owner。
 - Runtime Scene Setup Resource Adapter Cleanup 已接入：新增 `RuntimeSceneSetupResourceAdapter` 集中 scene setup 与 legacy experiment DTO 构造对 renderer/scene/frame-target/Bloom/screen/legacy mesh-material 资源的访问，`RuntimeSceneSetupContextFactory` 与 `RuntimeLegacyExperimentLifecycle` 不再直接访问 render resource owner。
+- Runtime Window Resize Resource Adapter Cleanup 已接入：新增 `RuntimeWindowRenderResourceAdapter` 集中 window resize callback 对 frame render targets / screen material 的访问，`RuntimeWindowLifecycle` 不再直接访问 resize render resource owner 或 `RuntimeViewport` implementation。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Runtime Scene Setup Resource Adapter Cleanup 已接入后，scene setup 与 legacy experiment DTO 构造对 renderer/scene/frame-target/Bloom/screen/legacy mesh-material 资源的访问已集中到 `RuntimeSceneSetupResourceAdapter`，`RuntimeSceneSetupContextFactory` 与 `RuntimeLegacyExperimentLifecycle` 不再直接访问 render resource owner。
+当前最新修正：Runtime Window Resize Resource Adapter Cleanup 已接入后，window resize callback 对 frame render targets / screen material 的访问已集中到 `RuntimeWindowRenderResourceAdapter`，`RuntimeWindowLifecycle` 不再直接访问 resize render resource owner 或 `RuntimeViewport` implementation。
 
-下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 scene setup resource adapter cleanup 后，下一步应重新审计全局 remaining direct render resource access，区分允许集中访问的 adapter implementation 和仍需收口的 lifecycle/wiring path；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进 Engine runtime ownership：Engine runtime ownership 已完成多轮 boundary/header extraction。本轮 window resize resource adapter cleanup 后，下一步应继续审计 remaining direct access 中的 read-only / mutation 小边界，例如 renderer backend attachment/report 是否需要更窄 adapter；当前不建议继续扩张 PBR pass。

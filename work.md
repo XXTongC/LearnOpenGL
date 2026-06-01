@@ -9666,3 +9666,28 @@ Subagent 审查：
 
 - 这是 scene setup / legacy experiment resource injection boundary cleanup，不改变 default scene preparation、PBR preview setup、imported asset verification、Engine World minimal scene setup、legacy experiment enable/update 行为、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步应重新审计全局 remaining direct render resource access，把“允许集中访问的 adapter implementation”与“仍需收口的 application lifecycle/wiring path”区分开；当前仍不建议继续扩张 PBR pass。
+
+### 2026-06-01 Runtime Window Resize Resource Adapter Cleanup
+
+本轮先完成全局 remaining direct render resource access audit：`context.renderResources.renderer()` / `sceneOffScreen()` / `sceneInScreen()` / `textD()` 在 application 源码中已清零；剩余 direct access 主要分为已允许的 adapter implementation、read-only view consumer、小型 mutation boundary，以及一个仍需收口的 window resize lifecycle path。`RuntimeWindowLifecycle.cpp` 原本在 GLFW resize callback 中直接取得 `frameRenderTargets()` 和 `screenMaterial()` 传给 `RuntimeViewport::applyResize(...)`，这是合法 resize mutation path，但不应让 window lifecycle 直接知道 render resource owner 细节。
+
+新增与修改：
+
+- 新增 `RuntimeWindowRenderResourceAdapter.h/.cpp`，提供 `applyResize(...)`。
+- `RuntimeWindowRenderResourceAdapter.cpp` 内部组装 `RuntimeViewport::applyResize(...)` 需要的 camera、width/height、frame render targets 和 screen material。
+- `RuntimeWindowLifecycle.cpp` 移除 `RuntimeViewport.h` 依赖，resize callback 改为调用 `RuntimeWindowRenderResourceAdapter::applyResize(...)`，不再直接访问 `renderResources.frameRenderTargets()` 或 `renderResources.screenMaterial()`。
+- `RuntimeWindowRenderResourceAdapter::applyResize(...)` 最终只向 caller 返回 `bool accepted`，避免 window lifecycle 为了 debug log 依赖完整 `RuntimeResizeResult` 类型。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 adapter 源文件和头文件，保持 Visual Studio 工程分类同步。
+
+已完成验证：
+
+- 静态检查确认 `RuntimeWindowLifecycle.cpp` 中不再出现 `renderResources.frameRenderTargets()` / `renderResources.screenMaterial()` 或 `RuntimeViewport` 直接依赖。
+- 静态检查确认 window resize direct render resource access 已集中到 `RuntimeWindowRenderResourceAdapter.cpp`。
+- 首次 focused verification 暴露 adapter header 返回 `RuntimeResizeResult` 会让 `RuntimeWindowLifecycle.cpp` 依赖未定义完整类型；已将 adapter public API 改为返回 `bool accepted`，完整 `RuntimeResizeResult` 留在 adapter implementation 内部。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,engine-world-minimal-scene,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了新增 `RuntimeWindowRenderResourceAdapter.cpp` 和 `RuntimeWindowLifecycle.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 window resize lifecycle 的 render resource adapter cleanup，不改变 GLFW callback 绑定、viewport resize、camera aspect sync、frame render target resize、post-process input texture sync、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步应继续审计 remaining direct access 中的 read-only / mutation 小边界，例如是否可以把 renderer backend attachment/report 进一步从 `RuntimeRenderResourceView` 迁到更窄 adapter，或转向其他 application state ownership 边界；当前仍不建议继续扩张 PBR pass。
