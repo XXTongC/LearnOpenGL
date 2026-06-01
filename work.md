@@ -9845,3 +9845,26 @@ Subagent 审查：
 
 - 这是 renderer state/profile 的 resource adapter cleanup，不改变 clear color 来源、renderer frame pass profile 默认/加载/verification 配置语义、runtime frame pipeline、renderer backend contract 或 PBR pass。
 - 下一步应在 full verification 后重新审计 application 层剩余 `readOnlyView()` / direct render resource accessor；如果剩余 direct access 只存在于 adapter implementation，则 render resource decoupling 可以阶段性收束，转入更高层 Engine runtime ownership 或 editor/gameplay boundary。
+
+### 2026-06-01 Runtime Render Resource ReadOnly View Facade Removal
+
+本轮继续处理 renderer state adapter 之后的阶段性收束。审计确认 `RuntimeRenderResourceView` / `readOnlyView()` 只剩 `RuntimeFrameReadinessResourceAdapter.cpp` 一个使用点，其他 direct render resource accessor 已集中在各类 resource adapter implementation。此时 read-only view facade 不再承担跨模块隔离职责，反而让 `RuntimeRenderResourceState` public surface 保留一层过渡 API。本轮删除该 facade，让 frame readiness adapter 直接使用 `RuntimeRenderResourceState` const accessor。
+
+新增与修改：
+
+- `RuntimeFrameReadinessResourceAdapter.cpp` 的 readiness helper 改为接收 `const RuntimeRenderResourceState&`。
+- `RuntimeFrameReadinessResourceAdapter.cpp` 不再调用 `context.renderResources.readOnlyView()`，改为在 adapter implementation 内直接引用 `context.renderResources`。
+- `RuntimeRenderResourceState.h/.cpp` 删除 `RuntimeRenderResourceView` class、`readOnlyView()` 声明与所有 view forwarding implementation。
+- `RuntimeRenderResourceState.h` 移除 view 删除后残留的无用 `GLframework::Object` 前置声明。
+
+已完成验证：
+
+- 静态检查确认 application 源码中不再存在 `readOnlyView()` 或 `RuntimeRenderResourceView`。
+- 静态检查确认 `RuntimeRenderResourceState.h/.cpp` 与 `RuntimeFrameReadinessResourceAdapter.cpp` 中不再残留 read-only view facade 或无用 `Object` 前置声明。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,deferred,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `RuntimeFrameReadinessResourceAdapter.cpp` 和 `RuntimeRenderResourceState.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 render resource read-only view 过渡 facade 的删除，不改变 frame pass readiness 判断、backend ready 语义、runtime frame pipeline、renderer backend contract 或 PBR pass。
+- 下一步应重新审计剩余 direct render resource accessor 是否已经全部位于 resource adapter implementation；如果是，这条 render resource decoupling 可以阶段性收束，转入更高层 Engine runtime ownership 或 editor/gameplay boundary。

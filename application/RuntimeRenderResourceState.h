@@ -10,7 +10,6 @@ namespace GLframework
 	class FrameRenderTargets;
 	class GrassInstanceMaterial;
 	class Mesh;
-	class Object;
 	class PhongCSMShadowMaterial;
 	class PostProcessPass;
 	class Renderer;
@@ -20,8 +19,6 @@ namespace GLframework
 
 namespace GL_RUNTIME
 {
-	class RuntimeRenderResourceView;
-
 	struct RuntimeRenderResourceState
 	{
 		RuntimeRenderResourceState();
@@ -31,8 +28,6 @@ namespace GL_RUNTIME
 		RuntimeRenderResourceState& operator=(const RuntimeRenderResourceState&) = delete;
 		RuntimeRenderResourceState(RuntimeRenderResourceState&&) noexcept;
 		RuntimeRenderResourceState& operator=(RuntimeRenderResourceState&&) noexcept;
-
-		RuntimeRenderResourceView readOnlyView() const;
 
 		glm::vec3& clearColor();
 		const glm::vec3& clearColor() const;
@@ -78,29 +73,5 @@ namespace GL_RUNTIME
 		std::shared_ptr<GLframework::PhongCSMShadowMaterial> mCsmShadowMaterial{ nullptr };
 		std::unique_ptr<GLframework::FrameRenderTargets> mFrameRenderTargets{};
 		std::unique_ptr<GLframework::PostProcessPass> mPostProcessPass{};
-	};
-
-	class RuntimeRenderResourceView
-	{
-	public:
-		explicit RuntimeRenderResourceView(const RuntimeRenderResourceState& state);
-
-		const glm::vec3& clearColor() const;
-		const std::shared_ptr<GLframework::Renderer>& renderer() const;
-		const std::shared_ptr<GLframework::Scene>& sceneOffScreen() const;
-		const std::shared_ptr<GLframework::Scene>& sceneInScreen() const;
-		const GLframework::FrameRenderTargets& frameRenderTargets() const;
-		const GLframework::PostProcessPass& postProcessPass() const;
-		const std::shared_ptr<GLframework::Bloom>& bloom() const;
-		const std::shared_ptr<GLframework::Mesh>& screenQuad() const;
-		const std::shared_ptr<GLframework::ScreenMaterial>& screenMaterial() const;
-		const std::shared_ptr<GLframework::GrassInstanceMaterial>& grassMaterial() const;
-		const std::shared_ptr<GLframework::Mesh>& skyBoxMesh() const;
-		const std::shared_ptr<GLframework::Mesh>& movePlane() const;
-		const std::shared_ptr<GLframework::Mesh>& textD() const;
-		const std::shared_ptr<GLframework::PhongCSMShadowMaterial>& csmShadowMaterial() const;
-
-	private:
-		const RuntimeRenderResourceState* mState{ nullptr };
 	};
 }

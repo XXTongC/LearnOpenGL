@@ -2,13 +2,14 @@
 
 #include "AppRuntimeContext.h"
 #include "RuntimeFramePassRegistry.h"
+#include "RuntimeRenderResourceState.h"
 #include "../renderer/FrameRenderTargets.h"
 #include "../renderer/PostProcessSettings.h"
 
 namespace
 {
 	bool isSceneColorReady(
-		const GL_RUNTIME::RuntimeRenderResourceView& renderResources,
+		const GL_RUNTIME::RuntimeRenderResourceState& renderResources,
 		const GLframework::AppRuntimeContext& context
 	)
 	{
@@ -19,14 +20,14 @@ namespace
 			&& renderResources.frameRenderTargets().getSceneFbo() != 0;
 	}
 
-	bool isSceneResolveReady(const GL_RUNTIME::RuntimeRenderResourceView& renderResources)
+	bool isSceneResolveReady(const GL_RUNTIME::RuntimeRenderResourceState& renderResources)
 	{
 		return renderResources.frameRenderTargets().getMultisample() != nullptr
 			&& renderResources.frameRenderTargets().getResolved() != nullptr;
 	}
 
 	bool isBloomReady(
-		const GL_RUNTIME::RuntimeRenderResourceView& renderResources,
+		const GL_RUNTIME::RuntimeRenderResourceState& renderResources,
 		const GLframework::PostProcessSettings& postProcessSettings
 	)
 	{
@@ -42,7 +43,7 @@ namespace
 			&& renderResources.frameRenderTargets().getBloomPong() != nullptr;
 	}
 
-	bool isScreenCompositeReady(const GL_RUNTIME::RuntimeRenderResourceView& renderResources)
+	bool isScreenCompositeReady(const GL_RUNTIME::RuntimeRenderResourceState& renderResources)
 	{
 		return renderResources.renderer() != nullptr
 			&& renderResources.screenQuad() != nullptr
@@ -55,7 +56,7 @@ bool GL_RUNTIME::RuntimeFrameReadinessResourceAdapter::isFramePassReady(
 	const GLframework::AppRuntimeContext& context
 )
 {
-	const auto renderResources = context.renderResources.readOnlyView();
+	const auto& renderResources = context.renderResources;
 	switch (pass.id)
 	{
 	case RuntimeFramePassId::SceneColor:
