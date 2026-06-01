@@ -7,6 +7,7 @@
 #include "../renderer/PostProcessSettings.h"
 #include "../renderer/RendererFramePassProfile.h"
 #include "../tools/Logger/LogManager.h"
+#include "../tools/editor/EditorUiModuleProfile.h"
 #include "../tools/sceneSetup/PBRCameraRigProfile.h"
 #include "../tools/sceneSetup/PBRExperimentProfile.h"
 #include "../tools/sceneSetup/PBRPreviewProfile.h"
@@ -109,6 +110,20 @@ namespace
 
 		LogInfo("PBR experiment profile config not found, using layered defaults: " + context.profiles.pbrExperimentProfilePath);
 	}
+
+	void loadEditorUiModuleProfile(GLframework::AppRuntimeContext& context)
+	{
+		if (GL_EDITOR::EditorUiModuleProfileStorage::loadFromFile(
+			context.profiles.editorUiModuleProfilePath,
+			context.profiles.editorUiModuleProfile()
+		))
+		{
+			LogInfo("Editor UI module profile loaded from " + context.profiles.editorUiModuleProfilePath);
+			return;
+		}
+
+		LogInfo("Editor UI module profile config not found, using defaults: " + context.profiles.editorUiModuleProfilePath);
+	}
 }
 
 void GL_RUNTIME::RuntimeProfileLoader::loadAll(GLframework::AppRuntimeContext& context)
@@ -119,4 +134,5 @@ void GL_RUNTIME::RuntimeProfileLoader::loadAll(GLframework::AppRuntimeContext& c
 	loadRendererFramePassProfile(context);
 	loadPBRPreviewProfile(context);
 	loadPBRExperimentProfile(context);
+	loadEditorUiModuleProfile(context);
 }

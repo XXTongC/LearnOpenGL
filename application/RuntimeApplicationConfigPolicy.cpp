@@ -5,6 +5,7 @@
 #include "RuntimeFrameLifecycleConfig.h"
 #include "RuntimeGraphicsLifecycleTypes.h"
 #include "../engine/EngineDesc.h"
+#include "../tools/editor/EditorUiModuleProfile.h"
 
 namespace GL_RUNTIME
 {
@@ -44,6 +45,22 @@ namespace GL_RUNTIME
 		config.editorUiModulePolicy.includeCoreEditorUi = shellConfig.enableCoreEditorUiModule;
 		config.editorUiModulePolicy.includeSampleEditorUi = shellConfig.enableSampleEditorUiModule;
 		return config;
+	}
+
+	void RuntimeApplicationConfigPolicy::applyEditorUiModuleProfile(
+		RuntimeApplicationShellConfig& shellConfig,
+		const GL_EDITOR::EditorUiModuleProfile& profile
+	)
+	{
+		if (!shellConfig.coreEditorUiModuleCommandLineOverride)
+		{
+			shellConfig.enableCoreEditorUiModule = profile.enableCoreEditorUiModule;
+		}
+
+		if (!shellConfig.sampleEditorUiModuleCommandLineOverride)
+		{
+			shellConfig.enableSampleEditorUiModule = profile.enableSampleEditorUiModule;
+		}
 	}
 
 	RuntimeGraphicsLifecycleConfig RuntimeApplicationConfigPolicy::makeGraphicsLifecycleConfig(

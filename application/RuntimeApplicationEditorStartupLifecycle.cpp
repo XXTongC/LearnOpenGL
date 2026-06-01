@@ -1,5 +1,6 @@
 #include "RuntimeApplicationEditorStartupLifecycle.h"
 
+#include "AppRuntimeContext.h"
 #include "RuntimeApplicationConfigPolicy.h"
 #include "RuntimeApplicationState.h"
 #include "RuntimeEditorLifecycleConfig.h"
@@ -14,6 +15,10 @@ namespace GL_RUNTIME
 		const RuntimeWindowSnapshot& window
 	)
 	{
+		RuntimeApplicationConfigPolicy::applyEditorUiModuleProfile(
+			config,
+			state.runtime().profiles.editorUiModuleProfile()
+		);
 		RuntimeEditorLifecycle::initialize(
 			state.editorLifecycle(),
 			RuntimeApplicationConfigPolicy::makeEditorLifecycleConfig(config, window.nativeWindow)

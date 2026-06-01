@@ -20,6 +20,8 @@ namespace GL_RUNTIME
 		bool enableGui{ true };
 		bool enableCoreEditorUiModule{ true };
 		bool enableSampleEditorUiModule{ true };
+		bool coreEditorUiModuleCommandLineOverride{ false };
+		bool sampleEditorUiModuleCommandLineOverride{ false };
 		std::string rendererBackendKey{};
 		RuntimeFrameClockConfig frameClock{};
 		RuntimeVerificationConfig verification{};

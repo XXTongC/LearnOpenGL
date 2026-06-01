@@ -11020,3 +11020,31 @@ Subagent 审查：
 
 - 这是 Editor UI Module Diagnostics Section slice，只增加可观察性和 registry metadata，不改变默认 module policy、现有 section 业务逻辑、selection inspector 匹配逻辑、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议把 module policy 接入 profile/config 文件或 editor settings；有了 diagnostics section 后，后续切换可以直接在 UI 中观察 active module list 与 registry 规模变化。
+
+### 2026-06-01 Editor UI Module Profile Storage
+
+本轮把 Editor UI module policy 接入现有 profile/config 存储体系。上一轮已经能通过 CLI 临时覆盖 module policy，也能在 Debug Controller 中观察 active module list；本轮新增可持久化 profile 文件，让默认 module 组合可以由 `config/editor_ui_modules.local.ini` 控制，并保持 CLI 显式参数优先。
+
+新增与修改：
+
+- 新增 `tools/editor/EditorUiModuleProfile.h/.cpp`，定义 `EditorUiModuleProfile` 与 `EditorUiModuleProfileStorage`。
+- 新增 `tools/editor/EditorUiModuleProfileConfig.h/.cpp`，通过 `PropertyBuilder` / `ProfileConfigIO` 生成可读写 schema。
+- 新增 tracked 示例配置 `config/editor_ui_modules.example.ini`，local override 继续使用被 `.gitignore` 忽略的 `config/editor_ui_modules.local.ini`。
+- `RuntimeProfileState` 新增 `editorUiModuleProfilePath`、`editorUiModuleProfile()` 和内部 profile owner。
+- `RuntimeProfileLoader::loadAll(...)` 现在加载 Editor UI module profile，找不到 local profile 时保持默认 core/sample 都启用。
+- `RuntimeApplicationConfigPolicy` 新增 `applyEditorUiModuleProfile(...)`，在 editor startup 前把 profile 写回 shell config。
+- `RuntimeApplicationShellConfig` 新增 core/sample 两个 CLI override 标记；`RuntimeVerificationArgs.cpp` 在解析 module CLI 参数时设置对应 override，确保 CLI 显式参数不会被 profile 文件覆盖。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 已注册新增 profile / profile config 源文件和头文件。
+
+已完成验证：
+
+- 静态检查确认 `EditorUiModuleProfile`、`editor_ui_modules.local.ini` 默认路径、CLI override 标记、profile loader 和 editor startup 应用链路均可检索。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过，MSBuild 编译了 `EditorUiModuleProfile.cpp`、`EditorUiModuleProfileConfig.cpp`、`RuntimeProfileState.cpp`、`RuntimeProfileLoader.cpp`、`RuntimeApplicationConfigPolicy.cpp`、`RuntimeApplicationEditorStartupLifecycle.cpp` 与 `RuntimeVerificationArgs.cpp`。
+- 临时 local profile 检查：创建 `config/editor_ui_modules.local.ini` 并写入 core/sample 均禁用后运行 `x64\Debug\text2.exe --verify-renderer-backend-registry-noop` 已通过，随后已删除该临时 local 文件。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 verification mode 全部通过。
+
+结论：
+
+- 这是 Editor UI Module Profile Storage slice，让 module policy 有了可持久化默认值入口；不改变默认 module policy、CLI 显式覆盖语义、现有 Debug UI section 业务逻辑、PBR pass、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议把 `EditorUiModuleProfile` 接入 Debug Controller 的保存/重载 UI，或让 runtime editor lifecycle 支持在运行时重新应用 module policy。

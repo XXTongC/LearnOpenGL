@@ -2018,6 +2018,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `application/RuntimeVerificationArgs.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the Editor UI module diagnostics section slice is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `tools/editor/EditorUiModuleRegistry.h`, `tools/editor/EditorUiModuleRegistry.cpp`, `tools/editor/EditorUiModuleComposition.cpp`, `tools/editor/EditorUiModuleDiagnosticsSection.h`, `tools/editor/EditorUiModuleDiagnosticsSection.cpp`, `tools/inspector/SelectionInspectorProviderRegistry.h`, `tools/inspector/SelectionInspectorProviderRegistry.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Editor UI module profile storage slice is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `tools/editor/EditorUiModuleProfile.h`, `tools/editor/EditorUiModuleProfile.cpp`, `tools/editor/EditorUiModuleProfileConfig.h`, `tools/editor/EditorUiModuleProfileConfig.cpp`, `application/RuntimeProfileState.h`, `application/RuntimeProfileState.cpp`, `application/RuntimeProfileLoader.cpp`, `application/RuntimeApplicationConfig.h`, `application/RuntimeApplicationConfigPolicy.h`, `application/RuntimeApplicationConfigPolicy.cpp`, `application/RuntimeApplicationEditorStartupLifecycle.cpp`, `application/RuntimeVerificationArgs.cpp`, `config/editor_ui_modules.example.ini`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

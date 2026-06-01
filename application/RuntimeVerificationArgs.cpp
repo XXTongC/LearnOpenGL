@@ -213,18 +213,22 @@ namespace
 			if (argument == "--enable-core-editor-ui-module")
 			{
 				config.enableCoreEditorUiModule = true;
+				config.coreEditorUiModuleCommandLineOverride = true;
 			}
 			else if (argument == "--disable-core-editor-ui-module")
 			{
 				config.enableCoreEditorUiModule = false;
+				config.coreEditorUiModuleCommandLineOverride = true;
 			}
 			else if (argument == "--enable-sample-editor-ui-module")
 			{
 				config.enableSampleEditorUiModule = true;
+				config.sampleEditorUiModuleCommandLineOverride = true;
 			}
 			else if (argument == "--disable-sample-editor-ui-module")
 			{
 				config.enableSampleEditorUiModule = false;
+				config.sampleEditorUiModuleCommandLineOverride = true;
 			}
 		}
 	}

@@ -436,10 +436,11 @@ passed
 - Runtime Editor UI Module Config Policy 已接入：`RuntimeApplicationShellConfig` 新增 core/sample editor UI module 开关，`RuntimeEditorLifecycleConfig` 携带 `EditorUiModuleCompositionPolicy`，editor startup 阶段按 config policy 配置 state registries。
 - Runtime Editor UI Module CLI Policy 已接入：`RuntimeVerificationArgs.cpp` 支持 `--enable/--disable-core-editor-ui-module` 与 `--enable/--disable-sample-editor-ui-module`，module policy 可以从命令行覆盖 shell config。
 - Editor UI Module Diagnostics Section 已接入：`EditorUiModuleRegistries` 记录 active module keys，Debug Controller 新增 `Editor UI Modules` 诊断 section，显示 active modules 和各 registry 的 section/provider 数量。
+- Editor UI Module Profile Storage 已接入：新增 `EditorUiModuleProfile` / config schema / storage，`RuntimeProfileLoader` 从 `config/editor_ui_modules.local.ini` 加载默认 module policy，CLI 显式参数保持优先。
 - `tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过当前默认 34 个 PBR verification mode，包含 Engine lifecycle snapshot、`engine-world-scene-package` 与 `renderer-backend-registry-noop` mode。
 
 ## 下一阶段
 
-当前最新修正：Editor UI Module Diagnostics Section 已接入后，当前 active editor UI module list 和 registry 规模可以在 Debug Controller 中直接观察；默认 module policy 仍不变。
+当前最新修正：Editor UI Module Profile Storage 已接入后，module policy 已有可持久化默认值入口；`config/editor_ui_modules.local.ini` 可控制 core/sample module 默认启用状态，CLI 显式参数仍优先。
 
-下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议把同一套 module policy 接入 profile/config 文件或 editor settings；当前不建议继续扩张 PBR pass。
+下一阶段建议继续推进系统化 UI/inspector 与 Engine runtime ownership：profile/settings 类中直接暴露 `visitEditableProperties(PropertyBuilder&)` 的边界已清完，render resource decoupling 也已阶段性收束。下一步建议把 `EditorUiModuleProfile` 接入 Debug Controller 的保存/重载 UI，或让 runtime editor lifecycle 支持运行时重新应用 module policy；当前不建议继续扩张 PBR pass。

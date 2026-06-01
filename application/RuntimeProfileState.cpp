@@ -4,6 +4,7 @@
 #include "../renderer/EnvironmentProfile.h"
 #include "../renderer/PostProcessSettings.h"
 #include "../renderer/RendererFramePassProfile.h"
+#include "../tools/editor/EditorUiModuleProfile.h"
 #include "../tools/sceneSetup/PBRCameraRigProfile.h"
 #include "../tools/sceneSetup/PBRExperimentProfile.h"
 #include "../tools/sceneSetup/PBRLightRigProfile.h"
@@ -16,12 +17,14 @@ GL_RUNTIME::RuntimeProfileState::RuntimeProfileState()
 	, environmentProfilePath(GLframework::EnvironmentProfileStorage::defaultPath())
 	, pbrPreviewProfilePath(GL_SCENE::PBRPreviewProfileStorage::defaultPath())
 	, pbrExperimentProfilePath(GL_SCENE::PBRExperimentProfileStorage::defaultPath())
+	, editorUiModuleProfilePath(GL_EDITOR::EditorUiModuleProfileStorage::defaultPath())
 	, mFramePipelineProfile(std::make_unique<RuntimeFramePipelineProfile>())
 	, mPostProcessSettings(std::make_unique<GLframework::PostProcessSettings>())
 	, mEnvironmentProfile(std::make_unique<GLframework::EnvironmentProfile>())
 	, mPBRLightRigProfile(std::make_unique<GL_SCENE::PBRLightRigProfile>())
 	, mPBRPreviewProfile(std::make_unique<GL_SCENE::PBRPreviewProfile>())
 	, mPBRCameraRigProfile(std::make_unique<GL_SCENE::PBRCameraRigProfile>())
+	, mEditorUiModuleProfile(std::make_unique<GL_EDITOR::EditorUiModuleProfile>())
 {
 }
 
@@ -89,4 +92,14 @@ GL_SCENE::PBRCameraRigProfile& GL_RUNTIME::RuntimeProfileState::pbrCameraRigProf
 const GL_SCENE::PBRCameraRigProfile& GL_RUNTIME::RuntimeProfileState::pbrCameraRigProfile() const
 {
 	return *mPBRCameraRigProfile;
+}
+
+GL_EDITOR::EditorUiModuleProfile& GL_RUNTIME::RuntimeProfileState::editorUiModuleProfile()
+{
+	return *mEditorUiModuleProfile;
+}
+
+const GL_EDITOR::EditorUiModuleProfile& GL_RUNTIME::RuntimeProfileState::editorUiModuleProfile() const
+{
+	return *mEditorUiModuleProfile;
 }

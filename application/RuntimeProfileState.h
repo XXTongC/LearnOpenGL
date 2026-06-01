@@ -16,6 +16,11 @@ namespace GL_SCENE
 	struct PBRPreviewProfile;
 }
 
+namespace GL_EDITOR
+{
+	struct EditorUiModuleProfile;
+}
+
 namespace GL_RUNTIME
 {
 	struct RuntimeFramePipelineProfile;
@@ -36,6 +41,7 @@ namespace GL_RUNTIME
 		std::string environmentProfilePath{};
 		std::string pbrPreviewProfilePath{};
 		std::string pbrExperimentProfilePath{};
+		std::string editorUiModuleProfilePath{};
 
 		RuntimeFramePipelineProfile& framePipelineProfile();
 		const RuntimeFramePipelineProfile& framePipelineProfile() const;
@@ -49,6 +55,8 @@ namespace GL_RUNTIME
 		const GL_SCENE::PBRPreviewProfile& pbrPreviewProfile() const;
 		GL_SCENE::PBRCameraRigProfile& pbrCameraRigProfile();
 		const GL_SCENE::PBRCameraRigProfile& pbrCameraRigProfile() const;
+		GL_EDITOR::EditorUiModuleProfile& editorUiModuleProfile();
+		const GL_EDITOR::EditorUiModuleProfile& editorUiModuleProfile() const;
 
 	private:
 		std::unique_ptr<RuntimeFramePipelineProfile> mFramePipelineProfile{};
@@ -57,5 +65,6 @@ namespace GL_RUNTIME
 		std::unique_ptr<GL_SCENE::PBRLightRigProfile> mPBRLightRigProfile{};
 		std::unique_ptr<GL_SCENE::PBRPreviewProfile> mPBRPreviewProfile{};
 		std::unique_ptr<GL_SCENE::PBRCameraRigProfile> mPBRCameraRigProfile{};
+		std::unique_ptr<GL_EDITOR::EditorUiModuleProfile> mEditorUiModuleProfile{};
 	};
 }

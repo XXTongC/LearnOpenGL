@@ -8337,3 +8337,22 @@
   - 已执行直接 CLI 空 module 组合检查：`x64\Debug\text2.exe --verify-renderer-backend-registry-noop --disable-sample-editor-ui-module --disable-core-editor-ui-module` 退出码为 0，确认禁用 core/sample module 时 verification 路径不崩溃。
   - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 34 个 verification mode 全部通过。
   - 本轮只增加 Editor UI module 可观察性和 registry metadata，不修改默认 module policy、现有 section 业务逻辑、selection inspector 匹配逻辑、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
+
+- 启动第五百六十轮 Editor UI Module Profile Storage：
+  - 继续 active goal：当前 goal 仍为 `继续推进项目，自行根据计划书决定下一步和自行进行测试`，因此不重复创建 goal，也不把长期重构目标标记完成。
+  - 已确认当前分支为 `codex/text2-refactor`，远端 `github/codex/text2-refactor` 已包含上一轮提交 `15dd691 Add editor UI module diagnostics`；本轮开始时只有 `imgui.ini` 是未处理本地状态文件。
+  - 已根据计划文档把 Editor UI module policy 接入现有 profile/config 存储体系，新增可持久化默认值入口。
+  - 新增 [EditorUiModuleProfile.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleProfile.h) 与 [EditorUiModuleProfile.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleProfile.cpp)，定义 `EditorUiModuleProfile` 与 `EditorUiModuleProfileStorage`。
+  - 新增 [EditorUiModuleProfileConfig.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleProfileConfig.h) 与 [EditorUiModuleProfileConfig.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\tools\editor\EditorUiModuleProfileConfig.cpp)，通过 `PropertyBuilder` / `ProfileConfigIO` 生成可读写 schema。
+  - 新增 [editor_ui_modules.example.ini](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\config\editor_ui_modules.example.ini)，local override 路径为被 `.gitignore` 忽略的 `config/editor_ui_modules.local.ini`。
+  - 更新 [RuntimeProfileState.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeProfileState.h) 与 [RuntimeProfileState.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeProfileState.cpp)，新增 `editorUiModuleProfilePath`、`editorUiModuleProfile()` 和内部 profile owner。
+  - 更新 [RuntimeProfileLoader.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeProfileLoader.cpp)，startup profile loading 阶段加载 Editor UI module profile；找不到 local profile 时保持默认值。
+  - 更新 [RuntimeApplicationConfig.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationConfig.h)、[RuntimeApplicationConfigPolicy.h](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationConfigPolicy.h)、[RuntimeApplicationConfigPolicy.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationConfigPolicy.cpp) 与 [RuntimeApplicationEditorStartupLifecycle.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeApplicationEditorStartupLifecycle.cpp)，editor startup 前把 profile 写回 shell config。
+  - 更新 [RuntimeVerificationArgs.cpp](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\application\RuntimeVerificationArgs.cpp)，module CLI 参数现在会设置 core/sample 对应 override 标记，确保 CLI 显式参数不会被 profile 覆盖。
+  - 更新 [text2.vcxproj](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj) 与 [text2.vcxproj.filters](C:\Code\CodeOfC++\OpenGL_test\text2-refactor\text2.vcxproj.filters)，注册新增 profile / profile config 源文件和头文件。
+  - 已执行静态检查：确认 `EditorUiModuleProfile`、默认 local profile 路径、CLI override 标记、profile loader 和 editor startup 应用链路均可检索。
+  - 已执行 `git diff --check`，通过；仅输出当前仓库已有的 LF/CRLF warning。
+  - 已执行 focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 构建通过；5 个 focused verification mode 全部通过。
+  - 已执行临时 local profile 检查：创建 `config/editor_ui_modules.local.ini` 并写入 core/sample 均禁用后运行 `x64\Debug\text2.exe --verify-renderer-backend-registry-noop` 退出码为 0；随后已删除该临时 local 文件。
+  - 已执行 full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures`，默认 verification mode 全部通过。
+  - 本轮让 Editor UI module policy 有了可持久化默认值入口，不修改默认 module policy、CLI 显式覆盖语义、现有 Debug UI section 业务逻辑、PBR pass、runtime frame pipeline 或 renderer backend contract；`imgui.ini` 仍是未处理的本地状态文件，本轮未触碰。
