@@ -570,6 +570,8 @@ public:
 360. 下一步建议继续收束 Material/profile 边界，优先拆分 `PBRMaterialProfile` config schema 对 editor `PropertyBuilder` 的依赖，或让 PBR profile/config 通过独立 provider/schema adapter 生成配置 UI。
 361. PBR Material Profile Config Schema Adapter 已完成第一版：新增 `PBRMaterialProfileConfig` schema adapter 与 `PBRMaterialProfile.cpp`，`PBRMaterialProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，`PBRMaterial.cpp` 不再承载 profile storage 或 editor/config schema。
 362. 下一步建议继续处理仍直接在 runtime/profile 类型中暴露 `visitEditableProperties(PropertyBuilder&)` 的配置对象，例如 EnvironmentProfile、PostProcessSettings、RendererFramePassProfile 或 PBRPreviewProfile。
+363. Post Process Settings Config Schema Adapter 已完成第一版：新增 `PostProcessSettingsConfig` schema adapter，`PostProcessSettings.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，DebugControllerPanel 和 PBR experiment preset 的 postprocess 子配置改为通过 adapter 构建 schema。
+364. 下一步建议继续处理剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile/settings 对象，例如 EnvironmentProfile、RendererFramePassProfile、PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile。
 
 ## 约束
 

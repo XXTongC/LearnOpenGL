@@ -828,6 +828,9 @@
     <ClCompile Include="renderer\PostProcessSettings.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\PostProcessSettingsConfig.cpp">
+      <Filter>cppfile\GLframework\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="renderer\RenderQueue.cpp">
       <Filter>cppfile\GLframework\renderer</Filter>
     </ClCompile>
@@ -1689,6 +1692,9 @@
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\PostProcessSettings.h">
+      <Filter>include\GLframework\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\PostProcessSettingsConfig.h">
       <Filter>include\GLframework\renderer</Filter>
     </ClInclude>
     <ClInclude Include="renderer\RenderQueue.h">

@@ -323,6 +323,7 @@
     <ClCompile Include="renderer\PointShadowRenderPass.cpp" />
     <ClCompile Include="renderer\PostProcessPass.cpp" />
     <ClCompile Include="renderer\PostProcessSettings.cpp" />
+    <ClCompile Include="renderer\PostProcessSettingsConfig.cpp" />
     <ClCompile Include="renderer\RenderQueue.cpp" />
     <ClCompile Include="renderer\RendererFramePassProfile.cpp" />
     <ClCompile Include="renderer\RendererFramePassRegistry.cpp" />
@@ -496,6 +497,7 @@
     <ClInclude Include="renderer\PointShadowRenderPass.h" />
     <ClInclude Include="renderer\PostProcessPass.h" />
     <ClInclude Include="renderer\PostProcessSettings.h" />
+    <ClInclude Include="renderer\PostProcessSettingsConfig.h" />
     <ClInclude Include="renderer\RenderQueue.h" />
     <ClInclude Include="renderer\RendererFrameContext.h" />
     <ClInclude Include="renderer\RendererFramePassProfile.h" />

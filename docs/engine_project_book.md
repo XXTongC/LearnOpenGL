@@ -451,8 +451,9 @@ flowchart TD
 - PBR Material Runtime State API 已完成第一版：`PBRMaterial` 新增 surface/texture/channel/alpha/IBL input 与 runtime state DTO，profile、renderer binder/pass 和 PBR stats 已迁入 setter/state API；public fields 尚未私有化。
 - PBR Material Private Field Encapsulation 已完成第一版：scene setup、Assimp PBR importer、engine world scene setup/package resolver 与 PBR verification probes 已迁入 `PBRMaterial` setter/API；PBR texture、surface、channel、alpha mask 与 IBL 字段已下沉为 private。
 - PBR Material Profile Config Schema Adapter 已完成第一版：新增 `PBRMaterialProfileConfig` schema adapter 与独立 `PBRMaterialProfile.cpp`；`PBRMaterialProfile.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，`PBRMaterial.cpp` 不再承载 profile storage 或 editor/config schema。
+- Post Process Settings Config Schema Adapter 已完成第一版：新增 `PostProcessSettingsConfig` schema adapter；`PostProcessSettings.h` 不再声明 `visitEditableProperties(PropertyBuilder&)`，DebugControllerPanel 与 PBR experiment preset 的 postprocess 子配置改为通过 adapter 构建 schema。
 
 
-当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 PBR Material Profile Config Schema Adapter 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议继续处理仍直接在 runtime/profile 类型中暴露 `visitEditableProperties(PropertyBuilder&)` 的配置对象，例如 EnvironmentProfile、PostProcessSettings、RendererFramePassProfile 或 PBRPreviewProfile；当前不建议继续扩张 PBR 功能。
+当前长期方向：Engine runtime ownership 已完成多轮 boundary/header extraction，render resource decoupling 已阶段性收束。本轮 Post Process Settings Config Schema Adapter 后，下一步应继续推进系统化 UI/inspector 与 editor/gameplay boundary，建议继续处理剩余直接在 runtime/profile 类型中暴露 `visitEditableProperties(PropertyBuilder&)` 的配置对象，例如 EnvironmentProfile、RendererFramePassProfile、PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile；当前不建议继续扩张 PBR 功能。
 
-当前最新修正：PBR Material Profile Config Schema Adapter 已接入后，PBRMaterialProfile header 不再暴露 editor `PropertyBuilder`，runtime PBRMaterial implementation 不再承载 profile storage 或 config schema；PBR profile config key 与 preview material preset 行为保持不变。
+当前最新修正：Post Process Settings Config Schema Adapter 已接入后，PostProcessSettings header 不再暴露 editor `PropertyBuilder`，HDR / Bloom 配置 schema 集中到 `PostProcessSettingsConfig`；postprocess settings 默认路径、DebugControllerPanel save/load 行为与 PBR experiment preset 的 `postprocess.*` key 保持不变。

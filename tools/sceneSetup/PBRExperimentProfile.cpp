@@ -7,6 +7,7 @@
 #include "../config/ProfileConfigParser.h"
 #include "../../renderer/EnvironmentProfile.h"
 #include "../../renderer/PostProcessSettings.h"
+#include "../../renderer/PostProcessSettingsConfig.h"
 #include "PBRCameraRigProfile.h"
 #include "PBRLightRigProfile.h"
 #include "PBRPreviewProfile.h"
@@ -57,7 +58,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::loadFromFile(
 	GL_EDITOR::PropertyBuilder environmentBuilder{};
 	loadedEnvironmentProfile.visitEditableProperties(environmentBuilder);
 	GL_EDITOR::PropertyBuilder postProcessBuilder{};
-	loadedPostProcessSettings.visitEditableProperties(postProcessBuilder);
+	GLframework::buildPostProcessSettingsConfigSchema(postProcessBuilder, loadedPostProcessSettings);
 	GL_EDITOR::PropertyBuilder pbrPreviewBuilder{};
 	loadedPBRPreviewProfile.visitEditableProperties(pbrPreviewBuilder);
 	GL_EDITOR::PropertyBuilder lightRigBuilder{};
@@ -173,7 +174,7 @@ bool GL_SCENE::PBRExperimentProfileStorage::saveToFile(
 	GL_EDITOR::PropertyBuilder environmentBuilder{};
 	environmentSnapshot.visitEditableProperties(environmentBuilder);
 	GL_EDITOR::PropertyBuilder postProcessBuilder{};
-	postProcessSnapshot.visitEditableProperties(postProcessBuilder);
+	GLframework::buildPostProcessSettingsConfigSchema(postProcessBuilder, postProcessSnapshot);
 	GL_EDITOR::PropertyBuilder pbrPreviewBuilder{};
 	pbrPreviewSnapshot.visitEditableProperties(pbrPreviewBuilder);
 	GL_EDITOR::PropertyBuilder lightRigBuilder{};

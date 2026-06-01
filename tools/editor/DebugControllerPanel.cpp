@@ -14,6 +14,7 @@
 #include "../../light/shadow/shadow.h"
 #include "../../mesh/mesh.h"
 #include "../../renderer/PostProcessSettings.h"
+#include "../../renderer/PostProcessSettingsConfig.h"
 #include "../../renderer/RendererFramePassProfile.h"
 #include "../../renderer/RendererFrameStats.h"
 #include "../../renderer/renderer.h"
@@ -119,7 +120,7 @@ namespace
 			ImGui::TextWrapped("Profile File: %s", configPath.c_str());
 
 			GL_EDITOR::PropertyBuilder builder{};
-			settings->visitEditableProperties(builder);
+			GLframework::buildPostProcessSettingsConfigSchema(builder, *settings);
 			GL_EDITOR::drawProperties(builder);
 
 			if (ImGui::Button("Save Post Process Profile"))

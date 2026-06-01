@@ -1970,6 +1970,8 @@ Delegated sidecar work:
 - Parent-owned write scope for this round: `materials/pbrMaterial/PBRMaterial.h`, `materials/pbrMaterial/PBRMaterial.cpp`, `application/AssimpMaterialImporter.cpp`, `application/RuntimeEngineWorldVerificationResourceAdapter.cpp`, `application/RuntimePBRSceneProbeVerification.cpp`, `tools/sceneSetup/SceneSetup.cpp`, `tools/sceneSetup/WorldDrivenSceneSetup.cpp`, `work.md`, `worked.md`, and planning docs.
 - No new sidecar subagent was started in this round; the PBR material profile config schema adapter is parent-owned and has no disjoint sidecar write scope.
 - Parent-owned write scope for this round: `materials/pbrMaterial/PBRMaterial.cpp`, `materials/pbrMaterial/PBRMaterialProfile.h`, `materials/pbrMaterial/PBRMaterialProfile.cpp`, `materials/pbrMaterial/PBRMaterialProfileConfig.h`, `materials/pbrMaterial/PBRMaterialProfileConfig.cpp`, `tools/sceneSetup/PBRPreviewProfile.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
+- No new sidecar subagent was started in this round; the Post Process settings config schema adapter is parent-owned and has no disjoint sidecar write scope.
+- Parent-owned write scope for this round: `renderer/PostProcessSettings.h`, `renderer/PostProcessSettings.cpp`, `renderer/PostProcessSettingsConfig.h`, `renderer/PostProcessSettingsConfig.cpp`, `tools/editor/DebugControllerPanel.cpp`, `tools/sceneSetup/PBRExperimentProfile.cpp`, `text2.vcxproj`, `text2.vcxproj.filters`, `work.md`, `worked.md`, and planning docs.
 
 Merge rule:
 

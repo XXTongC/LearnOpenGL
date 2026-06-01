@@ -10435,3 +10435,28 @@ Subagent 审查：
 
 - 这是 PBR material profile config schema adapter slice，不改变 PBR profile config key、preview material preset 字段、DebugControllerPanel save/load 行为、PBRMaterial runtime API、PBR inspector 字段、PBR pass、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续沿同一方向处理其他仍直接把 `visitEditableProperties(PropertyBuilder&)` 放在 runtime/profile 类型里的配置对象，例如 EnvironmentProfile、PostProcessSettings、RendererFramePassProfile 或 PBRPreviewProfile 的 config schema adapter。
+
+### 2026-06-01 Post Process Settings Config Schema Adapter
+
+本轮继续 profile/config schema adapter 化，选择依赖面较小的 `PostProcessSettings` 作为下一片。目标是让 post-process runtime settings header 不再暴露 editor `PropertyBuilder` 类型，同时保持 HDR tone mapping 与 Bloom 配置 key / UI 字段不变。
+
+新增与修改：
+
+- 新增 `renderer/PostProcessSettingsConfig.h/.cpp`，提供 `buildPostProcessSettingsConfigSchema(...)`，集中生成 Post Process settings 的 `PropertyBuilder` schema。
+- `PostProcessSettings.h` 删除 `GL_EDITOR::PropertyBuilder` forward declaration 和 `visitEditableProperties(...)`，现在只保留 tone mapping / bloom runtime settings 数据和 storage API。
+- `PostProcessSettings.cpp` 删除 schema 构造实现与 `tools/inspector/PropertySchema.h` 直接 include，storage load/save 改为通过 `buildPostProcessSettingsConfigSchema(...)` 生成配置 schema。
+- `DebugControllerPanel.cpp` 的 Post Process 控制面板改为调用 `buildPostProcessSettingsConfigSchema(...)`，保持现有 UI 绘制字段不变。
+- `PBRExperimentProfile.cpp` 的 postprocess 子配置 load/save 改为调用 `buildPostProcessSettingsConfigSchema(...)`，保持 `postprocess.*` 配置 key 不变。
+- `text2.vcxproj` 与 `text2.vcxproj.filters` 注册新增 `PostProcessSettingsConfig.cpp` 和 `PostProcessSettingsConfig.h`。
+
+已完成验证：
+
+- 静态检查确认 `PostProcessSettings::visitEditableProperties`、`settings->visitEditableProperties(builder)`、`loadedPostProcessSettings.visitEditableProperties(...)` 和 `postProcessSnapshot.visitEditableProperties(...)` 不再存在。
+- `git diff --check` 已通过，仅保留当前仓库已有的 LF/CRLF warning。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了 `PostProcessSettings.cpp`、`PostProcessSettingsConfig.cpp`、`DebugControllerPanel.cpp`、`PBRExperimentProfile.cpp` 和相关 post-process/runtime profile 路径。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Post Process settings config schema adapter slice，不改变 `config/postprocess_settings.local.ini` 默认路径、HDR exposure/tone mapping 语义、Bloom enable/threshold/intensity/iteration 字段、PBR experiment preset 的 `postprocess.*` key、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续处理剩余直接暴露 `visitEditableProperties(PropertyBuilder&)` 的 profile/settings 对象，例如 EnvironmentProfile、RendererFramePassProfile、PBRPreviewProfile、PBRLightRigProfile、PBRCameraRigProfile 或 RuntimeFramePipelineProfile。
