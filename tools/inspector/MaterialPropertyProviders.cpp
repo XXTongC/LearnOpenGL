@@ -94,9 +94,9 @@ namespace
 	void buildPhongSurfaceProperties(GL_EDITOR::PropertyBuilder& builder, TMaterial& material)
 	{
 		builder.addSection("Surface");
-		builder.addFloat("Shininess", &material.mShiness, 0.0f, 256.0f, "%.1f");
-		addTextureText(builder, "Diffuse", &material.mDiffuse);
-		addTextureText(builder, "Specular Mask", &material.mSpecularMask);
+		builder.addFloat("Shininess", material.shininessControl(), 0.0f, 256.0f, "%.1f");
+		addTextureText(builder, "Diffuse", &material.diffuseTexture());
+		addTextureText(builder, "Specular Mask", &material.specularMaskTexture());
 	}
 
 	template <typename TMaterial>
@@ -141,16 +141,16 @@ namespace
 		addPbrFloatUniformProperty(builder, surfaceFloatUniformSlots[3]);
 
 		builder.addSection("PBR Alpha Mask");
-		builder.addBool("Use Alpha Mask", &material->mUseAlphaMask);
-		builder.addFloat("Alpha Cutoff", &material->mAlphaCutoff, 0.0f, 1.0f);
+		builder.addBool("Use Alpha Mask", material->useAlphaMaskControl());
+		builder.addFloat("Alpha Cutoff", material->alphaCutoffControl(), 0.0f, 1.0f);
 
 		builder.addSection("PBR Texture Channels");
-		builder.addInt("Metallic Map Channel", &material->mMetallicMapChannel, 0, 3);
-		builder.addInt("Roughness Map Channel", &material->mRoughnessMapChannel, 0, 3);
-		builder.addInt("AO Map Channel", &material->mAoMapChannel, 0, 3);
+		builder.addInt("Metallic Map Channel", material->metallicMapChannelControl(), 0, 3);
+		builder.addInt("Roughness Map Channel", material->roughnessMapChannelControl(), 0, 3);
+		builder.addInt("AO Map Channel", material->aoMapChannelControl(), 0, 3);
 
 		builder.addSection("PBR IBL");
-		builder.addBool("Use IBL", &material->mUseIBL);
+		builder.addBool("Use IBL", material->useIblControl());
 		for (const auto& slot : material->getIblFloatUniformSlots())
 		{
 			addPbrFloatUniformProperty(builder, slot);
@@ -175,12 +175,12 @@ namespace
 		}
 
 		builder.addSection("Surface");
-		builder.addFloat("Shininess", &material->mShiness, 0.0f, 256.0f, "%.1f");
+		builder.addFloat("Shininess", material->shininessControl(), 0.0f, 256.0f, "%.1f");
 		builder.addFloat("UV Scale", material->Control_UVScale(), 0.0f, 100.0f);
 		builder.addFloat("Brightness", material->Control_Brightness(), 0.0f, 8.0f);
-		addTextureText(builder, "Diffuse", &material->mDiffuse);
-		addTextureText(builder, "Opacity Mask", &material->mOpacityMask);
-		addTextureText(builder, "Cloud Mask", &material->mCloudMask);
+		addTextureText(builder, "Diffuse", &material->diffuseTexture());
+		addTextureText(builder, "Opacity Mask", &material->opacityMaskTexture());
+		addTextureText(builder, "Cloud Mask", &material->cloudMaskTexture());
 
 		builder.addSection("Wind");
 		builder.addFloat("Wind Scale", material->Control_WindScale(), -0.12f, 0.12f, "%.4f");
@@ -219,9 +219,9 @@ namespace
 		}
 
 		builder.addSection("Post Process Inputs");
-		addTextureText(builder, "Screen Texture", &material->mScreenTexture);
-		addTextureText(builder, "Bloom Texture", &material->mBloomTexture);
-		addTextureText(builder, "Depth Stencil Texture", &material->mDepthStencilTexture);
+		addTextureText(builder, "Screen Texture", &material->screenTexture());
+		addTextureText(builder, "Bloom Texture", &material->bloomTexture());
+		addTextureText(builder, "Depth Stencil Texture", &material->depthStencilTexture());
 	}
 
 	GL_EDITOR::MaterialPropertyProviderRegistry buildDefaultMaterialPropertyProviderRegistry()

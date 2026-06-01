@@ -69,6 +69,12 @@ namespace GLframework
 		std::array<PBRConstFloatUniformSlot, 4> getSurfaceFloatUniformSlots() const;
 		std::array<PBRFloatUniformSlot, 2> getIblFloatUniformSlots();
 		std::array<PBRConstFloatUniformSlot, 2> getIblFloatUniformSlots() const;
+		bool* useAlphaMaskControl();
+		float* alphaCutoffControl();
+		int* metallicMapChannelControl();
+		int* roughnessMapChannelControl();
+		int* aoMapChannelControl();
+		bool* useIblControl();
 
 	public:
 		std::shared_ptr<Texture> mAlbedoMap{ nullptr };

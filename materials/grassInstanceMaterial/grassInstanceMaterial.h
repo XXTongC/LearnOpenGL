@@ -31,6 +31,7 @@ namespace GLframework
 		void seCloudWhiteColor(glm::vec3 value);
 		void setCloudBlackColor(glm::vec3 value);
 
+		float* shininessControl();
 		float getUVScale() const;
 		float getBrightness() const;
 		float getWindScale() const;
@@ -52,6 +53,9 @@ namespace GLframework
 		glm::vec3* Control_WindDirection();
 		glm::vec3* Control_CloudWhiteColor();
 		glm::vec3* Control_CloudBlackColor();
+		const std::shared_ptr<Texture>& diffuseTexture() const;
+		const std::shared_ptr<Texture>& opacityMaskTexture() const;
+		const std::shared_ptr<Texture>& cloudMaskTexture() const;
 
 
 	public:

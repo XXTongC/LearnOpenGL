@@ -554,6 +554,8 @@ public:
 344. 下一步建议逐步把具体 Material 类型字段从 runtime `visitEditableProperties(...)` 迁入 provider 模块，或先补一层 Material property DTO/accessor 边界，避免 editor schema 长期由 runtime material 类直接声明。
 345. Runtime Material Property Provider Schema Extraction 已完成第一版：`MaterialPropertyProviderRegistry` 支持 `buildMatching(...)`，Material inspector schema 由通用 `render-state` provider 与具体 Material 类型 provider 叠加构建；`Material`、`PhongMaterial`、`PhongCSMShadowMaterial`、`PhongPointShadowMaterial`、`GrassInstanceMaterial`、`ScreenMaterial` 和 `PBRMaterial` 不再声明或实现 runtime inspector `visitEditableProperties(...)`。
 346. 下一步建议继续把 Material provider 当前直接访问的 public material fields 收敛为 Material property DTO/accessor，或先拆分 `PBRMaterialProfile` config schema 与 editor `PropertyBuilder` 的边界。
+347. Runtime Material Editable Accessor Boundary 已完成第一版：Phong / Grass / Screen / PBR provider 所需字段新增明确 edit accessors，`MaterialPropertyProviders.cpp` 不再直接访问这些 provider 所需 public material fields。
+348. 下一步建议把本轮新增的零散 accessors 聚合为 Material property DTO，或逐步把 provider 已覆盖的 material public fields 下沉为 private，继续收缩 runtime material 数据布局暴露面。
 
 ## 约束
 

@@ -16,6 +16,9 @@ namespace GLframework
 			setMaterialType(MaterialType::PhongPointShadowMaterial);
 		}
 		~PhongPointShadowMaterial();
+		float* shininessControl();
+		const std::shared_ptr<Texture>& diffuseTexture() const;
+		const std::shared_ptr<Texture>& specularMaskTexture() const;
 
 
 	public:

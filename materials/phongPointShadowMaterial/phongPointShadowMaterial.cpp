@@ -13,3 +13,18 @@ PhongPointShadowMaterial::~PhongPointShadowMaterial()
 {
 
 }
+
+float* PhongPointShadowMaterial::shininessControl()
+{
+	return &mShiness;
+}
+
+const std::shared_ptr<Texture>& PhongPointShadowMaterial::diffuseTexture() const
+{
+	return mDiffuse;
+}
+
+const std::shared_ptr<Texture>& PhongPointShadowMaterial::specularMaskTexture() const
+{
+	return mSpecularMask;
+}

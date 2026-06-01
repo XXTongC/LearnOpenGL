@@ -10232,3 +10232,27 @@ Subagent 审查：
 
 - 这是 Material inspector schema extraction，不改变 Material inspector 字段、字段顺序、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract。
 - 下一步建议继续缩窄 Material runtime 暴露面：把 provider 当前直接访问的 public material fields 迁为 Material property DTO/accessor，或者先处理 `PBRMaterialProfile` 配置 schema 与 editor `PropertyBuilder` 的边界。
+
+### 2026-06-01 Runtime Material Editable Accessor Boundary
+
+本轮继续缩窄 Material provider 与 runtime material 数据布局之间的耦合。上一轮已经把 inspector schema 从 runtime virtual override 迁入 editor provider，但 provider 仍直接访问 `mShiness`、贴图 shared_ptr、PBR alpha/channel/IBL 字段等 public fields。本轮先引入最小 editable accessor，让 provider 走材质类公开的编辑访问器，而不是直接依赖字段名。
+
+新增与修改：
+
+- `PhongMaterial`、`PhongCSMShadowMaterial`、`PhongPointShadowMaterial` 新增 `shininessControl()`、`diffuseTexture()`、`specularMaskTexture()`。
+- `GrassInstanceMaterial` 新增 `shininessControl()`、`diffuseTexture()`、`opacityMaskTexture()`、`cloudMaskTexture()`；已有 wind/cloud control API 保持不变。
+- `ScreenMaterial` 新增 `screenTexture()`、`bloomTexture()`、`depthStencilTexture()`。
+- `PBRMaterial` 新增 `useAlphaMaskControl()`、`alphaCutoffControl()`、`metallicMapChannelControl()`、`roughnessMapChannelControl()`、`aoMapChannelControl()`、`useIblControl()`。
+- `MaterialPropertyProviders.cpp` 改为通过上述 accessors 构建 Phong / Grass / Screen / PBR inspector 字段，不再直接访问 provider 所需的 public material fields。
+
+已完成验证：
+
+- 静态检查确认 `MaterialPropertyProviders.cpp` 不再直接引用 `mShiness`、`mDiffuse`、`mSpecularMask`、`mOpacityMask`、`mCloudMask`、`mScreenTexture`、`mBloomTexture`、`mDepthStencilTexture`、`mUseAlphaMask`、`mAlphaCutoff`、`mMetallicMapChannel`、`mRoughnessMapChannel`、`mAoMapChannel` 或 `mUseIBL`。
+- 静态检查确认 provider 当前通过 `shininessControl()`、texture getter、PBR channel/alpha/IBL control accessors 构建字段。
+- focused verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -NoLinkDebugInfo -Modes forward,import,texture-set,engine-world-editor-create,renderer-backend-registry-noop -DiscardCaptures` 已通过；MSBuild 编译了受影响材质和 `MaterialPropertyProviders.cpp`。
+- full verification：`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_pbr.ps1 -SkipBuild -DiscardCaptures` 已通过，默认 34 个 verification mode 全部通过。
+
+结论：
+
+- 这是 Material editable accessor boundary first slice，不改变 Material inspector 字段、字段顺序、材质参数、贴图绑定、PBR pass、selection inspector dispatch、runtime frame pipeline 或 renderer backend contract。
+- 下一步建议继续把这些 accessor 聚合成明确的 Material property DTO，或逐步把相关 public fields 下沉为 private，先从 provider 已覆盖的 Phong / Grass / Screen / PBR material 类型开始。

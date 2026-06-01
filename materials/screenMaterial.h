@@ -12,6 +12,9 @@ namespace GLframework
 			setMaterialType(MaterialType::ScreenMaterial);
 		}
 		~ScreenMaterial(){}
+		const std::shared_ptr<Texture>& screenTexture() const;
+		const std::shared_ptr<Texture>& bloomTexture() const;
+		const std::shared_ptr<Texture>& depthStencilTexture() const;
 	
 	public:
 		std::shared_ptr<Texture> mScreenTexture{ nullptr };
